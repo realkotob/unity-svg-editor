@@ -16,7 +16,7 @@ namespace UnitySvgEditor.Editor
         public DocumentLifecycleController(
             DocumentRepository documentRepository,
             PreviewSnapshotBuilder previewSnapshotBuilder,
-            PatchInspectorController patchInspectorController,
+            InspectorPanelController inspectorPanelController,
             Func<EditorWorkspaceCoordinator> workspaceCoordinatorAccessor,
             Action updateEditorInteractivity)
         {
@@ -33,7 +33,7 @@ namespace UnitySvgEditor.Editor
             _sourceSyncService = new DocumentSourceSyncService(
                 _view,
                 _previewService,
-                patchInspectorController,
+                inspectorPanelController,
                 _workspaceCoordinatorAccessor,
                 () => CurrentDocument,
                 _updateEditorInteractivity);

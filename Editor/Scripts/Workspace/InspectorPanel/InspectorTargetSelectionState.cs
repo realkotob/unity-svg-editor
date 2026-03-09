@@ -4,11 +4,11 @@ using System.Linq;
 
 namespace UnitySvgEditor.Editor
 {
-    internal sealed class PatchTargetSelectionState
+    internal sealed class InspectorTargetSelectionState
     {
         private const string RootLabel = "Root <svg>";
 
-        private readonly List<PatchTargetOption> _targetOptions = new();
+        private readonly List<InspectorTargetOption> _targetOptions = new();
         private readonly List<string> _targetChoices = new();
 
         public IReadOnlyList<string> TargetChoices => _targetChoices;
@@ -29,7 +29,7 @@ namespace UnitySvgEditor.Editor
                     if (string.IsNullOrWhiteSpace(target?.DisplayName) || string.IsNullOrWhiteSpace(target.Key))
                         continue;
 
-                    _targetOptions.Add(new PatchTargetOption
+                    _targetOptions.Add(new InspectorTargetOption
                     {
                         Key = target.Key,
                         Label = target.DisplayName
@@ -39,7 +39,7 @@ namespace UnitySvgEditor.Editor
 
             if (_targetOptions.Count == 0)
             {
-                _targetOptions.Add(new PatchTargetOption
+                _targetOptions.Add(new InspectorTargetOption
                 {
                     Key = AttributePatcher.ROOT_TARGET_KEY,
                     Label = RootLabel
@@ -89,14 +89,14 @@ namespace UnitySvgEditor.Editor
                 : RootLabel;
         }
 
-        private bool TryGetTargetOptionByKey(string targetKey, out PatchTargetOption option)
+        private bool TryGetTargetOptionByKey(string targetKey, out InspectorTargetOption option)
         {
             option = _targetOptions.FirstOrDefault(candidate =>
                 string.Equals(candidate.Key, targetKey, StringComparison.Ordinal));
             return option != null;
         }
 
-        private bool TryGetTargetOptionByLabel(string label, out PatchTargetOption option)
+        private bool TryGetTargetOptionByLabel(string label, out InspectorTargetOption option)
         {
             option = _targetOptions.FirstOrDefault(candidate =>
                 string.Equals(candidate.Label, label, StringComparison.Ordinal));

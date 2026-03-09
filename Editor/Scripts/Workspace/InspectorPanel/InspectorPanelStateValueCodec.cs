@@ -6,9 +6,9 @@ using UnityEngine;
 
 namespace UnitySvgEditor.Editor
 {
-    internal static class PatchPanelStateValueCodec
+    internal static class InspectorPanelStateValueCodec
     {
-        public static AttributePatchRequest BuildPatchRequest(PatchPanelState state)
+        public static AttributePatchRequest BuildPatchRequest(InspectorPanelState state)
         {
             return new AttributePatchRequest
             {
@@ -26,7 +26,7 @@ namespace UnitySvgEditor.Editor
             };
         }
 
-        public static string BuildTransformFromHelper(PatchPanelState state)
+        public static string BuildTransformFromHelper(InspectorPanelState state)
         {
             state.Transform = TransformStringBuilder.BuildTransform(
                 state.TranslateX,
@@ -41,7 +41,7 @@ namespace UnitySvgEditor.Editor
             return state.Transform;
         }
 
-        public static void SyncFromAttributes(PatchPanelState state, IReadOnlyDictionary<string, string> attributes)
+        public static void SyncFromAttributes(InspectorPanelState state, IReadOnlyDictionary<string, string> attributes)
         {
             state.FillEnabled = TryGetNonEmpty(attributes, "fill", out var fillRaw);
             if (state.FillEnabled && ColorUtility.TryParseHtmlString(fillRaw.Trim(), out var fillColor))
@@ -78,7 +78,7 @@ namespace UnitySvgEditor.Editor
             state.StrokeLinejoin = NormalizeStrokeValue(attributes, "stroke-linejoin", new[] { "miter", "round", "bevel" });
         }
 
-        private static string BuildDasharrayValue(PatchPanelState state)
+        private static string BuildDasharrayValue(InspectorPanelState state)
         {
             var dash = Mathf.Max(0f, state.DashLength);
             var gap = Mathf.Max(0f, state.DashGap);

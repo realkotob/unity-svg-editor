@@ -3,29 +3,29 @@ using System.Collections.Generic;
 
 namespace UnitySvgEditor.Editor
 {
-    internal sealed class PatchInspectorTargetSyncService
+    internal sealed class InspectorTargetSyncService
     {
         private readonly AttributePatcher _attributePatcher;
-        private readonly PatchPanelState _patchPanelState;
-        private readonly PatchInspectorView _view;
-        private readonly Func<IPatchInspectorHost> _hostAccessor;
+        private readonly InspectorPanelState _inspectorPanelState;
+        private readonly InspectorPanelView _view;
+        private readonly Func<IInspectorPanelHost> _hostAccessor;
         private readonly Action _updateInteractivity;
 
-        public PatchInspectorTargetSyncService(
+        public InspectorTargetSyncService(
             AttributePatcher attributePatcher,
-            PatchPanelState patchPanelState,
-            PatchInspectorView view,
-            Func<IPatchInspectorHost> hostAccessor,
+            InspectorPanelState inspectorPanelState,
+            InspectorPanelView view,
+            Func<IInspectorPanelHost> hostAccessor,
             Action updateInteractivity)
         {
             _attributePatcher = attributePatcher;
-            _patchPanelState = patchPanelState;
+            _inspectorPanelState = inspectorPanelState;
             _view = view;
             _hostAccessor = hostAccessor;
             _updateInteractivity = updateInteractivity;
         }
 
-        private IPatchInspectorHost Host => _hostAccessor?.Invoke();
+        private IInspectorPanelHost Host => _hostAccessor?.Invoke();
 
         public void ApplyCurrentStateToView()
         {
@@ -34,8 +34,8 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            _view.SetTargetChoices(_patchPanelState.TargetChoices);
-            _view.ApplyState(_patchPanelState);
+            _view.SetTargetChoices(_inspectorPanelState.TargetChoices);
+            _view.ApplyState(_inspectorPanelState);
         }
 
         public void RefreshTargets(string sourceText)
@@ -46,7 +46,7 @@ namespace UnitySvgEditor.Editor
             }
 
             IReadOnlyList<PatchTarget> targets = _attributePatcher.ExtractTargets(sourceText);
-            _patchPanelState.SetTargets(targets);
+            _inspectorPanelState.SetTargets(targets);
             ApplyCurrentStateToView();
             ReadSelectedTargetAttributes();
         }
@@ -59,7 +59,7 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
-            if (!_patchPanelState.TrySelectTargetByKey(targetKey, out label))
+            if (!_inspectorPanelState.TrySelectTargetByKey(targetKey, out label))
             {
                 return false;
             }
@@ -72,15 +72,15 @@ namespace UnitySvgEditor.Editor
         {
             if (_view.IsBound)
             {
-                _patchPanelState.SelectTargetLabel(_view.SelectedTargetLabel);
+                _inspectorPanelState.SelectTargetLabel(_view.SelectedTargetLabel);
             }
 
-            return _patchPanelState.ResolveSelectedTargetKey();
+            return _inspectorPanelState.ResolveSelectedTargetKey();
         }
 
         public void HandleTargetSelectionChanged(string label)
         {
-            _patchPanelState.SelectTargetLabel(label);
+            _inspectorPanelState.SelectTargetLabel(label);
             ReadSelectedTargetAttributes();
         }
 
@@ -101,15 +101,15 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            _patchPanelState.SyncFromAttributes(attributes);
-            _view.ApplyState(_patchPanelState);
+            _inspectorPanelState.SyncFromAttributes(attributes);
+            _view.ApplyState(_inspectorPanelState);
             _updateInteractivity?.Invoke();
         }
 
         public void BuildTransformFromHelper()
         {
-            _view.CaptureState(_patchPanelState);
-            var transform = _patchPanelState.BuildTransformFromHelper();
+            _view.CaptureState(_inspectorPanelState);
+            var transform = _inspectorPanelState.BuildTransformFromHelper();
             _view.SetTransformText(transform);
 
             Host?.UpdateSourceStatus(string.IsNullOrWhiteSpace(transform)
@@ -125,8 +125,8 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            _view.CaptureState(_patchPanelState);
-            var request = _patchPanelState.BuildPatchRequest();
+            _view.CaptureState(_inspectorPanelState);
+            var request = _inspectorPanelState.BuildPatchRequest();
             Host.TryApplyPatchRequest(request, "Patch applied to source.");
         }
     }

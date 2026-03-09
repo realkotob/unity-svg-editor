@@ -16,7 +16,7 @@ namespace UnitySvgEditor.Editor
                 _viewportState,
                 new PreviewElementHitTester(),
                 framePadding: 0f,
-                frameHeaderHeight: 24f,
+                frameHeaderHeight: 0f,
                 alignmentGuideThreshold: 2f);
 
             _interactionController = new CanvasInteractionController(

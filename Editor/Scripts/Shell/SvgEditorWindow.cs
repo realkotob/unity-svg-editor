@@ -14,7 +14,7 @@ using Core.UI.Foundation;
 
 namespace UnitySvgEditor.Editor
 {
-    public sealed class SvgEditorWindow : EditorWindow, IEditorWorkspaceHost, IPatchInspectorHost
+    public sealed class SvgEditorWindow : EditorWindow, IEditorWorkspaceHost, IInspectorPanelHost
     {
         private static class UssClassName
         {
@@ -30,7 +30,7 @@ namespace UnitySvgEditor.Editor
         }
 
         private const string WINDOW_MENU_PATH = "Window/Unity SVG Editor/SVG Editor";
-        private const string THEME_RESOURCE_PATH = "UI/Theme/VectorEditorTheme";
+        private const string THEME_RESOURCE_PATH = "UI/Theme/SvgEditorTheme";
         private const string WINDOW_RESOURCE_PATH = "UI/UXML/SvgEditorWindow";
         private static readonly string[] _windowStyleSheetResourcePaths =
         {
@@ -51,7 +51,7 @@ namespace UnitySvgEditor.Editor
         private readonly DocumentRepository _documentRepository = new();
         private readonly PreviewSnapshotBuilder _previewSnapshotBuilder = new();
         private readonly AssetLibraryBrowser _assetLibraryBrowser;
-        private readonly PatchInspectorController _patchInspectorController;
+        private readonly InspectorPanelController _inspectorPanelController;
         private readonly DocumentLifecycleController _documentLifecycleController;
 
         private VisualElement _designInspectorPanel;
@@ -82,11 +82,11 @@ namespace UnitySvgEditor.Editor
         public SvgEditorWindow()
         {
             _assetLibraryBrowser = new AssetLibraryBrowser(_documentRepository);
-            _patchInspectorController = new PatchInspectorController(_attributePatcher, new PatchPanelState());
+            _inspectorPanelController = new InspectorPanelController(_attributePatcher, new InspectorPanelState());
             _documentLifecycleController = new DocumentLifecycleController(
                 _documentRepository,
                 _previewSnapshotBuilder,
-                _patchInspectorController,
+                _inspectorPanelController,
                 () => WorkspaceCoordinator,
                 UpdateEditorInteractivity);
         }
@@ -95,7 +95,7 @@ namespace UnitySvgEditor.Editor
         {
             UnbindWindowControls();
             _assetLibraryBrowser.Unbind();
-            _patchInspectorController.Unbind();
+            _inspectorPanelController.Unbind();
             _documentLifecycleController.Unbind();
             rootVisualElement.Clear();
             AddWindowStyleSheets();
@@ -117,7 +117,7 @@ namespace UnitySvgEditor.Editor
         {
             UnbindWindowControls();
             _assetLibraryBrowser.Unbind();
-            _patchInspectorController.Unbind();
+            _inspectorPanelController.Unbind();
             _documentLifecycleController.Dispose();
             _workspaceCoordinator?.Dispose();
         }
@@ -154,7 +154,7 @@ namespace UnitySvgEditor.Editor
                 canvasStageView.PrepareRuntime();
                 WorkspaceCoordinator.Bind(canvasStageView, rootVisualElement.Q<Toggle>("tool-move"));
             }
-            _patchInspectorController.Bind(rootVisualElement, this);
+            _inspectorPanelController.Bind(rootVisualElement, this);
         }
 
         private void UnbindWindowControls()
@@ -335,19 +335,19 @@ namespace UnitySvgEditor.Editor
 
         private string ResolveSelectedPatchTargetKey()
         {
-            return _patchInspectorController.ResolveSelectedTargetKey();
+            return _inspectorPanelController.ResolveSelectedTargetKey();
         }
 
         bool IEditorWorkspaceHost.TrySelectPatchTargetByKey(string targetKey)
         {
-            return _patchInspectorController.TrySelectTargetByKey(targetKey, out _);
+            return _inspectorPanelController.TrySelectTargetByKey(targetKey, out _);
         }
 
         string IEditorWorkspaceHost.ResolveSelectedPatchTargetKey() => ResolveSelectedPatchTargetKey();
 
         private void RefreshPatchTargets()
         {
-            _patchInspectorController.RefreshTargets(_documentLifecycleController.CurrentDocument?.WorkingSourceText);
+            _inspectorPanelController.RefreshTargets(_documentLifecycleController.CurrentDocument?.WorkingSourceText);
         }
 
         private static string FormatNumber(float value)
@@ -376,7 +376,7 @@ namespace UnitySvgEditor.Editor
             var hasDocument = _documentLifecycleController.CurrentDocument != null;
 
             _documentLifecycleController.UpdateInteractivity();
-            _patchInspectorController.UpdateInteractivity(hasDocument);
+            _inspectorPanelController.UpdateInteractivity(hasDocument);
             WorkspaceCoordinator.UpdateStructureInteractivity(hasDocument);
         }
 
@@ -389,9 +389,9 @@ namespace UnitySvgEditor.Editor
 
         void IEditorWorkspaceHost.UpdateSourceStatus(string status) => UpdateSourceStatus(status);
 
-        DocumentSession IPatchInspectorHost.CurrentDocument => _documentLifecycleController.CurrentDocument;
-        bool IPatchInspectorHost.TryApplyPatchRequest(AttributePatchRequest request, string successStatus) => TryApplyPatchRequest(request, successStatus);
-        void IPatchInspectorHost.UpdateSourceStatus(string status) => UpdateSourceStatus(status);
+        DocumentSession IInspectorPanelHost.CurrentDocument => _documentLifecycleController.CurrentDocument;
+        bool IInspectorPanelHost.TryApplyPatchRequest(AttributePatchRequest request, string successStatus) => TryApplyPatchRequest(request, successStatus);
+        void IInspectorPanelHost.UpdateSourceStatus(string status) => UpdateSourceStatus(status);
 
         private void AddWindowStyleSheets()
         {

@@ -213,12 +213,15 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            overlayController.SetFrame(frameViewportRect, GetCanvasFrameLabel(currentDocument));
             if (!TryGetFrameContentViewportRect(previewSnapshot, out Rect contentViewportRect))
+            {
+                overlayController.ClearFrame();
                 return;
+            }
 
-            previewImage.style.left = contentViewportRect.xMin - frameViewportRect.xMin;
-            previewImage.style.top = contentViewportRect.yMin - frameViewportRect.yMin;
+            overlayController.SetFrame(contentViewportRect, GetCanvasFrameLabel(currentDocument));
+            previewImage.style.left = 0f;
+            previewImage.style.top = 0f;
             previewImage.style.width = contentViewportRect.width;
             previewImage.style.height = contentViewportRect.height;
         }

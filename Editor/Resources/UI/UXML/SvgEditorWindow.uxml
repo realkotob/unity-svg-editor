@@ -18,7 +18,7 @@
                     </ui:VisualElement>
                 </ui:TwoPaneSplitView>
             </ui:VisualElement>
-            <ui:TwoPaneSplitView name="workspace-split" fixed-pane-index="1" fixed-pane-initial-dimension="320" orientation="Horizontal" class="svg-editor__workspace-split">
+            <ui:VisualElement name="workspace-split" class="svg-editor__workspace-split">
                 <ui:VisualElement name="preview-panel" class="svg-editor__preview-panel">
                     <svg:CanvasStageView name="canvas-stage-view"/>
                 </ui:VisualElement>
@@ -28,15 +28,15 @@
                             <ui:Label text="Position" class="svg-editor__subsection-title"/>
                             <ui:VisualElement class="svg-editor__inspector-row">
                                 <ui:FloatField name="inspector-translate-x" label="X" value="0" class="svg-editor__inspector-field"/>
-                                <ui:FloatField name="inspector-translate-y" label="Y" value="0" class="svg-editor__inspector-field"/>
+                                <ui:FloatField name="inspector-translate-y" label="Y" value="0" class="svg-editor__inspector-field svg-editor__inspector-field--last"/>
                             </ui:VisualElement>
                             <ui:VisualElement class="svg-editor__inspector-row">
                                 <ui:FloatField name="inspector-rotate" label="Rotation" value="0" class="svg-editor__inspector-field"/>
-                                <ui:FloatField name="inspector-scale-x" label="Scale X" value="1" class="svg-editor__inspector-field"/>
+                                <ui:FloatField name="inspector-scale-x" label="Scale X" value="1" class="svg-editor__inspector-field svg-editor__inspector-field--last"/>
                             </ui:VisualElement>
                             <ui:VisualElement class="svg-editor__inspector-row">
                                 <ui:FloatField name="inspector-scale-y" label="Scale Y" value="1" class="svg-editor__inspector-field"/>
-                                <ui:Button name="inspector-build-transform" text="Build Transform" class="svg-editor__inspector-btn"/>
+                                <ui:Button name="inspector-build-transform" text="Build Transform" class="svg-editor__inspector-btn svg-editor__inspector-btn--last"/>
                             </ui:VisualElement>
                             <ui:VisualElement class="svg-editor__inspector-field">
                                 <ui:TextField name="inspector-transform" label="Transform" multiline="true"/>
@@ -65,17 +65,17 @@
                                 <ui:VisualElement class="svg-editor__inspector-field">
                                     <uie:ColorField name="inspector-stroke-color" label="Color"/>
                                 </ui:VisualElement>
-                                <ui:VisualElement class="svg-editor__inspector-field">
+                                <ui:VisualElement class="svg-editor__inspector-field svg-editor__inspector-field--last">
                                     <ui:FloatField name="inspector-stroke-width" label="Weight" value="1"/>
                                 </ui:VisualElement>
                             </ui:VisualElement>
                             <ui:VisualElement class="svg-editor__inspector-row">
                                 <ui:DropdownField name="inspector-linecap" label="Line Cap" class="svg-editor__inspector-field"/>
-                                <ui:DropdownField name="inspector-linejoin" label="Line Join" class="svg-editor__inspector-field"/>
+                                <ui:DropdownField name="inspector-linejoin" label="Line Join" class="svg-editor__inspector-field svg-editor__inspector-field--last"/>
                             </ui:VisualElement>
                             <ui:VisualElement class="svg-editor__inspector-row">
                                 <ui:FloatField name="inspector-dash-length" label="Dash" value="4" class="svg-editor__inspector-field"/>
-                                <ui:FloatField name="inspector-dash-gap" label="Gap" value="2" class="svg-editor__inspector-field"/>
+                                <ui:FloatField name="inspector-dash-gap" label="Gap" value="2" class="svg-editor__inspector-field svg-editor__inspector-field--last"/>
                             </ui:VisualElement>
                         </ui:VisualElement>
                     </ui:VisualElement>
@@ -94,7 +94,7 @@
                         </ui:VisualElement>
                     </ui:VisualElement>
                 </ui:ScrollView>
-            </ui:TwoPaneSplitView>
+            </ui:VisualElement>
         </ui:TwoPaneSplitView>
         <ui:VisualElement name="floating-toolbar" class="svg-editor__floating-toolbar">
             <ui:VisualElement class="svg-editor__floating-toolbar-left">

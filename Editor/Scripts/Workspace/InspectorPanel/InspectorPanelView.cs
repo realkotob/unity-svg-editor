@@ -4,9 +4,9 @@ using UnityEngine.UIElements;
 
 namespace UnitySvgEditor.Editor
 {
-    internal sealed class PatchInspectorView
+    internal sealed class InspectorPanelView
     {
-        private readonly PatchInspectorFormControls _form = new();
+        private readonly InspectorFormControls _form = new();
 
         public event Action<string> TargetChanged;
         public event Action ReadRequested;
@@ -72,14 +72,14 @@ namespace UnitySvgEditor.Editor
             _form.SetTransformText(transform);
         }
 
-        public void CaptureState(PatchPanelState patchPanelState)
+        public void CaptureState(InspectorPanelState inspectorPanelState)
         {
-            PatchInspectorStateBinder.CaptureState(_form, patchPanelState);
+            InspectorStateBinder.CaptureState(_form, inspectorPanelState);
         }
 
-        public void ApplyState(PatchPanelState patchPanelState)
+        public void ApplyState(InspectorPanelState inspectorPanelState)
         {
-            PatchInspectorStateBinder.ApplyState(_form, patchPanelState);
+            InspectorStateBinder.ApplyState(_form, inspectorPanelState);
         }
 
         private void RegisterCallbacks()

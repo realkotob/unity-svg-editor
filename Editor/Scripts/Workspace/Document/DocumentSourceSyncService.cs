@@ -6,7 +6,7 @@ namespace UnitySvgEditor.Editor
     {
         private readonly DocumentLifecycleView _view;
         private readonly DocumentPreviewService _previewService;
-        private readonly PatchInspectorController _patchInspectorController;
+        private readonly InspectorPanelController _inspectorPanelController;
         private readonly Func<EditorWorkspaceCoordinator> _workspaceCoordinatorAccessor;
         private readonly Func<DocumentSession> _currentDocumentAccessor;
         private readonly Action _updateEditorInteractivity;
@@ -14,14 +14,14 @@ namespace UnitySvgEditor.Editor
         public DocumentSourceSyncService(
             DocumentLifecycleView view,
             DocumentPreviewService previewService,
-            PatchInspectorController patchInspectorController,
+            InspectorPanelController inspectorPanelController,
             Func<EditorWorkspaceCoordinator> workspaceCoordinatorAccessor,
             Func<DocumentSession> currentDocumentAccessor,
             Action updateEditorInteractivity)
         {
             _view = view;
             _previewService = previewService;
-            _patchInspectorController = patchInspectorController;
+            _inspectorPanelController = inspectorPanelController;
             _workspaceCoordinatorAccessor = workspaceCoordinatorAccessor;
             _currentDocumentAccessor = currentDocumentAccessor;
             _updateEditorInteractivity = updateEditorInteractivity;
@@ -71,7 +71,7 @@ namespace UnitySvgEditor.Editor
                 _view.SetSourceText(currentDocument.WorkingSourceText);
             }
 
-            _patchInspectorController.RefreshTargets(currentDocument.WorkingSourceText);
+            _inspectorPanelController.RefreshTargets(currentDocument.WorkingSourceText);
             if (!skipPreviewRefresh)
             {
                 _previewService.RefreshLivePreview(keepExistingPreviewOnFailure);

@@ -1,6 +1,6 @@
 namespace UnitySvgEditor.Editor
 {
-    internal interface IPatchInspectorHost
+    internal interface IInspectorPanelHost
     {
         DocumentSession CurrentDocument { get; }
 

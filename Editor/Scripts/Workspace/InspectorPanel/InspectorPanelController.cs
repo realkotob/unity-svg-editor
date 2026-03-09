@@ -2,29 +2,29 @@ using UnityEngine.UIElements;
 
 namespace UnitySvgEditor.Editor
 {
-    internal sealed class PatchInspectorController
+    internal sealed class InspectorPanelController
     {
-        private readonly PatchInspectorView _view;
-        private readonly PatchInspectorTargetSyncService _targetSyncService;
-        private IPatchInspectorHost _host;
+        private readonly InspectorPanelView _view;
+        private readonly InspectorTargetSyncService _targetSyncService;
+        private IInspectorPanelHost _host;
 
-        public PatchInspectorController(AttributePatcher attributePatcher, PatchPanelState patchPanelState)
+        public InspectorPanelController(AttributePatcher attributePatcher, InspectorPanelState inspectorPanelState)
         {
-            _view = new PatchInspectorView();
-            _targetSyncService = new PatchInspectorTargetSyncService(
+            _view = new InspectorPanelView();
+            _targetSyncService = new InspectorTargetSyncService(
                 attributePatcher,
-                patchPanelState,
+                inspectorPanelState,
                 _view,
                 () => _host,
                 () => UpdateInteractivity(_host?.CurrentDocument != null));
 
-            _view.TargetChanged += OnPatchTargetChanged;
-            _view.ReadRequested += OnReadPatchTargetClicked;
+            _view.TargetChanged += OnTargetChanged;
+            _view.ReadRequested += OnReadTargetClicked;
             _view.BuildTransformRequested += OnBuildTransformClicked;
             _view.ApplyRequested += OnApplyPatchClicked;
         }
 
-        public void Bind(VisualElement root, IPatchInspectorHost host)
+        public void Bind(VisualElement root, IInspectorPanelHost host)
         {
             _host = null;
             _view.Bind(root);
@@ -72,13 +72,13 @@ namespace UnitySvgEditor.Editor
             SetEnabledIfNotNull(_view.ApplyButtonControl, hasDocument);
         }
 
-        private void OnPatchTargetChanged(string label) => _targetSyncService.HandleTargetSelectionChanged(label);
+        private void OnTargetChanged(string label) => _targetSyncService.HandleTargetSelectionChanged(label);
 
         private void OnApplyPatchClicked() => _targetSyncService.ApplyPatchToSource();
 
         private void OnBuildTransformClicked() => _targetSyncService.BuildTransformFromHelper();
 
-        private void OnReadPatchTargetClicked() => _targetSyncService.ReadSelectedTargetAttributes();
+        private void OnReadTargetClicked() => _targetSyncService.ReadSelectedTargetAttributes();
 
         private static void SetEnabledIfNotNull(VisualElement element, bool enabled)
         {

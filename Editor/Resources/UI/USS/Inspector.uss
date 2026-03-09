@@ -1,8 +1,9 @@
 .svg-editor__inspector-panel {
-    flex-grow: 1;
-    background-color: var(--bg-panel);
-    border-left-color: var(--border-base);
-    border-left-width: 1px;
+    --inspector-panel-width : 240px;
+    width: var(--inspector-panel-width);
+    min-width: var(--inspector-panel-width);
+    max-width: var(--inspector-panel-width);
+    border-radius: 0;
 }
 
 .svg-editor__inspector-panel .unity-scroll-view__content-viewport{
@@ -43,8 +44,8 @@
     margin-right: var(--space-1-5);
 }
 
-.svg-editor__inspector-row > .svg-editor__inspector-field:last-child,
-.svg-editor__inspector-row > .svg-editor__inspector-btn:last-child {
+.svg-editor__inspector-field--last,
+.svg-editor__inspector-btn--last{
     margin-right: 0;
 }
 

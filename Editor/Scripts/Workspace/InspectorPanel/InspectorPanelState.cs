@@ -4,11 +4,11 @@ using UnityEngine;
 
 namespace UnitySvgEditor.Editor
 {
-    internal sealed class PatchPanelState
+    internal sealed class InspectorPanelState
     {
-        private readonly PatchTargetSelectionState _targetSelection = new();
+        private readonly InspectorTargetSelectionState _targetSelection = new();
 
-        public PatchPanelState()
+        public InspectorPanelState()
         {
             _targetSelection.SetTargets(Array.Empty<PatchTarget>());
             FillColor = Color.white;
@@ -78,17 +78,17 @@ namespace UnitySvgEditor.Editor
 
         public AttributePatchRequest BuildPatchRequest()
         {
-            return PatchPanelStateValueCodec.BuildPatchRequest(this);
+            return InspectorPanelStateValueCodec.BuildPatchRequest(this);
         }
 
         public string BuildTransformFromHelper()
         {
-            return PatchPanelStateValueCodec.BuildTransformFromHelper(this);
+            return InspectorPanelStateValueCodec.BuildTransformFromHelper(this);
         }
 
         public void SyncFromAttributes(IReadOnlyDictionary<string, string> attributes)
         {
-            PatchPanelStateValueCodec.SyncFromAttributes(this, attributes);
+            InspectorPanelStateValueCodec.SyncFromAttributes(this, attributes);
         }
     }
 }

@@ -17,5 +17,5 @@
 
 
 
-/* SVG Editor ThemeStyleSheet entry point.
+/* SvgEditorTheme ThemeStyleSheet entry point.
    Keep this minimal and import editor-local USS layers explicitly. */

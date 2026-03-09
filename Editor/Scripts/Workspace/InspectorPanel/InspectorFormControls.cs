@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 
 namespace UnitySvgEditor.Editor
 {
-    internal sealed class PatchInspectorFormControls
+    internal sealed class InspectorFormControls
     {
         public PopupField<string> TargetPopup { get; private set; }
         public ColorField FillColorField { get; private set; }
