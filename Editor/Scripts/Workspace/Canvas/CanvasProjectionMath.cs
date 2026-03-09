@@ -5,6 +5,20 @@ namespace UnitySvgEditor.Editor
 {
     internal static class CanvasProjectionMath
     {
+        private readonly struct SceneViewportMapping
+        {
+            public SceneViewportMapping(Rect sceneRect, Rect viewportRect, Vector2 scale)
+            {
+                SceneRect = sceneRect;
+                ViewportRect = viewportRect;
+                Scale = scale;
+            }
+
+            public Rect SceneRect { get; }
+            public Rect ViewportRect { get; }
+            public Vector2 Scale { get; }
+        }
+
         public static Rect GetCanvasBounds(VisualElement canvasOverlay)
         {
             if (canvasOverlay == null)
@@ -25,7 +39,44 @@ namespace UnitySvgEditor.Editor
 
         public static Rect GetPreviewSceneRect(PreviewSnapshot previewSnapshot)
         {
-            return previewSnapshot?.EffectiveViewport ?? default;
+            return previewSnapshot?.CanvasViewportRect ?? default;
+        }
+
+        private static bool TryGetSceneViewportMapping(
+            CanvasViewportState viewportState,
+            PreviewSnapshot previewSnapshot,
+            float framePadding,
+            float frameHeaderHeight,
+            out SceneViewportMapping mapping)
+        {
+            mapping = default;
+            Rect previewSceneRect = GetPreviewSceneRect(previewSnapshot);
+            if (viewportState == null ||
+                !viewportState.HasFrame ||
+                previewSceneRect.width <= Mathf.Epsilon ||
+                previewSceneRect.height <= Mathf.Epsilon)
+            {
+                return false;
+            }
+
+            Rect contentViewportRect = viewportState.GetFrameContentViewportRect(
+                previewSceneRect,
+                framePadding,
+                frameHeaderHeight);
+            if (contentViewportRect.width <= Mathf.Epsilon ||
+                contentViewportRect.height <= Mathf.Epsilon)
+            {
+                return false;
+            }
+
+            var scale = new Vector2(
+                contentViewportRect.width / previewSceneRect.width,
+                contentViewportRect.height / previewSceneRect.height);
+            if (scale.x <= Mathf.Epsilon || scale.y <= Mathf.Epsilon)
+                return false;
+
+            mapping = new SceneViewportMapping(previewSceneRect, contentViewportRect, scale);
+            return true;
         }
 
         public static bool TryGetFrameViewportRect(CanvasViewportState viewportState, out Rect frameViewportRect)
@@ -46,19 +97,17 @@ namespace UnitySvgEditor.Editor
             out Rect contentViewportRect)
         {
             contentViewportRect = default;
-            Rect previewSceneRect = GetPreviewSceneRect(previewSnapshot);
-            if (viewportState == null ||
-                !viewportState.HasFrame ||
-                previewSceneRect.width <= Mathf.Epsilon ||
-                previewSceneRect.height <= Mathf.Epsilon)
+            if (!TryGetSceneViewportMapping(
+                    viewportState,
+                    previewSnapshot,
+                    framePadding,
+                    frameHeaderHeight,
+                    out SceneViewportMapping mapping))
             {
                 return false;
             }
 
-            contentViewportRect = viewportState.GetFrameContentViewportRect(
-                previewSceneRect,
-                framePadding,
-                frameHeaderHeight);
+            contentViewportRect = mapping.ViewportRect;
             return true;
         }
 
@@ -71,26 +120,21 @@ namespace UnitySvgEditor.Editor
             out Rect viewportRect)
         {
             viewportRect = default;
-            if (!TryGetFrameContentViewportRect(
+            if (!TryGetSceneViewportMapping(
                     viewportState,
                     previewSnapshot,
                     framePadding,
                     frameHeaderHeight,
-                    out Rect contentViewportRect))
+                    out SceneViewportMapping mapping))
             {
                 return false;
             }
 
-            Rect previewSceneRect = GetPreviewSceneRect(previewSnapshot);
-            if (previewSceneRect.width <= Mathf.Epsilon || previewSceneRect.height <= Mathf.Epsilon)
-                return false;
-
-            float scale = contentViewportRect.width / previewSceneRect.width;
             viewportRect = new Rect(
-                contentViewportRect.xMin + ((sceneRect.xMin - previewSceneRect.xMin) * scale),
-                contentViewportRect.yMin + ((sceneRect.yMin - previewSceneRect.yMin) * scale),
-                sceneRect.width * scale,
-                sceneRect.height * scale);
+                mapping.ViewportRect.xMin + ((sceneRect.xMin - mapping.SceneRect.xMin) * mapping.Scale.x),
+                mapping.ViewportRect.yMin + ((sceneRect.yMin - mapping.SceneRect.yMin) * mapping.Scale.y),
+                sceneRect.width * mapping.Scale.x,
+                sceneRect.height * mapping.Scale.y);
             return true;
         }
 
@@ -103,25 +147,19 @@ namespace UnitySvgEditor.Editor
             out Vector2 sceneDelta)
         {
             sceneDelta = default;
-            if (!TryGetFrameContentViewportRect(
+            if (!TryGetSceneViewportMapping(
                     viewportState,
                     previewSnapshot,
                     framePadding,
                     frameHeaderHeight,
-                    out Rect contentViewportRect))
+                    out SceneViewportMapping mapping))
             {
                 return false;
             }
 
-            Rect previewSceneRect = GetPreviewSceneRect(previewSnapshot);
-            if (previewSceneRect.width <= Mathf.Epsilon || previewSceneRect.height <= Mathf.Epsilon)
-                return false;
-
-            float scale = contentViewportRect.width / previewSceneRect.width;
-            if (scale <= Mathf.Epsilon)
-                return false;
-
-            sceneDelta = viewportDelta / scale;
+            sceneDelta = new Vector2(
+                viewportDelta.x / mapping.Scale.x,
+                viewportDelta.y / mapping.Scale.y);
             return true;
         }
 
@@ -134,27 +172,19 @@ namespace UnitySvgEditor.Editor
             out Vector2 scenePoint)
         {
             scenePoint = default;
-            if (!TryGetFrameContentViewportRect(
+            if (!TryGetSceneViewportMapping(
                     viewportState,
                     previewSnapshot,
                     framePadding,
                     frameHeaderHeight,
-                    out Rect contentViewportRect))
+                    out SceneViewportMapping mapping))
             {
                 return false;
             }
 
-            Rect previewSceneRect = GetPreviewSceneRect(previewSnapshot);
-            if (previewSceneRect.width <= Mathf.Epsilon || previewSceneRect.height <= Mathf.Epsilon)
-                return false;
-
-            float scale = contentViewportRect.width / previewSceneRect.width;
-            if (scale <= Mathf.Epsilon)
-                return false;
-
             scenePoint = new Vector2(
-                previewSceneRect.xMin + ((viewportPoint.x - contentViewportRect.xMin) / scale),
-                previewSceneRect.yMin + ((viewportPoint.y - contentViewportRect.yMin) / scale));
+                mapping.SceneRect.xMin + ((viewportPoint.x - mapping.ViewportRect.xMin) / mapping.Scale.x),
+                mapping.SceneRect.yMin + ((viewportPoint.y - mapping.ViewportRect.yMin) / mapping.Scale.y));
             return true;
         }
 
@@ -203,7 +233,8 @@ namespace UnitySvgEditor.Editor
         public static Rect BuildScaledSceneRect(
             Rect dragStartSelectionViewportRect,
             Rect dragStartElementSceneRect,
-            Rect currentViewportRect)
+            Rect currentViewportRect,
+            CanvasHandle handle)
         {
             if (dragStartSelectionViewportRect.width <= Mathf.Epsilon ||
                 dragStartSelectionViewportRect.height <= Mathf.Epsilon)
@@ -215,11 +246,34 @@ namespace UnitySvgEditor.Editor
                 currentViewportRect.width / dragStartSelectionViewportRect.width,
                 currentViewportRect.height / dragStartSelectionViewportRect.height);
 
-            return new Rect(
-                dragStartElementSceneRect.position,
-                new Vector2(
-                    dragStartElementSceneRect.width * scale.x,
-                    dragStartElementSceneRect.height * scale.y));
+            Vector2 newSize = new(
+                dragStartElementSceneRect.width * scale.x,
+                dragStartElementSceneRect.height * scale.y);
+
+            return handle switch
+            {
+                CanvasHandle.TopLeft => Rect.MinMaxRect(
+                    dragStartElementSceneRect.xMax - newSize.x,
+                    dragStartElementSceneRect.yMax - newSize.y,
+                    dragStartElementSceneRect.xMax,
+                    dragStartElementSceneRect.yMax),
+                CanvasHandle.TopRight => Rect.MinMaxRect(
+                    dragStartElementSceneRect.xMin,
+                    dragStartElementSceneRect.yMax - newSize.y,
+                    dragStartElementSceneRect.xMin + newSize.x,
+                    dragStartElementSceneRect.yMax),
+                CanvasHandle.BottomRight => Rect.MinMaxRect(
+                    dragStartElementSceneRect.xMin,
+                    dragStartElementSceneRect.yMin,
+                    dragStartElementSceneRect.xMin + newSize.x,
+                    dragStartElementSceneRect.yMin + newSize.y),
+                CanvasHandle.BottomLeft => Rect.MinMaxRect(
+                    dragStartElementSceneRect.xMax - newSize.x,
+                    dragStartElementSceneRect.yMin,
+                    dragStartElementSceneRect.xMax,
+                    dragStartElementSceneRect.yMin + newSize.y),
+                _ => new Rect(dragStartElementSceneRect.position, newSize)
+            };
         }
 
         public static bool TryBuildScaleTransform(

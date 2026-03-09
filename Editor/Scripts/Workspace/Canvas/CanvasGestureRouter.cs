@@ -76,11 +76,28 @@ namespace UnitySvgEditor.Editor
 
         public void OnCanvasPointerMove(PointerMoveEvent evt)
         {
-            if (!_dragSession.Matches(evt.pointerId))
-                return;
-
             if (!_sceneProjector.TryGetCanvasLocalPosition(_overlayAccessor(), evt.position, out Vector2 localPosition))
                 return;
+
+            if (!_dragSession.Matches(evt.pointerId))
+            {
+                if (_toolController.ActiveTool != CanvasTool.Move || _host.PreviewSnapshot == null)
+                {
+                    _host.ClearHover();
+                    return;
+                }
+
+                if (_sceneProjector.TryHitTestPreviewElement(_host.PreviewSnapshot, localPosition, out PreviewElementGeometry hoveredElement))
+                {
+                    _host.SetHoveredElement(hoveredElement.Key);
+                }
+                else
+                {
+                    _host.ClearHover();
+                }
+
+                return;
+            }
 
             Vector2 viewportDelta = localPosition - _dragSession.StartPosition;
             if (_gestureState.IsViewportGesture)
@@ -130,6 +147,7 @@ namespace UnitySvgEditor.Editor
 
         public void OnCanvasPointerCancel(PointerCancelEvent evt)
         {
+            _host.ClearHover();
             CancelCanvasDragPreview();
         }
 
@@ -138,6 +156,8 @@ namespace UnitySvgEditor.Editor
             _dragSession.End(_overlayAccessor());
             _elementGestureHandler.End();
             _gestureState.Reset();
+            _host.UpdateHoverVisual();
+            _host.UpdateSelectionVisual();
         }
 
         public void CancelCanvasDragPreview()
@@ -207,7 +227,7 @@ namespace UnitySvgEditor.Editor
             }
 
             _selectionSyncService.SelectCanvasElement(hitElement.Key, syncPatchTarget: !string.IsNullOrWhiteSpace(hitElement.TargetKey));
-            _elementGestureHandler.BeginMove(_gestureState, hitElement.Key, localPosition, evt.pointerId, hitElement.SceneBounds);
+            _elementGestureHandler.BeginMove(_gestureState, hitElement.Key, localPosition, evt.pointerId, hitElement.VisualBounds, hitElement.ParentWorldTransform);
             evt.StopPropagation();
         }
     }

@@ -37,7 +37,6 @@
     border-bottom-color: rgba(255, 255, 255, 0.14);
     border-bottom-width: 1px;
     background-color: rgba(255, 255, 255, 0);
-    box-shadow: 0 20px 44px rgba(0, 0, 0, 0.32);
 }
 
 .svg-editor__preview-canvas {
@@ -85,6 +84,20 @@
     border-bottom-color: var(--color-accent-500);
     border-bottom-width: 1px;
     background-color: rgba(24, 160, 251, 0.1);
+}
+
+.svg-editor__hover-box {
+    position: absolute;
+    display: none;
+    border-left-color: rgba(255, 255, 255, 0.72);
+    border-left-width: 1px;
+    border-right-color: rgba(255, 255, 255, 0.72);
+    border-right-width: 1px;
+    border-top-color: rgba(255, 255, 255, 0.72);
+    border-top-width: 1px;
+    border-bottom-color: rgba(255, 255, 255, 0.72);
+    border-bottom-width: 1px;
+    background-color: rgba(255, 255, 255, 0.04);
 }
 
 .svg-editor__selection-box--frame {

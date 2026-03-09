@@ -1,5 +1,6 @@
 using System;
 using Core.UI.Foundation;
+using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -39,14 +40,16 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
-            BeginResize(state, handle, localPosition, pointerId, selectionViewportRect, selectedElementSceneRect, _host.SelectedElementKey);
+            PreviewElementGeometry selectedGeometry = _sceneProjector.FindPreviewElement(_host.PreviewSnapshot, _host.SelectedElementKey);
+            Matrix2D parentWorldTransform = selectedGeometry?.ParentWorldTransform ?? Matrix2D.identity;
+            BeginResize(state, handle, localPosition, pointerId, selectionViewportRect, selectedElementSceneRect, _host.SelectedElementKey, parentWorldTransform);
             return true;
         }
 
-        public void BeginMove(CanvasGestureState state, string elementKey, Vector2 localPosition, int pointerId, Rect elementSceneRect)
+        public void BeginMove(CanvasGestureState state, string elementKey, Vector2 localPosition, int pointerId, Rect elementSceneRect, Matrix2D parentWorldTransform)
         {
             state.Begin(CanvasDragMode.MoveElement, CanvasHandle.None, default, default);
-            _elementDragController.BeginMove(_host.PreviewSnapshot, elementKey, localPosition, elementSceneRect);
+            _elementDragController.BeginMove(_host.PreviewSnapshot, elementKey, localPosition, elementSceneRect, parentWorldTransform);
             _dragSession.Begin(_overlayAccessor(), pointerId, localPosition);
         }
 
@@ -91,10 +94,11 @@ namespace UnitySvgEditor.Editor
             int pointerId,
             Rect selectionViewportRect,
             Rect selectionSceneRect,
-            string elementKey)
+            string elementKey,
+            Matrix2D parentWorldTransform)
         {
             state.Begin(CanvasDragMode.ResizeElement, handle, default, default);
-            _elementDragController.BeginResize(elementKey, selectionViewportRect, selectionSceneRect);
+            _elementDragController.BeginResize(elementKey, selectionViewportRect, selectionSceneRect, parentWorldTransform);
             _dragSession.Begin(_overlayAccessor(), pointerId, localPosition);
         }
     }

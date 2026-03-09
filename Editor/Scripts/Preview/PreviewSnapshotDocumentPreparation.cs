@@ -63,20 +63,40 @@ namespace UnitySvgEditor.Editor
             if (element == null || root == null)
                 return;
 
-            var key = SvgDocumentXmlUtility.BuildElementKey(element, root);
-            var hasStableId = SvgDocumentXmlUtility.TryGetId(element, out string stableId);
-            var targetKey = hasStableId ? stableId : string.Empty;
-            var nodeId = stableId;
-            if (string.IsNullOrWhiteSpace(nodeId))
+            bool hasStableId = SvgDocumentXmlUtility.TryGetId(element, out string stableId);
+            if (ShouldRegisterPreviewElement(element, root, hasStableId))
             {
-                nodeId = CreateSyntheticId(usedIds, ref syntheticIdCounter);
-                element.SetAttribute("id", nodeId);
-            }
+                var key = SvgDocumentXmlUtility.BuildElementKey(element, root);
+                var targetKey = hasStableId ? stableId : string.Empty;
+                var nodeId = stableId;
+                if (string.IsNullOrWhiteSpace(nodeId))
+                {
+                    nodeId = CreateSyntheticId(usedIds, ref syntheticIdCounter);
+                    element.SetAttribute("id", nodeId);
+                }
 
-            keyByNodeId[nodeId] = (key, targetKey);
+                keyByNodeId[nodeId] = (key, targetKey);
+            }
 
             foreach (XmlElement child in SvgDocumentXmlUtility.GetElementChildren(element))
                 RegisterElementMappings(child, root, keyByNodeId, usedIds, ref syntheticIdCounter);
+        }
+
+        private static bool ShouldRegisterPreviewElement(XmlElement element, XmlElement root, bool hasStableId)
+        {
+            if (ReferenceEquals(element, root))
+                return false;
+
+            if (hasStableId)
+                return true;
+
+            if (!string.Equals(element.LocalName, "g", StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            if (!ReferenceEquals(element.ParentNode, root))
+                return true;
+
+            return SvgDocumentXmlUtility.GetElementChildren(root).Count != 1;
         }
 
         private static string CreateSyntheticId(ISet<string> usedIds, ref int syntheticIdCounter)

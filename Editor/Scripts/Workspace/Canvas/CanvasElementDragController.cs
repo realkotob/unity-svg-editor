@@ -1,5 +1,7 @@
+using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.UIElements;
+using System.Linq;
 
 namespace UnitySvgEditor.Editor
 {
@@ -8,15 +10,15 @@ namespace UnitySvgEditor.Editor
         private readonly StructureEditor _structureEditor;
         private readonly CanvasSceneProjector _sceneProjector;
         private readonly ElementMoveSession _moveSession = new();
-        private string _committedElementKey = string.Empty;
-        private Rect _committedSelectionViewportRect;
-        private bool _hasCommittedSelectionViewportRect;
 
         private Rect _dragStartSelectionViewportRect;
         private Rect _dragCurrentSelectionViewportRect;
         private Rect _dragStartElementSceneRect;
         private string _dragElementKey = string.Empty;
         private string _dragResizePreviewSourceText = string.Empty;
+        private PreviewSnapshot _dragStartPreviewSnapshot;
+        private Matrix2D _dragStartParentWorldTransform = Matrix2D.identity;
+        private Rect _lastCommittedSceneRect;
 
         public Rect DragCurrentSelectionViewportRect => _dragCurrentSelectionViewportRect;
         public Rect DragStartElementSceneRect => _dragStartElementSceneRect;
@@ -24,6 +26,7 @@ namespace UnitySvgEditor.Editor
         public string DragElementKey => _dragElementKey;
         public string DragPreviewSourceText => _moveSession.PreviewSourceText;
         public string DragResizePreviewSourceText => _dragResizePreviewSourceText;
+        public Rect LastCommittedSceneRect => _lastCommittedSceneRect;
 
         public CanvasElementDragController(StructureEditor structureEditor, CanvasSceneProjector sceneProjector)
         {
@@ -31,55 +34,39 @@ namespace UnitySvgEditor.Editor
             _sceneProjector = sceneProjector;
         }
 
-        public void ClearCommittedSelection()
-        {
-            _committedElementKey = string.Empty;
-            _committedSelectionViewportRect = default;
-            _hasCommittedSelectionViewportRect = false;
-        }
-
-        public bool TryGetCommittedSelectionViewportRect(string elementKey, out Rect viewportRect)
-        {
-            viewportRect = default;
-            if (!_hasCommittedSelectionViewportRect ||
-                string.IsNullOrWhiteSpace(elementKey) ||
-                !string.Equals(_committedElementKey, elementKey, System.StringComparison.Ordinal))
-            {
-                return false;
-            }
-
-            viewportRect = _committedSelectionViewportRect;
-            return true;
-        }
-
         public void BeginMove(
             PreviewSnapshot previewSnapshot,
             string elementKey,
             Vector2 localPosition,
-            Rect elementSceneRect)
+            Rect elementSceneRect,
+            Matrix2D parentWorldTransform)
         {
             _dragElementKey = elementKey;
-            _dragStartSelectionViewportRect = TryGetCommittedSelectionViewportRect(elementKey, out Rect committedSelectionViewportRect)
-                ? committedSelectionViewportRect
-                : _sceneProjector.TrySceneRectToViewportRect(previewSnapshot, elementSceneRect, out Rect selectionViewportRect)
-                    ? selectionViewportRect
-                    : default;
+            _dragStartPreviewSnapshot = previewSnapshot;
+            _dragStartParentWorldTransform = parentWorldTransform;
+            _dragStartSelectionViewportRect = _sceneProjector.TrySceneRectToViewportRect(previewSnapshot, elementSceneRect, out Rect selectionViewportRect)
+                ? selectionViewportRect
+                : default;
             _dragCurrentSelectionViewportRect = _dragStartSelectionViewportRect;
             _dragStartElementSceneRect = elementSceneRect;
             _moveSession.Begin(elementKey, localPosition, _dragStartSelectionViewportRect, elementSceneRect);
             _dragResizePreviewSourceText = string.Empty;
+            _lastCommittedSceneRect = elementSceneRect;
         }
 
         public void BeginResize(
             string elementKey,
             Rect selectionViewportRect,
-            Rect selectionSceneRect)
+            Rect selectionSceneRect,
+            Matrix2D parentWorldTransform)
         {
             _dragElementKey = elementKey;
+            _dragStartParentWorldTransform = parentWorldTransform;
             _dragStartSelectionViewportRect = selectionViewportRect;
             _dragCurrentSelectionViewportRect = selectionViewportRect;
             _dragStartElementSceneRect = selectionSceneRect;
             _dragResizePreviewSourceText = string.Empty;
+            _lastCommittedSceneRect = selectionSceneRect;
         }
 
         public Vector2 UpdateMove(Vector2 localPosition)
@@ -98,18 +85,22 @@ namespace UnitySvgEditor.Editor
                 12f);
         }
 
-        public Rect BuildScaledSceneRect()
+        public Rect BuildScaledSceneRect(CanvasHandle handle)
         {
             return _sceneProjector.BuildScaledSceneRect(
                 _dragStartSelectionViewportRect,
                 _dragStartElementSceneRect,
-                _dragCurrentSelectionViewportRect);
+                _dragCurrentSelectionViewportRect,
+                handle);
         }
 
         public void End()
         {
             _dragElementKey = string.Empty;
             _dragResizePreviewSourceText = string.Empty;
+            _dragStartPreviewSnapshot = null;
+            _dragStartParentWorldTransform = Matrix2D.identity;
+            _lastCommittedSceneRect = default;
             _moveSession.End();
         }
 
@@ -122,16 +113,17 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
-            if (!_sceneProjector.TryConvertViewportDeltaToSceneDelta(host.PreviewSnapshot, viewportDelta, out Vector2 sceneDelta) ||
+            if (!_sceneProjector.TryConvertViewportDeltaToSceneDelta(_dragStartPreviewSnapshot, viewportDelta, out Vector2 sceneDelta) ||
                 sceneDelta.sqrMagnitude <= Mathf.Epsilon)
             {
                 return false;
             }
 
+            Vector2 svgTranslateDelta = ToParentSpaceDelta(sceneDelta);
             if (_structureEditor.TryPrependElementTranslation(
                     host.CurrentDocument.WorkingSourceText,
                     _dragElementKey,
-                    sceneDelta,
+                    svgTranslateDelta,
                     out string previewSource,
                     out _))
             {
@@ -162,11 +154,12 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
+            Vector2 svgPivot = ToParentSpacePoint(pivot);
             if (_structureEditor.TryPrependElementScale(
                     host.CurrentDocument.WorkingSourceText,
                     _dragElementKey,
                     scale,
-                    pivot,
+                    svgPivot,
                     out string previewSource,
                     out _))
             {
@@ -190,11 +183,15 @@ namespace UnitySvgEditor.Editor
 
             Vector2 sceneDelta = Vector2.zero;
             if (dragMode == CanvasDragMode.MoveElement &&
-                (!_sceneProjector.TryConvertViewportDeltaToSceneDelta(host.PreviewSnapshot, canvasDelta, out sceneDelta) ||
+                (!_sceneProjector.TryConvertViewportDeltaToSceneDelta(_dragStartPreviewSnapshot, canvasDelta, out sceneDelta) ||
                  sceneDelta.sqrMagnitude <= Mathf.Epsilon))
             {
                 return false;
             }
+
+            Rect committedSceneRect = dragMode == CanvasDragMode.ResizeElement
+                ? BuildScaledSceneRect(activeHandle)
+                : new Rect(_dragStartElementSceneRect.position + sceneDelta, _dragStartElementSceneRect.size);
 
             if (host.CurrentDocument == null)
             {
@@ -216,7 +213,7 @@ namespace UnitySvgEditor.Editor
                 if (!_structureEditor.TryPrependElementTranslation(
                         host.CurrentDocument.WorkingSourceText,
                         _dragElementKey,
-                        sceneDelta,
+                        ToParentSpaceDelta(sceneDelta),
                         out updatedSource,
                         out error))
                 {
@@ -241,7 +238,7 @@ namespace UnitySvgEditor.Editor
                         host.CurrentDocument.WorkingSourceText,
                         _dragElementKey,
                         scale,
-                        pivot,
+                        ToParentSpacePoint(pivot),
                         out updatedSource,
                         out error))
                 {
@@ -255,20 +252,55 @@ namespace UnitySvgEditor.Editor
                 dragMode == CanvasDragMode.ResizeElement
                     ? $"Resized <{host.FindStructureNode(_dragElementKey)?.TagName ?? "element"}>."
                     : $"Moved <{host.FindStructureNode(_dragElementKey)?.TagName ?? "element"}>.");
-            CommitSelectionViewportRect(_dragElementKey, _dragCurrentSelectionViewportRect);
+            PatchCommittedPreviewGeometry(host.PreviewSnapshot, committedSceneRect, dragMode);
+            _lastCommittedSceneRect = committedSceneRect;
             return true;
         }
 
-        private void CommitSelectionViewportRect(string elementKey, Rect viewportRect)
+        private void PatchCommittedPreviewGeometry(
+            PreviewSnapshot previewSnapshot,
+            Rect committedSceneRect,
+            CanvasDragMode dragMode)
         {
-            if (string.IsNullOrWhiteSpace(elementKey))
+            if (previewSnapshot?.Elements == null || string.IsNullOrWhiteSpace(_dragElementKey))
+                return;
+
+            PreviewElementGeometry geometry = previewSnapshot.Elements.FirstOrDefault(item =>
+                item != null && string.Equals(item.Key, _dragElementKey, System.StringComparison.Ordinal));
+            if (geometry == null)
+                return;
+
+            Vector2 translation = committedSceneRect.center - geometry.VisualBounds.center;
+            geometry.VisualBounds = committedSceneRect;
+
+            if (dragMode != CanvasDragMode.MoveElement ||
+                geometry.HitGeometry == null ||
+                geometry.HitGeometry.Count == 0 ||
+                translation.sqrMagnitude <= Mathf.Epsilon)
             {
                 return;
             }
 
-            _committedElementKey = elementKey;
-            _committedSelectionViewportRect = viewportRect;
-            _hasCommittedSelectionViewportRect = true;
+            geometry.HitGeometry = geometry.HitGeometry
+                .Select(triangle => triangle?
+                    .Select(point => point + translation)
+                    .ToArray())
+                .Where(triangle => triangle != null)
+                .ToList();
+        }
+
+        // Converts a world-space direction vector to the element's SVG parent coordinate space.
+        // The SVG transform attribute operates in parent space, so translate() deltas must be
+        // expressed in parent space to achieve the intended world-space movement.
+        private Vector2 ToParentSpaceDelta(Vector2 worldDelta)
+        {
+            return _dragStartParentWorldTransform.Inverse().MultiplyVector(worldDelta);
+        }
+
+        // Converts a world-space point (e.g., scale pivot) to the element's SVG parent coordinate space.
+        private Vector2 ToParentSpacePoint(Vector2 worldPoint)
+        {
+            return _dragStartParentWorldTransform.Inverse().MultiplyPoint(worldPoint);
         }
     }
 }

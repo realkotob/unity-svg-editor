@@ -56,16 +56,7 @@ namespace UnitySvgEditor.Editor
         public Rect DragStartElementSceneRect => _elementDragController.DragStartElementSceneRect;
         public Rect DragStartSelectionViewportRect => _elementDragController.DragStartSelectionViewportRect;
         public CanvasDragMode DragMode => _gestureRouter.DragMode;
-
-        public bool TryGetCommittedSelectionViewportRect(string elementKey, out Rect viewportRect)
-        {
-            return _elementDragController.TryGetCommittedSelectionViewportRect(elementKey, out viewportRect);
-        }
-
-        public void ClearCommittedSelection()
-        {
-            _elementDragController.ClearCommittedSelection();
-        }
+        public CanvasHandle ActiveHandle => _gestureRouter.ActiveHandle;
 
         public void ResetViewportToFit()
         {

@@ -54,7 +54,11 @@ namespace UnitySvgEditor.Editor
             WorkspaceCoordinator?.ResetCanvasView(clearSelection: true);
         }
 
-        public void SyncCurrentSource(string status, bool keepExistingPreviewOnFailure, bool updateSourceField)
+        public void SyncCurrentSource(
+            string status,
+            bool keepExistingPreviewOnFailure,
+            bool updateSourceField,
+            bool skipPreviewRefresh = false)
         {
             var currentDocument = CurrentDocument;
             if (currentDocument == null)
@@ -68,8 +72,11 @@ namespace UnitySvgEditor.Editor
             }
 
             _patchInspectorController.RefreshTargets(currentDocument.WorkingSourceText);
+            if (!skipPreviewRefresh)
+            {
+                _previewService.RefreshLivePreview(keepExistingPreviewOnFailure);
+            }
             WorkspaceCoordinator?.RefreshStructureViews();
-            _previewService.RefreshLivePreview(keepExistingPreviewOnFailure);
             _updateEditorInteractivity?.Invoke();
             _view.SetStatus(status);
         }

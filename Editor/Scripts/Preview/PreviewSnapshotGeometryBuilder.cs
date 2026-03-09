@@ -8,6 +8,36 @@ namespace UnitySvgEditor.Editor
 {
     internal static class PreviewSnapshotGeometryBuilder
     {
+        public static bool TryBuildVisualContentBounds(
+            IReadOnlyList<PreviewElementGeometry> elements,
+            out Rect visualContentBounds)
+        {
+            visualContentBounds = default;
+            if (elements == null || elements.Count == 0)
+                return false;
+
+            var hasBounds = false;
+            var min = new Vector2(float.MaxValue, float.MaxValue);
+            var max = new Vector2(float.MinValue, float.MinValue);
+
+            foreach (PreviewElementGeometry element in elements)
+            {
+                if (element == null || element.BoundsQuality == BoundsQuality.Unknown)
+                    continue;
+
+                Rect bounds = element.VisualBounds;
+                min = Vector2.Min(min, bounds.min);
+                max = Vector2.Max(max, bounds.max);
+                hasBounds = true;
+            }
+
+            if (!hasBounds)
+                return false;
+
+            visualContentBounds = Rect.MinMaxRect(min.x, min.y, max.x, max.y);
+            return true;
+        }
+
         public static IReadOnlyList<PreviewElementGeometry> BuildElementBounds(
             SVGParser.SceneInfo sceneInfo,
             IReadOnlyDictionary<string, (string Key, string TargetKey)> keyByNodeId)
@@ -25,17 +55,33 @@ namespace UnitySvgEditor.Editor
                     continue;
                 }
 
-                IReadOnlyList<Vector2[]> hitTriangles = BuildHitTriangles(pair.Value, worldTransformByNode);
-                var sceneBounds = TryBuildTriangleBounds(hitTriangles, out Rect triangleBounds)
-                    ? triangleBounds
-                    : VectorUtils.SceneNodeBounds(pair.Value);
+                IReadOnlyList<Vector2[]> hitGeometry = BuildHitTriangles(pair.Value, worldTransformByNode);
+                bool hasExactBounds = TryBuildTriangleBounds(hitGeometry, out Rect visualBounds);
+                if (!hasExactBounds)
+                    hasExactBounds = TryBuildFallbackBounds(pair.Value, worldTransformByNode, out visualBounds);
+
+                Matrix2D resolvedWorldTransform = worldTransformByNode.TryGetValue(pair.Value, out Matrix2D wt)
+                    ? wt
+                    : pair.Value.Transform;
+                // parentWorldTransform = worldTransform * inverse(node.Transform)
+                // This is the transform from SVG parent coordinate space to world space,
+                // needed to convert world-space deltas/pivots back to SVG parent space for transform attributes.
+                Matrix2D parentWorldTransform = resolvedWorldTransform * pair.Value.Transform.Inverse();
+
                 elements.Add(new PreviewElementGeometry
                 {
                     Key = mapping.Key,
                     TargetKey = mapping.TargetKey,
-                    SceneBounds = sceneBounds,
+                    VisualBounds = visualBounds,
                     DrawOrder = drawOrderByNode.TryGetValue(pair.Value, out int order) ? order : -1,
-                    HitTriangles = hitTriangles
+                    HitGeometry = hitGeometry,
+                    BoundsQuality = hasExactBounds
+                        ? BoundsQuality.Exact
+                        : (visualBounds.width > Mathf.Epsilon || visualBounds.height > Mathf.Epsilon
+                            ? BoundsQuality.Fallback
+                            : BoundsQuality.Unknown),
+                    WorldTransform = resolvedWorldTransform,
+                    ParentWorldTransform = parentWorldTransform
                 });
             }
 
@@ -89,10 +135,13 @@ namespace UnitySvgEditor.Editor
                 if (!worldTransformByNode.TryGetValue(descendant, out Matrix2D worldTransform))
                     worldTransform = descendant.Transform;
 
+                // Tessellate in the descendant's local space, then transform vertices into
+                // world space ourselves. This keeps preview hit geometry aligned with the
+                // same world transform basis used for bounds and interaction math.
                 var tempNode = new SceneNode
                 {
                     Shapes = descendant.Shapes,
-                    Transform = worldTransform
+                    Transform = Matrix2D.identity
                 };
 
                 var tempScene = new Scene
@@ -111,9 +160,9 @@ namespace UnitySvgEditor.Editor
 
                     for (var i = 0; i + 2 < geometry.Indices.Length; i += 3)
                     {
-                        var a = geometry.Vertices[geometry.Indices[i]];
-                        var b = geometry.Vertices[geometry.Indices[i + 1]];
-                        var c = geometry.Vertices[geometry.Indices[i + 2]];
+                        var a = worldTransform.MultiplyPoint(geometry.Vertices[geometry.Indices[i]]);
+                        var b = worldTransform.MultiplyPoint(geometry.Vertices[geometry.Indices[i + 1]]);
+                        var c = worldTransform.MultiplyPoint(geometry.Vertices[geometry.Indices[i + 2]]);
                         triangles.Add(new[] { a, b, c });
                     }
                 }
@@ -147,6 +196,36 @@ namespace UnitySvgEditor.Editor
                 return false;
 
             bounds = Rect.MinMaxRect(min.x, min.y, max.x, max.y);
+            return true;
+        }
+
+        private static bool TryBuildFallbackBounds(
+            SceneNode node,
+            IReadOnlyDictionary<SceneNode, Matrix2D> worldTransformByNode,
+            out Rect bounds)
+        {
+            bounds = default;
+            if (node == null)
+                return false;
+
+            Rect localBounds = VectorUtils.SceneNodeBounds(node);
+            if (localBounds.width <= Mathf.Epsilon && localBounds.height <= Mathf.Epsilon)
+                return false;
+
+            Matrix2D worldTransform = worldTransformByNode.TryGetValue(node, out Matrix2D resolvedTransform)
+                ? resolvedTransform
+                : node.Transform;
+
+            Vector2 topLeft = worldTransform.MultiplyPoint(new Vector2(localBounds.xMin, localBounds.yMin));
+            Vector2 topRight = worldTransform.MultiplyPoint(new Vector2(localBounds.xMax, localBounds.yMin));
+            Vector2 bottomRight = worldTransform.MultiplyPoint(new Vector2(localBounds.xMax, localBounds.yMax));
+            Vector2 bottomLeft = worldTransform.MultiplyPoint(new Vector2(localBounds.xMin, localBounds.yMax));
+
+            bounds = Rect.MinMaxRect(
+                Mathf.Min(topLeft.x, topRight.x, bottomRight.x, bottomLeft.x),
+                Mathf.Min(topLeft.y, topRight.y, bottomRight.y, bottomLeft.y),
+                Mathf.Max(topLeft.x, topRight.x, bottomRight.x, bottomLeft.x),
+                Mathf.Max(topLeft.y, topRight.y, bottomRight.y, bottomLeft.y));
             return true;
         }
     }

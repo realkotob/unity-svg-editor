@@ -96,7 +96,7 @@ namespace UnitySvgEditor.Editor
             }
 
             CurrentDocument = document;
-            _previewService.ResetPreviewToDocumentAsset();
+            _previewService.ResetPreviewState();
             WorkspaceCoordinator?.ResetSelection();
             _sourceSyncService.HandleDocumentLoaded();
         }
@@ -109,7 +109,10 @@ namespace UnitySvgEditor.Editor
             }
 
             CurrentDocument.WorkingSourceText = updatedSource;
-            _sourceSyncService.SyncCurrentSource(successStatus, keepExistingPreviewOnFailure: true, updateSourceField: true);
+            _sourceSyncService.SyncCurrentSource(
+                successStatus,
+                keepExistingPreviewOnFailure: true,
+                updateSourceField: true);
         }
 
         public void RefreshLivePreview(bool keepExistingPreviewOnFailure) => _previewService.RefreshLivePreview(keepExistingPreviewOnFailure);
@@ -142,6 +145,7 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
+            _previewService.ClearTransientPreview();
             CurrentDocument.WorkingSourceText = sourceText;
             _sourceSyncService.SyncCurrentSource(
                 CurrentDocument.IsDirty ? "Unsaved changes." : "No local changes.",
@@ -202,7 +206,7 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            _previewService.ResetPreviewToDocumentAsset();
+            _previewService.ResetPreviewState();
             _sourceSyncService.SyncCurrentSource(
                 "Saved SVG and reimported asset.",
                 keepExistingPreviewOnFailure: false,

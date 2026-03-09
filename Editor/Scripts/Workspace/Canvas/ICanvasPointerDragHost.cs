@@ -21,5 +21,8 @@ namespace UnitySvgEditor.Editor
         void RefreshSelectionSummary(CanvasSelectionKind selectionKind);
         void UpdateCanvasVisualState();
         void UpdateSelectionVisual();
+        void SetHoveredElement(string elementKey);
+        void ClearHover();
+        void UpdateHoverVisual();
     }
 }

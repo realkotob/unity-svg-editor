@@ -10,6 +10,7 @@ namespace UnitySvgEditor.Editor
         private readonly CanvasOverlayController _overlayController;
         private readonly CanvasPointerDragController _pointerDragController;
         private CanvasSelectionKind _selectionKind = CanvasSelectionKind.None;
+        private string _hoveredElementKey = string.Empty;
 
         public CanvasInteractionController(
             ICanvasWorkspaceHost host,
@@ -47,10 +48,6 @@ namespace UnitySvgEditor.Editor
         public void SetSelectionKind(CanvasSelectionKind selectionKind)
         {
             _selectionKind = selectionKind;
-            if (selectionKind != CanvasSelectionKind.Element)
-            {
-                _pointerDragController.ClearCommittedSelection();
-            }
         }
 
         public void ResetCanvasView(bool clearSelection = false)
@@ -78,8 +75,8 @@ namespace UnitySvgEditor.Editor
         public void ResetSelection()
         {
             _selectionKind = CanvasSelectionKind.None;
-            _pointerDragController.ClearCommittedSelection();
             _overlayController.ClearSelection();
+            UpdateHoverVisual();
             _host.RefreshSelectionSummary(_selectionKind);
         }
 
@@ -87,6 +84,7 @@ namespace UnitySvgEditor.Editor
         {
             _sceneProjector.UpdateFrameVisual(PreviewImage, PreviewSnapshot, _overlayController, _host.CurrentDocument, _pointerDragController.CanvasOverlay);
             UpdateSelectionVisual();
+            UpdateHoverVisual();
         }
 
         public void UpdateSelectionVisual()
@@ -103,7 +101,10 @@ namespace UnitySvgEditor.Editor
                     ? _sceneProjector.BuildScaledSceneRect(
                         _pointerDragController.DragStartSelectionViewportRect,
                         _pointerDragController.DragStartElementSceneRect,
-                        _pointerDragController.DragCurrentSelectionViewportRect)
+                        _pointerDragController.DragCurrentSelectionViewportRect,
+                        _pointerDragController.DragMode == CanvasDragMode.ResizeElement
+                            ? _pointerDragController.ActiveHandle
+                            : CanvasHandle.None)
                     : _pointerDragController.DragStartElementSceneRect;
 
                 _overlayController.SetSelection(_sceneProjector.BuildSelectionVisual(
@@ -118,7 +119,7 @@ namespace UnitySvgEditor.Editor
             if (SelectionKind == CanvasSelectionKind.Frame &&
                 _sceneProjector.TryGetFrameViewportRect(out Rect frameViewportRect))
             {
-                Vector2 frameSourceSize = PreviewSnapshot?.EffectiveViewport.size ?? frameViewportRect.size;
+                Vector2 frameSourceSize = PreviewSnapshot?.CanvasViewportRect.size ?? frameViewportRect.size;
                 _overlayController.SetSelection(_sceneProjector.BuildSelectionVisual(
                     PreviewSnapshot,
                     CanvasSelectionKind.Frame,
@@ -144,6 +145,39 @@ namespace UnitySvgEditor.Editor
             _overlayController.ClearSelection();
         }
 
+        public void SetHoveredElement(string elementKey)
+        {
+            _hoveredElementKey = elementKey ?? string.Empty;
+            UpdateHoverVisual();
+        }
+
+        public void ClearHover()
+        {
+            _hoveredElementKey = string.Empty;
+            _overlayController.ClearHover();
+        }
+
+        public void UpdateHoverVisual()
+        {
+            if (PreviewSnapshot == null ||
+                string.IsNullOrWhiteSpace(_hoveredElementKey) ||
+                (SelectionKind == CanvasSelectionKind.Element &&
+                 string.Equals(_hoveredElementKey, _host.SelectedElementKey, System.StringComparison.Ordinal)))
+            {
+                _overlayController.ClearHover();
+                return;
+            }
+
+            if (_sceneProjector.TryResolveSelectedElementSceneRect(PreviewSnapshot, _hoveredElementKey, out Rect hoveredElementSceneRect) &&
+                _sceneProjector.TrySceneRectToViewportRect(PreviewSnapshot, hoveredElementSceneRect, out Rect hoveredElementViewportRect))
+            {
+                _overlayController.SetHover(hoveredElementViewportRect);
+                return;
+            }
+
+            _overlayController.ClearHover();
+        }
+
         DocumentSession ICanvasPointerDragHost.CurrentDocument => _host.CurrentDocument;
         PreviewSnapshot ICanvasPointerDragHost.PreviewSnapshot => _host.PreviewSnapshot;
         string ICanvasPointerDragHost.SelectedElementKey => _host.SelectedElementKey;
@@ -165,5 +199,8 @@ namespace UnitySvgEditor.Editor
         void ICanvasPointerDragHost.RefreshSelectionSummary(CanvasSelectionKind selectionKind) => _host.RefreshSelectionSummary(selectionKind);
         void ICanvasPointerDragHost.UpdateCanvasVisualState() => UpdateCanvasVisualState();
         void ICanvasPointerDragHost.UpdateSelectionVisual() => UpdateSelectionVisual();
+        void ICanvasPointerDragHost.SetHoveredElement(string elementKey) => SetHoveredElement(elementKey);
+        void ICanvasPointerDragHost.ClearHover() => ClearHover();
+        void ICanvasPointerDragHost.UpdateHoverVisual() => UpdateHoverVisual();
     }
 }

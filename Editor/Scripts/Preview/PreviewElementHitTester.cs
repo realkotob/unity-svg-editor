@@ -19,14 +19,14 @@ namespace UnitySvgEditor.Editor
 
             foreach (var element in elements.OrderByDescending(item => item.DrawOrder))
             {
-                if (!element.SceneBounds.Contains(scenePoint) ||
-                    element.HitTriangles == null ||
-                    element.HitTriangles.Count == 0)
+                if (!element.VisualBounds.Contains(scenePoint) ||
+                    element.HitGeometry == null ||
+                    element.HitGeometry.Count == 0)
                 {
                     continue;
                 }
 
-                if (!element.HitTriangles.Any(triangle => IsPointInTriangle(scenePoint, triangle[0], triangle[1], triangle[2])))
+                if (!element.HitGeometry.Any(triangle => IsPointInTriangle(scenePoint, triangle[0], triangle[1], triangle[2])))
                 {
                     continue;
                 }
@@ -36,8 +36,8 @@ namespace UnitySvgEditor.Editor
             }
 
             var boundsFallback = elements
-                .Where(item => item.SceneBounds.Contains(scenePoint))
-                .OrderBy(item => item.SceneBounds.width * item.SceneBounds.height)
+                .Where(item => item.VisualBounds.Contains(scenePoint))
+                .OrderBy(item => item.VisualBounds.width * item.VisualBounds.height)
                 .ThenByDescending(item => item.DrawOrder)
                 .FirstOrDefault();
             if (boundsFallback != null)

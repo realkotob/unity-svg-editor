@@ -166,12 +166,17 @@ namespace UnitySvgEditor.Editor
                 showHandles);
         }
 
-        public Rect BuildScaledSceneRect(Rect dragStartSelectionViewportRect, Rect dragStartElementSceneRect, Rect currentViewportRect)
+        public Rect BuildScaledSceneRect(
+            Rect dragStartSelectionViewportRect,
+            Rect dragStartElementSceneRect,
+            Rect currentViewportRect,
+            CanvasHandle handle)
         {
             return CanvasProjectionMath.BuildScaledSceneRect(
                 dragStartSelectionViewportRect,
                 dragStartElementSceneRect,
-                currentViewportRect);
+                currentViewportRect,
+                handle);
         }
 
         public bool TryBuildScaleTransform(

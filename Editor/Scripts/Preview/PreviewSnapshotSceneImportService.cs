@@ -45,11 +45,16 @@ namespace UnitySvgEditor.Editor
             return false;
         }
 
-        public static Rect ResolvePreviewRect(SVGParser.SceneInfo sceneInfo, Rect sceneBounds)
+        public static Rect ResolvePreviewRect(
+            SVGParser.SceneInfo sceneInfo,
+            Rect sceneBounds,
+            Rect preferredViewportRect)
         {
             return sceneInfo.SceneViewport.width > 0f && sceneInfo.SceneViewport.height > 0f
                 ? sceneInfo.SceneViewport
-                : sceneBounds;
+                : (preferredViewportRect.width > 0f && preferredViewportRect.height > 0f
+                    ? preferredViewportRect
+                    : sceneBounds);
         }
 
         public static VectorImage BuildPreviewVectorImage(SVGParser.SceneInfo sceneInfo, Rect previewRect)

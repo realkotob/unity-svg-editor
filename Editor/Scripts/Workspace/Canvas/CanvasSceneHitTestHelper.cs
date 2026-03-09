@@ -93,7 +93,7 @@ namespace UnitySvgEditor.Editor
             if (previewElement == null)
                 return false;
 
-            sceneRect = previewElement.SceneBounds;
+            sceneRect = previewElement.VisualBounds;
             return true;
         }
 

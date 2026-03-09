@@ -35,9 +35,6 @@ namespace UnitySvgEditor.Editor
         public void SelectCanvasElement(string elementKey, bool syncPatchTarget)
         {
             _host.SelectionKind = CanvasSelectionKind.Element;
-            if (!_elementDragController.TryGetCommittedSelectionViewportRect(elementKey, out _))
-                _elementDragController.ClearCommittedSelection();
-
             _host.SelectElement(elementKey, syncPatchTarget);
             _host.UpdateStructureInteractivity(_host.CurrentDocument != null);
             _host.RefreshSelectionSummary(_host.SelectionKind);
@@ -47,7 +44,6 @@ namespace UnitySvgEditor.Editor
         private void ResetSelectionInternal()
         {
             _host.SelectionKind = CanvasSelectionKind.None;
-            _elementDragController.ClearCommittedSelection();
             _overlayController.ClearSelection();
             _host.RefreshSelectionSummary(_host.SelectionKind);
         }

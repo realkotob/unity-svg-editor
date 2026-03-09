@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace UnitySvgEditor.Editor
 {
@@ -33,18 +34,32 @@ namespace UnitySvgEditor.Editor
 
         public void ApplyCurrentPreviewState()
         {
-            _view.SetPreviewVectorImage(PreviewSnapshot?.PreviewVectorImage ?? CurrentDocument?.VectorImageAsset);
+            if (PreviewSnapshot != null)
+            {
+                _view.SetPreviewVectorImage(PreviewSnapshot.PreviewVectorImage);
+                return;
+            }
+
+            if (CurrentDocument != null)
+            {
+                RefreshLivePreview(keepExistingPreviewOnFailure: false);
+                return;
+            }
+
+            _view.SetPreviewVectorImage(null);
         }
 
-        public void ResetPreviewToDocumentAsset()
+        public void ResetPreviewState()
         {
+            ClearTransientPreview();
             DisposePreviewSnapshot();
-            _view.SetPreviewVectorImage(CurrentDocument?.VectorImageAsset);
+            _view.SetPreviewVectorImage(null);
             WorkspaceCoordinator?.UpdateCanvasVisualState();
         }
 
         public void ClearPreview()
         {
+            ClearTransientPreview();
             DisposePreviewSnapshot();
             _view.SetPreviewVectorImage(null);
             WorkspaceCoordinator?.UpdateCanvasVisualState();
@@ -66,18 +81,25 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            if (!_previewSnapshotBuilder.TryBuildSnapshot(currentDocument.WorkingSourceText, out PreviewSnapshot snapshot, out _))
+            Rect preferredViewportRect = PreviewSnapshot?.CanvasViewportRect ?? default;
+            if (!_previewSnapshotBuilder.TryBuildSnapshot(
+                    currentDocument.WorkingSourceText,
+                    preferredViewportRect,
+                    out PreviewSnapshot snapshot,
+                    out _))
             {
                 if (!keepExistingPreviewOnFailure)
                 {
+                    ClearTransientPreview();
                     DisposePreviewSnapshot();
-                    _view.SetPreviewVectorImage(currentDocument.VectorImageAsset);
+                    _view.SetPreviewVectorImage(null);
                     WorkspaceCoordinator?.UpdateCanvasVisualState();
                 }
 
                 return;
             }
 
+            ClearTransientPreview();
             ReplacePreviewSnapshot(snapshot);
         }
 
@@ -88,20 +110,43 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
-            if (!_previewSnapshotBuilder.TryBuildSnapshot(sourceText, out PreviewSnapshot snapshot, out _))
+            var currentDocument = CurrentDocument;
+            if (currentDocument == null)
             {
                 return false;
             }
 
+            Rect preferredViewportRect = PreviewSnapshot?.CanvasViewportRect ?? default;
+            if (!_previewSnapshotBuilder.TryBuildSnapshot(
+                    sourceText,
+                    preferredViewportRect,
+                    out PreviewSnapshot snapshot,
+                    out _))
+            {
+                return false;
+            }
+
+            currentDocument.HasInteractionPreview = true;
+            currentDocument.InteractionPreviewSourceText = sourceText;
             ReplacePreviewSnapshot(snapshot);
             return true;
+        }
+
+        public void ClearTransientPreview()
+        {
+            var currentDocument = CurrentDocument;
+            if (currentDocument == null)
+                return;
+
+            currentDocument.HasInteractionPreview = false;
+            currentDocument.InteractionPreviewSourceText = string.Empty;
         }
 
         private void ReplacePreviewSnapshot(PreviewSnapshot snapshot)
         {
             DisposePreviewSnapshot();
             PreviewSnapshot = snapshot;
-            _view.SetPreviewVectorImage(snapshot?.PreviewVectorImage ?? CurrentDocument?.VectorImageAsset);
+            _view.SetPreviewVectorImage(snapshot?.PreviewVectorImage);
             WorkspaceCoordinator?.SyncCanvasFrameToPreview();
             WorkspaceCoordinator?.UpdateCanvasVisualState();
         }

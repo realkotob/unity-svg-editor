@@ -1,12 +1,17 @@
 using System;
 using Unity.VectorGraphics;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace UnitySvgEditor.Editor
 {
     internal sealed class PreviewSnapshotBuilder
     {
-        public bool TryBuildSnapshot(string sourceText, out PreviewSnapshot snapshot, out string error)
+        public bool TryBuildSnapshot(
+            string sourceText,
+            Rect preferredViewportRect,
+            out PreviewSnapshot snapshot,
+            out string error)
         {
             snapshot = new PreviewSnapshot();
             error = string.Empty;
@@ -30,16 +35,23 @@ namespace UnitySvgEditor.Editor
             VectorImage previewVectorImage = null;
             try
             {
-                var sceneBounds = VectorUtils.SceneNodeBounds(sceneInfo.Scene.Root);
-                var previewRect = PreviewSnapshotSceneImportService.ResolvePreviewRect(sceneInfo, sceneBounds);
+                var elements = PreviewSnapshotGeometryBuilder.BuildElementBounds(sceneInfo, preparedDocument.KeyByNodeId);
+                var fallbackVisualContentBounds = VectorUtils.SceneNodeBounds(sceneInfo.Scene.Root);
+                var visualContentBounds = PreviewSnapshotGeometryBuilder.TryBuildVisualContentBounds(elements, out Rect resolvedVisualContentBounds)
+                    ? resolvedVisualContentBounds
+                    : fallbackVisualContentBounds;
+                var documentViewportRect = PreviewSnapshotSceneImportService.ResolvePreviewRect(
+                    sceneInfo,
+                    visualContentBounds,
+                    preferredViewportRect);
 
-                previewVectorImage = PreviewSnapshotSceneImportService.BuildPreviewVectorImage(sceneInfo, previewRect);
+                previewVectorImage = PreviewSnapshotSceneImportService.BuildPreviewVectorImage(sceneInfo, documentViewportRect);
                 snapshot = new PreviewSnapshot
                 {
                     PreviewVectorImage = previewVectorImage,
-                    SceneViewport = sceneInfo.SceneViewport,
-                    SceneBounds = sceneBounds,
-                    Elements = PreviewSnapshotGeometryBuilder.BuildElementBounds(sceneInfo, preparedDocument.KeyByNodeId)
+                    DocumentViewportRect = documentViewportRect,
+                    VisualContentBounds = visualContentBounds,
+                    Elements = elements
                 };
                 return true;
             }

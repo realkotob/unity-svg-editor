@@ -12,6 +12,7 @@ namespace UnitySvgEditor.Editor
         private VisualElement _overlay;
         private VisualElement _frameElement;
         private Label _frameLabel;
+        private VisualElement _hoverBox;
         private VisualElement _selectionBox;
         private Label _sizeBadge;
         private VisualElement _verticalGuide;
@@ -59,6 +60,11 @@ namespace UnitySvgEditor.Editor
             _horizontalGuide.pickingMode = PickingMode.Ignore;
             _overlay.Add(_horizontalGuide);
 
+            _hoverBox = new VisualElement();
+            _hoverBox.AddToClassList("svg-editor__hover-box");
+            _hoverBox.pickingMode = PickingMode.Ignore;
+            _overlay.Add(_hoverBox);
+
             _selectionBox = new VisualElement();
             _selectionBox.AddToClassList("svg-editor__selection-box");
             _selectionBox.pickingMode = PickingMode.Ignore;
@@ -88,6 +94,7 @@ namespace UnitySvgEditor.Editor
             _handles.Clear();
             _sizeBadge?.RemoveFromHierarchy();
             _selectionBox?.RemoveFromHierarchy();
+            _hoverBox?.RemoveFromHierarchy();
             _verticalGuide?.RemoveFromHierarchy();
             _horizontalGuide?.RemoveFromHierarchy();
             _frameLabel?.RemoveFromHierarchy();
@@ -95,6 +102,7 @@ namespace UnitySvgEditor.Editor
 
             _sizeBadge = null;
             _selectionBox = null;
+            _hoverBox = null;
             _verticalGuide = null;
             _horizontalGuide = null;
             _frameLabel = null;
@@ -172,6 +180,26 @@ namespace UnitySvgEditor.Editor
             {
                 handle.style.display = DisplayStyle.None;
             }
+        }
+
+        public void ClearHover()
+        {
+            if (_hoverBox != null)
+            {
+                _hoverBox.style.display = DisplayStyle.None;
+            }
+        }
+
+        public void SetHover(Rect viewportRect)
+        {
+            if (_hoverBox == null)
+                return;
+
+            _hoverBox.style.display = DisplayStyle.Flex;
+            _hoverBox.style.left = viewportRect.xMin;
+            _hoverBox.style.top = viewportRect.yMin;
+            _hoverBox.style.width = viewportRect.width;
+            _hoverBox.style.height = viewportRect.height;
         }
 
         public void SetSelection(CanvasSelectionVisual selection)
