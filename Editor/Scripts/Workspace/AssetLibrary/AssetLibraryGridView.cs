@@ -21,6 +21,11 @@ namespace UnitySvgEditor.Editor
             public const string GRID = ELEMENT_PREFIX + "grid";
             public const string PREVIEW_ENABLED = MODIFIER_PREFIX + "preview-enabled";
         }
+
+        private static class ToolingUssClassName
+        {
+            public const string COMPACT = "tooling-grid--compact";
+        }
         #endregion Constants
 
         #region Variables
@@ -111,7 +116,12 @@ namespace UnitySvgEditor.Editor
                 GroupByAlpha = true,
                 ShowActionButtons = false
             };
-            gridView.AddClass(UssClassName.GRID).AddClass("tooling-grid--compact");
+            gridView.AddClass(UssClassName.GRID).AddClass(ToolingUssClassName.COMPACT);
+            if (gridView.Q<ScrollView>() is { } scrollView)
+            {
+                scrollView.verticalScrollerVisibility = ScrollerVisibility.Hidden;
+                scrollView.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
+            }
             return gridView;
         }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine.UIElements;
+using Core.UI.Foundation;
 
 namespace UnitySvgEditor.Editor
 {
@@ -8,13 +9,13 @@ namespace UnitySvgEditor.Editor
     {
         private static readonly string[] HierarchyIconVariantClasses =
         {
-            "svg-editor__asset-hierarchy__icon--square",
-            "svg-editor__asset-hierarchy__icon--circle",
-            "svg-editor__asset-hierarchy__icon--file-text",
-            "svg-editor__asset-hierarchy__icon--minus",
-            "svg-editor__asset-hierarchy__icon--pen",
-            "svg-editor__asset-hierarchy__icon--folder",
-            "svg-editor__asset-hierarchy__icon--file"
+            AssetHierarchyTreeRow.UssClassName.ICON_SQUARE,
+            AssetHierarchyTreeRow.UssClassName.ICON_CIRCLE,
+            AssetHierarchyTreeRow.UssClassName.ICON_FILE_TEXT,
+            AssetHierarchyTreeRow.UssClassName.ICON_MINUS,
+            AssetHierarchyTreeRow.UssClassName.ICON_PEN,
+            AssetHierarchyTreeRow.UssClassName.ICON_FOLDER,
+            AssetHierarchyTreeRow.UssClassName.ICON_FILE
         };
 
         public static void SelectElementByKey(
@@ -136,7 +137,7 @@ namespace UnitySvgEditor.Editor
             foreach (string className in HierarchyIconVariantClasses)
                 iconElement.RemoveFromClassList(className);
 
-            iconElement.AddToClassList($"svg-editor__asset-hierarchy__icon--{iconKind}");
+            iconElement.AddClass($"{AssetHierarchyTreeRow.UssClassName.ICON}--{iconKind}");
         }
 
         public static string BuildHierarchyLabel(StructureNode item)

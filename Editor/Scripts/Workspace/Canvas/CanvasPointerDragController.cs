@@ -7,7 +7,7 @@ namespace UnitySvgEditor.Editor
     internal sealed class CanvasPointerDragController
     {
         private const float CanvasFrameMargin = 72f;
-        private const float CanvasFramePadding = 12f;
+        private const float CanvasFramePadding = 0f;
         private const float CanvasFrameHeaderHeight = 24f;
 
         private readonly ICanvasPointerDragHost _host;
@@ -84,11 +84,14 @@ namespace UnitySvgEditor.Editor
                 CanvasFrameHeaderHeight);
         }
 
-        public void Bind(VisualElement stage, VisualElement frame, Toggle moveToolToggle)
+        public void Bind(CanvasStageView canvasStageView, Toggle moveToolToggle)
         {
             Dispose();
             _toolController.BindMoveTool(moveToolToggle);
-            BuildCanvasInteractionOverlay(stage, frame);
+            if (canvasStageView != null)
+            {
+                BuildCanvasInteractionOverlay(canvasStageView.StageElement, canvasStageView.FrameElement);
+            }
         }
 
         public void Dispose()

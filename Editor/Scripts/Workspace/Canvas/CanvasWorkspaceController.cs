@@ -15,7 +15,7 @@ namespace UnitySvgEditor.Editor
             _sceneProjector = new CanvasSceneProjector(
                 _viewportState,
                 new PreviewElementHitTester(),
-                framePadding: 12f,
+                framePadding: 0f,
                 frameHeaderHeight: 24f,
                 alignmentGuideThreshold: 2f);
 
@@ -29,9 +29,9 @@ namespace UnitySvgEditor.Editor
 
         public CanvasSelectionKind SelectionKind => _interactionController.SelectionKind;
 
-        public void Bind(VisualElement stage, VisualElement frame, Toggle moveToolToggle)
+        public void Bind(CanvasStageView canvasStageView, Toggle moveToolToggle)
         {
-            _interactionController.Bind(stage, frame, moveToolToggle);
+            _interactionController.Bind(canvasStageView, moveToolToggle);
         }
 
         public void Dispose()

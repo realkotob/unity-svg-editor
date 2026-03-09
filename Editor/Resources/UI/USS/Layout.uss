@@ -24,6 +24,7 @@
 
 .svg-editor__asset-panel {
     flex-grow: 1;
+    min-width: 240px;
     background-color: var(--bg-panel);
 }
 .svg-editor__asset-panel .unity-scroll-view__content-viewport{
@@ -40,6 +41,8 @@
 .svg-editor__asset-panel-top,
 .svg-editor__asset-panel-bottom {
     flex-grow: 1;
+    background-color: var(--bg-panel);
+    min-height: 200px;
 }
 
 .svg-editor__asset-section-header {

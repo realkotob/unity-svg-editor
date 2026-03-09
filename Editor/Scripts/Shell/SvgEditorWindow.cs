@@ -10,11 +10,25 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Core.UI.Foundation;
 
 namespace UnitySvgEditor.Editor
 {
     public sealed class SvgEditorWindow : EditorWindow, IEditorWorkspaceHost, IPatchInspectorHost
     {
+        private static class UssClassName
+        {
+            private const string Prefix = "svg-editor__";
+
+            public const string FLOATING_AUX_BUTTON_ACTIVE = Prefix + "floating-aux-btn--active";
+            public const string SUBSECTION_TITLE = Prefix + "subsection-title";
+            public const string SOURCE_HEADER = Prefix + "source-header";
+            public const string SECTION_TITLE = Prefix + "section-title";
+            public const string BUTTON_ROW = Prefix + "button-row";
+            public const string INSPECTOR_CARD = Prefix + "inspector-card";
+            public const string INSPECTOR_CARD_ACCENT = INSPECTOR_CARD + "--accent";
+        }
+
         private const string WINDOW_MENU_PATH = "Window/Unity SVG Editor/SVG Editor";
         private const string THEME_RESOURCE_PATH = "UI/Theme/VectorEditorTheme";
         private const string WINDOW_RESOURCE_PATH = "UI/UXML/SvgEditorWindow";
@@ -134,11 +148,11 @@ namespace UnitySvgEditor.Editor
             _codeInspectorPanel = rootVisualElement.Q<VisualElement>("code-inspector");
             ApplyInspectorMode();
 
-            VisualElement stage = rootVisualElement.Q<VisualElement>("canvas-stage");
-            VisualElement frame = rootVisualElement.Q<VisualElement>("canvas-frame");
-            if (stage != null && frame != null)
+            CanvasStageView canvasStageView = rootVisualElement.Q<CanvasStageView>("canvas-stage-view");
+            if (canvasStageView != null)
             {
-                WorkspaceCoordinator.Bind(stage, frame, rootVisualElement.Q<Toggle>("tool-move"));
+                canvasStageView.PrepareRuntime();
+                WorkspaceCoordinator.Bind(canvasStageView, rootVisualElement.Q<Toggle>("tool-move"));
             }
             _patchInspectorController.Bind(rootVisualElement, this);
         }
@@ -206,7 +220,7 @@ namespace UnitySvgEditor.Editor
             {
                 var isActive = pair.Key == _activeToolbarMode;
                 pair.Value.SetValueWithoutNotify(isActive);
-                pair.Value.EnableInClassList("svg-editor__floating-aux-btn--active", isActive);
+                pair.Value.EnableClass(UssClassName.FLOATING_AUX_BUTTON_ACTIVE, isActive);
             }
 
             ApplyInspectorMode();
@@ -225,7 +239,7 @@ namespace UnitySvgEditor.Editor
             if (original?.parent == null)
                 return;
 
-            var title = original.Q<Label>(className: "svg-editor__subsection-title");
+            var title = original.Q<Label>(className: UssClassName.SUBSECTION_TITLE);
             var section = CreateInspectorSection(original, title?.text ?? fallbackTitle, sourceMode: false);
             section.SetAccent(accent);
 
@@ -240,9 +254,9 @@ namespace UnitySvgEditor.Editor
             if (original?.parent == null)
                 return;
 
-            var sourceHeader = original.Q<VisualElement>(className: "svg-editor__source-header");
-            var title = sourceHeader?.Q<Label>(className: "svg-editor__section-title");
-            var actions = sourceHeader?.Q<VisualElement>(className: "svg-editor__button-row");
+            var sourceHeader = original.Q<VisualElement>(className: UssClassName.SOURCE_HEADER);
+            var title = sourceHeader?.Q<Label>(className: UssClassName.SECTION_TITLE);
+            var actions = sourceHeader?.Q<VisualElement>(className: UssClassName.BUTTON_ROW);
 
             title?.RemoveFromHierarchy();
             actions?.RemoveFromHierarchy();
@@ -259,17 +273,17 @@ namespace UnitySvgEditor.Editor
         {
             var section = new InspectorSection(title, new InspectorSectionClasses
             {
-                rootClass = "svg-editor__inspector-card",
-                accentClass = "svg-editor__inspector-card--accent",
-                headerClass = sourceMode ? "svg-editor__source-header" : string.Empty,
-                titleClass = sourceMode ? "svg-editor__section-title" : "svg-editor__subsection-title",
-                actionsClass = sourceMode ? "svg-editor__button-row" : string.Empty
+                rootClass = UssClassName.INSPECTOR_CARD,
+                accentClass = UssClassName.INSPECTOR_CARD_ACCENT,
+                headerClass = sourceMode ? UssClassName.SOURCE_HEADER : string.Empty,
+                titleClass = sourceMode ? UssClassName.SECTION_TITLE : UssClassName.SUBSECTION_TITLE,
+                actionsClass = sourceMode ? UssClassName.BUTTON_ROW : string.Empty
             });
 
             section.name = original.name;
             foreach (var className in original.GetClasses())
             {
-                section.AddToClassList(className);
+                section.AddClass(className);
             }
 
             return section;

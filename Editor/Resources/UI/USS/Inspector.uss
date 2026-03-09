@@ -13,7 +13,7 @@
 }
 
 .svg-editor__inspector-card {
-    padding: var(--space-3);
+    padding: var(--space-2) var(--space-2-5);
     background-color: rgba(255, 255, 255, 0.035);
 }
 
@@ -25,39 +25,33 @@
 
 .svg-editor__subsection-title {
     margin-top: 0;
-    margin-bottom: var(--space-2);
+    margin-bottom: var(--space-1-5);
     color: var(--text-primary);
     -unity-font-style: bold;
-    font-size: 13px;
+    font-size: 12px;
 }
 
-.svg-editor__patch-subtitle {
-    margin-top: var(--space-2);
-    margin-bottom: var(--space-1-5);
-    color: rgba(226, 225, 230, 0.72);
-    -unity-font-style: bold;
-    font-size: var(--font-size-xs);
-}
-
-.svg-editor__patch-target {
-    margin-bottom: var(--space-2);
-}
-
-.svg-editor__patch-row {
+.svg-editor__inspector-row {
     flex-direction: row;
-    align-items: flex-start;
-    margin-bottom: var(--space-2);
+    align-items: stretch;
+    margin-bottom: var(--space-1-5);
 }
 
-.svg-editor__patch-field {
+.svg-editor__inspector-field {
+    flex-basis: 0;
     flex-grow: 1;
-    margin-right: var(--space-2);
+    margin-right: var(--space-1-5);
 }
 
-.svg-editor__patch-inline-btn,
+.svg-editor__inspector-row > .svg-editor__inspector-field:last-child,
+.svg-editor__inspector-row > .svg-editor__inspector-btn:last-child {
+    margin-right: 0;
+}
+
+.svg-editor__inspector-btn,
 .svg-editor__action-button {
     height: 30px;
-    min-width: 132px;
+    min-width: 104px;
     border-top-left-radius: var(--radius-sm);
     border-top-right-radius: var(--radius-sm);
     border-bottom-left-radius: var(--radius-sm);
@@ -74,39 +68,39 @@
     color: var(--text-button);
 }
 
-.svg-editor__patch-inline-btn:hover:enabled,
+.svg-editor__inspector-btn:hover:enabled,
 .svg-editor__action-button:hover:enabled {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-.svg-editor__patch-panel .unity-base-field,
-.svg-editor__structure-panel .unity-base-field,
+.svg-editor__inspector-separator {
+    margin-top: 2px;
+    margin-bottom: 2px;
+    opacity: 0.65;
+}
+
+.svg-editor__inspector-section .unity-base-field,
 .svg-editor__source-panel .unity-base-field {
     margin-bottom: 0;
 }
 
-.svg-editor__patch-panel .unity-base-field__label,
-.svg-editor__structure-panel .unity-base-field__label,
+.svg-editor__inspector-section .unity-base-field__label,
 .svg-editor__source-panel .unity-base-field__label {
     min-width: auto;
     margin-right: 0;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
     color: rgba(226, 225, 230, 0.62);
     font-size: 11px;
     -unity-font-style: bold;
 }
 
-.svg-editor__patch-panel .unity-base-field__input,
-.svg-editor__structure-panel .unity-base-field__input,
-.svg-editor__patch-panel .unity-base-popup-field__input,
-.svg-editor__structure-panel .unity-base-popup-field__input,
-.svg-editor__patch-panel .unity-text-field__input,
-.svg-editor__structure-panel .unity-text-field__input,
-.svg-editor__patch-panel .unity-color-field__input,
-.svg-editor__structure-panel .unity-color-field__input {
-    min-height: 30px;
-    padding-left: var(--space-2);
-    padding-right: var(--space-2);
+.svg-editor__inspector-section .unity-base-field__input,
+.svg-editor__inspector-section .unity-base-popup-field__input,
+.svg-editor__inspector-section .unity-text-field__input,
+.svg-editor__inspector-section .unity-color-field__input {
+    min-height: 28px;
+    padding-left: var(--space-1-5);
+    padding-right: var(--space-1-5);
     border-top-left-radius: var(--radius-sm);
     border-top-right-radius: var(--radius-sm);
     border-bottom-left-radius: var(--radius-sm);
@@ -123,19 +117,16 @@
     color: var(--text-primary);
 }
 
-.svg-editor__patch-panel .unity-toggle,
-.svg-editor__structure-panel .unity-toggle {
+.svg-editor__inspector-section .unity-toggle {
     min-height: 30px;
     margin-bottom: 0;
 }
 
-.svg-editor__patch-panel .unity-toggle__input,
-.svg-editor__structure-panel .unity-toggle__input {
+.svg-editor__inspector-section .unity-toggle__input {
     margin-left: auto;
 }
 
-.svg-editor__patch-panel .unity-toggle__checkmark,
-.svg-editor__structure-panel .unity-toggle__checkmark {
+.svg-editor__inspector-section .unity-toggle__checkmark {
     width: 16px;
     height: 16px;
     border-top-left-radius: 4px;
@@ -153,8 +144,7 @@
     background-color: rgba(8, 10, 16, 0.52);
 }
 
-.svg-editor__patch-panel .unity-toggle:checked > .unity-toggle__input > .unity-toggle__checkmark,
-.svg-editor__structure-panel .unity-toggle:checked > .unity-toggle__input > .unity-toggle__checkmark {
+.svg-editor__inspector-section .unity-toggle:checked > .unity-toggle__input > .unity-toggle__checkmark {
     background-color: rgba(98, 176, 255, 0.82);
     border-left-color: rgba(98, 176, 255, 0.82);
     border-right-color: rgba(98, 176, 255, 0.82);
@@ -162,38 +152,33 @@
     border-bottom-color: rgba(98, 176, 255, 0.82);
 }
 
-.svg-editor__patch-panel .unity-base-slider__label,
-.svg-editor__structure-panel .unity-base-slider__label {
+.svg-editor__inspector-section .unity-base-slider__label {
     min-width: auto;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
     color: rgba(226, 225, 230, 0.62);
     font-size: 11px;
     -unity-font-style: bold;
 }
 
-.svg-editor__patch-panel .unity-base-slider__input,
-.svg-editor__structure-panel .unity-base-slider__input {
-    min-height: 22px;
+.svg-editor__inspector-section .unity-base-slider__input {
+    min-height: 20px;
 }
 
-.svg-editor__patch-panel .unity-base-slider__tracker,
-.svg-editor__structure-panel .unity-base-slider__tracker {
+.svg-editor__inspector-section .unity-base-slider__tracker {
     height: 4px;
     border-radius: var(--radius-full);
     background-color: rgba(255, 255, 255, 0.12);
     border-width: 0;
 }
 
-.svg-editor__patch-panel .unity-base-slider__fill,
-.svg-editor__structure-panel .unity-base-slider__fill {
+.svg-editor__inspector-section .unity-base-slider__fill {
     background-color: rgba(98, 176, 255, 0.85);
     border-radius: var(--radius-full);
 }
 
-.svg-editor__patch-panel .unity-base-slider__dragger,
-.svg-editor__structure-panel .unity-base-slider__dragger {
-    width: 10px;
-    height: 10px;
+.svg-editor__inspector-section .unity-base-slider__dragger {
+    width: 9px;
+    height: 9px;
     margin-top: -3px;
     border-radius: var(--radius-full);
     border-width: 0;

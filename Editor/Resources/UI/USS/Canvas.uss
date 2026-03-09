@@ -1,3 +1,7 @@
+.svg-editor__canvas-stage-view {
+    flex-grow: 1;
+}
+
 .svg-editor__canvas-stage {
     position: relative;
     flex-grow: 1;

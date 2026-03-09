@@ -1,11 +1,28 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Core.UI.Foundation;
 
 namespace UnitySvgEditor.Editor
 {
     internal sealed class CanvasOverlayController
     {
+        private static class UssClassName
+        {
+            private const string Prefix = "svg-editor__";
+
+            public const string OVERLAY = Prefix + "canvas-overlay";
+            public const string FRAME_LABEL = Prefix + "canvas-frame-label";
+            public const string ALIGNMENT_GUIDE = Prefix + "alignment-guide";
+            public const string ALIGNMENT_GUIDE_VERTICAL = ALIGNMENT_GUIDE + "--vertical";
+            public const string ALIGNMENT_GUIDE_HORIZONTAL = ALIGNMENT_GUIDE + "--horizontal";
+            public const string HOVER_BOX = Prefix + "hover-box";
+            public const string SELECTION_BOX = Prefix + "selection-box";
+            public const string SELECTION_BOX_FRAME = SELECTION_BOX + "--frame";
+            public const string SELECTION_SIZE_BADGE = Prefix + "selection-size-badge";
+            public const string SELECTION_HANDLE = Prefix + "selection-handle";
+        }
+
         private const float HANDLE_HALF_SIZE = 4f;
 
         private readonly Dictionary<CanvasHandle, VisualElement> _handles = new();
@@ -39,39 +56,39 @@ namespace UnitySvgEditor.Editor
                 focusable = true,
                 tabIndex = 0
             };
-            _overlay.AddToClassList("svg-editor__canvas-overlay");
+            _overlay.AddClass(UssClassName.OVERLAY);
             _overlay.pickingMode = PickingMode.Position;
             host.Add(_overlay);
 
             _frameLabel = new Label();
-            _frameLabel.AddToClassList("svg-editor__canvas-frame-label");
+            _frameLabel.AddClass(UssClassName.FRAME_LABEL);
             _frameLabel.pickingMode = PickingMode.Ignore;
             _overlay.Add(_frameLabel);
 
             _verticalGuide = new VisualElement();
-            _verticalGuide.AddToClassList("svg-editor__alignment-guide");
-            _verticalGuide.AddToClassList("svg-editor__alignment-guide--vertical");
+            _verticalGuide.AddClass(UssClassName.ALIGNMENT_GUIDE);
+            _verticalGuide.AddClass(UssClassName.ALIGNMENT_GUIDE_VERTICAL);
             _verticalGuide.pickingMode = PickingMode.Ignore;
             _overlay.Add(_verticalGuide);
 
             _horizontalGuide = new VisualElement();
-            _horizontalGuide.AddToClassList("svg-editor__alignment-guide");
-            _horizontalGuide.AddToClassList("svg-editor__alignment-guide--horizontal");
+            _horizontalGuide.AddClass(UssClassName.ALIGNMENT_GUIDE);
+            _horizontalGuide.AddClass(UssClassName.ALIGNMENT_GUIDE_HORIZONTAL);
             _horizontalGuide.pickingMode = PickingMode.Ignore;
             _overlay.Add(_horizontalGuide);
 
             _hoverBox = new VisualElement();
-            _hoverBox.AddToClassList("svg-editor__hover-box");
+            _hoverBox.AddClass(UssClassName.HOVER_BOX);
             _hoverBox.pickingMode = PickingMode.Ignore;
             _overlay.Add(_hoverBox);
 
             _selectionBox = new VisualElement();
-            _selectionBox.AddToClassList("svg-editor__selection-box");
+            _selectionBox.AddClass(UssClassName.SELECTION_BOX);
             _selectionBox.pickingMode = PickingMode.Ignore;
             _overlay.Add(_selectionBox);
 
             _sizeBadge = new Label();
-            _sizeBadge.AddToClassList("svg-editor__selection-size-badge");
+            _sizeBadge.AddClass(UssClassName.SELECTION_SIZE_BADGE);
             _sizeBadge.pickingMode = PickingMode.Ignore;
             _overlay.Add(_sizeBadge);
 
@@ -213,7 +230,7 @@ namespace UnitySvgEditor.Editor
             }
 
             _selectionBox.style.display = DisplayStyle.Flex;
-            _selectionBox.EnableInClassList("svg-editor__selection-box--frame", selection.Kind == CanvasSelectionKind.Frame);
+            _selectionBox.EnableClass(UssClassName.SELECTION_BOX_FRAME, selection.Kind == CanvasSelectionKind.Frame);
             _selectionBox.style.left = selection.Rect.xMin;
             _selectionBox.style.top = selection.Rect.yMin;
             _selectionBox.style.width = selection.Rect.width;
@@ -291,7 +308,7 @@ namespace UnitySvgEditor.Editor
         private void CreateHandle(CanvasHandle handle)
         {
             var element = new VisualElement();
-            element.AddToClassList("svg-editor__selection-handle");
+            element.AddClass(UssClassName.SELECTION_HANDLE);
             element.pickingMode = PickingMode.Ignore;
             _overlay.Add(element);
             _handles[handle] = element;

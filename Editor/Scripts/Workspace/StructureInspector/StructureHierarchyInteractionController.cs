@@ -9,6 +9,11 @@ namespace UnitySvgEditor.Editor
 {
     internal sealed class StructureHierarchyInteractionController
     {
+        private static class UssClassName
+        {
+            public const string INSERT_INDICATOR = "svg-editor__hierarchy-insert-indicator";
+        }
+
         private readonly StructureEditor _structureEditor;
 
         private TreeView _treeView;
@@ -38,7 +43,7 @@ namespace UnitySvgEditor.Editor
             _treeView.RegisterCallback<PointerCancelEvent>(OnHierarchyPointerCancel);
 
             _insertionIndicator = new VisualElement();
-            _insertionIndicator.AddToClassList("svg-editor__hierarchy-insert-indicator");
+            _insertionIndicator.AddClass(UssClassName.INSERT_INDICATOR);
             _insertionIndicator.style.display = DisplayStyle.None;
             _insertionIndicator.pickingMode = PickingMode.Ignore;
             _treeView.hierarchy.Add(_insertionIndicator);
@@ -185,7 +190,7 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            List<VisualElement> rowElements = _treeView.Query<VisualElement>(className: AssetHierarchyListView.UssClassName.ITEM).ToList();
+            List<VisualElement> rowElements = _treeView.Query<VisualElement>(className: AssetHierarchyTreeRow.UssClassName.ITEM).ToList();
             VisualElement hoveredRow = rowElements.FirstOrDefault(row => row.worldBound.Contains(pointerPosition));
             if (hoveredRow?.userData is not string hoveredKey)
             {

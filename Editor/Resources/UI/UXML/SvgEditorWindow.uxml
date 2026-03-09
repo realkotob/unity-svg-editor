@@ -20,78 +20,62 @@
             </ui:VisualElement>
             <ui:TwoPaneSplitView name="workspace-split" fixed-pane-index="1" fixed-pane-initial-dimension="320" orientation="Horizontal" class="svg-editor__workspace-split">
                 <ui:VisualElement name="preview-panel" class="svg-editor__preview-panel">
-                    <ui:VisualElement class="svg-editor__canvas-stage">
-                        <ui:VisualElement name="canvas-frame" class="svg-editor__canvas-frame">
-                            <ui:Image name="preview-image" class="svg-editor__preview-canvas"/>
-                        </ui:VisualElement>
-                    </ui:VisualElement>
+                    <svg:CanvasStageView name="canvas-stage-view"/>
                 </ui:VisualElement>
                 <ui:ScrollView name="inspector-panel" mode="Vertical" vertical-scroller-visibility="Hidden" horizontal-scroller-visibility="Hidden" class="svg-editor__inspector-panel">
                     <ui:VisualElement name="design-inspector" class="svg-editor__inspector-mode">
-                        <ui:VisualElement name="position-panel" class="svg-editor__patch-panel svg-editor__inspector-card">
+                        <ui:VisualElement name="position-panel" class="svg-editor__inspector-section svg-editor__inspector-card">
                             <ui:Label text="Position" class="svg-editor__subsection-title"/>
-                            <ui:VisualElement class="svg-editor__patch-row">
-                                <ui:FloatField name="patch-translate-x" label="X" value="0" class="svg-editor__patch-field"/>
-                                <ui:FloatField name="patch-translate-y" label="Y" value="0" class="svg-editor__patch-field"/>
+                            <ui:VisualElement class="svg-editor__inspector-row">
+                                <ui:FloatField name="inspector-translate-x" label="X" value="0" class="svg-editor__inspector-field"/>
+                                <ui:FloatField name="inspector-translate-y" label="Y" value="0" class="svg-editor__inspector-field"/>
                             </ui:VisualElement>
-                            <ui:VisualElement class="svg-editor__patch-row">
-                                <ui:FloatField name="patch-rotate" label="Rotation" value="0" class="svg-editor__patch-field"/>
-                                <ui:FloatField name="patch-scale-x" label="Scale X" value="1" class="svg-editor__patch-field"/>
+                            <ui:VisualElement class="svg-editor__inspector-row">
+                                <ui:FloatField name="inspector-rotate" label="Rotation" value="0" class="svg-editor__inspector-field"/>
+                                <ui:FloatField name="inspector-scale-x" label="Scale X" value="1" class="svg-editor__inspector-field"/>
                             </ui:VisualElement>
-                            <ui:VisualElement class="svg-editor__patch-row">
-                                <ui:FloatField name="patch-scale-y" label="Scale Y" value="1" class="svg-editor__patch-field"/>
-                                <ui:Button name="patch-build-transform" text="Build Transform" class="svg-editor__patch-inline-btn"/>
+                            <ui:VisualElement class="svg-editor__inspector-row">
+                                <ui:FloatField name="inspector-scale-y" label="Scale Y" value="1" class="svg-editor__inspector-field"/>
+                                <ui:Button name="inspector-build-transform" text="Build Transform" class="svg-editor__inspector-btn"/>
                             </ui:VisualElement>
-                            <ui:VisualElement class="svg-editor__patch-field">
-                                <ui:Toggle name="patch-transform-enabled" label="Apply Transform" value="false"/>
-                                <ui:TextField name="patch-transform" label="Transform" multiline="true"/>
+                            <ui:VisualElement class="svg-editor__inspector-field">
+                                <ui:TextField name="inspector-transform" label="Transform" multiline="true"/>
                             </ui:VisualElement>
                         </ui:VisualElement>
-                        <Core.UI.Foundation.Components.Separator.Separator/>
-                        <ui:VisualElement name="patch-panel" class="svg-editor__patch-panel svg-editor__inspector-card">
+                        <Core.UI.Foundation.Components.Separator.Separator class="svg-editor__inspector-separator"/>
+                        <ui:VisualElement name="appearance-panel" class="svg-editor__inspector-section svg-editor__inspector-card">
                             <ui:Label text="Appearance" class="svg-editor__subsection-title"/>
-                            <ui:VisualElement class="svg-editor__patch-field">
-                                <ui:Toggle name="patch-opacity-enabled" label="Apply Opacity" value="false"/>
-                                <ui:Slider name="patch-opacity" label="Opacity" low-value="0" high-value="1" value="1"/>
+                            <ui:VisualElement class="svg-editor__inspector-field">
+                                <ui:Slider name="inspector-opacity" label="Opacity" low-value="0" high-value="1" value="1"/>
                             </ui:VisualElement>
                         </ui:VisualElement>
-                        <Core.UI.Foundation.Components.Separator.Separator/>
-                        <ui:VisualElement name="fill-panel" class="svg-editor__patch-panel svg-editor__inspector-card">
+                        <Core.UI.Foundation.Components.Separator.Separator class="svg-editor__inspector-separator"/>
+                        <ui:VisualElement name="fill-panel" class="svg-editor__inspector-section svg-editor__inspector-card">
                             <ui:Label text="Fill" class="svg-editor__subsection-title"/>
-                            <ui:VisualElement class="svg-editor__patch-row">
-                                <ui:VisualElement class="svg-editor__patch-field">
-                                    <ui:Toggle name="patch-fill-enabled" label="Apply Fill" value="false"/>
-                                    <uie:ColorField name="patch-fill-color" label="Fill Color"/>
+                            <ui:VisualElement class="svg-editor__inspector-row">
+                                <ui:VisualElement class="svg-editor__inspector-field">
+                                    <uie:ColorField name="inspector-fill-color" label="Color"/>
                                 </ui:VisualElement>
                             </ui:VisualElement>
                         </ui:VisualElement>
-                        <Core.UI.Foundation.Components.Separator.Separator/>
-                        <ui:VisualElement name="stroke-panel" class="svg-editor__patch-panel svg-editor__inspector-card">
+                        <Core.UI.Foundation.Components.Separator.Separator class="svg-editor__inspector-separator"/>
+                        <ui:VisualElement name="stroke-panel" class="svg-editor__inspector-section svg-editor__inspector-card">
                             <ui:Label text="Stroke" class="svg-editor__subsection-title"/>
-                            <ui:VisualElement class="svg-editor__patch-row">
-                                <ui:VisualElement class="svg-editor__patch-field">
-                                    <ui:Toggle name="patch-stroke-enabled" label="Apply Stroke" value="false"/>
-                                    <uie:ColorField name="patch-stroke-color" label="Stroke Color"/>
+                            <ui:VisualElement class="svg-editor__inspector-row">
+                                <ui:VisualElement class="svg-editor__inspector-field">
+                                    <uie:ColorField name="inspector-stroke-color" label="Color"/>
+                                </ui:VisualElement>
+                                <ui:VisualElement class="svg-editor__inspector-field">
+                                    <ui:FloatField name="inspector-stroke-width" label="Weight" value="1"/>
                                 </ui:VisualElement>
                             </ui:VisualElement>
-                            <ui:VisualElement class="svg-editor__patch-row">
-                                <ui:VisualElement class="svg-editor__patch-field">
-                                    <ui:Toggle name="patch-stroke-width-enabled" label="Apply Stroke Width" value="false"/>
-                                    <ui:FloatField name="patch-stroke-width" label="Weight" value="1"/>
-                                </ui:VisualElement>
+                            <ui:VisualElement class="svg-editor__inspector-row">
+                                <ui:DropdownField name="inspector-linecap" label="Line Cap" class="svg-editor__inspector-field"/>
+                                <ui:DropdownField name="inspector-linejoin" label="Line Join" class="svg-editor__inspector-field"/>
                             </ui:VisualElement>
-                            <ui:VisualElement class="svg-editor__patch-row">
-                                <ui:VisualElement class="svg-editor__patch-field">
-                                    <ui:Toggle name="patch-dash-enabled" label="Apply Dasharray" value="false"/>
-                                    <ui:VisualElement class="svg-editor__patch-row">
-                                        <ui:FloatField name="patch-dash-length" label="Dash" value="4" class="svg-editor__patch-field"/>
-                                        <ui:FloatField name="patch-dash-gap" label="Gap" value="2" class="svg-editor__patch-field"/>
-                                    </ui:VisualElement>
-                                </ui:VisualElement>
-                            </ui:VisualElement>
-                            <ui:VisualElement class="svg-editor__patch-row">
-                                <ui:DropdownField name="patch-linecap" label="Line Cap" class="svg-editor__patch-field"/>
-                                <ui:DropdownField name="patch-linejoin" label="Line Join" class="svg-editor__patch-field"/>
+                            <ui:VisualElement class="svg-editor__inspector-row">
+                                <ui:FloatField name="inspector-dash-length" label="Dash" value="4" class="svg-editor__inspector-field"/>
+                                <ui:FloatField name="inspector-dash-gap" label="Gap" value="2" class="svg-editor__inspector-field"/>
                             </ui:VisualElement>
                         </ui:VisualElement>
                     </ui:VisualElement>

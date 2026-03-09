@@ -9,7 +9,6 @@ namespace UnitySvgEditor.Editor
         private readonly PatchInspectorFormControls _form = new();
 
         public event Action<string> TargetChanged;
-        public event Action InteractivityToggleChanged;
         public event Action ReadRequested;
         public event Action BuildTransformRequested;
         public event Action ApplyRequested;
@@ -24,12 +23,6 @@ namespace UnitySvgEditor.Editor
         public bool TransformEnabled => _form.TransformEnabled;
 
         public VisualElement TargetControl => _form.TargetPopup;
-        public VisualElement FillToggleControl => _form.FillEnabledToggle;
-        public VisualElement StrokeToggleControl => _form.StrokeEnabledToggle;
-        public VisualElement StrokeWidthToggleControl => _form.StrokeWidthEnabledToggle;
-        public VisualElement OpacityToggleControl => _form.OpacityEnabledToggle;
-        public VisualElement DasharrayToggleControl => _form.DasharrayEnabledToggle;
-        public VisualElement TransformToggleControl => _form.TransformEnabledToggle;
         public VisualElement FillColorControl => _form.FillColorField;
         public VisualElement StrokeColorControl => _form.StrokeColorField;
         public VisualElement StrokeWidthControl => _form.StrokeWidthField;
@@ -97,15 +90,6 @@ namespace UnitySvgEditor.Editor
                 _form.TargetPopup.RegisterValueChangedCallback(OnPatchTargetChanged);
             }
 
-            foreach (var toggle in _form.InteractivityToggles)
-            {
-                if (toggle == null)
-                    continue;
-
-                toggle.UnregisterValueChangedCallback(OnInteractivityToggleChanged);
-                toggle.RegisterValueChangedCallback(OnInteractivityToggleChanged);
-            }
-
             if (_form.ReadButton != null)
                 _form.ReadButton.clicked += OnReadRequested;
             if (_form.BuildTransformButton != null)
@@ -119,14 +103,6 @@ namespace UnitySvgEditor.Editor
             if (_form.TargetPopup != null)
                 _form.TargetPopup.UnregisterValueChangedCallback(OnPatchTargetChanged);
 
-            foreach (var toggle in _form.InteractivityToggles)
-            {
-                if (toggle == null)
-                    continue;
-
-                toggle.UnregisterValueChangedCallback(OnInteractivityToggleChanged);
-            }
-
             if (_form.ReadButton != null)
                 _form.ReadButton.clicked -= OnReadRequested;
             if (_form.BuildTransformButton != null)
@@ -136,8 +112,6 @@ namespace UnitySvgEditor.Editor
         }
 
         private void OnPatchTargetChanged(ChangeEvent<string> evt) => TargetChanged?.Invoke(evt.newValue ?? string.Empty);
-
-        private void OnInteractivityToggleChanged(ChangeEvent<bool> evt) => InteractivityToggleChanged?.Invoke();
 
         private void OnReadRequested() => ReadRequested?.Invoke();
 

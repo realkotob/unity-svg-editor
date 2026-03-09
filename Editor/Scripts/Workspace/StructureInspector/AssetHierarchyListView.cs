@@ -21,13 +21,6 @@ namespace UnitySvgEditor.Editor
             public const string TREE = "svg-editor-asset-hierarchy-tree";
         }
 
-        internal static class ElementName
-        {
-            public const string HIERARCHY_EXPANDER = "hierarchy-expander";
-            public const string HIERARCHY_ICON = "hierarchy-icon";
-            public const string HIERARCHY_TEXT = "hierarchy-text";
-        }
-
         internal static class UssClassName
         {
             public const string BASE = "svg-editor__asset-hierarchy";
@@ -35,14 +28,6 @@ namespace UnitySvgEditor.Editor
             private const string MODIFIER_PREFIX = BASE + "--";
 
             public const string TREE = ELEMENT_PREFIX + "tree";
-            public const string ITEM = ELEMENT_PREFIX + "item";
-            public const string EXPANDER = ELEMENT_PREFIX + "expander";
-            public const string ICON = ELEMENT_PREFIX + "icon";
-            public const string TEXT = ELEMENT_PREFIX + "text";
-            public const string ITEM_GROUP = ITEM + "--group";
-            public const string ITEM_TEXT = ITEM + "--text";
-            public const string EXPANDER_PLACEHOLDER = EXPANDER + "--placeholder";
-            public const string EXPANDER_EXPANDED = EXPANDER + "--expanded";
             public const string PREVIEW_ENABLED = MODIFIER_PREFIX + "preview-enabled";
         }
         #endregion Constants
@@ -141,6 +126,11 @@ namespace UnitySvgEditor.Editor
                 viewDataKey = ViewDataKey.TREE
             };
             hierarchyTreeView.AddClass(UssClassName.TREE);
+            if (hierarchyTreeView.Q<ScrollView>() is { } scrollView)
+            {
+                scrollView.verticalScrollerVisibility = ScrollerVisibility.Hidden;
+                scrollView.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
+            }
             return hierarchyTreeView;
         }
 

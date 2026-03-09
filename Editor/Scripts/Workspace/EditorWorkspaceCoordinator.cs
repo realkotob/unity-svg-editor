@@ -28,10 +28,10 @@ namespace UnitySvgEditor.Editor
             _structureHierarchyController = new StructureHierarchyController(_structureService);
         }
 
-        public void Bind(VisualElement stage, VisualElement frame, Toggle moveToolToggle)
+        public void Bind(CanvasStageView canvasStageView, Toggle moveToolToggle)
         {
             Dispose();
-            _canvasWorkspaceController.Bind(stage, frame, moveToolToggle);
+            _canvasWorkspaceController.Bind(canvasStageView, moveToolToggle);
             _shellBinder.Bind(
                 RootVisualElement,
                 _structureHierarchyController,

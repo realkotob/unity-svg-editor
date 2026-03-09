@@ -19,7 +19,6 @@ namespace UnitySvgEditor.Editor
                 () => UpdateInteractivity(_host?.CurrentDocument != null));
 
             _view.TargetChanged += OnPatchTargetChanged;
-            _view.InteractivityToggleChanged += OnInteractivityToggleChanged;
             _view.ReadRequested += OnReadPatchTargetClicked;
             _view.BuildTransformRequested += OnBuildTransformClicked;
             _view.ApplyRequested += OnApplyPatchClicked;
@@ -54,19 +53,13 @@ namespace UnitySvgEditor.Editor
         public void UpdateInteractivity(bool hasDocument)
         {
             SetEnabledIfNotNull(_view.TargetControl, hasDocument);
-            SetEnabledIfNotNull(_view.FillToggleControl, hasDocument);
-            SetEnabledIfNotNull(_view.StrokeToggleControl, hasDocument);
-            SetEnabledIfNotNull(_view.StrokeWidthToggleControl, hasDocument);
-            SetEnabledIfNotNull(_view.OpacityToggleControl, hasDocument);
-            SetEnabledIfNotNull(_view.DasharrayToggleControl, hasDocument);
-            SetEnabledIfNotNull(_view.TransformToggleControl, hasDocument);
-            SetEnabledIfNotNull(_view.FillColorControl, hasDocument && _view.FillEnabled);
-            SetEnabledIfNotNull(_view.StrokeColorControl, hasDocument && _view.StrokeEnabled);
-            SetEnabledIfNotNull(_view.StrokeWidthControl, hasDocument && _view.StrokeWidthEnabled);
-            SetEnabledIfNotNull(_view.OpacityControl, hasDocument && _view.OpacityEnabled);
-            SetEnabledIfNotNull(_view.DashLengthControl, hasDocument && _view.DasharrayEnabled);
-            SetEnabledIfNotNull(_view.DashGapControl, hasDocument && _view.DasharrayEnabled);
-            SetEnabledIfNotNull(_view.TransformControl, hasDocument && _view.TransformEnabled);
+            SetEnabledIfNotNull(_view.FillColorControl, hasDocument);
+            SetEnabledIfNotNull(_view.StrokeColorControl, hasDocument);
+            SetEnabledIfNotNull(_view.StrokeWidthControl, hasDocument);
+            SetEnabledIfNotNull(_view.OpacityControl, hasDocument);
+            SetEnabledIfNotNull(_view.DashLengthControl, hasDocument);
+            SetEnabledIfNotNull(_view.DashGapControl, hasDocument);
+            SetEnabledIfNotNull(_view.TransformControl, hasDocument);
             SetEnabledIfNotNull(_view.LinecapControl, hasDocument);
             SetEnabledIfNotNull(_view.LinejoinControl, hasDocument);
             SetEnabledIfNotNull(_view.TranslateXControl, hasDocument);
@@ -78,8 +71,6 @@ namespace UnitySvgEditor.Editor
             SetEnabledIfNotNull(_view.BuildTransformButtonControl, hasDocument);
             SetEnabledIfNotNull(_view.ApplyButtonControl, hasDocument);
         }
-
-        private void OnInteractivityToggleChanged() => UpdateInteractivity(_host?.CurrentDocument != null);
 
         private void OnPatchTargetChanged(string label) => _targetSyncService.HandleTargetSelectionChanged(label);
 

@@ -35,9 +35,9 @@ namespace UnitySvgEditor.Editor
         private PreviewSnapshot PreviewSnapshot => _host.PreviewSnapshot;
         private Image PreviewImage => _host.PreviewImage;
 
-        public void Bind(VisualElement stage, VisualElement frame, Toggle moveToolToggle)
+        public void Bind(CanvasStageView canvasStageView, Toggle moveToolToggle)
         {
-            _pointerDragController.Bind(stage, frame, moveToolToggle);
+            _pointerDragController.Bind(canvasStageView, moveToolToggle);
         }
 
         public void Dispose()

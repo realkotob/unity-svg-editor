@@ -2,11 +2,20 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Core.UI.Foundation;
 
 namespace UnitySvgEditor.Editor
 {
     internal sealed class CanvasToolController
     {
+        private static class UssClassName
+        {
+            private const string Prefix = "svg-editor__";
+
+            public const string TOOL_BUTTON_ACTIVE = Prefix + "tool-btn--active";
+            public const string CANVAS_OVERLAY_READONLY = Prefix + "canvas-overlay--readonly";
+        }
+
         private const float MIN_CANVAS_ZOOM = 0.25f;
         private const float MAX_CANVAS_ZOOM = 8f;
         private const float CANVAS_FRAME_PADDING = 12f;
@@ -34,7 +43,7 @@ namespace UnitySvgEditor.Editor
 
             bool isActive = ActiveTool == CanvasTool.Move;
             toggle.SetValueWithoutNotify(isActive);
-            toggle.EnableInClassList("svg-editor__tool-btn--active", isActive);
+            toggle.EnableClass(UssClassName.TOOL_BUTTON_ACTIVE, isActive);
             _toolButtons[CanvasTool.Move] = toggle;
         }
 
@@ -55,13 +64,13 @@ namespace UnitySvgEditor.Editor
             {
                 bool isActive = pair.Key == ActiveTool;
                 pair.Value.SetValueWithoutNotify(isActive);
-                pair.Value.EnableInClassList("svg-editor__tool-btn--active", isActive);
+                pair.Value.EnableClass(UssClassName.TOOL_BUTTON_ACTIVE, isActive);
             }
 
             if (canvasOverlay != null)
             {
-                canvasOverlay.EnableInClassList(
-                    "svg-editor__canvas-overlay--readonly",
+                canvasOverlay.EnableClass(
+                    UssClassName.CANVAS_OVERLAY_READONLY,
                     ActiveTool != CanvasTool.Move);
             }
         }

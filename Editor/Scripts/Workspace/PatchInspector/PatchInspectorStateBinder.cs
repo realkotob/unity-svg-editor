@@ -11,20 +11,20 @@ namespace UnitySvgEditor.Editor
                 return;
 
             patchPanelState.SelectTargetLabel(form.SelectedTargetLabel);
-            patchPanelState.FillEnabled = form.FillEnabledToggle?.value ?? false;
+            patchPanelState.FillEnabled = form.FillColorField != null;
             patchPanelState.FillColor = form.FillColorField?.value ?? Color.white;
-            patchPanelState.StrokeEnabled = form.StrokeEnabledToggle?.value ?? false;
+            patchPanelState.StrokeEnabled = form.StrokeColorField != null;
             patchPanelState.StrokeColor = form.StrokeColorField?.value ?? Color.black;
-            patchPanelState.StrokeWidthEnabled = form.StrokeWidthEnabledToggle?.value ?? false;
+            patchPanelState.StrokeWidthEnabled = form.StrokeWidthField != null;
             patchPanelState.StrokeWidth = form.StrokeWidthField?.value ?? 1f;
-            patchPanelState.OpacityEnabled = form.OpacityEnabledToggle?.value ?? false;
+            patchPanelState.OpacityEnabled = form.OpacitySlider != null;
             patchPanelState.Opacity = form.OpacitySlider?.value ?? 1f;
             patchPanelState.StrokeLinecap = form.LinecapPopup?.value ?? string.Empty;
             patchPanelState.StrokeLinejoin = form.LinejoinPopup?.value ?? string.Empty;
-            patchPanelState.DasharrayEnabled = form.DasharrayEnabledToggle?.value ?? false;
+            patchPanelState.DasharrayEnabled = form.DashLengthField != null || form.DashGapField != null;
             patchPanelState.DashLength = form.DashLengthField?.value ?? 4f;
             patchPanelState.DashGap = form.DashGapField?.value ?? 2f;
-            patchPanelState.TransformEnabled = form.TransformEnabledToggle?.value ?? false;
+            patchPanelState.TransformEnabled = form.TransformField != null;
             patchPanelState.Transform = form.TransformField?.value ?? string.Empty;
             patchPanelState.TranslateX = form.TranslateXField?.value ?? 0f;
             patchPanelState.TranslateY = form.TranslateYField?.value ?? 0f;
@@ -39,20 +39,14 @@ namespace UnitySvgEditor.Editor
                 return;
 
             form.SetSelectedTargetLabel(patchPanelState.SelectedTargetLabel, notify: false);
-            form.FillEnabledToggle?.SetValueWithoutNotify(patchPanelState.FillEnabled);
             form.FillColorField?.SetValueWithoutNotify(patchPanelState.FillColor);
-            form.StrokeEnabledToggle?.SetValueWithoutNotify(patchPanelState.StrokeEnabled);
             form.StrokeColorField?.SetValueWithoutNotify(patchPanelState.StrokeColor);
-            form.StrokeWidthEnabledToggle?.SetValueWithoutNotify(patchPanelState.StrokeWidthEnabled);
             form.StrokeWidthField?.SetValueWithoutNotify(patchPanelState.StrokeWidth);
-            form.OpacityEnabledToggle?.SetValueWithoutNotify(patchPanelState.OpacityEnabled);
             form.OpacitySlider?.SetValueWithoutNotify(patchPanelState.Opacity);
             SetPopupValue(form.LinecapPopup, patchPanelState.StrokeLinecap);
             SetPopupValue(form.LinejoinPopup, patchPanelState.StrokeLinejoin);
-            form.DasharrayEnabledToggle?.SetValueWithoutNotify(patchPanelState.DasharrayEnabled);
             form.DashLengthField?.SetValueWithoutNotify(patchPanelState.DashLength);
             form.DashGapField?.SetValueWithoutNotify(patchPanelState.DashGap);
-            form.TransformEnabledToggle?.SetValueWithoutNotify(patchPanelState.TransformEnabled);
             form.TransformField?.SetValueWithoutNotify(patchPanelState.Transform);
             form.TranslateXField?.SetValueWithoutNotify(patchPanelState.TranslateX);
             form.TranslateYField?.SetValueWithoutNotify(patchPanelState.TranslateY);
