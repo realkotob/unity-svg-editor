@@ -20,7 +20,7 @@
             </ui:VisualElement>
             <ui:TwoPaneSplitView name="workspace-split" fixed-pane-index="1" fixed-pane-initial-dimension="320" orientation="Horizontal" class="svg-editor__workspace-split">
                 <ui:VisualElement name="preview-panel" class="svg-editor__preview-panel">
-                    <ui:VisualElement name="canvas-stage" class="svg-editor__canvas-stage">
+                    <ui:VisualElement class="svg-editor__canvas-stage">
                         <ui:VisualElement name="canvas-frame" class="svg-editor__canvas-frame">
                             <ui:Image name="preview-image" class="svg-editor__preview-canvas"/>
                         </ui:VisualElement>
