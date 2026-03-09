@@ -1,0 +1,28 @@
+* {
+    --bg-root: var(--color-neutral-950);
+    --bg-panel: var(--color-neutral-900);
+    --bg-overlay: rgba(42, 42, 46, 0.96);
+    --bg-card: rgba(255, 255, 255, 0.05);
+    --bg-card-strong: rgba(24, 160, 251, 0.12);
+    --bg-soft: rgba(0, 0, 0, 0.18);
+    --bg-soft-alt: rgba(0, 0, 0, 0.16);
+    --bg-pill: rgba(91, 127, 255, 0.24);
+    --bg-button-soft: rgba(255, 255, 255, 0.08);
+    --bg-button-active: rgba(24, 160, 251, 0.25);
+    --bg-button-active-solid: var(--color-accent-500);
+    --bg-button-ghost: rgba(0, 0, 0, 0);
+    --bg-button-ghost-hover: rgba(255, 255, 255, 0.06);
+    --bg-button-ghost-active: rgba(255, 255, 255, 0.12);
+
+    --text-primary: var(--color-neutral-100);
+    --text-secondary: var(--color-neutral-700);
+    --text-muted: var(--color-neutral-500);
+    --text-button: rgba(226, 225, 230, 0.92);
+    --text-accent: var(--color-accent-100);
+    --text-accent-strong: var(--color-accent-200);
+
+    --border-weak: rgba(255, 255, 255, 0.08);
+    --border-base: rgba(255, 255, 255, 0.1);
+    --border-strong: rgba(255, 255, 255, 0.12);
+    --border-accent: rgba(24, 160, 251, 0.35);
+}

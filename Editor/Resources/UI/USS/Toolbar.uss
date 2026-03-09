@@ -1,0 +1,47 @@
+.svg-editor__tool-group {
+    flex-direction: row;
+    align-items: center;
+}
+
+.svg-editor__floating-toolbar {
+    position: absolute;
+    left: 55%;
+    bottom: var(--offset-floating-toolbar-bottom);
+    margin-left: var(--offset-floating-toolbar-x);
+    min-height: var(--height-floating-toolbar);
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px var(--space-2-5);
+    border-top-left-radius: var(--radius-xl);
+    border-top-right-radius: var(--radius-xl);
+    border-bottom-left-radius: var(--radius-xl);
+    border-bottom-right-radius: var(--radius-xl);
+    border-left-color: var(--border-base);
+    border-left-width: 1px;
+    border-right-color: var(--border-base);
+    border-right-width: 1px;
+    border-top-color: var(--border-base);
+    border-top-width: 1px;
+    border-bottom-color: var(--border-base);
+    border-bottom-width: 1px;
+    background-color: var(--bg-overlay);
+}
+
+.svg-editor__floating-toolbar-left,
+.svg-editor__floating-toolbar-right {
+    flex-direction: row;
+    align-items: center;
+}
+
+.svg-editor__floating-toolbar-divider {
+    width: 1px;
+    height: 28px;
+    margin-left: var(--space-2);
+    margin-right: var(--space-2);
+    background-color: var(--border-strong);
+}
+
+.svg-editor__tool-icon > .unity-toggle__input > .unity-toggle__checkmark {
+    margin-right: 0;
+}

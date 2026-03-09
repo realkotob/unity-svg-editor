@@ -1,0 +1,8 @@
+.DS_Store
+.serena/
+.unity-guide/
+.idea/
+.vscode/
+*.csproj
+*.sln
+obj/

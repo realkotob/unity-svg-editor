@@ -1,0 +1,39 @@
+* {
+    --space-0: 0px;
+    --space-1: 4px;
+    --space-1-5: 6px;
+    --space-2: 8px;
+    --space-2-5: 10px;
+    --space-3: 12px;
+    --space-3-5: 14px;
+    --space-4: 16px;
+    --space-6: 24px;
+
+    --radius-xs: 4px;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 10px;
+    --radius-xl: 14px;
+    --radius-full: 999px;
+
+    --size-tool-button: 34px;
+    --size-tool-icon: 15px;
+    --size-aux-button: 34px;
+    --size-selection-handle: 8px;
+
+    --width-floating-toolbar: 500px;
+    --height-floating-toolbar: 52px;
+    --offset-floating-toolbar-x: -250px;
+    --offset-floating-toolbar-bottom: 16px;
+
+    --width-canvas-frame: 520px;
+    --height-canvas-frame: 360px;
+    --height-structure-list: 130px;
+    --min-height-source-panel: 280px;
+    --min-height-source-field: 180px;
+
+    --width-page-add: 24px;
+    --radius-page-add: 12px;
+    --height-tab: 24px;
+    --width-sidebar-tab: 60px;
+}

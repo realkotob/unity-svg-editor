@@ -1,0 +1,283 @@
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UIElements;
+
+namespace UnitySvgEditor.Editor
+{
+    internal sealed class CanvasOverlayController
+    {
+        private const float HANDLE_HALF_SIZE = 4f;
+
+        private readonly Dictionary<CanvasHandle, VisualElement> _handles = new();
+        private VisualElement _overlay;
+        private VisualElement _frameElement;
+        private Label _frameLabel;
+        private VisualElement _selectionBox;
+        private Label _sizeBadge;
+        private VisualElement _verticalGuide;
+        private VisualElement _horizontalGuide;
+        private CanvasSelectionVisual _currentSelection;
+
+        public VisualElement Overlay => _overlay;
+
+        public void Attach(VisualElement host, VisualElement frameElement)
+        {
+            Detach();
+            if (host == null || frameElement == null)
+            {
+                return;
+            }
+
+            _frameElement = frameElement;
+            _frameElement.pickingMode = PickingMode.Ignore;
+            _frameElement.style.position = Position.Absolute;
+            _frameElement.style.display = DisplayStyle.None;
+
+            _overlay = new VisualElement
+            {
+                focusable = true,
+                tabIndex = 0
+            };
+            _overlay.AddToClassList("svg-editor__canvas-overlay");
+            _overlay.pickingMode = PickingMode.Position;
+            host.Add(_overlay);
+
+            _frameLabel = new Label();
+            _frameLabel.AddToClassList("svg-editor__canvas-frame-label");
+            _frameLabel.pickingMode = PickingMode.Ignore;
+            _overlay.Add(_frameLabel);
+
+            _verticalGuide = new VisualElement();
+            _verticalGuide.AddToClassList("svg-editor__alignment-guide");
+            _verticalGuide.AddToClassList("svg-editor__alignment-guide--vertical");
+            _verticalGuide.pickingMode = PickingMode.Ignore;
+            _overlay.Add(_verticalGuide);
+
+            _horizontalGuide = new VisualElement();
+            _horizontalGuide.AddToClassList("svg-editor__alignment-guide");
+            _horizontalGuide.AddToClassList("svg-editor__alignment-guide--horizontal");
+            _horizontalGuide.pickingMode = PickingMode.Ignore;
+            _overlay.Add(_horizontalGuide);
+
+            _selectionBox = new VisualElement();
+            _selectionBox.AddToClassList("svg-editor__selection-box");
+            _selectionBox.pickingMode = PickingMode.Ignore;
+            _overlay.Add(_selectionBox);
+
+            _sizeBadge = new Label();
+            _sizeBadge.AddToClassList("svg-editor__selection-size-badge");
+            _sizeBadge.pickingMode = PickingMode.Ignore;
+            _overlay.Add(_sizeBadge);
+
+            CreateHandle(CanvasHandle.TopLeft);
+            CreateHandle(CanvasHandle.TopRight);
+            CreateHandle(CanvasHandle.BottomRight);
+            CreateHandle(CanvasHandle.BottomLeft);
+
+            ClearFrame();
+            ClearSelection();
+        }
+
+        public void Detach()
+        {
+            foreach (var handle in _handles.Values)
+            {
+                handle?.RemoveFromHierarchy();
+            }
+
+            _handles.Clear();
+            _sizeBadge?.RemoveFromHierarchy();
+            _selectionBox?.RemoveFromHierarchy();
+            _verticalGuide?.RemoveFromHierarchy();
+            _horizontalGuide?.RemoveFromHierarchy();
+            _frameLabel?.RemoveFromHierarchy();
+            _overlay?.RemoveFromHierarchy();
+
+            _sizeBadge = null;
+            _selectionBox = null;
+            _verticalGuide = null;
+            _horizontalGuide = null;
+            _frameLabel = null;
+            _overlay = null;
+            if (_frameElement != null)
+            {
+                _frameElement.style.display = DisplayStyle.None;
+            }
+
+            _frameElement = null;
+            _currentSelection = null;
+        }
+
+        public void ClearFrame()
+        {
+            if (_frameElement != null)
+            {
+                _frameElement.style.display = DisplayStyle.None;
+            }
+
+            if (_frameLabel != null)
+            {
+                _frameLabel.text = string.Empty;
+                _frameLabel.style.display = DisplayStyle.None;
+            }
+        }
+
+        public void SetFrame(Rect viewportRect, string label)
+        {
+            if (_frameElement == null)
+            {
+                return;
+            }
+
+            _frameElement.style.display = DisplayStyle.Flex;
+            _frameElement.style.left = viewportRect.xMin;
+            _frameElement.style.top = viewportRect.yMin;
+            _frameElement.style.width = viewportRect.width;
+            _frameElement.style.height = viewportRect.height;
+
+            if (_frameLabel != null)
+            {
+                _frameLabel.style.display = DisplayStyle.Flex;
+                _frameLabel.text = string.IsNullOrWhiteSpace(label) ? "Frame 1" : label;
+                _frameLabel.style.left = viewportRect.xMin;
+                _frameLabel.style.top = viewportRect.yMin - 24f;
+            }
+        }
+
+        public void ClearSelection()
+        {
+            _currentSelection = null;
+
+            if (_selectionBox != null)
+            {
+                _selectionBox.style.display = DisplayStyle.None;
+            }
+
+            if (_sizeBadge != null)
+            {
+                _sizeBadge.style.display = DisplayStyle.None;
+            }
+
+            if (_verticalGuide != null)
+            {
+                _verticalGuide.style.display = DisplayStyle.None;
+            }
+
+            if (_horizontalGuide != null)
+            {
+                _horizontalGuide.style.display = DisplayStyle.None;
+            }
+
+            foreach (var handle in _handles.Values)
+            {
+                handle.style.display = DisplayStyle.None;
+            }
+        }
+
+        public void SetSelection(CanvasSelectionVisual selection)
+        {
+            _currentSelection = selection;
+
+            if (_selectionBox == null || selection == null || selection.Kind == CanvasSelectionKind.None)
+            {
+                ClearSelection();
+                return;
+            }
+
+            _selectionBox.style.display = DisplayStyle.Flex;
+            _selectionBox.EnableInClassList("svg-editor__selection-box--frame", selection.Kind == CanvasSelectionKind.Frame);
+            _selectionBox.style.left = selection.Rect.xMin;
+            _selectionBox.style.top = selection.Rect.yMin;
+            _selectionBox.style.width = selection.Rect.width;
+            _selectionBox.style.height = selection.Rect.height;
+
+            if (_sizeBadge != null && !string.IsNullOrWhiteSpace(selection.SizeText))
+            {
+                _sizeBadge.style.display = DisplayStyle.Flex;
+                _sizeBadge.text = selection.SizeText;
+                _sizeBadge.style.left = selection.Rect.center.x - 24f;
+                _sizeBadge.style.top = selection.Rect.yMax + 8f;
+            }
+
+            if (_verticalGuide != null)
+            {
+                _verticalGuide.style.display = selection.ShowVerticalGuide ? DisplayStyle.Flex : DisplayStyle.None;
+                if (selection.ShowVerticalGuide)
+                {
+                    _verticalGuide.style.left = selection.VerticalGuideX;
+                }
+            }
+
+            if (_horizontalGuide != null)
+            {
+                _horizontalGuide.style.display = selection.ShowHorizontalGuide ? DisplayStyle.Flex : DisplayStyle.None;
+                if (selection.ShowHorizontalGuide)
+                {
+                    _horizontalGuide.style.top = selection.HorizontalGuideY;
+                }
+            }
+
+            foreach (var pair in _handles)
+            {
+                pair.Value.style.display = selection.ShowHandles ? DisplayStyle.Flex : DisplayStyle.None;
+            }
+
+            PositionHandle(CanvasHandle.TopLeft, selection.Rect.xMin, selection.Rect.yMin);
+            PositionHandle(CanvasHandle.TopRight, selection.Rect.xMax, selection.Rect.yMin);
+            PositionHandle(CanvasHandle.BottomRight, selection.Rect.xMax, selection.Rect.yMax);
+            PositionHandle(CanvasHandle.BottomLeft, selection.Rect.xMin, selection.Rect.yMax);
+        }
+
+        public bool TryHitTestHandle(Vector2 localPoint, out CanvasHandle handle)
+        {
+            handle = CanvasHandle.None;
+            if (_currentSelection == null || !_currentSelection.ShowHandles)
+            {
+                return false;
+            }
+
+            foreach (var pair in _handles)
+            {
+                var handleWidth = pair.Value.resolvedStyle.width > 0f
+                    ? pair.Value.resolvedStyle.width
+                    : HANDLE_HALF_SIZE * 2f;
+                var handleHeight = pair.Value.resolvedStyle.height > 0f
+                    ? pair.Value.resolvedStyle.height
+                    : HANDLE_HALF_SIZE * 2f;
+                var handleRect = new Rect(
+                    pair.Value.resolvedStyle.left,
+                    pair.Value.resolvedStyle.top,
+                    handleWidth,
+                    handleHeight);
+
+                if (handleRect.Contains(localPoint))
+                {
+                    handle = pair.Key;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private void CreateHandle(CanvasHandle handle)
+        {
+            var element = new VisualElement();
+            element.AddToClassList("svg-editor__selection-handle");
+            element.pickingMode = PickingMode.Ignore;
+            _overlay.Add(element);
+            _handles[handle] = element;
+        }
+
+        private void PositionHandle(CanvasHandle handle, float x, float y)
+        {
+            if (!_handles.TryGetValue(handle, out var element))
+            {
+                return;
+            }
+
+            element.style.left = x - HANDLE_HALF_SIZE;
+            element.style.top = y - HANDLE_HALF_SIZE;
+        }
+    }
+}

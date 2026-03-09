@@ -1,0 +1,72 @@
+using UnityEngine;
+using UnityEngine.UIElements;
+
+namespace UnitySvgEditor.Editor
+{
+    internal sealed class CanvasWorkspaceController
+    {
+        private readonly CanvasViewportState _viewportState = new();
+        private readonly CanvasOverlayController _overlayController = new();
+        private readonly CanvasSceneProjector _sceneProjector;
+        private readonly CanvasInteractionController _interactionController;
+
+        public CanvasWorkspaceController(ICanvasWorkspaceHost host, StructureEditor structureEditor)
+        {
+            _sceneProjector = new CanvasSceneProjector(
+                _viewportState,
+                new PreviewElementHitTester(),
+                framePadding: 12f,
+                frameHeaderHeight: 24f,
+                alignmentGuideThreshold: 2f);
+
+            _interactionController = new CanvasInteractionController(
+                host,
+                structureEditor,
+                _viewportState,
+                _overlayController,
+                _sceneProjector);
+        }
+
+        public CanvasSelectionKind SelectionKind => _interactionController.SelectionKind;
+
+        public void Bind(VisualElement stage, VisualElement frame, Toggle moveToolToggle)
+        {
+            _interactionController.Bind(stage, frame, moveToolToggle);
+        }
+
+        public void Dispose()
+        {
+            _interactionController.Dispose();
+        }
+
+        public void SetSelectionKind(CanvasSelectionKind selectionKind)
+        {
+            _interactionController.SetSelectionKind(selectionKind);
+        }
+
+        public void ResetCanvasView(bool clearSelection = false)
+        {
+            _interactionController.ResetCanvasView(clearSelection);
+        }
+
+        public void SyncCanvasFrameToPreview()
+        {
+            _interactionController.SyncCanvasFrameToPreview();
+        }
+
+        public void ResetSelection()
+        {
+            _interactionController.ResetSelection();
+        }
+
+        public void UpdateCanvasVisualState()
+        {
+            _interactionController.UpdateCanvasVisualState();
+        }
+
+        public void UpdateSelectionVisual()
+        {
+            _interactionController.UpdateSelectionVisual();
+        }
+    }
+}

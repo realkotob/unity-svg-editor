@@ -1,0 +1,1824 @@
+{
+  "basicRoles": [
+    "default",
+    "pointer",
+    "text",
+    "wait",
+    "help",
+    "crosshair",
+    "move",
+    "grab",
+    "no-drop",
+    "ew-resize",
+    "ns-resize",
+    "nwse-resize",
+    "nesw-resize",
+    "zoom-in",
+    "zoom-out"
+  ],
+  "extendedRoles": [
+    "default",
+    "pointer",
+    "text",
+    "wait",
+    "help",
+    "crosshair",
+    "move",
+    "grab",
+    "no-drop",
+    "not-allowed",
+    "progress",
+    "copy",
+    "alias",
+    "context-menu",
+    "color-picker",
+    "vertical-text",
+    "ew-resize",
+    "ns-resize",
+    "nwse-resize",
+    "nesw-resize",
+    "col-resize",
+    "row-resize",
+    "zoom-in",
+    "zoom-out"
+  ],
+  "categories": [
+    {
+      "id": "classic-arrow",
+      "name": "Classic Arrow",
+      "description": "General-purpose base arrows derived from popular OSS themes.",
+      "presetIds": [
+        "core-classic",
+        "core-compact",
+        "core-balanced"
+      ]
+    },
+    {
+      "id": "flat-no-tail",
+      "name": "No Tail / Flat",
+      "description": "Flat or tail-cut base silhouettes.",
+      "presetIds": [
+        "core-flat",
+        "core-minimal"
+      ]
+    },
+    {
+      "id": "rounded-tip",
+      "name": "Rounded Tip",
+      "description": "Softer pointer tips with rounded body.",
+      "presetIds": [
+        "core-round",
+        "core-soft"
+      ]
+    },
+    {
+      "id": "sharp-tip",
+      "name": "Sharp Tip",
+      "description": "Pointed and slanted pointer variants.",
+      "presetIds": [
+        "core-sharp",
+        "core-needle"
+      ]
+    },
+    {
+      "id": "funny-custom",
+      "name": "Funny / Custom",
+      "description": "Playful accents over the base silhouette.",
+      "presetIds": [
+        "core-banana",
+        "core-fuchsia",
+        "core-mint"
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "id": "core-classic",
+      "name": "Core Classic",
+      "description": "Balanced classic arrow baseline.",
+      "tags": "arrow,classic",
+      "tipSharpness": 0.72,
+      "tailCut": 0.14,
+      "roundness": 0.1,
+      "tilt": -12,
+      "bodyScale": 1,
+      "accent": "none",
+      "hotspots": [
+        {
+          "role": "default",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "pointer",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "help",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "no-drop",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "not-allowed",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "copy",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "alias",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "context-menu",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "text",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "vertical-text",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "wait",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "progress",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "crosshair",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "color-picker",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "move",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "all-scroll",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "grab",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "grabbing",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "ew-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "ns-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "nwse-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "nesw-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "col-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "row-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "zoom-in",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "zoom-out",
+          "x": 32,
+          "y": 32
+        }
+      ]
+    },
+    {
+      "id": "core-compact",
+      "name": "Core Compact",
+      "description": "Slightly compact pointer footprint.",
+      "tags": "arrow,compact",
+      "tipSharpness": 0.68,
+      "tailCut": 0.2,
+      "roundness": 0.16,
+      "tilt": -10,
+      "bodyScale": 0.92,
+      "accent": "none",
+      "hotspots": [
+        {
+          "role": "default",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "pointer",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "help",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "no-drop",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "not-allowed",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "copy",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "alias",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "context-menu",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "text",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "vertical-text",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "wait",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "progress",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "crosshair",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "color-picker",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "move",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "all-scroll",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "grab",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "grabbing",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "ew-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "ns-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "nwse-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "nesw-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "col-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "row-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "zoom-in",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "zoom-out",
+          "x": 32,
+          "y": 32
+        }
+      ]
+    },
+    {
+      "id": "core-balanced",
+      "name": "Core Balanced",
+      "description": "Balanced for mixed UI and game usage.",
+      "tags": "arrow,balanced",
+      "tipSharpness": 0.7,
+      "tailCut": 0.16,
+      "roundness": 0.14,
+      "tilt": -11,
+      "bodyScale": 1.03,
+      "accent": "none",
+      "hotspots": [
+        {
+          "role": "default",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "pointer",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "help",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "no-drop",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "not-allowed",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "copy",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "alias",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "context-menu",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "text",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "vertical-text",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "wait",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "progress",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "crosshair",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "color-picker",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "move",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "all-scroll",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "grab",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "grabbing",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "ew-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "ns-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "nwse-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "nesw-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "col-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "row-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "zoom-in",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "zoom-out",
+          "x": 32,
+          "y": 32
+        }
+      ]
+    },
+    {
+      "id": "core-flat",
+      "name": "Core Flat",
+      "description": "Tail-cut and flatter body.",
+      "tags": "flat,tail-cut",
+      "tipSharpness": 0.62,
+      "tailCut": 0.42,
+      "roundness": 0.08,
+      "tilt": -9,
+      "bodyScale": 0.98,
+      "accent": "none",
+      "hotspots": [
+        {
+          "role": "default",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "pointer",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "help",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "no-drop",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "not-allowed",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "copy",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "alias",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "context-menu",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "text",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "vertical-text",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "wait",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "progress",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "crosshair",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "color-picker",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "move",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "all-scroll",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "grab",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "grabbing",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "ew-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "ns-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "nwse-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "nesw-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "col-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "row-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "zoom-in",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "zoom-out",
+          "x": 32,
+          "y": 32
+        }
+      ]
+    },
+    {
+      "id": "core-minimal",
+      "name": "Core Minimal",
+      "description": "Minimal and flat silhouette.",
+      "tags": "flat,minimal",
+      "tipSharpness": 0.58,
+      "tailCut": 0.52,
+      "roundness": 0.05,
+      "tilt": -8,
+      "bodyScale": 0.9,
+      "accent": "none",
+      "hotspots": [
+        {
+          "role": "default",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "pointer",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "help",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "no-drop",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "not-allowed",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "copy",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "alias",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "context-menu",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "text",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "vertical-text",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "wait",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "progress",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "crosshair",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "color-picker",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "move",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "all-scroll",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "grab",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "grabbing",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "ew-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "ns-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "nwse-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "nesw-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "col-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "row-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "zoom-in",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "zoom-out",
+          "x": 32,
+          "y": 32
+        }
+      ]
+    },
+    {
+      "id": "core-round",
+      "name": "Core Round",
+      "description": "Rounded tip and smooth edges.",
+      "tags": "rounded,soft",
+      "tipSharpness": 0.48,
+      "tailCut": 0.18,
+      "roundness": 0.46,
+      "tilt": -10,
+      "bodyScale": 1,
+      "accent": "none",
+      "hotspots": [
+        {
+          "role": "default",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "pointer",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "help",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "no-drop",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "not-allowed",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "copy",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "alias",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "context-menu",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "text",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "vertical-text",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "wait",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "progress",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "crosshair",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "color-picker",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "move",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "all-scroll",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "grab",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "grabbing",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "ew-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "ns-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "nwse-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "nesw-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "col-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "row-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "zoom-in",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "zoom-out",
+          "x": 32,
+          "y": 32
+        }
+      ]
+    },
+    {
+      "id": "core-soft",
+      "name": "Core Soft",
+      "description": "Round-heavy body with softer angle.",
+      "tags": "rounded,soft",
+      "tipSharpness": 0.42,
+      "tailCut": 0.24,
+      "roundness": 0.6,
+      "tilt": -9,
+      "bodyScale": 1.02,
+      "accent": "none",
+      "hotspots": [
+        {
+          "role": "default",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "pointer",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "help",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "no-drop",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "not-allowed",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "copy",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "alias",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "context-menu",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "text",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "vertical-text",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "wait",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "progress",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "crosshair",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "color-picker",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "move",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "all-scroll",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "grab",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "grabbing",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "ew-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "ns-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "nwse-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "nesw-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "col-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "row-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "zoom-in",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "zoom-out",
+          "x": 32,
+          "y": 32
+        }
+      ]
+    },
+    {
+      "id": "core-sharp",
+      "name": "Core Sharp",
+      "description": "Sharp tip and tighter edge profile.",
+      "tags": "sharp,pointed",
+      "tipSharpness": 0.9,
+      "tailCut": 0.08,
+      "roundness": 0.02,
+      "tilt": -14,
+      "bodyScale": 1.02,
+      "accent": "none",
+      "hotspots": [
+        {
+          "role": "default",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "pointer",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "help",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "no-drop",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "not-allowed",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "copy",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "alias",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "context-menu",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "text",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "vertical-text",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "wait",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "progress",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "crosshair",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "color-picker",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "move",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "all-scroll",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "grab",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "grabbing",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "ew-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "ns-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "nwse-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "nesw-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "col-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "row-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "zoom-in",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "zoom-out",
+          "x": 32,
+          "y": 32
+        }
+      ]
+    },
+    {
+      "id": "core-needle",
+      "name": "Core Needle",
+      "description": "Extra pointed narrow profile.",
+      "tags": "sharp,needle",
+      "tipSharpness": 0.98,
+      "tailCut": 0.02,
+      "roundness": 0,
+      "tilt": -16,
+      "bodyScale": 0.96,
+      "accent": "none",
+      "hotspots": [
+        {
+          "role": "default",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "pointer",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "help",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "no-drop",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "not-allowed",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "copy",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "alias",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "context-menu",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "text",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "vertical-text",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "wait",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "progress",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "crosshair",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "color-picker",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "move",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "all-scroll",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "grab",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "grabbing",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "ew-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "ns-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "nwse-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "nesw-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "col-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "row-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "zoom-in",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "zoom-out",
+          "x": 32,
+          "y": 32
+        }
+      ]
+    },
+    {
+      "id": "core-banana",
+      "name": "Core Banana",
+      "description": "Playful banana-toned accent preset.",
+      "tags": "funny,banana",
+      "tipSharpness": 0.6,
+      "tailCut": 0.2,
+      "roundness": 0.26,
+      "tilt": -8,
+      "bodyScale": 1.08,
+      "accent": "banana",
+      "hotspots": [
+        {
+          "role": "default",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "pointer",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "help",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "no-drop",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "not-allowed",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "copy",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "alias",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "context-menu",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "text",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "vertical-text",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "wait",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "progress",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "crosshair",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "color-picker",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "move",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "all-scroll",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "grab",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "grabbing",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "ew-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "ns-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "nwse-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "nesw-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "col-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "row-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "zoom-in",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "zoom-out",
+          "x": 32,
+          "y": 32
+        }
+      ]
+    },
+    {
+      "id": "core-fuchsia",
+      "name": "Core Fuchsia",
+      "description": "Playful fuchsia preset.",
+      "tags": "funny,fuchsia",
+      "tipSharpness": 0.66,
+      "tailCut": 0.18,
+      "roundness": 0.2,
+      "tilt": -11,
+      "bodyScale": 1.04,
+      "accent": "fuchsia",
+      "hotspots": [
+        {
+          "role": "default",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "pointer",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "help",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "no-drop",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "not-allowed",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "copy",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "alias",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "context-menu",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "text",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "vertical-text",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "wait",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "progress",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "crosshair",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "color-picker",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "move",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "all-scroll",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "grab",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "grabbing",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "ew-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "ns-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "nwse-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "nesw-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "col-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "row-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "zoom-in",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "zoom-out",
+          "x": 32,
+          "y": 32
+        }
+      ]
+    },
+    {
+      "id": "core-mint",
+      "name": "Core Mint",
+      "description": "Playful mint accent preset.",
+      "tags": "funny,mint",
+      "tipSharpness": 0.64,
+      "tailCut": 0.2,
+      "roundness": 0.24,
+      "tilt": -10,
+      "bodyScale": 1,
+      "accent": "mint",
+      "hotspots": [
+        {
+          "role": "default",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "pointer",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "help",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "no-drop",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "not-allowed",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "copy",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "alias",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "context-menu",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "role": "text",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "vertical-text",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "wait",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "progress",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "crosshair",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "color-picker",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "move",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "all-scroll",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "grab",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "grabbing",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "ew-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "ns-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "nwse-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "nesw-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "col-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "row-resize",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "zoom-in",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "role": "zoom-out",
+          "x": 32,
+          "y": 32
+        }
+      ]
+    }
+  ]
+}

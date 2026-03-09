@@ -1,0 +1,4 @@
+* {
+    --font-size-xs: 11px;
+    --font-size-sm: 12px;
+}

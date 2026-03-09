@@ -1,0 +1,17 @@
+* {
+    --color-white: rgb(255, 255, 255);
+    --color-black: rgb(0, 0, 0);
+
+    --color-neutral-950: rgb(30, 30, 30);
+    --color-neutral-900: rgb(44, 44, 44);
+    --color-neutral-880: rgb(42, 42, 46);
+    --color-neutral-700: rgb(187, 187, 187);
+    --color-neutral-600: rgb(180, 180, 186);
+    --color-neutral-550: rgb(153, 153, 153);
+    --color-neutral-500: rgb(102, 102, 102);
+    --color-neutral-100: rgb(230, 230, 230);
+
+    --color-accent-500: rgb(24, 160, 251);
+    --color-accent-200: rgb(224, 244, 255);
+    --color-accent-100: rgb(215, 224, 255);
+}

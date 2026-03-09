@@ -1,0 +1,94 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace UnitySvgEditor.Editor
+{
+    internal sealed class PatchPanelState
+    {
+        private readonly PatchTargetSelectionState _targetSelection = new();
+
+        public PatchPanelState()
+        {
+            _targetSelection.SetTargets(Array.Empty<PatchTarget>());
+            FillColor = Color.white;
+            StrokeColor = Color.black;
+            StrokeWidth = 1f;
+            Opacity = 1f;
+            FillOpacity = 1f;
+            StrokeOpacity = 1f;
+            DashLength = 4f;
+            DashGap = 2f;
+            ScaleX = 1f;
+            ScaleY = 1f;
+            TranslateX = 0f;
+            TranslateY = 0f;
+            Rotate = 0f;
+        }
+
+        public IReadOnlyList<string> TargetChoices => _targetSelection.TargetChoices;
+        public string SelectedTargetKey => _targetSelection.SelectedTargetKey;
+        public string SelectedTargetLabel => _targetSelection.SelectedTargetLabel;
+
+        public bool FillEnabled { get; set; }
+        public Color FillColor { get; set; }
+        public bool StrokeEnabled { get; set; }
+        public Color StrokeColor { get; set; }
+        public bool StrokeWidthEnabled { get; set; }
+        public float StrokeWidth { get; set; }
+        public bool OpacityEnabled { get; set; }
+        public float Opacity { get; set; }
+        public bool FillOpacityEnabled { get; set; }
+        public float FillOpacity { get; set; }
+        public bool StrokeOpacityEnabled { get; set; }
+        public float StrokeOpacity { get; set; }
+        public string StrokeLinecap { get; set; } = string.Empty;
+        public string StrokeLinejoin { get; set; } = string.Empty;
+        public bool DasharrayEnabled { get; set; }
+        public float DashLength { get; set; }
+        public float DashGap { get; set; }
+        public bool TransformEnabled { get; set; }
+        public string Transform { get; set; } = string.Empty;
+
+        public float TranslateX { get; set; }
+        public float TranslateY { get; set; }
+        public float Rotate { get; set; }
+        public float ScaleX { get; set; }
+        public float ScaleY { get; set; }
+
+        public void SetTargets(IReadOnlyList<PatchTarget> targets)
+        {
+            _targetSelection.SetTargets(targets);
+        }
+
+        public void SelectTargetLabel(string label)
+        {
+            _targetSelection.SelectTargetLabel(label);
+        }
+
+        public string ResolveSelectedTargetKey()
+        {
+            return _targetSelection.ResolveSelectedTargetKey();
+        }
+
+        public bool TrySelectTargetByKey(string targetKey, out string label)
+        {
+            return _targetSelection.TrySelectTargetByKey(targetKey, out label);
+        }
+
+        public AttributePatchRequest BuildPatchRequest()
+        {
+            return PatchPanelStateValueCodec.BuildPatchRequest(this);
+        }
+
+        public string BuildTransformFromHelper()
+        {
+            return PatchPanelStateValueCodec.BuildTransformFromHelper(this);
+        }
+
+        public void SyncFromAttributes(IReadOnlyDictionary<string, string> attributes)
+        {
+            PatchPanelStateValueCodec.SyncFromAttributes(this, attributes);
+        }
+    }
+}

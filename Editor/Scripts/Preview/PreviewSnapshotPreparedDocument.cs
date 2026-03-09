@@ -1,0 +1,14 @@
+using System;
+using System.Collections.Generic;
+using System.Xml;
+
+namespace UnitySvgEditor.Editor
+{
+    internal sealed class PreviewSnapshotPreparedDocument
+    {
+        public XmlDocument Document { get; set; }
+        public XmlElement Root { get; set; }
+        public IReadOnlyDictionary<string, (string Key, string TargetKey)> KeyByNodeId { get; set; } =
+            new Dictionary<string, (string Key, string TargetKey)>(StringComparer.Ordinal);
+    }
+}

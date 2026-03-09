@@ -1,0 +1,145 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:toggle="Core.UI.Foundation.Components.Toggle" xmlns:togglegroup="Core.UI.Foundation.Components.ToggleGroup" editor-extension-mode="True">
+    <ui:VisualElement class="svg-editor">
+        <ui:TwoPaneSplitView name="main-split" fixed-pane-index="0" fixed-pane-initial-dimension="240" orientation="Horizontal" class="svg-editor__main-split">
+            <ui:VisualElement name="asset-panel" class="svg-editor__asset-panel">
+                <ui:TwoPaneSplitView name="asset-split" fixed-pane-index="0" fixed-pane-initial-dimension="220" orientation="Vertical" class="svg-editor__asset-split">
+                    <ui:VisualElement name="asset-panel-top" class="svg-editor__asset-panel-top">
+                        <ui:VisualElement class="svg-editor__asset-section-header">
+                            <ui:Label text="Layers" class="svg-editor__asset-section-title"/>
+                        </ui:VisualElement>
+                        <ui:TreeView name="asset-hierarchy-list" class="svg-editor__asset-hierarchy-list"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="asset-panel-bottom" class="svg-editor__asset-panel-bottom icon-tab">
+                        <ui:VisualElement class="svg-editor__asset-section-header">
+                            <ui:Label text="Assets" class="svg-editor__asset-section-title"/>
+                            <ui:VisualElement name="asset-library-filter-bar" class="svg-editor__asset-section-actions"/>
+                        </ui:VisualElement>
+                        <ui:VisualElement name="asset-grid-host" class="svg-editor__asset-grid-host"/>
+                    </ui:VisualElement>
+                </ui:TwoPaneSplitView>
+            </ui:VisualElement>
+            <ui:TwoPaneSplitView name="workspace-split" fixed-pane-index="1" fixed-pane-initial-dimension="320" orientation="Horizontal" class="svg-editor__workspace-split">
+                <ui:VisualElement name="preview-panel" class="svg-editor__preview-panel">
+                    <ui:VisualElement name="canvas-stage" class="svg-editor__canvas-stage">
+                        <ui:VisualElement name="canvas-frame" class="svg-editor__canvas-frame">
+                            <ui:Image name="preview-image" class="svg-editor__preview-canvas"/>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:ScrollView name="inspector-panel" mode="Vertical" class="svg-editor__inspector-panel">
+                    <ui:VisualElement name="design-inspector" class="svg-editor__inspector-mode">
+                        <ui:VisualElement name="structure-panel" class="svg-editor__structure-panel svg-editor__inspector-card svg-editor__inspector-card--accent">
+                            <ui:Label text="Selection" class="svg-editor__subsection-title"/>
+                            <ui:VisualElement class="svg-editor__selection-summary">
+                                <ui:Label name="selection-name" text="No selection" class="svg-editor__selection-name"/>
+                                <ui:Label name="selection-meta" class="svg-editor__selection-meta"/>
+                                <ui:Label name="selection-layer" class="svg-editor__selection-meta"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="svg-editor__patch-row">
+                                <ui:Toggle name="layer-visible-toggle" label="Layer Visible" value="true" class="svg-editor__patch-field"/>
+                                <ui:Button name="apply-layer-visibility" text="Apply Layer Visibility" class="svg-editor__patch-inline-btn"/>
+                            </ui:VisualElement>
+                            <ui:Label text="Transform" class="svg-editor__patch-subtitle"/>
+                            <ui:VisualElement class="svg-editor__patch-row">
+                                <ui:FloatField name="structure-translate-x" label="Translate X" value="0" class="svg-editor__patch-field"/>
+                                <ui:FloatField name="structure-translate-y" label="Translate Y" value="0" class="svg-editor__patch-field"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="svg-editor__patch-row">
+                                <ui:FloatField name="structure-rotate" label="Rotate (deg)" value="0" class="svg-editor__patch-field"/>
+                                <ui:FloatField name="structure-scale-x" label="Scale X" value="1" class="svg-editor__patch-field"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="svg-editor__patch-row">
+                                <ui:FloatField name="structure-scale-y" label="Scale Y" value="1" class="svg-editor__patch-field"/>
+                                <ui:Button name="structure-apply-transform" text="Apply Transform To Selection" class="svg-editor__patch-inline-btn"/>
+                            </ui:VisualElement>
+                            <ui:Label name="structure-status" text="No SVG structure loaded." class="svg-editor__source-status"/>
+                        </ui:VisualElement>
+                        <ui:VisualElement name="patch-panel" class="svg-editor__patch-panel svg-editor__inspector-card">
+                            <ui:Label text="Appearance" class="svg-editor__subsection-title"/>
+                        <ui:DropdownField name="patch-target" label="Target" class="svg-editor__patch-target"/>
+                        <ui:VisualElement class="svg-editor__patch-row">
+                            <ui:VisualElement class="svg-editor__patch-field">
+                                <ui:Toggle name="patch-fill-enabled" label="Apply Fill" value="false"/>
+                                <uie:ColorField name="patch-fill-color" label="Fill Color"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="svg-editor__patch-field">
+                                <ui:Toggle name="patch-stroke-enabled" label="Apply Stroke" value="false"/>
+                                <uie:ColorField name="patch-stroke-color" label="Stroke Color"/>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                        <ui:VisualElement class="svg-editor__patch-row">
+                            <ui:VisualElement class="svg-editor__patch-field">
+                                <ui:Toggle name="patch-stroke-width-enabled" label="Apply Stroke Width" value="false"/>
+                                <ui:FloatField name="patch-stroke-width" label="Stroke Width" value="1"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="svg-editor__patch-field">
+                                <ui:Toggle name="patch-transform-enabled" label="Apply Transform" value="false"/>
+                                <ui:TextField name="patch-transform" label="Transform"/>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                        <ui:VisualElement class="svg-editor__patch-row">
+                            <ui:VisualElement class="svg-editor__patch-field">
+                                <ui:Toggle name="patch-opacity-enabled" label="Apply Opacity" value="false"/>
+                                <ui:Slider name="patch-opacity" label="Opacity" low-value="0" high-value="1" value="1"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="svg-editor__patch-field">
+                                <ui:Toggle name="patch-fill-opacity-enabled" label="Apply Fill Opacity" value="false"/>
+                                <ui:Slider name="patch-fill-opacity" label="Fill Opacity" low-value="0" high-value="1" value="1"/>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                        <ui:VisualElement class="svg-editor__patch-row">
+                            <ui:VisualElement class="svg-editor__patch-field">
+                                <ui:Toggle name="patch-stroke-opacity-enabled" label="Apply Stroke Opacity" value="false"/>
+                                <ui:Slider name="patch-stroke-opacity" label="Stroke Opacity" low-value="0" high-value="1" value="1"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="svg-editor__patch-field">
+                                <ui:Toggle name="patch-dash-enabled" label="Apply Dasharray" value="false"/>
+                                <ui:VisualElement class="svg-editor__patch-row">
+                                    <ui:FloatField name="patch-dash-length" label="Dash" value="4" class="svg-editor__patch-field"/>
+                                    <ui:FloatField name="patch-dash-gap" label="Gap" value="2" class="svg-editor__patch-field"/>
+                                </ui:VisualElement>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                        <ui:VisualElement class="svg-editor__patch-row">
+                            <ui:DropdownField name="patch-linecap" label="Line Cap" class="svg-editor__patch-field"/>
+                            <ui:DropdownField name="patch-linejoin" label="Line Join" class="svg-editor__patch-field"/>
+                        </ui:VisualElement>
+                        <ui:VisualElement class="svg-editor__patch-row">
+                            <ui:Button name="patch-read-target" text="Read From Target" class="svg-editor__patch-inline-btn"/>
+                            <ui:Button name="patch-apply" text="Apply Patch" class="svg-editor__patch-inline-btn"/>
+                        </ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="code-inspector" class="svg-editor__inspector-mode">
+                        <ui:VisualElement name="source-panel" class="svg-editor__source-panel svg-editor__source-panel--inline svg-editor__inspector-card">
+                        <ui:VisualElement class="svg-editor__source-header">
+                            <ui:Label text="Source Editor" class="svg-editor__section-title"/>
+                            <ui:VisualElement class="svg-editor__button-row">
+                                <ui:Button name="source-reload" text="Reload" class="svg-editor__action-button"/>
+                                <ui:Button name="source-validate" text="Validate XML" class="svg-editor__action-button"/>
+                                <ui:Button name="source-save" text="Save &amp; Reimport" class="svg-editor__action-button"/>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                        <ui:TextField name="source-editor" multiline="true" class="svg-editor__source-field"/>
+                        <ui:Label name="source-status" text="Select an SVG asset to begin." class="svg-editor__source-status"/>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:ScrollView>
+            </ui:TwoPaneSplitView>
+        </ui:TwoPaneSplitView>
+        <ui:VisualElement name="floating-toolbar" class="svg-editor__floating-toolbar">
+            <ui:VisualElement class="svg-editor__floating-toolbar-left">
+                <togglegroup:ToggleGroup name="toolbar-tools-group" variant="Default" gap="6">
+                    <toggle:Toggle name="tool-move" tooltip="Move" size="Small" variant="Text" value="true" class="svg-editor__tool-icon"/>
+                </togglegroup:ToggleGroup>
+            </ui:VisualElement>
+            <ui:VisualElement class="svg-editor__floating-toolbar-divider"/>
+            <ui:VisualElement class="svg-editor__floating-toolbar-right">
+                <togglegroup:ToggleGroup name="toolbar-mode-group" variant="Outline" gap="6">
+                    <toggle:Toggle name="toolbar-mode-vector" tooltip="Vector" size="Small" variant="Text" value="true" class="svg-editor__tool-icon"/>
+                    <toggle:Toggle name="toolbar-mode-code" tooltip="Code" size="Small" variant="Text" value="false" class="svg-editor__tool-icon"/>
+                </togglegroup:ToggleGroup>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

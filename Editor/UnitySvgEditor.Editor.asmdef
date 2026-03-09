@@ -1,0 +1,19 @@
+{
+    "name": "UnitySvgEditor.Editor",
+    "rootNamespace": "UnitySvgEditor.Editor",
+    "references": [
+        "Core.UI.Foundation.Tooling",
+        "Core.UI.Foundation.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
