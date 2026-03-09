@@ -51,7 +51,6 @@ namespace UnitySvgEditor.Editor
 
         public void ResetPreviewState()
         {
-            ClearTransientPreview();
             DisposePreviewSnapshot();
             _view.SetPreviewVectorImage(null);
             WorkspaceCoordinator?.UpdateCanvasVisualState();
@@ -59,7 +58,6 @@ namespace UnitySvgEditor.Editor
 
         public void ClearPreview()
         {
-            ClearTransientPreview();
             DisposePreviewSnapshot();
             _view.SetPreviewVectorImage(null);
             WorkspaceCoordinator?.UpdateCanvasVisualState();
@@ -90,7 +88,6 @@ namespace UnitySvgEditor.Editor
             {
                 if (!keepExistingPreviewOnFailure)
                 {
-                    ClearTransientPreview();
                     DisposePreviewSnapshot();
                     _view.SetPreviewVectorImage(null);
                     WorkspaceCoordinator?.UpdateCanvasVisualState();
@@ -99,7 +96,6 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            ClearTransientPreview();
             ReplacePreviewSnapshot(snapshot);
         }
 
@@ -126,20 +122,8 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
-            currentDocument.HasInteractionPreview = true;
-            currentDocument.InteractionPreviewSourceText = sourceText;
             ReplacePreviewSnapshot(snapshot);
             return true;
-        }
-
-        public void ClearTransientPreview()
-        {
-            var currentDocument = CurrentDocument;
-            if (currentDocument == null)
-                return;
-
-            currentDocument.HasInteractionPreview = false;
-            currentDocument.InteractionPreviewSourceText = string.Empty;
         }
 
         private void ReplacePreviewSnapshot(PreviewSnapshot snapshot)

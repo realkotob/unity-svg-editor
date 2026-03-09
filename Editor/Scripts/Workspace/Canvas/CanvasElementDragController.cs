@@ -1,7 +1,6 @@
 using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.UIElements;
-using System.Linq;
 
 namespace UnitySvgEditor.Editor
 {
@@ -18,7 +17,6 @@ namespace UnitySvgEditor.Editor
         private string _dragResizePreviewSourceText = string.Empty;
         private PreviewSnapshot _dragStartPreviewSnapshot;
         private Matrix2D _dragStartParentWorldTransform = Matrix2D.identity;
-        private Rect _lastCommittedSceneRect;
 
         public Rect DragCurrentSelectionViewportRect => _dragCurrentSelectionViewportRect;
         public Rect DragStartElementSceneRect => _dragStartElementSceneRect;
@@ -26,7 +24,6 @@ namespace UnitySvgEditor.Editor
         public string DragElementKey => _dragElementKey;
         public string DragPreviewSourceText => _moveSession.PreviewSourceText;
         public string DragResizePreviewSourceText => _dragResizePreviewSourceText;
-        public Rect LastCommittedSceneRect => _lastCommittedSceneRect;
 
         public CanvasElementDragController(StructureEditor structureEditor, CanvasSceneProjector sceneProjector)
         {
@@ -51,7 +48,6 @@ namespace UnitySvgEditor.Editor
             _dragStartElementSceneRect = elementSceneRect;
             _moveSession.Begin(elementKey, localPosition, _dragStartSelectionViewportRect, elementSceneRect);
             _dragResizePreviewSourceText = string.Empty;
-            _lastCommittedSceneRect = elementSceneRect;
         }
 
         public void BeginResize(
@@ -66,7 +62,6 @@ namespace UnitySvgEditor.Editor
             _dragCurrentSelectionViewportRect = selectionViewportRect;
             _dragStartElementSceneRect = selectionSceneRect;
             _dragResizePreviewSourceText = string.Empty;
-            _lastCommittedSceneRect = selectionSceneRect;
         }
 
         public Vector2 UpdateMove(Vector2 localPosition)
@@ -100,7 +95,6 @@ namespace UnitySvgEditor.Editor
             _dragResizePreviewSourceText = string.Empty;
             _dragStartPreviewSnapshot = null;
             _dragStartParentWorldTransform = Matrix2D.identity;
-            _lastCommittedSceneRect = default;
             _moveSession.End();
         }
 
@@ -252,41 +246,7 @@ namespace UnitySvgEditor.Editor
                 dragMode == CanvasDragMode.ResizeElement
                     ? $"Resized <{host.FindStructureNode(_dragElementKey)?.TagName ?? "element"}>."
                     : $"Moved <{host.FindStructureNode(_dragElementKey)?.TagName ?? "element"}>.");
-            PatchCommittedPreviewGeometry(host.PreviewSnapshot, committedSceneRect, dragMode);
-            _lastCommittedSceneRect = committedSceneRect;
             return true;
-        }
-
-        private void PatchCommittedPreviewGeometry(
-            PreviewSnapshot previewSnapshot,
-            Rect committedSceneRect,
-            CanvasDragMode dragMode)
-        {
-            if (previewSnapshot?.Elements == null || string.IsNullOrWhiteSpace(_dragElementKey))
-                return;
-
-            PreviewElementGeometry geometry = previewSnapshot.Elements.FirstOrDefault(item =>
-                item != null && string.Equals(item.Key, _dragElementKey, System.StringComparison.Ordinal));
-            if (geometry == null)
-                return;
-
-            Vector2 translation = committedSceneRect.center - geometry.VisualBounds.center;
-            geometry.VisualBounds = committedSceneRect;
-
-            if (dragMode != CanvasDragMode.MoveElement ||
-                geometry.HitGeometry == null ||
-                geometry.HitGeometry.Count == 0 ||
-                translation.sqrMagnitude <= Mathf.Epsilon)
-            {
-                return;
-            }
-
-            geometry.HitGeometry = geometry.HitGeometry
-                .Select(triangle => triangle?
-                    .Select(point => point + translation)
-                    .ToArray())
-                .Where(triangle => triangle != null)
-                .ToList();
         }
 
         // Converts a world-space direction vector to the element's SVG parent coordinate space.

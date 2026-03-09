@@ -145,7 +145,6 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            _previewService.ClearTransientPreview();
             CurrentDocument.WorkingSourceText = sourceText;
             _sourceSyncService.SyncCurrentSource(
                 CurrentDocument.IsDirty ? "Unsaved changes." : "No local changes.",
