@@ -18,7 +18,6 @@ namespace UnitySvgEditor.Editor
         void SelectElement(string elementKey, bool syncPatchTarget);
         void ClearSelection();
         void UpdateStructureInteractivity(bool hasDocument);
-        void RefreshSelectionSummary(CanvasSelectionKind selectionKind);
         void UpdateCanvasVisualState();
         void UpdateSelectionVisual();
         void SetHoveredElement(string elementKey);

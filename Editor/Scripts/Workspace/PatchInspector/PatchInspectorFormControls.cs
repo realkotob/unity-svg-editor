@@ -17,10 +17,6 @@ namespace UnitySvgEditor.Editor
         public FloatField StrokeWidthField { get; private set; }
         public Toggle OpacityEnabledToggle { get; private set; }
         public Slider OpacitySlider { get; private set; }
-        public Toggle FillOpacityEnabledToggle { get; private set; }
-        public Slider FillOpacitySlider { get; private set; }
-        public Toggle StrokeOpacityEnabledToggle { get; private set; }
-        public Slider StrokeOpacitySlider { get; private set; }
         public PopupField<string> LinecapPopup { get; private set; }
         public PopupField<string> LinejoinPopup { get; private set; }
         public Toggle DasharrayEnabledToggle { get; private set; }
@@ -37,15 +33,17 @@ namespace UnitySvgEditor.Editor
         public Button BuildTransformButton { get; private set; }
         public Button ApplyButton { get; private set; }
 
-        public bool IsBound => TargetPopup != null;
+        public bool IsBound =>
+            FillEnabledToggle != null ||
+            StrokeEnabledToggle != null ||
+            OpacityEnabledToggle != null ||
+            TransformField != null;
 
         public string SelectedTargetLabel => TargetPopup?.value ?? string.Empty;
         public bool FillEnabled => FillEnabledToggle?.value ?? false;
         public bool StrokeEnabled => StrokeEnabledToggle?.value ?? false;
         public bool StrokeWidthEnabled => StrokeWidthEnabledToggle?.value ?? false;
         public bool OpacityEnabled => OpacityEnabledToggle?.value ?? false;
-        public bool FillOpacityEnabled => FillOpacityEnabledToggle?.value ?? false;
-        public bool StrokeOpacityEnabled => StrokeOpacityEnabledToggle?.value ?? false;
         public bool DasharrayEnabled => DasharrayEnabledToggle?.value ?? false;
         public bool TransformEnabled => TransformEnabledToggle?.value ?? false;
 
@@ -57,8 +55,6 @@ namespace UnitySvgEditor.Editor
                 yield return StrokeEnabledToggle;
                 yield return StrokeWidthEnabledToggle;
                 yield return OpacityEnabledToggle;
-                yield return FillOpacityEnabledToggle;
-                yield return StrokeOpacityEnabledToggle;
                 yield return DasharrayEnabledToggle;
                 yield return TransformEnabledToggle;
             }
@@ -79,10 +75,6 @@ namespace UnitySvgEditor.Editor
             StrokeWidthField = root.Q<FloatField>("patch-stroke-width");
             OpacityEnabledToggle = root.Q<Toggle>("patch-opacity-enabled");
             OpacitySlider = root.Q<Slider>("patch-opacity");
-            FillOpacityEnabledToggle = root.Q<Toggle>("patch-fill-opacity-enabled");
-            FillOpacitySlider = root.Q<Slider>("patch-fill-opacity");
-            StrokeOpacityEnabledToggle = root.Q<Toggle>("patch-stroke-opacity-enabled");
-            StrokeOpacitySlider = root.Q<Slider>("patch-stroke-opacity");
             LinecapPopup = root.Q<DropdownField>("patch-linecap");
             LinejoinPopup = root.Q<DropdownField>("patch-linejoin");
             DasharrayEnabledToggle = root.Q<Toggle>("patch-dash-enabled");
@@ -114,10 +106,6 @@ namespace UnitySvgEditor.Editor
             StrokeWidthField = null;
             OpacityEnabledToggle = null;
             OpacitySlider = null;
-            FillOpacityEnabledToggle = null;
-            FillOpacitySlider = null;
-            StrokeOpacityEnabledToggle = null;
-            StrokeOpacitySlider = null;
             LinecapPopup = null;
             LinejoinPopup = null;
             DasharrayEnabledToggle = null;

@@ -1,30 +1,19 @@
 .svg-editor__inspector-panel {
     flex-grow: 1;
-    padding: var(--space-2) var(--space-3) var(--space-3) var(--space-3);
     background-color: var(--bg-panel);
     border-left-color: var(--border-base);
     border-left-width: 1px;
 }
 
+.svg-editor__inspector-panel .unity-scroll-view__content-viewport{
+    margin:0;
+}
 .svg-editor__inspector-mode {
     flex-direction: column;
 }
 
 .svg-editor__inspector-card {
-    margin-bottom: var(--space-3);
     padding: var(--space-3);
-    border-top-left-radius: var(--radius-md);
-    border-top-right-radius: var(--radius-md);
-    border-bottom-left-radius: var(--radius-md);
-    border-bottom-right-radius: var(--radius-md);
-    border-left-color: var(--border-base);
-    border-left-width: 1px;
-    border-right-color: var(--border-base);
-    border-right-width: 1px;
-    border-top-color: var(--border-base);
-    border-top-width: 1px;
-    border-bottom-color: var(--border-base);
-    border-bottom-width: 1px;
     background-color: rgba(255, 255, 255, 0.035);
 }
 
@@ -40,37 +29,6 @@
     color: var(--text-primary);
     -unity-font-style: bold;
     font-size: 13px;
-}
-
-.svg-editor__selection-summary {
-    margin-bottom: var(--space-2);
-    padding: var(--space-2) var(--space-2-5);
-    border-top-left-radius: var(--radius-sm);
-    border-top-right-radius: var(--radius-sm);
-    border-bottom-left-radius: var(--radius-sm);
-    border-bottom-right-radius: var(--radius-sm);
-    background-color: rgba(9, 11, 18, 0.38);
-    border-left-color: rgba(255, 255, 255, 0.05);
-    border-left-width: 1px;
-    border-right-color: rgba(255, 255, 255, 0.05);
-    border-right-width: 1px;
-    border-top-color: rgba(255, 255, 255, 0.05);
-    border-top-width: 1px;
-    border-bottom-color: rgba(255, 255, 255, 0.05);
-    border-bottom-width: 1px;
-}
-
-.svg-editor__selection-name {
-    margin-bottom: var(--space-1);
-    color: var(--text-primary);
-    -unity-font-style: bold;
-    font-size: 14px;
-}
-
-.svg-editor__selection-meta {
-    margin-bottom: 2px;
-    color: rgba(226, 225, 230, 0.62);
-    font-size: var(--font-size-xs);
 }
 
 .svg-editor__patch-subtitle {

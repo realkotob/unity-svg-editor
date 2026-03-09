@@ -1,15 +1,20 @@
 @import url("unity-theme://default");
-@import url("/Packages/com.maemi.unity-uitoolkit-shadcn-theme/Runtime/Theme/Variables/_Variables.tss");
-@import url("../USS/Variables/_Variables.tss");
+@import url("/Packages/com.newmassmedia.unity-uitoolkit-foundation/Runtime/Theme/Shadcn.tss");
+@import url("/Assets/unity-svg-editor/Editor/Resources/UI/USS/Variables/_Variables.tss");
+@import url("/Packages/com.newmassmedia.unity-uitoolkit-foundation/Editor/Resources/USS/_EditorTheme.tss");
 
 @import url("/Packages/com.newmassmedia.unity-uitoolkit-foundation/Runtime/Theme/Initialize.uss");
 @import url("/Packages/com.newmassmedia.unity-uitoolkit-foundation/Runtime/Components/Controls/Toggle/Toggle.uss");
 @import url("/Packages/com.newmassmedia.unity-uitoolkit-foundation/Runtime/Components/Controls/ToggleGroup/ToggleGroup.uss");
-@import url("../USS/ProjectTab.Common.uss");
-@import url("../USS/Layout.uss");
-@import url("../USS/Toolbar.uss");
-@import url("../USS/Canvas.uss");
-@import url("../USS/Inspector.uss");
+@import url("/Assets/unity-svg-editor/Editor/Resources/UI/USS/ProjectTab.Common.uss");
+@import url("/Assets/unity-svg-editor/Editor/Resources/UI/USS/Layout.uss");
+@import url("/Assets/unity-svg-editor/Editor/Resources/UI/USS/Toolbar.uss");
+@import url("/Assets/unity-svg-editor/Editor/Resources/UI/USS/Canvas.uss");
+@import url("/Assets/unity-svg-editor/Editor/Resources/UI/USS/Inspector.uss");
+
+
+
+
 
 
 /* SVG Editor ThemeStyleSheet entry point.

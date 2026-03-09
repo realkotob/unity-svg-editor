@@ -77,7 +77,6 @@ namespace UnitySvgEditor.Editor
             _selectionKind = CanvasSelectionKind.None;
             _overlayController.ClearSelection();
             UpdateHoverVisual();
-            _host.RefreshSelectionSummary(_selectionKind);
         }
 
         public void UpdateCanvasVisualState()
@@ -196,7 +195,6 @@ namespace UnitySvgEditor.Editor
         void ICanvasPointerDragHost.SelectElement(string elementKey, bool syncPatchTarget) => _host.SelectStructureElementFromCanvas(elementKey, syncPatchTarget);
         void ICanvasPointerDragHost.ClearSelection() => _host.ClearStructureSelectionFromCanvas();
         void ICanvasPointerDragHost.UpdateStructureInteractivity(bool hasDocument) => _host.UpdateStructureInteractivity(hasDocument);
-        void ICanvasPointerDragHost.RefreshSelectionSummary(CanvasSelectionKind selectionKind) => _host.RefreshSelectionSummary(selectionKind);
         void ICanvasPointerDragHost.UpdateCanvasVisualState() => UpdateCanvasVisualState();
         void ICanvasPointerDragHost.UpdateSelectionVisual() => UpdateSelectionVisual();
         void ICanvasPointerDragHost.SetHoveredElement(string elementKey) => SetHoveredElement(elementKey);

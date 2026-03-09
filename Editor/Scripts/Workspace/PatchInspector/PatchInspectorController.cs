@@ -58,16 +58,12 @@ namespace UnitySvgEditor.Editor
             SetEnabledIfNotNull(_view.StrokeToggleControl, hasDocument);
             SetEnabledIfNotNull(_view.StrokeWidthToggleControl, hasDocument);
             SetEnabledIfNotNull(_view.OpacityToggleControl, hasDocument);
-            SetEnabledIfNotNull(_view.FillOpacityToggleControl, hasDocument);
-            SetEnabledIfNotNull(_view.StrokeOpacityToggleControl, hasDocument);
             SetEnabledIfNotNull(_view.DasharrayToggleControl, hasDocument);
             SetEnabledIfNotNull(_view.TransformToggleControl, hasDocument);
             SetEnabledIfNotNull(_view.FillColorControl, hasDocument && _view.FillEnabled);
             SetEnabledIfNotNull(_view.StrokeColorControl, hasDocument && _view.StrokeEnabled);
             SetEnabledIfNotNull(_view.StrokeWidthControl, hasDocument && _view.StrokeWidthEnabled);
             SetEnabledIfNotNull(_view.OpacityControl, hasDocument && _view.OpacityEnabled);
-            SetEnabledIfNotNull(_view.FillOpacityControl, hasDocument && _view.FillOpacityEnabled);
-            SetEnabledIfNotNull(_view.StrokeOpacityControl, hasDocument && _view.StrokeOpacityEnabled);
             SetEnabledIfNotNull(_view.DashLengthControl, hasDocument && _view.DasharrayEnabled);
             SetEnabledIfNotNull(_view.DashGapControl, hasDocument && _view.DasharrayEnabled);
             SetEnabledIfNotNull(_view.TransformControl, hasDocument && _view.TransformEnabled);

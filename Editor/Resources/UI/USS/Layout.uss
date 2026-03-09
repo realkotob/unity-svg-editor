@@ -26,6 +26,12 @@
     flex-grow: 1;
     background-color: var(--bg-panel);
 }
+.svg-editor__asset-panel .unity-scroll-view__content-viewport{
+    margin:0;
+}
+.svg-editor__asset-panel .unity-scroll-view{
+    border-radius: 0;
+}
 
 .svg-editor__asset-split {
     flex-grow: 1;
@@ -36,18 +42,9 @@
     flex-grow: 1;
 }
 
-.svg-editor__asset-panel-top {
-    padding-bottom: var(--space-2);
-}
-
-.svg-editor__asset-panel-bottom {
-    padding-top: var(--space-1);
-}
-
 .svg-editor__asset-section-header {
     flex-direction: row;
     align-items: center;
-    margin-bottom: var(--space-1-5);
 }
 
 .svg-editor__asset-section-actions {
@@ -126,37 +123,23 @@
 .svg-editor__asset-hierarchy-list,
 .svg-editor__asset-list {
     flex-grow: 1;
-    border-top-left-radius: var(--radius-sm);
-    border-top-right-radius: var(--radius-sm);
-    border-bottom-left-radius: var(--radius-sm);
-    border-bottom-right-radius: var(--radius-sm);
-    border-left-color: var(--border-weak);
-    border-left-width: 1px;
-    border-right-color: var(--border-weak);
-    border-right-width: 1px;
-    border-top-color: var(--border-weak);
-    border-top-width: 1px;
-    border-bottom-color: var(--border-weak);
-    border-bottom-width: 1px;
-    background-color: var(--bg-soft);
 }
 
-.svg-editor__asset-grid-host {
+.svg-editor__asset-hierarchy-list {
+    flex-grow: 1;
+}
+
+.svg-editor__asset-hierarchy__tree,
+.svg-editor__asset-grid__grid,
+.svg-editor__asset-grid-view {
     flex-grow: 1;
     min-height: 120px;
-    border-top-left-radius: var(--radius-sm);
-    border-top-right-radius: var(--radius-sm);
-    border-bottom-left-radius: var(--radius-sm);
-    border-bottom-right-radius: var(--radius-sm);
-    border-left-color: var(--border-weak);
-    border-left-width: 1px;
-    border-right-color: var(--border-weak);
-    border-right-width: 1px;
-    border-top-color: var(--border-weak);
-    border-top-width: 1px;
-    border-bottom-color: var(--border-weak);
-    border-bottom-width: 1px;
-    background-color: var(--bg-soft);
+    background-color: var(--transparent);
+}
+
+.svg-editor__asset-grid__grid .tooling-grid__viewport {
+    width: 100%;
+    height: 100%;
 }
 
 .svg-editor__asset-item {
@@ -176,7 +159,7 @@
     padding-left: var(--space-3);
 }
 
-.svg-editor__hierarchy-item {
+.svg-editor__asset-hierarchy__item {
     flex-direction: row;
     align-items: center;
     height: 28px;
@@ -211,7 +194,7 @@
     width: 0;
 }
 
-.svg-editor__hierarchy-icon {
+.svg-editor__asset-hierarchy__icon {
     width: 16px;
     min-width: 16px;
     height: 16px;
@@ -220,35 +203,35 @@
     -unity-background-image-tint-color: var(--color-neutral-550);
 }
 
-.svg-editor__hierarchy-icon--square {
+.svg-editor__asset-hierarchy__icon--square {
     background-image: resource("Icons/lucide/square");
 }
 
-.svg-editor__hierarchy-icon--circle {
+.svg-editor__asset-hierarchy__icon--circle {
     background-image: resource("Icons/lucide/circle");
 }
 
-.svg-editor__hierarchy-icon--file-text {
+.svg-editor__asset-hierarchy__icon--file-text {
     background-image: resource("Icons/lucide/file-text");
 }
 
-.svg-editor__hierarchy-icon--minus {
+.svg-editor__asset-hierarchy__icon--minus {
     background-image: resource("Icons/lucide/minus");
 }
 
-.svg-editor__hierarchy-icon--pen {
+.svg-editor__asset-hierarchy__icon--pen {
     background-image: resource("Icons/lucide/pen");
 }
 
-.svg-editor__hierarchy-icon--folder {
+.svg-editor__asset-hierarchy__icon--folder {
     background-image: resource("Icons/lucide/folder");
 }
 
-.svg-editor__hierarchy-icon--file {
+.svg-editor__asset-hierarchy__icon--file {
     background-image: resource("Icons/lucide/file");
 }
 
-.svg-editor__hierarchy-text {
+.svg-editor__asset-hierarchy__text {
     flex-grow: 1;
     height: 28px;
     margin-top: 0;
@@ -262,7 +245,7 @@
     -unity-text-align: middle-left;
 }
 
-.svg-editor__hierarchy-expander {
+.svg-editor__asset-hierarchy__expander {
     display: none;
     width: 16px;
     min-width: 16px;
@@ -273,32 +256,32 @@
     -unity-background-image-tint-color: var(--text-secondary);
 }
 
-.svg-editor__hierarchy-expander--expanded {
+.svg-editor__asset-hierarchy__expander--expanded {
     rotate: 90deg;
 }
 
-.svg-editor__hierarchy-expander--placeholder {
+.svg-editor__asset-hierarchy__expander--placeholder {
     opacity: 0;
 }
 
-.svg-editor__hierarchy-item--group .svg-editor__hierarchy-icon,
-.svg-editor__hierarchy-item--group .svg-editor__hierarchy-text,
-.svg-editor__hierarchy-item--text .svg-editor__hierarchy-icon,
-.svg-editor__hierarchy-item--text .svg-editor__hierarchy-text {
+.svg-editor__asset-hierarchy__item--group .svg-editor__asset-hierarchy__icon,
+.svg-editor__asset-hierarchy__item--group .svg-editor__asset-hierarchy__text,
+.svg-editor__asset-hierarchy__item--text .svg-editor__asset-hierarchy__icon,
+.svg-editor__asset-hierarchy__item--text .svg-editor__asset-hierarchy__text {
     color: rgb(185, 147, 255);
 }
 
-.svg-editor__asset-hierarchy-list .unity-collection-view__item--selected .svg-editor__hierarchy-text,
-.svg-editor__asset-hierarchy-list .unity-collection-view__item--selected .svg-editor__hierarchy-icon,
-.svg-editor__asset-hierarchy-list .unity-collection-view__item--selected .svg-editor__hierarchy-expander {
+.svg-editor__asset-hierarchy-list .unity-collection-view__item--selected .svg-editor__asset-hierarchy__text,
+.svg-editor__asset-hierarchy-list .unity-collection-view__item--selected .svg-editor__asset-hierarchy__icon,
+.svg-editor__asset-hierarchy-list .unity-collection-view__item--selected .svg-editor__asset-hierarchy__expander {
     color: rgb(233, 225, 255);
 }
 
-.svg-editor__asset-hierarchy-list .unity-collection-view__item--selected .svg-editor__hierarchy-icon {
+.svg-editor__asset-hierarchy-list .unity-collection-view__item--selected .svg-editor__asset-hierarchy__icon {
     -unity-background-image-tint-color: rgb(233, 225, 255);
 }
 
-.svg-editor__asset-hierarchy-list .unity-collection-view__item--selected .svg-editor__hierarchy-expander {
+.svg-editor__asset-hierarchy-list .unity-collection-view__item--selected .svg-editor__asset-hierarchy__expander {
     -unity-background-image-tint-color: rgb(233, 225, 255);
 }
 
@@ -310,7 +293,6 @@
     border-top-right-radius: 999px;
     border-bottom-left-radius: 999px;
     border-bottom-right-radius: 999px;
-    box-shadow: 0 0 0 1px rgba(233, 225, 255, 0.2);
 }
 
 .svg-editor__preview-panel {

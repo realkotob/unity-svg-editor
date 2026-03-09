@@ -14,7 +14,6 @@ namespace UnitySvgEditor.Editor
         void ClearStructureSelectionFromCanvas();
         void SelectFrameFromCanvas();
         void SelectStructureElementFromCanvas(string elementKey, bool syncPatchTarget);
-        void RefreshSelectionSummary(CanvasSelectionKind selectionKind);
         void UpdateStructureInteractivity(bool hasDocument);
         void UpdateSourceStatus(string status);
         void RefreshLivePreview(bool keepExistingPreviewOnFailure);

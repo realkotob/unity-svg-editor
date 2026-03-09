@@ -28,7 +28,6 @@ namespace UnitySvgEditor.Editor
             _host.SelectionKind = CanvasSelectionKind.Frame;
             _host.SelectFrame();
             _host.UpdateStructureInteractivity(_host.CurrentDocument != null);
-            _host.RefreshSelectionSummary(_host.SelectionKind);
             _host.UpdateSelectionVisual();
         }
 
@@ -37,7 +36,6 @@ namespace UnitySvgEditor.Editor
             _host.SelectionKind = CanvasSelectionKind.Element;
             _host.SelectElement(elementKey, syncPatchTarget);
             _host.UpdateStructureInteractivity(_host.CurrentDocument != null);
-            _host.RefreshSelectionSummary(_host.SelectionKind);
             _host.UpdateSelectionVisual();
         }
 
@@ -45,7 +43,6 @@ namespace UnitySvgEditor.Editor
         {
             _host.SelectionKind = CanvasSelectionKind.None;
             _overlayController.ClearSelection();
-            _host.RefreshSelectionSummary(_host.SelectionKind);
         }
     }
 }

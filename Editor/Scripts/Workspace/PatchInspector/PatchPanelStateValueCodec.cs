@@ -13,12 +13,12 @@ namespace UnitySvgEditor.Editor
             return new AttributePatchRequest
             {
                 TargetKey = state.ResolveSelectedTargetKey(),
-                Fill = state.FillEnabled ? ColorToHex(state.FillColor) : null,
-                Stroke = state.StrokeEnabled ? ColorToHex(state.StrokeColor) : null,
+                Fill = state.FillEnabled ? ColorToRgbHex(state.FillColor) : null,
+                Stroke = state.StrokeEnabled ? ColorToRgbHex(state.StrokeColor) : null,
                 StrokeWidth = state.StrokeWidthEnabled ? FormatNumber(Mathf.Max(0f, state.StrokeWidth)) : null,
                 Opacity = state.OpacityEnabled ? FormatNumber(Mathf.Clamp01(state.Opacity)) : null,
-                FillOpacity = state.FillOpacityEnabled ? FormatNumber(Mathf.Clamp01(state.FillOpacity)) : null,
-                StrokeOpacity = state.StrokeOpacityEnabled ? FormatNumber(Mathf.Clamp01(state.StrokeOpacity)) : null,
+                FillOpacity = state.FillEnabled ? FormatAlphaAttribute(state.FillColor.a) : null,
+                StrokeOpacity = state.StrokeEnabled ? FormatAlphaAttribute(state.StrokeColor.a) : null,
                 StrokeLinecap = state.StrokeLinecap,
                 StrokeLinejoin = state.StrokeLinejoin,
                 StrokeDasharray = state.DasharrayEnabled ? BuildDasharrayValue(state) : null,
@@ -46,10 +46,14 @@ namespace UnitySvgEditor.Editor
             state.FillEnabled = TryGetNonEmpty(attributes, "fill", out var fillRaw);
             if (state.FillEnabled && ColorUtility.TryParseHtmlString(fillRaw.Trim(), out var fillColor))
                 state.FillColor = fillColor;
+            if (TryGetFloat(attributes, "fill-opacity", out var fillOpacity))
+                state.FillColor = WithCombinedAlpha(state.FillColor, fillOpacity);
 
             state.StrokeEnabled = TryGetNonEmpty(attributes, "stroke", out var strokeRaw);
             if (state.StrokeEnabled && ColorUtility.TryParseHtmlString(strokeRaw.Trim(), out var strokeColor))
                 state.StrokeColor = strokeColor;
+            if (TryGetFloat(attributes, "stroke-opacity", out var strokeOpacity))
+                state.StrokeColor = WithCombinedAlpha(state.StrokeColor, strokeOpacity);
 
             state.StrokeWidthEnabled = TryGetFloat(attributes, "stroke-width", out var strokeWidth);
             if (state.StrokeWidthEnabled)
@@ -58,14 +62,6 @@ namespace UnitySvgEditor.Editor
             state.OpacityEnabled = TryGetFloat(attributes, "opacity", out var opacity);
             if (state.OpacityEnabled)
                 state.Opacity = Mathf.Clamp01(opacity);
-
-            state.FillOpacityEnabled = TryGetFloat(attributes, "fill-opacity", out var fillOpacity);
-            if (state.FillOpacityEnabled)
-                state.FillOpacity = Mathf.Clamp01(fillOpacity);
-
-            state.StrokeOpacityEnabled = TryGetFloat(attributes, "stroke-opacity", out var strokeOpacity);
-            if (state.StrokeOpacityEnabled)
-                state.StrokeOpacity = Mathf.Clamp01(strokeOpacity);
 
             state.DasharrayEnabled = TryGetNonEmpty(attributes, "stroke-dasharray", out var dashRaw);
             if (state.DasharrayEnabled)
@@ -155,9 +151,22 @@ namespace UnitySvgEditor.Editor
             return value.ToString("0.###", CultureInfo.InvariantCulture);
         }
 
-        private static string ColorToHex(Color color)
+        private static string ColorToRgbHex(Color color)
         {
-            return $"#{ColorUtility.ToHtmlStringRGBA(color)}";
+            var normalized = new Color(color.r, color.g, color.b, 1f);
+            return $"#{ColorUtility.ToHtmlStringRGB(normalized)}";
+        }
+
+        private static string FormatAlphaAttribute(float alpha)
+        {
+            var normalized = Mathf.Clamp01(alpha);
+            return Mathf.Approximately(normalized, 1f) ? string.Empty : FormatNumber(normalized);
+        }
+
+        private static Color WithCombinedAlpha(Color color, float opacity)
+        {
+            color.a = Mathf.Clamp01(color.a * Mathf.Clamp01(opacity));
+            return color;
         }
     }
 }

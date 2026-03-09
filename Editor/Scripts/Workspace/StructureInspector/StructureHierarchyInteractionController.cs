@@ -185,7 +185,7 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            List<VisualElement> rowElements = _treeView.Query<VisualElement>(className: "svg-editor__hierarchy-item").ToList();
+            List<VisualElement> rowElements = _treeView.Query<VisualElement>(className: AssetHierarchyListView.UssClassName.ITEM).ToList();
             VisualElement hoveredRow = rowElements.FirstOrDefault(row => row.worldBound.Contains(pointerPosition));
             if (hoveredRow?.userData is not string hoveredKey)
             {

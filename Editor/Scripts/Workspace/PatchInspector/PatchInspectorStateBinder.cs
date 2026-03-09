@@ -19,10 +19,6 @@ namespace UnitySvgEditor.Editor
             patchPanelState.StrokeWidth = form.StrokeWidthField?.value ?? 1f;
             patchPanelState.OpacityEnabled = form.OpacityEnabledToggle?.value ?? false;
             patchPanelState.Opacity = form.OpacitySlider?.value ?? 1f;
-            patchPanelState.FillOpacityEnabled = form.FillOpacityEnabledToggle?.value ?? false;
-            patchPanelState.FillOpacity = form.FillOpacitySlider?.value ?? 1f;
-            patchPanelState.StrokeOpacityEnabled = form.StrokeOpacityEnabledToggle?.value ?? false;
-            patchPanelState.StrokeOpacity = form.StrokeOpacitySlider?.value ?? 1f;
             patchPanelState.StrokeLinecap = form.LinecapPopup?.value ?? string.Empty;
             patchPanelState.StrokeLinejoin = form.LinejoinPopup?.value ?? string.Empty;
             patchPanelState.DasharrayEnabled = form.DasharrayEnabledToggle?.value ?? false;
@@ -51,10 +47,6 @@ namespace UnitySvgEditor.Editor
             form.StrokeWidthField?.SetValueWithoutNotify(patchPanelState.StrokeWidth);
             form.OpacityEnabledToggle?.SetValueWithoutNotify(patchPanelState.OpacityEnabled);
             form.OpacitySlider?.SetValueWithoutNotify(patchPanelState.Opacity);
-            form.FillOpacityEnabledToggle?.SetValueWithoutNotify(patchPanelState.FillOpacityEnabled);
-            form.FillOpacitySlider?.SetValueWithoutNotify(patchPanelState.FillOpacity);
-            form.StrokeOpacityEnabledToggle?.SetValueWithoutNotify(patchPanelState.StrokeOpacityEnabled);
-            form.StrokeOpacitySlider?.SetValueWithoutNotify(patchPanelState.StrokeOpacity);
             SetPopupValue(form.LinecapPopup, patchPanelState.StrokeLinecap);
             SetPopupValue(form.LinejoinPopup, patchPanelState.StrokeLinejoin);
             form.DasharrayEnabledToggle?.SetValueWithoutNotify(patchPanelState.DasharrayEnabled);

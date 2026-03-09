@@ -207,7 +207,7 @@
 }
 
 .tooling-grid--compact .tooling-grid__header {
-    padding: 0 6px 1px 6px;
+    padding: 0 6px 2px 6px;
 }
 
 .tooling-grid__header > Label {

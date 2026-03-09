@@ -20,8 +20,6 @@ namespace UnitySvgEditor.Editor
         public bool StrokeEnabled => _form.StrokeEnabled;
         public bool StrokeWidthEnabled => _form.StrokeWidthEnabled;
         public bool OpacityEnabled => _form.OpacityEnabled;
-        public bool FillOpacityEnabled => _form.FillOpacityEnabled;
-        public bool StrokeOpacityEnabled => _form.StrokeOpacityEnabled;
         public bool DasharrayEnabled => _form.DasharrayEnabled;
         public bool TransformEnabled => _form.TransformEnabled;
 
@@ -30,16 +28,12 @@ namespace UnitySvgEditor.Editor
         public VisualElement StrokeToggleControl => _form.StrokeEnabledToggle;
         public VisualElement StrokeWidthToggleControl => _form.StrokeWidthEnabledToggle;
         public VisualElement OpacityToggleControl => _form.OpacityEnabledToggle;
-        public VisualElement FillOpacityToggleControl => _form.FillOpacityEnabledToggle;
-        public VisualElement StrokeOpacityToggleControl => _form.StrokeOpacityEnabledToggle;
         public VisualElement DasharrayToggleControl => _form.DasharrayEnabledToggle;
         public VisualElement TransformToggleControl => _form.TransformEnabledToggle;
         public VisualElement FillColorControl => _form.FillColorField;
         public VisualElement StrokeColorControl => _form.StrokeColorField;
         public VisualElement StrokeWidthControl => _form.StrokeWidthField;
         public VisualElement OpacityControl => _form.OpacitySlider;
-        public VisualElement FillOpacityControl => _form.FillOpacitySlider;
-        public VisualElement StrokeOpacityControl => _form.StrokeOpacitySlider;
         public VisualElement DashLengthControl => _form.DashLengthField;
         public VisualElement DashGapControl => _form.DashGapField;
         public VisualElement TransformControl => _form.TransformField;

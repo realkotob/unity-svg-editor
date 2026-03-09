@@ -18,8 +18,7 @@ namespace UnitySvgEditor.Editor
 
         private VisualElement _assetLibraryFilterBarHost;
         private FilterBadgeBar _assetLibraryFilterBar;
-        private VisualElement _assetGridHost;
-        private VirtualizedGridView _assetGrid;
+        private AssetLibraryGridView _assetGridView;
         private bool _isProgrammaticSelection;
         private Action<string> _loadAsset;
         private Func<string> _getCurrentAssetPath;
@@ -46,9 +45,9 @@ namespace UnitySvgEditor.Editor
             _getCurrentAssetPath = getCurrentAssetPath;
             _canSwitchDocument = canSwitchDocument;
             _assetLibraryFilterBarHost = root.Q<VisualElement>("asset-library-filter-bar");
-            _assetGridHost = root.Q<VisualElement>("asset-grid-host");
+            _assetGridView = root.Q<AssetLibraryGridView>("asset-grid-view");
 
-            if (_assetGridHost == null)
+            if (_assetGridView == null)
             {
                 return;
             }
@@ -60,29 +59,14 @@ namespace UnitySvgEditor.Editor
                 _assetLibraryFilterBarHost.Add(_assetLibraryFilterBar);
             }
 
-            _assetGrid = new VirtualizedGridView(GridLayoutMetrics.CompactPreview)
-            {
-                GroupByAlpha = true,
-                ShowActionButtons = false
-            };
-            _assetGrid.AddClass("tooling-grid--compact");
-            _assetGrid.EmptyText = "No SVG assets found";
-            _assetGrid.OnItemSelected += OnAssetGridItemSelected;
-            _assetGrid.OnSelectionChanged += OnAssetGridSelectionChanged;
-            _assetGridHost.Add(_assetGrid);
+            _assetGridView.BindRuntime(OnAssetGridItemSelected, OnAssetGridSelectionChanged);
+            _assetGridView.SetEmptyText("No SVG assets found");
         }
 
         public void Unbind()
         {
-            if (_assetGrid != null)
-            {
-                _assetGrid.OnItemSelected -= OnAssetGridItemSelected;
-                _assetGrid.OnSelectionChanged -= OnAssetGridSelectionChanged;
-                _assetGrid.RemoveFromHierarchy();
-            }
-
-            _assetGrid = null;
-            _assetGridHost = null;
+            _assetGridView?.UnbindRuntime();
+            _assetGridView = null;
             _assetLibraryFilterBar?.RemoveFromHierarchy();
             _assetLibraryFilterBar = null;
             _assetLibraryFilterBarHost = null;
@@ -113,19 +97,19 @@ namespace UnitySvgEditor.Editor
 
         public void SetSelectionByAssetPath(string assetPath)
         {
-            if (_assetGrid == null)
+            if (_assetGridView == null)
             {
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(assetPath))
             {
-                _assetGrid.ClearSelection();
+                _assetGridView.ClearSelection();
                 return;
             }
 
             _isProgrammaticSelection = true;
-            _assetGrid.SelectById(assetPath);
+            _assetGridView.SelectById(assetPath);
             _isProgrammaticSelection = false;
         }
 
@@ -138,7 +122,7 @@ namespace UnitySvgEditor.Editor
             }
 
             RebuildAssetGridItems();
-            _assetGrid?.SetItems(_assetGridItems);
+            _assetGridView?.SetItems(_assetGridItems);
 
             var currentAssetPath = _getCurrentAssetPath?.Invoke();
             var hasCurrentSelection = !string.IsNullOrWhiteSpace(currentAssetPath) &&
