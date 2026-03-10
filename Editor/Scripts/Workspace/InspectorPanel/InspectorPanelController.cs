@@ -43,12 +43,18 @@ namespace UnitySvgEditor.Editor
 
         private static void ScheduleDeferredCall(System.Action callback)
         {
-            EditorApplication.delayCall += callback;
+            if (callback == null)
+                return;
+
+            EditorApplication.delayCall += callback.Invoke;
         }
 
         private static void UnscheduleDeferredCall(System.Action callback)
         {
-            EditorApplication.delayCall -= callback;
+            if (callback == null)
+                return;
+
+            EditorApplication.delayCall -= callback.Invoke;
         }
 
         public void Bind(VisualElement root, IInspectorPanelHost host)
