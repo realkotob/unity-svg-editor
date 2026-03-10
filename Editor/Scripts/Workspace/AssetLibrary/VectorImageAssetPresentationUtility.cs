@@ -6,7 +6,7 @@ namespace UnitySvgEditor.Editor
 {
     internal static class VectorImageAssetPresentationUtility
     {
-        private const string DeveloperFixtureMarker = "/Editor/Tests/Fixtures/";
+        private const string DeveloperFixtureMarker = "/Resources/TestSvg/";
 
         public static string BuildDisplayName(string assetPath)
         {
