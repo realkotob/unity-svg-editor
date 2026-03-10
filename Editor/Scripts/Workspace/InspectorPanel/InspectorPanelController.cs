@@ -1,4 +1,5 @@
 using UnityEngine.UIElements;
+using UnityEditor;
 
 namespace UnitySvgEditor.Editor
 {
@@ -6,10 +7,23 @@ namespace UnitySvgEditor.Editor
     {
         private readonly InspectorPanelView _view;
         private readonly InspectorTargetSyncService _targetSyncService;
+        private readonly System.Action<System.Action> _scheduleDeferredCall;
+        private readonly System.Action<System.Action> _unscheduleDeferredCall;
         private IInspectorPanelHost _host;
+        private bool _isRefreshScheduled;
+        private bool _hasPendingRefresh;
+        private string _pendingSourceText = string.Empty;
+        private bool _isFrameRectApplyScheduled;
+        private bool _hasPendingFrameRectApply;
 
-        public InspectorPanelController(AttributePatcher attributePatcher, InspectorPanelState inspectorPanelState)
+        public InspectorPanelController(
+            AttributePatcher attributePatcher,
+            InspectorPanelState inspectorPanelState,
+            System.Action<System.Action> scheduleDeferredCall = null,
+            System.Action<System.Action> unscheduleDeferredCall = null)
         {
+            _scheduleDeferredCall = scheduleDeferredCall ?? (callback => EditorApplication.delayCall += callback);
+            _unscheduleDeferredCall = unscheduleDeferredCall ?? (callback => EditorApplication.delayCall -= callback);
             _view = new InspectorPanelView();
             _targetSyncService = new InspectorTargetSyncService(
                 attributePatcher,
@@ -43,11 +57,35 @@ namespace UnitySvgEditor.Editor
 
         public void Unbind()
         {
+            ClearPendingRefresh();
+            ClearPendingFrameRectApply();
             _view.Unbind();
             _host = null;
         }
 
-        public void RefreshTargets(string sourceText) => _targetSyncService.RefreshTargets(sourceText);
+        public void RefreshTargets(string sourceText)
+        {
+            ClearPendingRefresh();
+            _targetSyncService.RefreshTargets(sourceText);
+        }
+
+        public void QueueRefreshTargets(string sourceText)
+        {
+            if (!_view.IsBound)
+            {
+                return;
+            }
+
+            _pendingSourceText = sourceText ?? string.Empty;
+            _hasPendingRefresh = true;
+            if (_isRefreshScheduled)
+            {
+                return;
+            }
+
+            _isRefreshScheduled = true;
+            _scheduleDeferredCall(ProcessPendingRefresh);
+        }
 
         public bool TrySelectTargetByKey(string targetKey, out string label) => _targetSyncService.TrySelectTargetByKey(targetKey, out label);
 
@@ -80,7 +118,7 @@ namespace UnitySvgEditor.Editor
 
         private void OnImmediateApplyRequested(InspectorPanelView.ImmediateApplyField field) => _targetSyncService.ApplyImmediatePatch(field);
 
-        private void OnFrameRectChanged() => _targetSyncService.ApplyFrameRectFromView();
+        private void OnFrameRectChanged() => QueueFrameRectApply();
 
         private void OnTransformHelperChanged() => _targetSyncService.SyncTransformTextFromHelper();
 
@@ -96,6 +134,78 @@ namespace UnitySvgEditor.Editor
         {
             if (element != null)
                 element.SetEnabled(enabled);
+        }
+
+        private void ProcessPendingRefresh()
+        {
+            _isRefreshScheduled = false;
+            _unscheduleDeferredCall(ProcessPendingRefresh);
+
+            if (!_hasPendingRefresh)
+            {
+                return;
+            }
+
+            string sourceText = _pendingSourceText;
+            _pendingSourceText = string.Empty;
+            _hasPendingRefresh = false;
+            _targetSyncService.RefreshTargets(sourceText);
+        }
+
+        private void ClearPendingRefresh()
+        {
+            _pendingSourceText = string.Empty;
+            _hasPendingRefresh = false;
+            if (!_isRefreshScheduled)
+            {
+                return;
+            }
+
+            _isRefreshScheduled = false;
+            _unscheduleDeferredCall(ProcessPendingRefresh);
+        }
+
+        private void QueueFrameRectApply()
+        {
+            if (!_view.IsBound)
+            {
+                return;
+            }
+
+            _hasPendingFrameRectApply = true;
+            if (_isFrameRectApplyScheduled)
+            {
+                return;
+            }
+
+            _isFrameRectApplyScheduled = true;
+            _scheduleDeferredCall(ProcessPendingFrameRectApply);
+        }
+
+        private void ProcessPendingFrameRectApply()
+        {
+            _isFrameRectApplyScheduled = false;
+            _unscheduleDeferredCall(ProcessPendingFrameRectApply);
+
+            if (!_hasPendingFrameRectApply)
+            {
+                return;
+            }
+
+            _hasPendingFrameRectApply = false;
+            _targetSyncService.ApplyFrameRectFromView();
+        }
+
+        private void ClearPendingFrameRectApply()
+        {
+            _hasPendingFrameRectApply = false;
+            if (!_isFrameRectApplyScheduled)
+            {
+                return;
+            }
+
+            _isFrameRectApplyScheduled = false;
+            _unscheduleDeferredCall(ProcessPendingFrameRectApply);
         }
     }
 }
