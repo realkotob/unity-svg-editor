@@ -149,9 +149,6 @@ UI에서는 target/read/apply를 거의 걷어냈지만 내부는 아직 target 
 
 - [PreviewElementHitTester.cs](/Users/maemi/Documents/Git/04.Unity/CoreLibrary/Assets/unity-svg-editor/Editor/Scripts/Preview/PreviewElementHitTester.cs)
 - [CanvasSceneHitTestHelper.cs](/Users/maemi/Documents/Git/04.Unity/CoreLibrary/Assets/unity-svg-editor/Editor/Scripts/Workspace/Canvas/CanvasSceneHitTestHelper.cs)
-- [README.md](/Users/maemi/Documents/Git/04.Unity/CoreLibrary/Assets/unity-svg-editor/Editor/Tests/Fixtures/README.md)
-- [tiny-stroke-overlap.svg](/Users/maemi/Documents/Git/04.Unity/CoreLibrary/Assets/unity-svg-editor/Editor/Tests/Fixtures/tiny-stroke-overlap.svg)
-- [PreviewElementHitTesterTests.cs](/Users/maemi/Documents/Git/04.Unity/CoreLibrary/Assets/unity-svg-editor/Editor/Tests/PreviewElementHitTesterTests.cs)
 
 그리고 아래 문서 삭제도 현재 워크트리에 남아 있을 수 있다.
 

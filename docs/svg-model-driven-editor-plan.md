@@ -529,8 +529,6 @@ drag는 모델 commit 이전에 transient session을 사용한다.
 - `Editor/Scripts/DocumentModel/Serializer/`
 - `Editor/Scripts/RenderModel/`
 - `Editor/Scripts/Renderer/`
-- `Editor/Tests/DocumentModel/`
-- `Editor/Tests/Renderer/`
 
 기존 파일 중 가장 먼저 영향받는 축:
 
