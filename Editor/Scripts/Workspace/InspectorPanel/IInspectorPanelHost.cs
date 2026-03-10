@@ -5,6 +5,7 @@ namespace UnitySvgEditor.Editor
         DocumentSession CurrentDocument { get; }
 
         bool TryApplyPatchRequest(AttributePatchRequest request, string successStatus);
+        void SyncSelectionFromInspectorTarget(string targetKey);
         void UpdateSourceStatus(string status);
     }
 }

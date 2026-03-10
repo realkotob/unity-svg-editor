@@ -10,6 +10,7 @@ namespace UnitySvgEditor.Editor
         private readonly InspectorPanelView _view;
         private readonly Func<IInspectorPanelHost> _hostAccessor;
         private readonly Action _updateInteractivity;
+        private bool _suppressSelectionSync;
 
         public InspectorTargetSyncService(
             AttributePatcher attributePatcher,
@@ -64,7 +65,17 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
-            _view.SetSelectedTargetLabel(label, notify: true);
+            _suppressSelectionSync = true;
+            try
+            {
+                _view.SetSelectedTargetLabel(label, notify: true);
+            }
+            finally
+            {
+                _suppressSelectionSync = false;
+            }
+
+            ReadSelectedTargetAttributes();
             return true;
         }
 
@@ -81,6 +92,12 @@ namespace UnitySvgEditor.Editor
         public void HandleTargetSelectionChanged(string label)
         {
             _inspectorPanelState.SelectTargetLabel(label);
+            if (_suppressSelectionSync)
+            {
+                return;
+            }
+
+            Host?.SyncSelectionFromInspectorTarget(ResolveSelectedTargetKey());
             ReadSelectedTargetAttributes();
         }
 
@@ -108,9 +125,7 @@ namespace UnitySvgEditor.Editor
 
         public void BuildTransformFromHelper()
         {
-            _view.CaptureState(_inspectorPanelState);
-            var transform = _inspectorPanelState.BuildTransformFromHelper();
-            _view.SetTransformText(transform);
+            var transform = SyncTransformTextFromHelper();
 
             Host?.UpdateSourceStatus(string.IsNullOrWhiteSpace(transform)
                 ? "Transform helper produced an empty value."
@@ -118,7 +133,42 @@ namespace UnitySvgEditor.Editor
             _updateInteractivity?.Invoke();
         }
 
+        public string SyncTransformTextFromHelper()
+        {
+            if (!_view.IsBound)
+            {
+                return string.Empty;
+            }
+
+            _view.CaptureState(_inspectorPanelState);
+            var transform = _inspectorPanelState.BuildTransformFromHelper();
+            _view.SetTransformText(transform);
+            return transform;
+        }
+
+        public bool SyncTransformHelperFromText()
+        {
+            if (!_view.IsBound)
+            {
+                return false;
+            }
+
+            _view.CaptureState(_inspectorPanelState);
+            if (!_inspectorPanelState.TrySyncTransformHelperFromText())
+            {
+                return false;
+            }
+
+            _view.ApplyState(_inspectorPanelState);
+            return true;
+        }
+
         public void ApplyPatchToSource()
+        {
+            ApplyPatchToSource("Patch applied to source.");
+        }
+
+        public void ApplyPatchToSource(string successStatus)
         {
             if (Host?.CurrentDocument == null)
             {
@@ -127,7 +177,21 @@ namespace UnitySvgEditor.Editor
 
             _view.CaptureState(_inspectorPanelState);
             var request = _inspectorPanelState.BuildPatchRequest();
-            Host.TryApplyPatchRequest(request, "Patch applied to source.");
+            Host.TryApplyPatchRequest(
+                request,
+                string.IsNullOrWhiteSpace(successStatus) ? "Patch applied to source." : successStatus);
+        }
+
+        public void ApplyImmediatePatch(InspectorPanelView.ImmediateApplyField field)
+        {
+            if (Host?.CurrentDocument == null || !_view.IsBound)
+            {
+                return;
+            }
+
+            _view.CaptureState(_inspectorPanelState);
+            var request = _inspectorPanelState.BuildPatchRequest(field);
+            Host.TryApplyPatchRequest(request, "Inspector changes applied.");
         }
     }
 }

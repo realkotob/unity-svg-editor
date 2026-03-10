@@ -378,6 +378,7 @@ namespace UnitySvgEditor.Editor
 
         DocumentSession IInspectorPanelHost.CurrentDocument => _documentLifecycleController.CurrentDocument;
         bool IInspectorPanelHost.TryApplyPatchRequest(AttributePatchRequest request, string successStatus) => TryApplyPatchRequest(request, successStatus);
+        void IInspectorPanelHost.SyncSelectionFromInspectorTarget(string targetKey) => WorkspaceCoordinator.SyncSelectionFromInspectorTarget(targetKey);
         void IInspectorPanelHost.UpdateSourceStatus(string status) => UpdateSourceStatus(status);
 
         private static VisualTreeAsset FindVisualTreeAsset()

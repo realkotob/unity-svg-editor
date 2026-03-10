@@ -81,9 +81,19 @@ namespace UnitySvgEditor.Editor
             return InspectorPanelStateValueCodec.BuildPatchRequest(this);
         }
 
+        public AttributePatchRequest BuildPatchRequest(InspectorPanelView.ImmediateApplyField field)
+        {
+            return InspectorPanelStateValueCodec.BuildPatchRequest(this, field);
+        }
+
         public string BuildTransformFromHelper()
         {
             return InspectorPanelStateValueCodec.BuildTransformFromHelper(this);
+        }
+
+        public bool TrySyncTransformHelperFromText()
+        {
+            return InspectorPanelStateValueCodec.TrySyncTransformHelperFromText(this);
         }
 
         public void SyncFromAttributes(IReadOnlyDictionary<string, string> attributes)

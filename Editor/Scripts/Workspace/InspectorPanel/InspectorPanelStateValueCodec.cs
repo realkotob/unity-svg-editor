@@ -10,20 +10,55 @@ namespace UnitySvgEditor.Editor
     {
         public static AttributePatchRequest BuildPatchRequest(InspectorPanelState state)
         {
-            return new AttributePatchRequest
+            var request = CreatePatchRequest(state);
+            if (state.FillEnabled)
             {
-                TargetKey = state.ResolveSelectedTargetKey(),
-                Fill = state.FillEnabled ? ColorToRgbHex(state.FillColor) : null,
-                Stroke = state.StrokeEnabled ? ColorToRgbHex(state.StrokeColor) : null,
-                StrokeWidth = state.StrokeWidthEnabled ? FormatNumber(Mathf.Max(0f, state.StrokeWidth)) : null,
-                Opacity = state.OpacityEnabled ? FormatNumber(Mathf.Clamp01(state.Opacity)) : null,
-                FillOpacity = state.FillEnabled ? FormatAlphaAttribute(state.FillColor.a) : null,
-                StrokeOpacity = state.StrokeEnabled ? FormatAlphaAttribute(state.StrokeColor.a) : null,
-                StrokeLinecap = state.StrokeLinecap,
-                StrokeLinejoin = state.StrokeLinejoin,
-                StrokeDasharray = state.DasharrayEnabled ? BuildDasharrayValue(state) : null,
-                Transform = state.TransformEnabled ? state.Transform : null
-            };
+                ApplyFill(request, state);
+            }
+
+            if (state.StrokeEnabled)
+            {
+                ApplyStroke(request, state);
+            }
+
+            request.StrokeWidth = state.StrokeWidthEnabled ? FormatNumber(Mathf.Max(0f, state.StrokeWidth)) : null;
+            request.Opacity = state.OpacityEnabled ? FormatNumber(Mathf.Clamp01(state.Opacity)) : null;
+            request.StrokeLinecap = state.StrokeLinecap;
+            request.StrokeLinejoin = state.StrokeLinejoin;
+            request.StrokeDasharray = state.DasharrayEnabled ? BuildDasharrayValue(state) : null;
+            request.Transform = state.TransformEnabled ? state.Transform : null;
+            return request;
+        }
+
+        public static AttributePatchRequest BuildPatchRequest(InspectorPanelState state, InspectorPanelView.ImmediateApplyField field)
+        {
+            var request = CreatePatchRequest(state);
+            switch (field)
+            {
+                case InspectorPanelView.ImmediateApplyField.Opacity:
+                    request.Opacity = FormatNumber(Mathf.Clamp01(state.Opacity));
+                    break;
+                case InspectorPanelView.ImmediateApplyField.FillColor:
+                    ApplyFill(request, state);
+                    break;
+                case InspectorPanelView.ImmediateApplyField.StrokeColor:
+                    ApplyStroke(request, state);
+                    break;
+                case InspectorPanelView.ImmediateApplyField.StrokeWidth:
+                    request.StrokeWidth = FormatNumber(Mathf.Max(0f, state.StrokeWidth));
+                    break;
+                case InspectorPanelView.ImmediateApplyField.StrokeLinecap:
+                    request.StrokeLinecap = state.StrokeLinecap;
+                    break;
+                case InspectorPanelView.ImmediateApplyField.StrokeLinejoin:
+                    request.StrokeLinejoin = state.StrokeLinejoin;
+                    break;
+                case InspectorPanelView.ImmediateApplyField.StrokeDasharray:
+                    request.StrokeDasharray = BuildDasharrayValue(state);
+                    break;
+            }
+
+            return request;
         }
 
         public static string BuildTransformFromHelper(InspectorPanelState state)
@@ -73,9 +108,31 @@ namespace UnitySvgEditor.Editor
 
             state.TransformEnabled = TryGetNonEmpty(attributes, "transform", out var transformRaw);
             state.Transform = state.TransformEnabled ? transformRaw.Trim() : string.Empty;
+            TrySyncTransformHelperFromText(state);
 
             state.StrokeLinecap = NormalizeStrokeValue(attributes, "stroke-linecap", new[] { "butt", "round", "square" });
             state.StrokeLinejoin = NormalizeStrokeValue(attributes, "stroke-linejoin", new[] { "miter", "round", "bevel" });
+        }
+
+        public static bool TrySyncTransformHelperFromText(InspectorPanelState state)
+        {
+            if (!TransformStringBuilder.TryParseSimpleTransform(
+                    state.Transform,
+                    out var translateX,
+                    out var translateY,
+                    out var rotate,
+                    out var scaleX,
+                    out var scaleY))
+            {
+                return false;
+            }
+
+            state.TranslateX = translateX;
+            state.TranslateY = translateY;
+            state.Rotate = rotate;
+            state.ScaleX = scaleX;
+            state.ScaleY = scaleY;
+            return true;
         }
 
         private static string BuildDasharrayValue(InspectorPanelState state)
@@ -83,6 +140,26 @@ namespace UnitySvgEditor.Editor
             var dash = Mathf.Max(0f, state.DashLength);
             var gap = Mathf.Max(0f, state.DashGap);
             return $"{FormatNumber(dash)} {FormatNumber(gap)}";
+        }
+
+        private static AttributePatchRequest CreatePatchRequest(InspectorPanelState state)
+        {
+            return new AttributePatchRequest
+            {
+                TargetKey = state.ResolveSelectedTargetKey()
+            };
+        }
+
+        private static void ApplyFill(AttributePatchRequest request, InspectorPanelState state)
+        {
+            request.Fill = ColorToRgbHex(state.FillColor);
+            request.FillOpacity = FormatAlphaAttribute(state.FillColor.a);
+        }
+
+        private static void ApplyStroke(AttributePatchRequest request, InspectorPanelState state)
+        {
+            request.Stroke = ColorToRgbHex(state.StrokeColor);
+            request.StrokeOpacity = FormatAlphaAttribute(state.StrokeColor.a);
         }
 
         private static void ParseDasharray(string raw, out float dash, out float gap)

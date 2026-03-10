@@ -19,6 +19,9 @@ namespace UnitySvgEditor.Editor
                 () => UpdateInteractivity(_host?.CurrentDocument != null));
 
             _view.TargetChanged += OnTargetChanged;
+            _view.ImmediateApplyRequested += OnImmediateApplyRequested;
+            _view.TransformHelperChanged += OnTransformHelperChanged;
+            _view.TransformTextChanged += OnTransformTextChanged;
             _view.ReadRequested += OnReadTargetClicked;
             _view.BuildTransformRequested += OnBuildTransformClicked;
             _view.ApplyRequested += OnApplyPatchClicked;
@@ -73,6 +76,12 @@ namespace UnitySvgEditor.Editor
         }
 
         private void OnTargetChanged(string label) => _targetSyncService.HandleTargetSelectionChanged(label);
+
+        private void OnImmediateApplyRequested(InspectorPanelView.ImmediateApplyField field) => _targetSyncService.ApplyImmediatePatch(field);
+
+        private void OnTransformHelperChanged() => _targetSyncService.SyncTransformTextFromHelper();
+
+        private void OnTransformTextChanged() => _targetSyncService.SyncTransformHelperFromText();
 
         private void OnApplyPatchClicked() => _targetSyncService.ApplyPatchToSource();
 

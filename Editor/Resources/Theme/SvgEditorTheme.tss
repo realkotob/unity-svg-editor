@@ -7,8 +7,3 @@
 @import url("../USS/CanvasPanel.uss");
 @import url("../USS/InspectorPanel.uss");
 @import url("../USS/ToolbarPanel.uss");
-
-
-
-
-VisualElement {}

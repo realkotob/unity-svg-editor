@@ -165,7 +165,8 @@
     background-color: var(--editor-surface-soft);
 }
 
-.svg-editor__asset-hierarchy-list .unity-collection-view__item--selected {
+.unity-collection-view:focus:enabled  .unity-collection-view__item--selected,
+.svg-editor__asset-hierarchy-list .unity-tree-view__item:checked{
     background-color: var(--primary-20);
 }
 

@@ -70,16 +70,19 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            var preferredElementKey = !string.IsNullOrWhiteSpace(_structurePanelState.SelectedElementKey)
-                ? _structurePanelState.SelectedElementKey
-                : _host.ResolveSelectedPatchTargetKey();
+            string selectedElementKey = _structurePanelState.SelectedElementKey;
+            string selectedTargetKey = _host.ResolveSelectedPatchTargetKey();
 
-            _structurePanelState.SetStructure(snapshot, preferredElementKey);
+            _structurePanelState.SetStructure(snapshot, selectedElementKey);
             _structureHierarchyController.SetItems(_structurePanelState.HierarchyItems);
-            SelectStructureElementByKey(_structurePanelState.SelectedElementKey);
 
-            UpdateStructureInteractivity(true);
-            UpdateSelectionVisual();
+            if (TryResolveSelection(_structurePanelState.Elements, selectedElementKey, selectedTargetKey, out StructureNode selectedItem, out CanvasSelectionKind selectionKind))
+            {
+                ApplySelectionState(selectedItem, selectionKind, syncPatchTarget: false);
+                return;
+            }
+
+            ApplySelectionState(null, CanvasSelectionKind.None, syncPatchTarget: false);
         }
 
         public void UpdateStructureInteractivity(bool hasDocument)
@@ -127,18 +130,10 @@ namespace UnitySvgEditor.Editor
             if (_isUpdatingStructureSelection)
                 return;
 
-            _structurePanelState.SelectElement(selected?.Key);
-            _structurePanelState.SelectLayer(selected?.LayerKey);
-            _canvasWorkspaceController.SetSelectionKind(
-                selected != null
-                    ? CanvasSelectionKind.Element
-                    : CanvasSelectionKind.None);
-            SelectStructureElementByKey(_structurePanelState.SelectedElementKey);
-            if (selected?.CanUseAsTarget == true)
-                _host.TrySelectPatchTargetByKey(selected.TargetKey);
-
-            UpdateStructureInteractivity(CurrentDocument != null);
-            UpdateSelectionVisual();
+            ApplySelectionState(
+                selected,
+                selected != null ? CanvasSelectionKind.Element : CanvasSelectionKind.None,
+                syncPatchTarget: true);
         }
 
         private void SelectStructureElementByKey(string elementKey)
@@ -152,6 +147,59 @@ namespace UnitySvgEditor.Editor
         {
             return _structurePanelState.Elements.FirstOrDefault(item =>
                 string.Equals(item.Key, elementKey, StringComparison.Ordinal));
+        }
+
+        private StructureNode FindStructureNodeByTargetKey(string targetKey)
+        {
+            return _structurePanelState.Elements.FirstOrDefault(item =>
+                string.Equals(item.TargetKey, targetKey, StringComparison.Ordinal));
+        }
+
+        private void ApplySelectionState(StructureNode selectedItem, CanvasSelectionKind selectionKind, bool syncPatchTarget)
+        {
+            _structurePanelState.SelectElement(selectedItem?.Key);
+            _structurePanelState.SelectLayer(selectedItem?.LayerKey);
+            _canvasWorkspaceController.SetSelectionKind(selectionKind);
+            SelectStructureElementByKey(_structurePanelState.SelectedElementKey);
+
+            if (syncPatchTarget && selectedItem?.CanUseAsTarget == true)
+                _host.TrySelectPatchTargetByKey(selectedItem.TargetKey);
+
+            UpdateStructureInteractivity(CurrentDocument != null);
+            UpdateSelectionVisual();
+        }
+
+        internal static bool TryResolveSelection(
+            IReadOnlyList<StructureNode> elements,
+            string selectedElementKey,
+            string selectedTargetKey,
+            out StructureNode selectedItem,
+            out CanvasSelectionKind selectionKind)
+        {
+            selectedItem = elements?.FirstOrDefault(item =>
+                string.Equals(item.Key, selectedElementKey, StringComparison.Ordinal));
+            if (selectedItem != null)
+            {
+                selectionKind = CanvasSelectionKind.Element;
+                return true;
+            }
+
+            if (string.Equals(selectedTargetKey, AttributePatcher.ROOT_TARGET_KEY, StringComparison.Ordinal))
+            {
+                selectionKind = CanvasSelectionKind.Frame;
+                return true;
+            }
+
+            selectedItem = elements?.FirstOrDefault(item =>
+                string.Equals(item.TargetKey, selectedTargetKey, StringComparison.Ordinal));
+            if (selectedItem != null)
+            {
+                selectionKind = CanvasSelectionKind.Element;
+                return true;
+            }
+
+            selectionKind = CanvasSelectionKind.None;
+            return false;
         }
 
         DocumentSession ICanvasWorkspaceHost.CurrentDocument => CurrentDocument;
@@ -174,27 +222,36 @@ namespace UnitySvgEditor.Editor
 
         void ICanvasWorkspaceHost.ClearStructureSelectionFromCanvas()
         {
-            _structurePanelState.SelectElement(string.Empty);
-            _structurePanelState.SelectLayer(string.Empty);
-            SelectStructureElementByKey(string.Empty);
+            ApplySelectionState(null, CanvasSelectionKind.None, syncPatchTarget: false);
         }
 
         void ICanvasWorkspaceHost.SelectFrameFromCanvas()
         {
-            _structurePanelState.SelectElement(string.Empty);
-            _structurePanelState.SelectLayer(string.Empty);
-            SelectStructureElementByKey(string.Empty);
+            ApplySelectionState(null, CanvasSelectionKind.Frame, syncPatchTarget: false);
         }
 
         void ICanvasWorkspaceHost.SelectStructureElementFromCanvas(string elementKey, bool syncPatchTarget)
         {
             var selectedItem = FindStructureNode(elementKey);
-            _structurePanelState.SelectElement(selectedItem?.Key);
-            _structurePanelState.SelectLayer(selectedItem?.LayerKey);
-            SelectStructureElementByKey(_structurePanelState.SelectedElementKey);
+            ApplySelectionState(
+                selectedItem,
+                selectedItem != null ? CanvasSelectionKind.Element : CanvasSelectionKind.None,
+                syncPatchTarget);
+        }
 
-            if (syncPatchTarget && !string.IsNullOrWhiteSpace(selectedItem?.TargetKey))
-                _host.TrySelectPatchTargetByKey(selectedItem.TargetKey);
+        internal void SyncSelectionFromInspectorTarget(string targetKey)
+        {
+            if (string.Equals(targetKey, AttributePatcher.ROOT_TARGET_KEY, StringComparison.Ordinal))
+            {
+                ApplySelectionState(null, CanvasSelectionKind.Frame, syncPatchTarget: false);
+                return;
+            }
+
+            var selectedItem = FindStructureNodeByTargetKey(targetKey);
+            ApplySelectionState(
+                selectedItem,
+                selectedItem != null ? CanvasSelectionKind.Element : CanvasSelectionKind.None,
+                syncPatchTarget: false);
         }
     }
 }
