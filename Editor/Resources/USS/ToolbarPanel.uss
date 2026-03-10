@@ -13,19 +13,10 @@
     align-items: center;
     justify-content: space-between;
     padding: 7px var(--space-2-5);
-    border-top-left-radius: var(--radius-xl);
-    border-top-right-radius: var(--radius-xl);
-    border-bottom-left-radius: var(--radius-xl);
-    border-bottom-right-radius: var(--radius-xl);
-    border-left-color: var(--border-base);
-    border-left-width: 1px;
-    border-right-color: var(--border-base);
-    border-right-width: 1px;
-    border-top-color: var(--border-base);
-    border-top-width: 1px;
-    border-bottom-color: var(--border-base);
-    border-bottom-width: 1px;
-    background-color: var(--bg-overlay);
+    border-radius: var(--radius-xl);
+    border-color: var(--border);
+    border-width: 1px;
+    background-color: var(--editor-overlay-bg);
 }
 
 .svg-editor__floating-toolbar-left,
@@ -39,7 +30,7 @@
     height: 28px;
     margin-left: var(--space-2);
     margin-right: var(--space-2);
-    background-color: var(--border-strong);
+    background-color: var(--input);
 }
 
 .svg-editor__tool-icon > .unity-toggle__input > .unity-toggle__checkmark {

@@ -1,5 +1,4 @@
 .svg-editor__inspector-panel {
-    --inspector-panel-width : 240px;
     width: var(--inspector-panel-width);
     min-width: var(--inspector-panel-width);
     max-width: var(--inspector-panel-width);
@@ -15,19 +14,19 @@
 
 .svg-editor__inspector-card {
     padding: var(--space-2) var(--space-2-5);
-    background-color: rgba(255, 255, 255, 0.035);
+    background-color: var(--editor-surface-soft);
 }
 
 .svg-editor__inspector-card--accent {
-    border-top-color: rgba(98, 176, 255, 0.5);
+    border-top-color: var(--editor-accent-border);
     border-top-width: 2px;
-    background-color: rgba(72, 120, 182, 0.12);
+    background-color: var(--editor-accent-soft);
 }
 
 .svg-editor__subsection-title {
     margin-top: 0;
     margin-bottom: var(--space-1-5);
-    color: var(--text-primary);
+    color: var(--foreground);
     -unity-font-style: bold;
     font-size: 12px;
 }
@@ -53,25 +52,16 @@
 .svg-editor__action-button {
     height: 30px;
     min-width: 104px;
-    border-top-left-radius: var(--radius-sm);
-    border-top-right-radius: var(--radius-sm);
-    border-bottom-left-radius: var(--radius-sm);
-    border-bottom-right-radius: var(--radius-sm);
-    border-left-color: rgba(255, 255, 255, 0.08);
-    border-left-width: 1px;
-    border-right-color: rgba(255, 255, 255, 0.08);
-    border-right-width: 1px;
-    border-top-color: rgba(255, 255, 255, 0.08);
-    border-top-width: 1px;
-    border-bottom-color: rgba(255, 255, 255, 0.08);
-    border-bottom-width: 1px;
-    background-color: rgba(255, 255, 255, 0.06);
-    color: var(--text-button);
+    border-radius: var(--radius-sm);
+    border-color: var(--editor-control-border);
+    border-width: 1px;
+    background-color: var(--input-30);
+    color: var(--foreground);
 }
 
 .svg-editor__inspector-btn:hover:enabled,
 .svg-editor__action-button:hover:enabled {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--input-50);
 }
 
 .svg-editor__inspector-separator {
@@ -90,7 +80,7 @@
     min-width: auto;
     margin-right: 0;
     margin-bottom: 3px;
-    color: rgba(226, 225, 230, 0.62);
+    color: var(--editor-label-muted);
     font-size: 11px;
     -unity-font-style: bold;
 }
@@ -102,20 +92,11 @@
     min-height: 28px;
     padding-left: var(--space-1-5);
     padding-right: var(--space-1-5);
-    border-top-left-radius: var(--radius-sm);
-    border-top-right-radius: var(--radius-sm);
-    border-bottom-left-radius: var(--radius-sm);
-    border-bottom-right-radius: var(--radius-sm);
-    border-left-color: rgba(255, 255, 255, 0.08);
-    border-left-width: 1px;
-    border-right-color: rgba(255, 255, 255, 0.08);
-    border-right-width: 1px;
-    border-top-color: rgba(255, 255, 255, 0.08);
-    border-top-width: 1px;
-    border-bottom-color: rgba(255, 255, 255, 0.08);
-    border-bottom-width: 1px;
-    background-color: rgba(8, 10, 16, 0.52);
-    color: var(foun--text-primary);
+    border-radius: var(--radius-sm);
+    border-color: var(--editor-control-border);
+    border-width: 1px;
+    background-color: var(--editor-control-bg);
+    color: var(--foreground);
 }
 
 .svg-editor__inspector-section .unity-toggle {
@@ -130,33 +111,21 @@
 .svg-editor__inspector-section .unity-toggle__checkmark {
     width: 16px;
     height: 16px;
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
-    border-bottom-left-radius: 4px;
-    border-bottom-right-radius: 4px;
-    border-left-color: rgba(255, 255, 255, 0.16);
-    border-left-width: 1px;
-    border-right-color: rgba(255, 255, 255, 0.16);
-    border-right-width: 1px;
-    border-top-color: rgba(255, 255, 255, 0.16);
-    border-top-width: 1px;
-    border-bottom-color: rgba(255, 255, 255, 0.16);
-    border-bottom-width: 1px;
-    background-color: rgba(8, 10, 16, 0.52);
+    border-radius: 4px;
+    border-color: var(--editor-control-border-strong);
+    border-width: 1px;
+    background-color: var(--editor-control-bg);
 }
 
 .svg-editor__inspector-section .unity-toggle:checked > .unity-toggle__input > .unity-toggle__checkmark {
-    background-color: rgba(98, 176, 255, 0.82);
-    border-left-color: rgba(98, 176, 255, 0.82);
-    border-right-color: rgba(98, 176, 255, 0.82);
-    border-top-color: rgba(98, 176, 255, 0.82);
-    border-bottom-color: rgba(98, 176, 255, 0.82);
+    background-color: var(--editor-accent-solid);
+    border-color: var(--editor-accent-solid);
 }
 
 .svg-editor__inspector-section .unity-base-slider__label {
     min-width: auto;
     margin-bottom: 3px;
-    color: rgba(226, 225, 230, 0.62);
+    color: var(--editor-label-muted);
     font-size: 11px;
     -unity-font-style: bold;
 }
@@ -168,12 +137,12 @@
 .svg-editor__inspector-section .unity-base-slider__tracker {
     height: 4px;
     border-radius: var(--radius-full);
-    background-color: rgba(255, 255, 255, 0.12);
+    background-color: var(--input-50);
     border-width: 0;
 }
 
 .svg-editor__inspector-section .unity-base-slider__fill {
-    background-color: rgba(98, 176, 255, 0.85);
+    background-color: var(--editor-accent-solid-strong);
     border-radius: var(--radius-full);
 }
 
@@ -183,7 +152,7 @@
     margin-top: -3px;
     border-radius: var(--radius-full);
     border-width: 0;
-    background-color: rgb(244, 246, 255);
+    background-color: var(--editor-slider-thumb-bg);
 }
 
 .svg-editor__source-panel {
@@ -194,7 +163,7 @@
 .svg-editor__source-panel--inline {
     margin-top: 0;
     min-height: var(--min-height-source-panel);
-    background-color: rgba(20, 22, 29, 0.82);
+    background-color: var(--editor-control-bg-strong);
 }
 
 .svg-editor__source-header {
@@ -205,7 +174,7 @@
 
 .svg-editor__section-title {
     margin-bottom: 0;
-    color: var(--text-primary);
+    color: var(--foreground);
     -unity-font-style: bold;
     font-size: 13px;
 }
@@ -224,23 +193,14 @@
     flex-grow: 1;
     font-size: 12px;
     white-space: normal;
-    background-color: rgba(9, 11, 18, 0.55);
+    background-color: var(--editor-control-bg-soft);
     min-height: var(--min-height-source-field);
-    border-top-left-radius: var(--radius-sm);
-    border-top-right-radius: var(--radius-sm);
-    border-bottom-left-radius: var(--radius-sm);
-    border-bottom-right-radius: var(--radius-sm);
-    border-left-color: rgba(255, 255, 255, 0.08);
-    border-left-width: 1px;
-    border-right-color: rgba(255, 255, 255, 0.08);
-    border-right-width: 1px;
-    border-top-color: rgba(255, 255, 255, 0.08);
-    border-top-width: 1px;
-    border-bottom-color: rgba(255, 255, 255, 0.08);
-    border-bottom-width: 1px;
+    border-radius: var(--radius-sm);
+    border-color: var(--editor-control-border);
+    border-width: 1px;
 }
 
 .svg-editor__source-status {
     margin-top: var(--space-2);
-    color: var(--text-muted);
+    color: var(--muted-foreground);
 }
