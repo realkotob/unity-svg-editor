@@ -86,8 +86,8 @@ namespace UnitySvgEditor.Editor
         {
             if (_form.TargetPopup != null)
             {
-                _form.TargetPopup.UnregisterValueChangedCallback(OnPatchTargetChanged);
-                _form.TargetPopup.RegisterValueChangedCallback(OnPatchTargetChanged);
+                _form.TargetPopup.UnregisterValueChangedCallback(OnTargetChanged);
+                _form.TargetPopup.RegisterValueChangedCallback(OnTargetChanged);
             }
 
             if (_form.ReadButton != null)
@@ -101,7 +101,7 @@ namespace UnitySvgEditor.Editor
         private void UnregisterCallbacks()
         {
             if (_form.TargetPopup != null)
-                _form.TargetPopup.UnregisterValueChangedCallback(OnPatchTargetChanged);
+                _form.TargetPopup.UnregisterValueChangedCallback(OnTargetChanged);
 
             if (_form.ReadButton != null)
                 _form.ReadButton.clicked -= OnReadRequested;
@@ -111,7 +111,7 @@ namespace UnitySvgEditor.Editor
                 _form.ApplyButton.clicked -= OnApplyRequested;
         }
 
-        private void OnPatchTargetChanged(ChangeEvent<string> evt) => TargetChanged?.Invoke(evt.newValue ?? string.Empty);
+        private void OnTargetChanged(ChangeEvent<string> evt) => TargetChanged?.Invoke(evt.newValue ?? string.Empty);
 
         private void OnReadRequested() => ReadRequested?.Invoke();
 
