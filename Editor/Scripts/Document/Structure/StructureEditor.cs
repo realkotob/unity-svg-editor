@@ -10,21 +10,6 @@ namespace UnitySvgEditor.Editor
             return StructureOutlineBuilder.TryBuildSnapshot(sourceText, out snapshot, out error);
         }
 
-        public bool TryReorderElementWithinSameParent(
-            string sourceText,
-            string elementKey,
-            int targetChildIndex,
-            out string reorderedSource,
-            out string error)
-        {
-            return StructureDocumentEditService.TryReorderElementWithinSameParent(
-                sourceText,
-                elementKey,
-                targetChildIndex,
-                out reorderedSource,
-                out error);
-        }
-
         public bool TrySetElementTransform(
             string sourceText,
             string elementKey,

@@ -14,7 +14,6 @@ namespace UnitySvgEditor.Editor
 
         public CanvasInteractionController(
             ICanvasWorkspaceHost host,
-            StructureEditor structureEditor,
             CanvasViewportState viewportState,
             CanvasOverlayController overlayController,
             CanvasSceneProjector sceneProjector)
@@ -24,7 +23,6 @@ namespace UnitySvgEditor.Editor
             _overlayController = overlayController;
             _pointerDragController = new CanvasPointerDragController(
                 this,
-                structureEditor,
                 viewportState,
                 overlayController,
                 sceneProjector);

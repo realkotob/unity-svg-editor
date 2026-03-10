@@ -10,9 +10,9 @@ namespace UnitySvgEditor.Editor
 
         private AssetHierarchyListView _hierarchyListView;
 
-        public StructureHierarchyController(StructureEditor structureEditor)
+        public StructureHierarchyController()
         {
-            _interactionController = new StructureHierarchyInteractionController(structureEditor);
+            _interactionController = new StructureHierarchyInteractionController();
         }
 
         public void Bind(AssetHierarchyListView hierarchyListView, IStructureHierarchyHost host, Action<StructureNode> selectionChangedHandler)

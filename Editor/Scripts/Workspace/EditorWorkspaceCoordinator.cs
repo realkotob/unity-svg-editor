@@ -10,6 +10,7 @@ namespace UnitySvgEditor.Editor
     internal sealed class EditorWorkspaceCoordinator : ICanvasWorkspaceHost, IStructureHierarchyHost
     {
         private readonly IEditorWorkspaceHost _host;
+        private readonly AttributePatcher _attributePatcher = new();
         private readonly StructureEditor _structureService = new();
         private readonly SvgDocumentModelMutationService _documentModelMutationService = new();
         private readonly StructurePanelState _structurePanelState = new();
@@ -21,13 +22,12 @@ namespace UnitySvgEditor.Editor
 
         private VisualElement RootVisualElement => _host.RootVisualElement;
         private DocumentSession CurrentDocument => _host.CurrentDocument;
-        private AttributePatcher AttributePatcher => _host.AttributePatcher;
 
         public EditorWorkspaceCoordinator(IEditorWorkspaceHost host)
         {
             _host = host;
-            _canvasWorkspaceController = new CanvasWorkspaceController(this, _structureService);
-            _structureHierarchyController = new StructureHierarchyController(_structureService);
+            _canvasWorkspaceController = new CanvasWorkspaceController(this);
+            _structureHierarchyController = new StructureHierarchyController();
         }
 
         public void Bind(CanvasStageView canvasStageView, Toggle moveToolToggle)
@@ -133,7 +133,7 @@ namespace UnitySvgEditor.Editor
                 return true;
             }
 
-            if (!AttributePatcher.TryApplyAttributePatch(
+            if (!_attributePatcher.TryApplyAttributePatch(
                     CurrentDocument.WorkingSourceText,
                     request,
                     out string patched,

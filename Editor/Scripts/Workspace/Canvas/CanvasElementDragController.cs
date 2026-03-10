@@ -6,7 +6,6 @@ namespace UnitySvgEditor.Editor
 {
     internal sealed class CanvasElementDragController
     {
-        private readonly StructureEditor _structureEditor;
         private readonly CanvasSceneProjector _sceneProjector;
         private readonly ElementMoveSession _moveSession = new();
         private readonly CanvasTransientDocumentModelSession _transientDocumentModelSession = new();
@@ -28,9 +27,8 @@ namespace UnitySvgEditor.Editor
         public bool DragResizeCenterAnchor => _dragResizeCenterAnchor;
         public string DragElementKey => _dragElementKey;
 
-        public CanvasElementDragController(StructureEditor structureEditor, CanvasSceneProjector sceneProjector)
+        public CanvasElementDragController(CanvasSceneProjector sceneProjector)
         {
-            _structureEditor = structureEditor;
             _sceneProjector = sceneProjector;
         }
 

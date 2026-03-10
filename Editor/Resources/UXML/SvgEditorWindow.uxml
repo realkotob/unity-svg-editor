@@ -106,18 +106,11 @@
                                 <ui:TextField name="inspector-transform" label="Transform" multiline="true" class="svg-editor__advanced-transform-field"/>
                             </ui:VisualElement>
                         </ui:VisualElement>
-                    </ui:VisualElement>
-                    <ui:VisualElement name="code-inspector" class="svg-editor__inspector-mode">
-                        <ui:VisualElement name="source-panel" class="svg-editor__source-panel svg-editor__source-panel--inline svg-editor__inspector-card">
-                            <ui:VisualElement class="svg-editor__source-header">
-                                <ui:Label text="Source Editor" class="svg-editor__section-title"/>
-                                <ui:VisualElement class="svg-editor__button-row">
-                                    <ui:Button name="source-reload" text="Reload" class="svg-editor__action-button"/>
-                                    <ui:Button name="source-validate" text="Validate XML" class="svg-editor__action-button"/>
-                                    <ui:Button name="source-save" text="Save &amp; Reimport" class="svg-editor__action-button"/>
-                                </ui:VisualElement>
+                        <ui:VisualElement name="document-panel" class="svg-editor__inspector-section svg-editor__inspector-card">
+                            <ui:Label text="Document" class="svg-editor__subsection-title"/>
+                            <ui:VisualElement class="svg-editor__inspector-row">
+                                <ui:Button name="source-save" text="Save &amp; Reimport" class="svg-editor__inspector-btn svg-editor__inspector-btn--last"/>
                             </ui:VisualElement>
-                            <ui:TextField name="source-editor" multiline="true" class="svg-editor__source-field"/>
                             <ui:Label name="source-status" text="Select an SVG asset to begin." class="svg-editor__source-status"/>
                         </ui:VisualElement>
                     </ui:VisualElement>
@@ -128,13 +121,6 @@
             <ui:VisualElement class="svg-editor__floating-toolbar-left">
                 <togglegroup:ToggleGroup name="toolbar-tools-group" variant="Default" gap="6">
                     <toggle:Toggle name="tool-move" tooltip="Move" size="Small" variant="Text" value="true" class="svg-editor__tool-icon"/>
-                </togglegroup:ToggleGroup>
-            </ui:VisualElement>
-            <ui:VisualElement class="svg-editor__floating-toolbar-divider"/>
-            <ui:VisualElement class="svg-editor__floating-toolbar-right">
-                <togglegroup:ToggleGroup name="toolbar-mode-group" variant="Outline" gap="6">
-                    <toggle:Toggle name="toolbar-mode-vector" tooltip="Vector" size="Small" variant="Text" value="true" class="svg-editor__tool-icon"/>
-                    <toggle:Toggle name="toolbar-mode-code" tooltip="Code" size="Small" variant="Text" value="false" class="svg-editor__tool-icon"/>
                 </togglegroup:ToggleGroup>
             </ui:VisualElement>
         </ui:VisualElement>

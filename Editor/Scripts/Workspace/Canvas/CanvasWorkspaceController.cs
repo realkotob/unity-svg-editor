@@ -10,7 +10,7 @@ namespace UnitySvgEditor.Editor
         private readonly CanvasSceneProjector _sceneProjector;
         private readonly CanvasInteractionController _interactionController;
 
-        public CanvasWorkspaceController(ICanvasWorkspaceHost host, StructureEditor structureEditor)
+        public CanvasWorkspaceController(ICanvasWorkspaceHost host)
         {
             _sceneProjector = new CanvasSceneProjector(
                 _viewportState,
@@ -21,7 +21,6 @@ namespace UnitySvgEditor.Editor
 
             _interactionController = new CanvasInteractionController(
                 host,
-                structureEditor,
                 _viewportState,
                 _overlayController,
                 _sceneProjector);

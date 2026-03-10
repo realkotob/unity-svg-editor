@@ -24,7 +24,6 @@ namespace UnitySvgEditor.Editor
 
         public CanvasPointerDragController(
             ICanvasPointerDragHost host,
-            StructureEditor structureEditor,
             CanvasViewportState viewportState,
             CanvasOverlayController overlayController,
             CanvasSceneProjector sceneProjector)
@@ -33,7 +32,7 @@ namespace UnitySvgEditor.Editor
             _viewportState = viewportState;
             _overlayController = overlayController;
             _sceneProjector = sceneProjector;
-            _elementDragController = new CanvasElementDragController(structureEditor, sceneProjector);
+            _elementDragController = new CanvasElementDragController(sceneProjector);
             _selectionSyncService = new CanvasSelectionSyncService(_host, _overlayController, _elementDragController);
             _gestureRouter = new CanvasGestureRouter(new CanvasGestureRouterDependencies
             {

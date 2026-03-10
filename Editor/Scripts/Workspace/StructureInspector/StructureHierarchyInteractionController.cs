@@ -13,7 +13,6 @@ namespace UnitySvgEditor.Editor
             public const string INSERT_INDICATOR = "svg-editor__hierarchy-insert-indicator";
         }
 
-        private readonly StructureEditor _structureEditor;
         private readonly SvgDocumentModelMutationService _documentModelMutationService = new();
 
         private TreeView _treeView;
@@ -25,9 +24,8 @@ namespace UnitySvgEditor.Editor
         private int _pendingHierarchyDropChildIndex = -1;
         private string _pressedHierarchyElementKey;
 
-        public StructureHierarchyInteractionController(StructureEditor structureEditor)
+        public StructureHierarchyInteractionController()
         {
-            _structureEditor = structureEditor;
         }
 
         public void Bind(TreeView treeView, IStructureHierarchyHost host)

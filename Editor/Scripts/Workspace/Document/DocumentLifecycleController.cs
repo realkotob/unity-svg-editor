@@ -9,9 +9,9 @@ namespace UnitySvgEditor.Editor
         private readonly DocumentRepository _documentRepository;
         private readonly Func<EditorWorkspaceCoordinator> _workspaceCoordinatorAccessor;
         private readonly Action _updateEditorInteractivity;
+        private readonly InspectorPanelController _inspectorPanelController;
         private readonly DocumentLifecycleView _view;
         private readonly DocumentPreviewService _previewService;
-        private readonly DocumentSourceSyncService _sourceSyncService;
 
         public DocumentLifecycleController(
             DocumentRepository documentRepository,
@@ -23,6 +23,7 @@ namespace UnitySvgEditor.Editor
             _documentRepository = documentRepository;
             _workspaceCoordinatorAccessor = workspaceCoordinatorAccessor;
             _updateEditorInteractivity = updateEditorInteractivity;
+            _inspectorPanelController = inspectorPanelController;
 
             _view = new DocumentLifecycleView();
             _previewService = new DocumentPreviewService(
@@ -30,18 +31,8 @@ namespace UnitySvgEditor.Editor
                 _view,
                 () => CurrentDocument,
                 _workspaceCoordinatorAccessor);
-            _sourceSyncService = new DocumentSourceSyncService(
-                _view,
-                _previewService,
-                inspectorPanelController,
-                _workspaceCoordinatorAccessor,
-                () => CurrentDocument,
-                _updateEditorInteractivity);
 
-            _view.ReloadRequested += OnReloadClicked;
-            _view.ValidateRequested += OnValidateClicked;
             _view.SaveRequested += OnSaveClicked;
-            _view.SourceChanged += OnSourceChanged;
         }
 
         public DocumentSession CurrentDocument { get; private set; }
@@ -59,7 +50,6 @@ namespace UnitySvgEditor.Editor
             }
 
             _previewService.ApplyCurrentPreviewState();
-            _sourceSyncService.ApplyCurrentDocumentToView();
             _updateEditorInteractivity?.Invoke();
         }
 
@@ -91,14 +81,14 @@ namespace UnitySvgEditor.Editor
             {
                 CurrentDocument = null;
                 _previewService.ClearPreview();
-                _sourceSyncService.HandleLoadFailure(error);
+                HandleLoadFailure(error);
                 return;
             }
 
             CurrentDocument = document;
             _previewService.ResetPreviewState();
             WorkspaceCoordinator?.ResetSelection();
-            _sourceSyncService.HandleDocumentLoaded();
+            HandleDocumentLoaded();
         }
 
         public void ApplyUpdatedSource(string updatedSource, string successStatus)
@@ -110,7 +100,7 @@ namespace UnitySvgEditor.Editor
 
             CurrentDocument.WorkingSourceText = updatedSource;
             _documentRepository.RefreshDocumentModel(CurrentDocument);
-            _sourceSyncService.SyncCurrentSource(
+            SyncCurrentSource(
                 successStatus,
                 keepExistingPreviewOnFailure: true,
                 updateSourceField: true);
@@ -125,9 +115,6 @@ namespace UnitySvgEditor.Editor
             var currentDocument = CurrentDocument;
             var hasDocument = currentDocument != null;
 
-            SetEnabledIfNotNull(_view.SourceEditorControl, hasDocument);
-            SetEnabledIfNotNull(_view.ReloadButtonControl, hasDocument);
-            SetEnabledIfNotNull(_view.ValidateButtonControl, hasDocument);
             SetEnabledIfNotNull(_view.SaveButtonControl, hasDocument && currentDocument.IsDirty);
         }
 
@@ -139,59 +126,37 @@ namespace UnitySvgEditor.Editor
 
         public void UpdateSourceStatus(string status) => _view.SetStatus(status);
 
-        private void OnSourceChanged(string sourceText)
+        private void HandleLoadFailure(string error)
         {
-            if (CurrentDocument == null)
-            {
-                return;
-            }
-
-            CurrentDocument.WorkingSourceText = sourceText;
-            _documentRepository.RefreshDocumentModel(CurrentDocument);
-            _sourceSyncService.SyncCurrentSource(
-                CurrentDocument.IsDirty ? "Unsaved changes." : "No local changes.",
-                keepExistingPreviewOnFailure: true,
-                updateSourceField: false);
+            _view.ShowLoadFailure(error);
+            _updateEditorInteractivity?.Invoke();
         }
 
-        private void OnReloadClicked()
+        private void HandleDocumentLoaded()
         {
             if (CurrentDocument == null)
-            {
                 return;
-            }
 
-            if (CurrentDocument.IsDirty)
-            {
-                bool shouldDiscard = EditorUtility.DisplayDialog(
-                    "Discard SVG changes?",
-                    "Reload will discard unsaved edits. Continue?",
-                    "Reload",
-                    "Cancel");
-                if (!shouldDiscard)
-                {
-                    return;
-                }
-            }
-
-            LoadAsset(CurrentDocument.AssetPath);
-            UpdateSourceStatus("Reloaded SVG source from disk.");
+            SyncCurrentSource("Loaded SVG source.", keepExistingPreviewOnFailure: false, updateSourceField: true);
+            WorkspaceCoordinator?.ResetCanvasView(clearSelection: true);
         }
 
-        private void OnValidateClicked()
+        private void SyncCurrentSource(
+            string status,
+            bool keepExistingPreviewOnFailure,
+            bool updateSourceField,
+            bool skipPreviewRefresh = false)
         {
             if (CurrentDocument == null)
-            {
                 return;
-            }
 
-            if (_documentRepository.ValidateXml(CurrentDocument.WorkingSourceText, out string error))
-            {
-                UpdateSourceStatus("XML is valid.");
-                return;
-            }
+            _inspectorPanelController.RefreshTargets(CurrentDocument.WorkingSourceText);
+            if (!skipPreviewRefresh)
+                _previewService.RefreshLivePreview(keepExistingPreviewOnFailure);
 
-            UpdateSourceStatus($"Invalid XML: {error}");
+            WorkspaceCoordinator?.RefreshStructureViews();
+            _updateEditorInteractivity?.Invoke();
+            _view.SetStatus(status);
         }
 
         private void OnSaveClicked()
@@ -208,7 +173,7 @@ namespace UnitySvgEditor.Editor
             }
 
             _previewService.ResetPreviewState();
-            _sourceSyncService.SyncCurrentSource(
+            SyncCurrentSource(
                 "Saved SVG and reimported asset.",
                 keepExistingPreviewOnFailure: false,
                 updateSourceField: false);

@@ -8,7 +8,6 @@ namespace UnitySvgEditor.Editor
         DocumentSession CurrentDocument { get; }
         PreviewSnapshot PreviewSnapshot { get; }
         Image PreviewImage { get; }
-        AttributePatcher AttributePatcher { get; }
 
         void ApplyUpdatedSource(string updatedSource, string successStatus);
         void UpdateSourceStatus(string status);
