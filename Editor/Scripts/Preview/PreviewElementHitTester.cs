@@ -9,6 +9,7 @@ namespace UnitySvgEditor.Editor
         public bool TryHitTest(
             IReadOnlyList<PreviewElementGeometry> elements,
             Vector2 scenePoint,
+            float sceneHitRadius,
             out PreviewElementGeometry hitElement)
         {
             hitElement = null;
@@ -19,7 +20,7 @@ namespace UnitySvgEditor.Editor
 
             foreach (var element in elements.OrderByDescending(item => item.DrawOrder))
             {
-                if (!element.VisualBounds.Contains(scenePoint) ||
+                if (!ExpandRect(element.VisualBounds, sceneHitRadius).Contains(scenePoint) ||
                     element.HitGeometry == null ||
                     element.HitGeometry.Count == 0)
                 {
@@ -36,7 +37,7 @@ namespace UnitySvgEditor.Editor
             }
 
             var boundsFallback = elements
-                .Where(item => item.VisualBounds.Contains(scenePoint))
+                .Where(item => ExpandRect(item.VisualBounds, sceneHitRadius).Contains(scenePoint))
                 .OrderBy(item => item.VisualBounds.width * item.VisualBounds.height)
                 .ThenByDescending(item => item.DrawOrder)
                 .FirstOrDefault();
@@ -47,6 +48,14 @@ namespace UnitySvgEditor.Editor
             }
 
             return false;
+        }
+
+        public bool TryHitTest(
+            IReadOnlyList<PreviewElementGeometry> elements,
+            Vector2 scenePoint,
+            out PreviewElementGeometry hitElement)
+        {
+            return TryHitTest(elements, scenePoint, 0f, out hitElement);
         }
 
         private static bool IsPointInTriangle(Vector2 point, Vector2 a, Vector2 b, Vector2 c)
@@ -62,6 +71,18 @@ namespace UnitySvgEditor.Editor
             var hasNegative = d1 < 0f || d2 < 0f || d3 < 0f;
             var hasPositive = d1 > 0f || d2 > 0f || d3 > 0f;
             return !(hasNegative && hasPositive);
+        }
+
+        private static Rect ExpandRect(Rect rect, float radius)
+        {
+            if (radius <= Mathf.Epsilon)
+                return rect;
+
+            return Rect.MinMaxRect(
+                rect.xMin - radius,
+                rect.yMin - radius,
+                rect.xMax + radius,
+                rect.yMax + radius);
         }
     }
 }

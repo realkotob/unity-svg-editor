@@ -6,6 +6,7 @@ namespace UnitySvgEditor.Editor
 {
     internal sealed class CanvasSceneHitTestHelper
     {
+        private const float HitViewportRadius = 6f;
         private readonly PreviewElementHitTester _elementHitTester;
 
         public CanvasSceneHitTestHelper(PreviewElementHitTester elementHitTester)
@@ -80,7 +81,19 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
-            return _elementHitTester.TryHitTest(previewSnapshot.Elements, scenePoint, out hitElement);
+            float sceneHitRadius = 0f;
+            if (CanvasProjectionMath.TryConvertViewportDeltaToSceneDelta(
+                    viewportState,
+                    previewSnapshot,
+                    framePadding,
+                    frameHeaderHeight,
+                    new Vector2(HitViewportRadius, HitViewportRadius),
+                    out Vector2 sceneRadiusDelta))
+            {
+                sceneHitRadius = Mathf.Max(Mathf.Abs(sceneRadiusDelta.x), Mathf.Abs(sceneRadiusDelta.y));
+            }
+
+            return _elementHitTester.TryHitTest(previewSnapshot.Elements, scenePoint, sceneHitRadius, out hitElement);
         }
 
         public bool TryResolveSelectedElementSceneRect(

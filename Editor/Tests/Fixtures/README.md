@@ -12,3 +12,5 @@
   - content extends into negative coordinates.
 - `transformed-parent.svg`
   - nested group transform case for move/resize validation.
+- `tiny-stroke-overlap.svg`
+  - tiny element, stroke-only shape, and overlapping targets for hit-test validation.
