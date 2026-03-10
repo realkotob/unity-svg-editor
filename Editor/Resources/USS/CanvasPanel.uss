@@ -158,3 +158,23 @@
     right: 0;
     height: 1px;
 }
+
+.svg-editor__preview-panel {
+    flex-grow: 1;
+    padding: var(--space-2) var(--space-2);
+    border-bottom-color: var(--border-base);
+    border-bottom-width: 1px;
+    background-color: rgb(26, 28, 31);
+}
+
+.svg-editor__feature-tag {
+    margin-right: var(--space-1-5);
+    margin-bottom: var(--space-1);
+    padding: 2px 7px;
+    border-top-left-radius: var(--radius-full);
+    border-top-right-radius: var(--radius-full);
+    border-bottom-left-radius: var(--radius-full);
+    border-bottom-right-radius: var(--radius-full);
+    color: var(--text-accent);
+    background-color: var(--bg-pill);
+}

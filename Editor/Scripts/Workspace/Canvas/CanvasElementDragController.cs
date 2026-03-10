@@ -14,6 +14,7 @@ namespace UnitySvgEditor.Editor
         private Rect _dragCurrentSelectionViewportRect;
         private Rect _dragStartElementSceneRect;
         private Rect _dragStartProjectionSceneRect;
+        private SvgPreserveAspectRatioMode _dragStartPreserveAspectRatioMode = SvgPreserveAspectRatioMode.Meet;
         private string _dragElementKey = string.Empty;
         private string _dragResizePreviewSourceText = string.Empty;
         private Matrix2D _dragStartParentWorldTransform = Matrix2D.identity;
@@ -22,6 +23,7 @@ namespace UnitySvgEditor.Editor
         public Rect DragStartElementSceneRect => _dragStartElementSceneRect;
         public Rect DragStartSelectionViewportRect => _dragStartSelectionViewportRect;
         public Rect DragStartProjectionSceneRect => _dragStartProjectionSceneRect;
+        public SvgPreserveAspectRatioMode DragStartPreserveAspectRatioMode => _dragStartPreserveAspectRatioMode;
         public string DragElementKey => _dragElementKey;
         public string DragPreviewSourceText => _moveSession.PreviewSourceText;
         public string DragResizePreviewSourceText => _dragResizePreviewSourceText;
@@ -42,6 +44,7 @@ namespace UnitySvgEditor.Editor
             _dragElementKey = elementKey;
             _dragStartParentWorldTransform = parentWorldTransform;
             _dragStartProjectionSceneRect = previewSnapshot?.CanvasViewportRect ?? default;
+            _dragStartPreserveAspectRatioMode = previewSnapshot?.PreserveAspectRatioMode ?? SvgPreserveAspectRatioMode.Meet;
             _dragStartSelectionViewportRect = _sceneProjector.TrySceneRectToViewportRect(previewSnapshot, elementSceneRect, out Rect selectionViewportRect)
                 ? selectionViewportRect
                 : default;
@@ -54,6 +57,7 @@ namespace UnitySvgEditor.Editor
         public void BeginResize(
             string elementKey,
             Rect projectionSceneRect,
+            SvgPreserveAspectRatioMode preserveAspectRatioMode,
             Rect selectionViewportRect,
             Rect selectionSceneRect,
             Matrix2D parentWorldTransform)
@@ -61,6 +65,7 @@ namespace UnitySvgEditor.Editor
             _dragElementKey = elementKey;
             _dragStartParentWorldTransform = parentWorldTransform;
             _dragStartProjectionSceneRect = projectionSceneRect;
+            _dragStartPreserveAspectRatioMode = preserveAspectRatioMode;
             _dragStartSelectionViewportRect = selectionViewportRect;
             _dragCurrentSelectionViewportRect = selectionViewportRect;
             _dragStartElementSceneRect = selectionSceneRect;
@@ -97,6 +102,7 @@ namespace UnitySvgEditor.Editor
             _dragElementKey = string.Empty;
             _dragResizePreviewSourceText = string.Empty;
             _dragStartProjectionSceneRect = default;
+            _dragStartPreserveAspectRatioMode = SvgPreserveAspectRatioMode.Meet;
             _dragStartParentWorldTransform = Matrix2D.identity;
             _moveSession.End();
         }
@@ -110,7 +116,11 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
-            if (!_sceneProjector.TryConvertViewportDeltaToSceneDelta(_dragStartProjectionSceneRect, viewportDelta, out Vector2 sceneDelta) ||
+            if (!_sceneProjector.TryConvertViewportDeltaToSceneDelta(
+                    _dragStartProjectionSceneRect,
+                    _dragStartPreserveAspectRatioMode,
+                    viewportDelta,
+                    out Vector2 sceneDelta) ||
                 sceneDelta.sqrMagnitude <= Mathf.Epsilon)
             {
                 return false;
@@ -180,7 +190,11 @@ namespace UnitySvgEditor.Editor
 
             Vector2 sceneDelta = Vector2.zero;
             if (dragMode == CanvasDragMode.MoveElement &&
-                (!_sceneProjector.TryConvertViewportDeltaToSceneDelta(_dragStartProjectionSceneRect, canvasDelta, out sceneDelta) ||
+                (!_sceneProjector.TryConvertViewportDeltaToSceneDelta(
+                     _dragStartProjectionSceneRect,
+                     _dragStartPreserveAspectRatioMode,
+                     canvasDelta,
+                     out sceneDelta) ||
                  sceneDelta.sqrMagnitude <= Mathf.Epsilon))
             {
                 return false;

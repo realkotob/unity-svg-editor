@@ -1,0 +1,14 @@
+@import url("/Packages/com.newmassmedia.unity-uitoolkit-foundation/Runtime/Theme/Shadcn.tss");
+@import url("/Packages/com.newmassmedia.unity-uitoolkit-foundation/Editor/Resources/USS/_EditorTheme.tss");
+
+@import url("../USS/Variables.uss");
+@import url("../USS/Shell.uss");
+@import url("../USS/AssetPanel.uss");
+@import url("../USS/CanvasPanel.uss");
+@import url("../USS/InspectorPanel.uss");
+@import url("../USS/ToolbarPanel.uss");
+
+
+
+
+VisualElement {}

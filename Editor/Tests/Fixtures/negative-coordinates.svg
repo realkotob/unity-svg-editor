@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="200"
+     height="140"
+     viewBox="-50 -30 200 140">
+  <rect x="-50" y="-30" width="200" height="140" fill="#101827"/>
+  <rect id="neg-rect" x="-30" y="-10" width="60" height="40" fill="#fb7185"/>
+  <circle id="neg-circle" cx="90" cy="50" r="24" fill="#2dd4bf"/>
+  <path id="neg-path" d="M -10 90 L 40 30 L 70 95 Z" fill="#fde047"/>
+</svg>

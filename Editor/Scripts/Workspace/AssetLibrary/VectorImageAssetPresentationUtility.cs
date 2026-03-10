@@ -6,6 +6,8 @@ namespace UnitySvgEditor.Editor
 {
     internal static class VectorImageAssetPresentationUtility
     {
+        private const string DeveloperFixtureMarker = "/Editor/Tests/Fixtures/";
+
         public static string BuildDisplayName(string assetPath)
         {
             return Path.GetFileNameWithoutExtension(assetPath);
@@ -49,6 +51,22 @@ namespace UnitySvgEditor.Editor
             return char.IsLetterOrDigit(firstChar)
                 ? char.ToUpperInvariant(firstChar).ToString()
                 : "#";
+        }
+
+        public static bool IsDeveloperFixtureAsset(string assetPath)
+        {
+            if (string.IsNullOrWhiteSpace(assetPath))
+                return false;
+
+            return assetPath.Replace('\\', '/')
+                .IndexOf(DeveloperFixtureMarker, StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        public static string ResolveGroupKey(string displayName, bool isDeveloperFixture)
+        {
+            return isDeveloperFixture
+                ? "Fixtures"
+                : ResolveGroupKey(displayName);
         }
     }
 }

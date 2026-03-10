@@ -71,6 +71,20 @@ namespace UnitySvgEditor.Editor
                 out contentViewportRect);
         }
 
+        public bool TryGetFrameContentViewportRect(
+            Rect projectionSceneRect,
+            SvgPreserveAspectRatioMode preserveAspectRatioMode,
+            out Rect contentViewportRect)
+        {
+            return CanvasProjectionMath.TryGetFrameContentViewportRect(
+                _viewportState,
+                projectionSceneRect,
+                preserveAspectRatioMode,
+                _framePadding,
+                _frameHeaderHeight,
+                out contentViewportRect);
+        }
+
         public bool TrySceneRectToViewportRect(PreviewSnapshot previewSnapshot, Rect sceneRect, out Rect viewportRect)
         {
             return CanvasProjectionMath.TrySceneRectToViewportRect(
@@ -98,6 +112,22 @@ namespace UnitySvgEditor.Editor
             return CanvasProjectionMath.TryConvertViewportDeltaToSceneDelta(
                 _viewportState,
                 projectionSceneRect,
+                _framePadding,
+                _frameHeaderHeight,
+                viewportDelta,
+                out sceneDelta);
+        }
+
+        public bool TryConvertViewportDeltaToSceneDelta(
+            Rect projectionSceneRect,
+            SvgPreserveAspectRatioMode preserveAspectRatioMode,
+            Vector2 viewportDelta,
+            out Vector2 sceneDelta)
+        {
+            return CanvasProjectionMath.TryConvertViewportDeltaToSceneDelta(
+                _viewportState,
+                projectionSceneRect,
+                preserveAspectRatioMode,
                 _framePadding,
                 _frameHeaderHeight,
                 viewportDelta,
@@ -206,6 +236,27 @@ namespace UnitySvgEditor.Editor
                 showHandles);
         }
 
+        public CanvasSelectionVisual BuildSelectionVisual(
+            Rect projectionSceneRect,
+            SvgPreserveAspectRatioMode preserveAspectRatioMode,
+            CanvasSelectionKind kind,
+            Rect viewportRect,
+            Vector2 sourceSize,
+            bool showHandles)
+        {
+            return CanvasProjectionMath.BuildSelectionVisual(
+                _viewportState,
+                projectionSceneRect,
+                preserveAspectRatioMode,
+                _framePadding,
+                _frameHeaderHeight,
+                _alignmentGuideThreshold,
+                kind,
+                viewportRect,
+                sourceSize,
+                showHandles);
+        }
+
         public Rect BuildScaledSceneRect(
             Rect dragStartSelectionViewportRect,
             Rect dragStartElementSceneRect,
@@ -259,6 +310,9 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
+            previewImage.scaleMode = previewSnapshot.PreserveAspectRatioMode == SvgPreserveAspectRatioMode.None
+                ? ScaleMode.StretchToFill
+                : ScaleMode.ScaleToFit;
             overlayController.SetFrame(contentViewportRect, GetCanvasFrameLabel(currentDocument));
             previewImage.style.left = 0f;
             previewImage.style.top = 0f;

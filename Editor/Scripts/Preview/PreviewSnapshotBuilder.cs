@@ -55,6 +55,7 @@ namespace UnitySvgEditor.Editor
                     DocumentViewportRect = documentViewportRect,
                     ProjectionRect = projectionRect,
                     VisualContentBounds = visualContentBounds,
+                    PreserveAspectRatioMode = preparedDocument.PreserveAspectRatioMode,
                     Elements = elements
                 };
                 return true;

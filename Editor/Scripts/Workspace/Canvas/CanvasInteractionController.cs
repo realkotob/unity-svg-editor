@@ -108,6 +108,7 @@ namespace UnitySvgEditor.Editor
 
                 _overlayController.SetSelection(_sceneProjector.BuildSelectionVisual(
                     _pointerDragController.DragStartProjectionSceneRect,
+                    _pointerDragController.DragStartPreserveAspectRatioMode,
                     CanvasSelectionKind.Element,
                     _pointerDragController.DragCurrentSelectionViewportRect,
                     sourceRect.size,

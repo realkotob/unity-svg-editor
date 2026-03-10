@@ -1,0 +1,35 @@
+* {
+    --bg-root: var(--gray-900);
+    --bg-panel: var(--gray-800);
+    --bg-overlay: rgba(42, 42, 46, 0.96);
+    --bg-pill: rgba(59, 130, 246, 0.24);
+
+    --text-primary: var(--foreground);
+    --text-secondary: var(--gray-300);
+    --text-muted: var(--gray-500);
+    --text-button: var(--foreground);
+    --text-accent: var(--blue-100);
+
+    --border-weak: var(--input-50);
+    --border-base: var(--border);
+    --border-strong: var(--input);
+
+    --color-accent-500: var(--blue-500);
+    --color-white: var(--white);
+    --color-neutral-550: var(--gray-400);
+
+    --radius-xs: 4px;
+    --radius-full: 999px;
+
+    --inspector-panel-width: 240px;
+    --size-selection-handle: 8px;
+    --height-floating-toolbar: 52px;
+    --offset-floating-toolbar-x: -250px;
+    --offset-floating-toolbar-bottom: 16px;
+    --min-height-source-panel: 280px;
+    --min-height-source-field: 180px;
+    --width-page-add: 24px;
+    --radius-page-add: 12px;
+    --height-tab: 24px;
+    --width-sidebar-tab: 60px;
+}

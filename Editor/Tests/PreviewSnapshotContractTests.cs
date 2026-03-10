@@ -53,5 +53,20 @@ namespace UnitySvgEditor.Editor.Tests
                 PreviewSnapshotSceneImportService.ResolveProjectionRect(default, sceneBounds, default),
                 Is.EqualTo(sceneBounds));
         }
+
+        [Test]
+        public void TryPrepare_ParsesPreserveAspectRatioNone_FromRoot()
+        {
+            const string source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"200\" height=\"100\" viewBox=\"0 0 100 100\" preserveAspectRatio=\"none\"><rect id=\"r\" x=\"0\" y=\"0\" width=\"100\" height=\"100\" /></svg>";
+
+            bool success = PreviewSnapshotDocumentPreparation.TryPrepare(
+                source,
+                out PreviewSnapshotPreparedDocument preparedDocument,
+                out string error);
+
+            Assert.That(success, Is.True, error);
+            Assert.That(preparedDocument, Is.Not.Null);
+            Assert.That(preparedDocument.PreserveAspectRatioMode, Is.EqualTo(SvgPreserveAspectRatioMode.None));
+        }
     }
 }

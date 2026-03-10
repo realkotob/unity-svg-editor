@@ -1,0 +1,28 @@
+.svg-editor {
+    position: relative;
+    flex-grow: 1;
+    flex-direction: column;
+    background-color: var(--bg-root);
+    color: var(--text-primary);
+}
+
+.svg-editor__main-split,
+.svg-editor__workspace-split {
+    flex-grow: 1;
+}
+
+.svg-editor__workspace-split {
+    flex-direction: row;
+}
+
+.svg-editor .unity-two-pane-split-view__content-container {
+    background-color: var(--bg-panel);
+}
+
+.svg-editor .unity-two-pane-split-view__dragline-anchor {
+    background-color: var(--bg-root);
+}
+
+.svg-editor .unity-two-pane-split-view__dragline-anchor:hover:enabled {
+    background-color: var(--text-primary);
+}

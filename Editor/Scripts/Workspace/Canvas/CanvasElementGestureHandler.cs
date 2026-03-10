@@ -48,6 +48,7 @@ namespace UnitySvgEditor.Editor
                 localPosition,
                 pointerId,
                 _host.PreviewSnapshot.CanvasViewportRect,
+                _host.PreviewSnapshot.PreserveAspectRatioMode,
                 selectionViewportRect,
                 selectedElementSceneRect,
                 _host.SelectedElementKey,
@@ -102,6 +103,7 @@ namespace UnitySvgEditor.Editor
             Vector2 localPosition,
             int pointerId,
             Rect projectionSceneRect,
+            SvgPreserveAspectRatioMode preserveAspectRatioMode,
             Rect selectionViewportRect,
             Rect selectionSceneRect,
             string elementKey,
@@ -111,6 +113,7 @@ namespace UnitySvgEditor.Editor
             _elementDragController.BeginResize(
                 elementKey,
                 projectionSceneRect,
+                preserveAspectRatioMode,
                 selectionViewportRect,
                 selectionSceneRect,
                 parentWorldTransform);

@@ -2,7 +2,8 @@
     "name": "UnitySvgEditor.Editor.Tests",
     "rootNamespace": "UnitySvgEditor.Editor.Tests",
     "references": [
-        "UnitySvgEditor.Editor"
+        "UnitySvgEditor.Editor",
+        "Core.UI.Foundation.Tooling"
     ],
     "includePlatforms": [
         "Editor"

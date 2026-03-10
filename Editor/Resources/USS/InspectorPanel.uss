@@ -115,7 +115,7 @@
     border-bottom-color: rgba(255, 255, 255, 0.08);
     border-bottom-width: 1px;
     background-color: rgba(8, 10, 16, 0.52);
-    color: var(--text-primary);
+    color: var(foun--text-primary);
 }
 
 .svg-editor__inspector-section .unity-toggle {

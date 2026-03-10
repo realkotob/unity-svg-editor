@@ -30,20 +30,8 @@ namespace UnitySvgEditor.Editor
         }
 
         private const string WINDOW_MENU_PATH = "Window/Unity SVG Editor/SVG Editor";
-        private const string THEME_RESOURCE_PATH = "UI/Theme/SvgEditorTheme";
-        private const string WINDOW_RESOURCE_PATH = "UI/UXML/SvgEditorWindow";
-        private static readonly string[] _windowStyleSheetResourcePaths =
-        {
-            "UI/USS/Variables/Dimensions",
-            "UI/USS/Variables/Palette",
-            "UI/USS/Variables/Semantic",
-            "UI/USS/Variables/Typography",
-            "UI/USS/Layout",
-            "UI/USS/Toolbar",
-            "UI/USS/Canvas",
-            "UI/USS/Inspector",
-            "UI/USS/ProjectTab.Common"
-        };
+        private const string THEME_RESOURCE_PATH = "Theme/SvgEditorTheme";
+        private const string WINDOW_RESOURCE_PATH = "UXML/SvgEditorWindow";
 
         #region Variables
 
@@ -98,7 +86,6 @@ namespace UnitySvgEditor.Editor
             _inspectorPanelController.Unbind();
             _documentLifecycleController.Unbind();
             rootVisualElement.Clear();
-            AddWindowStyleSheets();
             var visualTree = FindVisualTreeAsset();
             if (visualTree == null)
             {
@@ -392,18 +379,6 @@ namespace UnitySvgEditor.Editor
         DocumentSession IInspectorPanelHost.CurrentDocument => _documentLifecycleController.CurrentDocument;
         bool IInspectorPanelHost.TryApplyPatchRequest(AttributePatchRequest request, string successStatus) => TryApplyPatchRequest(request, successStatus);
         void IInspectorPanelHost.UpdateSourceStatus(string status) => UpdateSourceStatus(status);
-
-        private void AddWindowStyleSheets()
-        {
-            foreach (var resourcePath in _windowStyleSheetResourcePaths)
-            {
-                var styleSheet = Resources.Load<StyleSheet>(resourcePath);
-                if (styleSheet != null && !rootVisualElement.styleSheets.Contains(styleSheet))
-                {
-                    rootVisualElement.styleSheets.Add(styleSheet);
-                }
-            }
-        }
 
         private static VisualTreeAsset FindVisualTreeAsset()
         {

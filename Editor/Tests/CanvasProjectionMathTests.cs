@@ -19,5 +19,41 @@ namespace UnitySvgEditor.Editor.Tests
                 CanvasProjectionMath.GetPreviewSceneRect(snapshot),
                 Is.EqualTo(snapshot.ProjectionRect));
         }
+
+        [Test]
+        public void TryGetFrameContentViewportRect_UsesFullInnerRect_ForPreserveAspectRatioNone()
+        {
+            var viewportState = new CanvasViewportState();
+            viewportState.SetFrameRect(new Rect(0f, 0f, 200f, 100f));
+
+            bool success = CanvasProjectionMath.TryGetFrameContentViewportRect(
+                viewportState,
+                new Rect(0f, 0f, 100f, 100f),
+                SvgPreserveAspectRatioMode.None,
+                0f,
+                0f,
+                out Rect contentViewportRect);
+
+            Assert.That(success, Is.True);
+            Assert.That(contentViewportRect, Is.EqualTo(new Rect(0f, 0f, 200f, 100f)));
+        }
+
+        [Test]
+        public void TryGetFrameContentViewportRect_KeepsMeetFit_ForDefaultPreserveAspectRatio()
+        {
+            var viewportState = new CanvasViewportState();
+            viewportState.SetFrameRect(new Rect(0f, 0f, 200f, 100f));
+
+            bool success = CanvasProjectionMath.TryGetFrameContentViewportRect(
+                viewportState,
+                new Rect(0f, 0f, 100f, 100f),
+                SvgPreserveAspectRatioMode.Meet,
+                0f,
+                0f,
+                out Rect contentViewportRect);
+
+            Assert.That(success, Is.True);
+            Assert.That(contentViewportRect, Is.EqualTo(new Rect(50f, 0f, 100f, 100f)));
+        }
     }
 }

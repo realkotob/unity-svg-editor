@@ -12,6 +12,7 @@ namespace UnitySvgEditor.Editor
         public Rect DocumentViewportRect { get; set; }
         public Rect ProjectionRect { get; set; }
         public Rect VisualContentBounds { get; set; }
+        public SvgPreserveAspectRatioMode PreserveAspectRatioMode { get; set; } = SvgPreserveAspectRatioMode.Meet;
         public IReadOnlyList<PreviewElementGeometry> Elements { get; set; } = Array.Empty<PreviewElementGeometry>();
 
         public bool HasDocumentViewport =>
