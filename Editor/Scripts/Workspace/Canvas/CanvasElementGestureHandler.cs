@@ -42,7 +42,16 @@ namespace UnitySvgEditor.Editor
 
             PreviewElementGeometry selectedGeometry = _sceneProjector.FindPreviewElement(_host.PreviewSnapshot, _host.SelectedElementKey);
             Matrix2D parentWorldTransform = selectedGeometry?.ParentWorldTransform ?? Matrix2D.identity;
-            BeginResize(state, handle, localPosition, pointerId, selectionViewportRect, selectedElementSceneRect, _host.SelectedElementKey, parentWorldTransform);
+            BeginResize(
+                state,
+                handle,
+                localPosition,
+                pointerId,
+                _host.PreviewSnapshot.CanvasViewportRect,
+                selectionViewportRect,
+                selectedElementSceneRect,
+                _host.SelectedElementKey,
+                parentWorldTransform);
             return true;
         }
 
@@ -92,13 +101,19 @@ namespace UnitySvgEditor.Editor
             CanvasHandle handle,
             Vector2 localPosition,
             int pointerId,
+            Rect projectionSceneRect,
             Rect selectionViewportRect,
             Rect selectionSceneRect,
             string elementKey,
             Matrix2D parentWorldTransform)
         {
             state.Begin(CanvasDragMode.ResizeElement, handle, default, default);
-            _elementDragController.BeginResize(elementKey, selectionViewportRect, selectionSceneRect, parentWorldTransform);
+            _elementDragController.BeginResize(
+                elementKey,
+                projectionSceneRect,
+                selectionViewportRect,
+                selectionSceneRect,
+                parentWorldTransform);
             _dragSession.Begin(_overlayAccessor(), pointerId, localPosition);
         }
     }

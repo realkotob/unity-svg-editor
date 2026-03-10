@@ -13,14 +13,15 @@ namespace UnitySvgEditor.Editor
         private Rect _dragStartSelectionViewportRect;
         private Rect _dragCurrentSelectionViewportRect;
         private Rect _dragStartElementSceneRect;
+        private Rect _dragStartProjectionSceneRect;
         private string _dragElementKey = string.Empty;
         private string _dragResizePreviewSourceText = string.Empty;
-        private PreviewSnapshot _dragStartPreviewSnapshot;
         private Matrix2D _dragStartParentWorldTransform = Matrix2D.identity;
 
         public Rect DragCurrentSelectionViewportRect => _dragCurrentSelectionViewportRect;
         public Rect DragStartElementSceneRect => _dragStartElementSceneRect;
         public Rect DragStartSelectionViewportRect => _dragStartSelectionViewportRect;
+        public Rect DragStartProjectionSceneRect => _dragStartProjectionSceneRect;
         public string DragElementKey => _dragElementKey;
         public string DragPreviewSourceText => _moveSession.PreviewSourceText;
         public string DragResizePreviewSourceText => _dragResizePreviewSourceText;
@@ -39,8 +40,8 @@ namespace UnitySvgEditor.Editor
             Matrix2D parentWorldTransform)
         {
             _dragElementKey = elementKey;
-            _dragStartPreviewSnapshot = previewSnapshot;
             _dragStartParentWorldTransform = parentWorldTransform;
+            _dragStartProjectionSceneRect = previewSnapshot?.CanvasViewportRect ?? default;
             _dragStartSelectionViewportRect = _sceneProjector.TrySceneRectToViewportRect(previewSnapshot, elementSceneRect, out Rect selectionViewportRect)
                 ? selectionViewportRect
                 : default;
@@ -52,12 +53,14 @@ namespace UnitySvgEditor.Editor
 
         public void BeginResize(
             string elementKey,
+            Rect projectionSceneRect,
             Rect selectionViewportRect,
             Rect selectionSceneRect,
             Matrix2D parentWorldTransform)
         {
             _dragElementKey = elementKey;
             _dragStartParentWorldTransform = parentWorldTransform;
+            _dragStartProjectionSceneRect = projectionSceneRect;
             _dragStartSelectionViewportRect = selectionViewportRect;
             _dragCurrentSelectionViewportRect = selectionViewportRect;
             _dragStartElementSceneRect = selectionSceneRect;
@@ -93,7 +96,7 @@ namespace UnitySvgEditor.Editor
         {
             _dragElementKey = string.Empty;
             _dragResizePreviewSourceText = string.Empty;
-            _dragStartPreviewSnapshot = null;
+            _dragStartProjectionSceneRect = default;
             _dragStartParentWorldTransform = Matrix2D.identity;
             _moveSession.End();
         }
@@ -107,7 +110,7 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
-            if (!_sceneProjector.TryConvertViewportDeltaToSceneDelta(_dragStartPreviewSnapshot, viewportDelta, out Vector2 sceneDelta) ||
+            if (!_sceneProjector.TryConvertViewportDeltaToSceneDelta(_dragStartProjectionSceneRect, viewportDelta, out Vector2 sceneDelta) ||
                 sceneDelta.sqrMagnitude <= Mathf.Epsilon)
             {
                 return false;
@@ -177,7 +180,7 @@ namespace UnitySvgEditor.Editor
 
             Vector2 sceneDelta = Vector2.zero;
             if (dragMode == CanvasDragMode.MoveElement &&
-                (!_sceneProjector.TryConvertViewportDeltaToSceneDelta(_dragStartPreviewSnapshot, canvasDelta, out sceneDelta) ||
+                (!_sceneProjector.TryConvertViewportDeltaToSceneDelta(_dragStartProjectionSceneRect, canvasDelta, out sceneDelta) ||
                  sceneDelta.sqrMagnitude <= Mathf.Epsilon))
             {
                 return false;

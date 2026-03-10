@@ -45,13 +45,13 @@ namespace UnitySvgEditor.Editor
             return false;
         }
 
-        public static Rect ResolvePreviewRect(
-            SVGParser.SceneInfo sceneInfo,
+        public static Rect ResolveProjectionRect(
+            Rect documentViewportRect,
             Rect sceneBounds,
             Rect preferredViewportRect)
         {
-            return sceneInfo.SceneViewport.width > 0f && sceneInfo.SceneViewport.height > 0f
-                ? sceneInfo.SceneViewport
+            return documentViewportRect.width > 0f && documentViewportRect.height > 0f
+                ? documentViewportRect
                 : (preferredViewportRect.width > 0f && preferredViewportRect.height > 0f
                     ? preferredViewportRect
                     : sceneBounds);

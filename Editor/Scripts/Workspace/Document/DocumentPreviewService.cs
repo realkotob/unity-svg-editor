@@ -79,7 +79,7 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            Rect preferredViewportRect = PreviewSnapshot?.CanvasViewportRect ?? default;
+            Rect preferredViewportRect = PreviewSnapshot?.ProjectionRect ?? default;
             if (!_previewSnapshotBuilder.TryBuildSnapshot(
                     currentDocument.WorkingSourceText,
                     preferredViewportRect,
@@ -112,7 +112,7 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
-            Rect preferredViewportRect = PreviewSnapshot?.CanvasViewportRect ?? default;
+            Rect preferredViewportRect = PreviewSnapshot?.ProjectionRect ?? default;
             if (!_previewSnapshotBuilder.TryBuildSnapshot(
                     sourceText,
                     preferredViewportRect,

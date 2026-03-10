@@ -44,23 +44,22 @@ namespace UnitySvgEditor.Editor
 
         private static bool TryGetSceneViewportMapping(
             CanvasViewportState viewportState,
-            PreviewSnapshot previewSnapshot,
+            Rect projectionSceneRect,
             float framePadding,
             float frameHeaderHeight,
             out SceneViewportMapping mapping)
         {
             mapping = default;
-            Rect previewSceneRect = GetPreviewSceneRect(previewSnapshot);
             if (viewportState == null ||
                 !viewportState.HasFrame ||
-                previewSceneRect.width <= Mathf.Epsilon ||
-                previewSceneRect.height <= Mathf.Epsilon)
+                projectionSceneRect.width <= Mathf.Epsilon ||
+                projectionSceneRect.height <= Mathf.Epsilon)
             {
                 return false;
             }
 
             Rect contentViewportRect = viewportState.GetFrameContentViewportRect(
-                previewSceneRect,
+                projectionSceneRect,
                 framePadding,
                 frameHeaderHeight);
             if (contentViewportRect.width <= Mathf.Epsilon ||
@@ -70,13 +69,28 @@ namespace UnitySvgEditor.Editor
             }
 
             var scale = new Vector2(
-                contentViewportRect.width / previewSceneRect.width,
-                contentViewportRect.height / previewSceneRect.height);
+                contentViewportRect.width / projectionSceneRect.width,
+                contentViewportRect.height / projectionSceneRect.height);
             if (scale.x <= Mathf.Epsilon || scale.y <= Mathf.Epsilon)
                 return false;
 
-            mapping = new SceneViewportMapping(previewSceneRect, contentViewportRect, scale);
+            mapping = new SceneViewportMapping(projectionSceneRect, contentViewportRect, scale);
             return true;
+        }
+
+        private static bool TryGetSceneViewportMapping(
+            CanvasViewportState viewportState,
+            PreviewSnapshot previewSnapshot,
+            float framePadding,
+            float frameHeaderHeight,
+            out SceneViewportMapping mapping)
+        {
+            return TryGetSceneViewportMapping(
+                viewportState,
+                GetPreviewSceneRect(previewSnapshot),
+                framePadding,
+                frameHeaderHeight,
+                out mapping);
         }
 
         public static bool TryGetFrameViewportRect(CanvasViewportState viewportState, out Rect frameViewportRect)
@@ -100,6 +114,28 @@ namespace UnitySvgEditor.Editor
             if (!TryGetSceneViewportMapping(
                     viewportState,
                     previewSnapshot,
+                    framePadding,
+                    frameHeaderHeight,
+                    out SceneViewportMapping mapping))
+            {
+                return false;
+            }
+
+            contentViewportRect = mapping.ViewportRect;
+            return true;
+        }
+
+        public static bool TryGetFrameContentViewportRect(
+            CanvasViewportState viewportState,
+            Rect projectionSceneRect,
+            float framePadding,
+            float frameHeaderHeight,
+            out Rect contentViewportRect)
+        {
+            contentViewportRect = default;
+            if (!TryGetSceneViewportMapping(
+                    viewportState,
+                    projectionSceneRect,
                     framePadding,
                     frameHeaderHeight,
                     out SceneViewportMapping mapping))
@@ -163,6 +199,31 @@ namespace UnitySvgEditor.Editor
             return true;
         }
 
+        public static bool TryConvertViewportDeltaToSceneDelta(
+            CanvasViewportState viewportState,
+            Rect projectionSceneRect,
+            float framePadding,
+            float frameHeaderHeight,
+            Vector2 viewportDelta,
+            out Vector2 sceneDelta)
+        {
+            sceneDelta = default;
+            if (!TryGetSceneViewportMapping(
+                    viewportState,
+                    projectionSceneRect,
+                    framePadding,
+                    frameHeaderHeight,
+                    out SceneViewportMapping mapping))
+            {
+                return false;
+            }
+
+            sceneDelta = new Vector2(
+                viewportDelta.x / mapping.Scale.x,
+                viewportDelta.y / mapping.Scale.y);
+            return true;
+        }
+
         public static bool TryViewportPointToScenePoint(
             CanvasViewportState viewportState,
             PreviewSnapshot previewSnapshot,
@@ -207,6 +268,48 @@ namespace UnitySvgEditor.Editor
                 TryGetFrameContentViewportRect(
                     viewportState,
                     previewSnapshot,
+                    framePadding,
+                    frameHeaderHeight,
+                    out Rect contentViewportRect))
+            {
+                showVerticalGuide = Mathf.Abs(viewportRect.center.x - contentViewportRect.center.x) <= alignmentGuideThreshold;
+                showHorizontalGuide = Mathf.Abs(viewportRect.center.y - contentViewportRect.center.y) <= alignmentGuideThreshold;
+                verticalGuideX = contentViewportRect.center.x;
+                horizontalGuideY = contentViewportRect.center.y;
+            }
+
+            return new CanvasSelectionVisual
+            {
+                Kind = kind,
+                Rect = viewportRect,
+                ShowHandles = showHandles,
+                SizeText = $"{Mathf.RoundToInt(sourceSize.x)} × {Mathf.RoundToInt(sourceSize.y)}",
+                ShowVerticalGuide = showVerticalGuide,
+                VerticalGuideX = verticalGuideX,
+                ShowHorizontalGuide = showHorizontalGuide,
+                HorizontalGuideY = horizontalGuideY
+            };
+        }
+
+        public static CanvasSelectionVisual BuildSelectionVisual(
+            CanvasViewportState viewportState,
+            Rect projectionSceneRect,
+            float framePadding,
+            float frameHeaderHeight,
+            float alignmentGuideThreshold,
+            CanvasSelectionKind kind,
+            Rect viewportRect,
+            Vector2 sourceSize,
+            bool showHandles)
+        {
+            bool showVerticalGuide = false;
+            bool showHorizontalGuide = false;
+            float verticalGuideX = 0f;
+            float horizontalGuideY = 0f;
+            if (kind == CanvasSelectionKind.Element &&
+                TryGetFrameContentViewportRect(
+                    viewportState,
+                    projectionSceneRect,
                     framePadding,
                     frameHeaderHeight,
                     out Rect contentViewportRect))

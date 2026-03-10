@@ -107,7 +107,7 @@ namespace UnitySvgEditor.Editor
                     : _pointerDragController.DragStartElementSceneRect;
 
                 _overlayController.SetSelection(_sceneProjector.BuildSelectionVisual(
-                    PreviewSnapshot,
+                    _pointerDragController.DragStartProjectionSceneRect,
                     CanvasSelectionKind.Element,
                     _pointerDragController.DragCurrentSelectionViewportRect,
                     sourceRect.size,
@@ -118,7 +118,7 @@ namespace UnitySvgEditor.Editor
             if (SelectionKind == CanvasSelectionKind.Frame &&
                 _sceneProjector.TryGetFrameViewportRect(out Rect frameViewportRect))
             {
-                Vector2 frameSourceSize = PreviewSnapshot?.CanvasViewportRect.size ?? frameViewportRect.size;
+                Vector2 frameSourceSize = PreviewSnapshot?.ProjectionRect.size ?? frameViewportRect.size;
                 _overlayController.SetSelection(_sceneProjector.BuildSelectionVisual(
                     PreviewSnapshot,
                     CanvasSelectionKind.Frame,

@@ -55,6 +55,7 @@ namespace UnitySvgEditor.Editor
         public Rect DragCurrentSelectionViewportRect => _elementDragController.DragCurrentSelectionViewportRect;
         public Rect DragStartElementSceneRect => _elementDragController.DragStartElementSceneRect;
         public Rect DragStartSelectionViewportRect => _elementDragController.DragStartSelectionViewportRect;
+        public Rect DragStartProjectionSceneRect => _elementDragController.DragStartProjectionSceneRect;
         public CanvasDragMode DragMode => _gestureRouter.DragMode;
         public CanvasHandle ActiveHandle => _gestureRouter.ActiveHandle;
 

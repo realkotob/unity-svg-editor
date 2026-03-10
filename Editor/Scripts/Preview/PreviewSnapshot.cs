@@ -10,20 +10,25 @@ namespace UnitySvgEditor.Editor
     {
         public VectorImage PreviewVectorImage { get; set; }
         public Rect DocumentViewportRect { get; set; }
+        public Rect ProjectionRect { get; set; }
         public Rect VisualContentBounds { get; set; }
         public IReadOnlyList<PreviewElementGeometry> Elements { get; set; } = Array.Empty<PreviewElementGeometry>();
 
         public bool HasDocumentViewport =>
             DocumentViewportRect.width > 0f && DocumentViewportRect.height > 0f;
 
+        public bool HasProjectionRect =>
+            ProjectionRect.width > 0f && ProjectionRect.height > 0f;
+
         public bool HasVisualContentBounds =>
             VisualContentBounds.width > 0f || VisualContentBounds.height > 0f;
 
-        // Projection uses the SVG document viewport when available and falls back to
-        // world-space visual content bounds for documents without an explicit viewport.
+        // Projection uses a resolved viewport rect that stays stable for live/transient
+        // preview refreshes. The actual SVG document viewport, when present, is stored
+        // separately in DocumentViewportRect.
         public Rect CanvasViewportRect =>
-            HasDocumentViewport
-                ? DocumentViewportRect
+            HasProjectionRect
+                ? ProjectionRect
                 : VisualContentBounds;
 
         public void Dispose()

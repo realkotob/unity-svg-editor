@@ -61,6 +61,16 @@ namespace UnitySvgEditor.Editor
                 out contentViewportRect);
         }
 
+        public bool TryGetFrameContentViewportRect(Rect projectionSceneRect, out Rect contentViewportRect)
+        {
+            return CanvasProjectionMath.TryGetFrameContentViewportRect(
+                _viewportState,
+                projectionSceneRect,
+                _framePadding,
+                _frameHeaderHeight,
+                out contentViewportRect);
+        }
+
         public bool TrySceneRectToViewportRect(PreviewSnapshot previewSnapshot, Rect sceneRect, out Rect viewportRect)
         {
             return CanvasProjectionMath.TrySceneRectToViewportRect(
@@ -77,6 +87,17 @@ namespace UnitySvgEditor.Editor
             return CanvasProjectionMath.TryConvertViewportDeltaToSceneDelta(
                 _viewportState,
                 previewSnapshot,
+                _framePadding,
+                _frameHeaderHeight,
+                viewportDelta,
+                out sceneDelta);
+        }
+
+        public bool TryConvertViewportDeltaToSceneDelta(Rect projectionSceneRect, Vector2 viewportDelta, out Vector2 sceneDelta)
+        {
+            return CanvasProjectionMath.TryConvertViewportDeltaToSceneDelta(
+                _viewportState,
+                projectionSceneRect,
                 _framePadding,
                 _frameHeaderHeight,
                 viewportDelta,
@@ -157,6 +178,25 @@ namespace UnitySvgEditor.Editor
             return CanvasProjectionMath.BuildSelectionVisual(
                 _viewportState,
                 previewSnapshot,
+                _framePadding,
+                _frameHeaderHeight,
+                _alignmentGuideThreshold,
+                kind,
+                viewportRect,
+                sourceSize,
+                showHandles);
+        }
+
+        public CanvasSelectionVisual BuildSelectionVisual(
+            Rect projectionSceneRect,
+            CanvasSelectionKind kind,
+            Rect viewportRect,
+            Vector2 sourceSize,
+            bool showHandles)
+        {
+            return CanvasProjectionMath.BuildSelectionVisual(
+                _viewportState,
+                projectionSceneRect,
                 _framePadding,
                 _frameHeaderHeight,
                 _alignmentGuideThreshold,

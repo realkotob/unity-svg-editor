@@ -90,6 +90,16 @@ namespace UnitySvgEditor.Editor
                 .ToList();
         }
 
+        public static bool TryBuildSceneRootBounds(SVGParser.SceneInfo sceneInfo, out Rect worldBounds)
+        {
+            worldBounds = default;
+            if (sceneInfo.Scene?.Root == null)
+                return false;
+
+            var worldTransformByNode = BuildWorldTransformLookup(sceneInfo);
+            return TryBuildFallbackBounds(sceneInfo.Scene.Root, worldTransformByNode, out worldBounds);
+        }
+
         private static Dictionary<SceneNode, int> BuildDrawOrderLookup(SceneNode root)
         {
             var lookup = new Dictionary<SceneNode, int>();

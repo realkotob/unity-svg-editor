@@ -36,20 +36,24 @@ namespace UnitySvgEditor.Editor
             try
             {
                 var elements = PreviewSnapshotGeometryBuilder.BuildElementBounds(sceneInfo, preparedDocument.KeyByNodeId);
-                var fallbackVisualContentBounds = VectorUtils.SceneNodeBounds(sceneInfo.Scene.Root);
+                var fallbackVisualContentBounds = PreviewSnapshotGeometryBuilder.TryBuildSceneRootBounds(sceneInfo, out Rect sceneRootBounds)
+                    ? sceneRootBounds
+                    : VectorUtils.SceneNodeBounds(sceneInfo.Scene.Root);
                 var visualContentBounds = PreviewSnapshotGeometryBuilder.TryBuildVisualContentBounds(elements, out Rect resolvedVisualContentBounds)
                     ? resolvedVisualContentBounds
                     : fallbackVisualContentBounds;
-                var documentViewportRect = PreviewSnapshotSceneImportService.ResolvePreviewRect(
-                    sceneInfo,
+                Rect documentViewportRect = sceneInfo.SceneViewport;
+                Rect projectionRect = PreviewSnapshotSceneImportService.ResolveProjectionRect(
+                    documentViewportRect,
                     visualContentBounds,
                     preferredViewportRect);
 
-                previewVectorImage = PreviewSnapshotSceneImportService.BuildPreviewVectorImage(sceneInfo, documentViewportRect);
+                previewVectorImage = PreviewSnapshotSceneImportService.BuildPreviewVectorImage(sceneInfo, projectionRect);
                 snapshot = new PreviewSnapshot
                 {
                     PreviewVectorImage = previewVectorImage,
                     DocumentViewportRect = documentViewportRect,
+                    ProjectionRect = projectionRect,
                     VisualContentBounds = visualContentBounds,
                     Elements = elements
                 };
