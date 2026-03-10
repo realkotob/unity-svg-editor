@@ -190,34 +190,6 @@
     -unity-background-image-tint-color: var(--muted-foreground);
 }
 
-.svg-editor__asset-hierarchy__icon--square {
-    background-image: resource("Icons/lucide/square");
-}
-
-.svg-editor__asset-hierarchy__icon--circle {
-    background-image: resource("Icons/lucide/circle");
-}
-
-.svg-editor__asset-hierarchy__icon--file-text {
-    background-image: resource("Icons/lucide/file-text");
-}
-
-.svg-editor__asset-hierarchy__icon--minus {
-    background-image: resource("Icons/lucide/minus");
-}
-
-.svg-editor__asset-hierarchy__icon--pen {
-    background-image: resource("Icons/lucide/pen");
-}
-
-.svg-editor__asset-hierarchy__icon--folder {
-    background-image: resource("Icons/lucide/folder");
-}
-
-.svg-editor__asset-hierarchy__icon--file {
-    background-image: resource("Icons/lucide/file");
-}
-
 .svg-editor__asset-hierarchy__text {
     flex-grow: 1;
     height: 28px;
@@ -239,7 +211,6 @@
     height: 16px;
     margin-right: 4px;
     align-self: center;
-    background-image: resource("Icons/lucide/chevron-right");
     -unity-background-image-tint-color: var(--muted-foreground);
 }
 

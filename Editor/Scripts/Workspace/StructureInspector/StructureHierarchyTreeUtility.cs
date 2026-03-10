@@ -18,6 +18,17 @@ namespace UnitySvgEditor.Editor
             AssetHierarchyTreeRow.UssClassName.ICON_FILE
         };
 
+        private static readonly string[] FoundationHierarchyIconClasses =
+        {
+            SvgEditorIconClass.HIERARCHY_SQUARE,
+            SvgEditorIconClass.HIERARCHY_CIRCLE,
+            SvgEditorIconClass.HIERARCHY_FILE_TEXT,
+            SvgEditorIconClass.HIERARCHY_MINUS,
+            SvgEditorIconClass.HIERARCHY_PEN,
+            SvgEditorIconClass.HIERARCHY_FOLDER,
+            SvgEditorIconClass.HIERARCHY_FILE
+        };
+
         public static void SelectElementByKey(
             TreeView treeView,
             string elementKey,
@@ -111,25 +122,25 @@ namespace UnitySvgEditor.Editor
             return false;
         }
 
-        public static string ResolveHierarchyIconKind(string tagName)
+        public static IconKind ResolveHierarchyIconKind(string tagName)
         {
             return tagName switch
             {
-                "svg" => "square",
-                "g" => "folder",
-                "text" => "file-text",
-                "rect" => "square",
-                "circle" => "circle",
-                "ellipse" => "circle",
-                "line" => "minus",
-                "polyline" => "minus",
-                "polygon" => "pen",
-                "path" => "pen",
-                _ => "file"
+                "svg" => IconKind.Square,
+                "g" => IconKind.Folder,
+                "text" => IconKind.FileText,
+                "rect" => IconKind.Square,
+                "circle" => IconKind.Circle,
+                "ellipse" => IconKind.Circle,
+                "line" => IconKind.Minus,
+                "polyline" => IconKind.Minus,
+                "polygon" => IconKind.Pen,
+                "path" => IconKind.Pen,
+                _ => IconKind.File
             };
         }
 
-        public static void ApplyHierarchyIconVariant(VisualElement iconElement, string iconKind)
+        public static void ApplyHierarchyIconVariant(VisualElement iconElement, IconKind iconKind)
         {
             if (iconElement == null)
                 return;
@@ -137,7 +148,25 @@ namespace UnitySvgEditor.Editor
             foreach (string className in HierarchyIconVariantClasses)
                 iconElement.RemoveFromClassList(className);
 
-            iconElement.AddClass($"{AssetHierarchyTreeRow.UssClassName.ICON}--{iconKind}");
+            foreach (string className in FoundationHierarchyIconClasses)
+                iconElement.RemoveFromClassList(className);
+
+            iconElement.AddClass(ResolveHierarchyVariantClass(iconKind));
+            iconElement.AddClass(SvgEditorIconClass.ResolveHierarchyIcon(iconKind));
+        }
+
+        private static string ResolveHierarchyVariantClass(IconKind iconKind)
+        {
+            return iconKind switch
+            {
+                IconKind.Square => AssetHierarchyTreeRow.UssClassName.ICON_SQUARE,
+                IconKind.Circle => AssetHierarchyTreeRow.UssClassName.ICON_CIRCLE,
+                IconKind.FileText => AssetHierarchyTreeRow.UssClassName.ICON_FILE_TEXT,
+                IconKind.Minus => AssetHierarchyTreeRow.UssClassName.ICON_MINUS,
+                IconKind.Pen => AssetHierarchyTreeRow.UssClassName.ICON_PEN,
+                IconKind.Folder => AssetHierarchyTreeRow.UssClassName.ICON_FOLDER,
+                _ => AssetHierarchyTreeRow.UssClassName.ICON_FILE
+            };
         }
 
         public static string BuildHierarchyLabel(StructureNode item)

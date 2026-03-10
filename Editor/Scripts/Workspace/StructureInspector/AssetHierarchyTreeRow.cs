@@ -51,7 +51,8 @@ namespace UnitySvgEditor.Editor
 
             Expander = new VisualElement()
                 .SetName(ElementName.HIERARCHY_EXPANDER)
-                .AddClass(UssClassName.EXPANDER);
+                .AddClass(UssClassName.EXPANDER)
+                .AddClass(SvgEditorIconClass.HIERARCHY_EXPANDER);
             Add(Expander);
 
             Icon = new VisualElement()
@@ -105,7 +106,7 @@ namespace UnitySvgEditor.Editor
                 .EnableClass(UssClassName.EXPANDER_PLACEHOLDER, true)
                 .EnableClass(UssClassName.EXPANDER_EXPANDED, false);
 
-            StructureHierarchyTreeUtility.ApplyHierarchyIconVariant(Icon, "file");
+            StructureHierarchyTreeUtility.ApplyHierarchyIconVariant(Icon, IconKind.File);
             TextLabel.SetText(string.Empty);
         }
     }
