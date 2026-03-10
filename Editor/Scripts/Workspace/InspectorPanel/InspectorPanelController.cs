@@ -22,8 +22,8 @@ namespace UnitySvgEditor.Editor
             System.Action<System.Action> scheduleDeferredCall = null,
             System.Action<System.Action> unscheduleDeferredCall = null)
         {
-            _scheduleDeferredCall = scheduleDeferredCall ?? (callback => EditorApplication.delayCall += callback);
-            _unscheduleDeferredCall = unscheduleDeferredCall ?? (callback => EditorApplication.delayCall -= callback);
+            _scheduleDeferredCall = scheduleDeferredCall ?? ScheduleDeferredCall;
+            _unscheduleDeferredCall = unscheduleDeferredCall ?? UnscheduleDeferredCall;
             _view = new InspectorPanelView();
             _targetSyncService = new InspectorTargetSyncService(
                 attributePatcher,
@@ -39,6 +39,16 @@ namespace UnitySvgEditor.Editor
             _view.ReadRequested += OnReadTargetClicked;
             _view.BuildTransformRequested += OnBuildTransformClicked;
             _view.ApplyRequested += OnApplyPatchClicked;
+        }
+
+        private static void ScheduleDeferredCall(System.Action callback)
+        {
+            EditorApplication.delayCall += callback;
+        }
+
+        private static void UnscheduleDeferredCall(System.Action callback)
+        {
+            EditorApplication.delayCall -= callback;
         }
 
         public void Bind(VisualElement root, IInspectorPanelHost host)
