@@ -7,7 +7,36 @@ namespace UnitySvgEditor.Editor
 {
     internal sealed class PreviewSnapshotBuilder
     {
+        private readonly SvgCanvasRenderer _canvasRenderer = new();
+
         public bool TryBuildSnapshot(
+            string sourceText,
+            Rect preferredViewportRect,
+            out PreviewSnapshot snapshot,
+            out string error)
+        {
+            return TryBuildImportedSnapshot(sourceText, preferredViewportRect, out snapshot, out error);
+        }
+
+        public bool TryBuildSnapshot(
+            SvgDocumentModel documentModel,
+            Rect preferredViewportRect,
+            out PreviewSnapshot snapshot,
+            out string error)
+        {
+            if (_canvasRenderer.TryBuildPreviewSnapshot(documentModel, preferredViewportRect, out snapshot, out error))
+                return true;
+
+            if (documentModel == null || string.IsNullOrWhiteSpace(documentModel.SourceText))
+            {
+                snapshot = new PreviewSnapshot();
+                return false;
+            }
+
+            return TryBuildImportedSnapshot(documentModel.SourceText, preferredViewportRect, out snapshot, out error);
+        }
+
+        internal static bool TryBuildImportedSnapshot(
             string sourceText,
             Rect preferredViewportRect,
             out PreviewSnapshot snapshot,

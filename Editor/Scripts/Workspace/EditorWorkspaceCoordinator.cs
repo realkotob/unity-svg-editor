@@ -11,6 +11,7 @@ namespace UnitySvgEditor.Editor
     {
         private readonly IEditorWorkspaceHost _host;
         private readonly StructureEditor _structureService = new();
+        private readonly SvgDocumentModelMutationService _documentModelMutationService = new();
         private readonly StructurePanelState _structurePanelState = new();
         private readonly CanvasWorkspaceController _canvasWorkspaceController;
         private readonly StructureHierarchyController _structureHierarchyController;
@@ -111,6 +112,27 @@ namespace UnitySvgEditor.Editor
             if (CurrentDocument == null || request == null)
                 return false;
 
+            if (CurrentDocument.DocumentModel != null &&
+                string.IsNullOrWhiteSpace(CurrentDocument.DocumentModelLoadError) &&
+                string.Equals(CurrentDocument.DocumentModel.SourceText, CurrentDocument.WorkingSourceText, StringComparison.Ordinal) &&
+                _documentModelMutationService.CanApplyAttributePatch(request) &&
+                _documentModelMutationService.TryApplyAttributePatch(
+                    CurrentDocument.DocumentModel,
+                    request,
+                    out SvgDocumentModel _,
+                    out string mutatedSource,
+                    out string mutationError))
+            {
+                if (string.Equals(mutatedSource, CurrentDocument.WorkingSourceText, StringComparison.Ordinal))
+                {
+                    _host.UpdateSourceStatus("No patch changes were applied.");
+                    return false;
+                }
+
+                _host.ApplyUpdatedSource(mutatedSource, successStatus);
+                return true;
+            }
+
             if (!AttributePatcher.TryApplyAttributePatch(
                     CurrentDocument.WorkingSourceText,
                     request,
@@ -142,6 +164,10 @@ namespace UnitySvgEditor.Editor
                 return false;
 
             var currentSceneRect = targetElement.VisualBounds;
+            bool canUseModelMutation = CurrentDocument.DocumentModel != null &&
+                                       string.IsNullOrWhiteSpace(CurrentDocument.DocumentModelLoadError) &&
+                                       string.Equals(CurrentDocument.DocumentModel.SourceText, CurrentDocument.WorkingSourceText, StringComparison.Ordinal);
+            SvgDocumentModel workingDocumentModel = CurrentDocument.DocumentModel;
             var updatedSource = CurrentDocument.WorkingSourceText;
             var hasChanged = false;
 
@@ -154,13 +180,25 @@ namespace UnitySvgEditor.Editor
                     Mathf.Max(0f, targetSceneRect.width) / currentSceneRect.width,
                     Mathf.Max(0f, targetSceneRect.height) / currentSceneRect.height);
                 var pivot = new Vector2(currentSceneRect.xMin, currentSceneRect.yMin);
-                if (!_structureService.TryPrependElementScale(
+                Vector2 parentPivot = ToParentSpacePoint(targetElement.ParentWorldTransform, pivot);
+                bool scaleSucceeded = canUseModelMutation
+                    ? _documentModelMutationService.TryPrependElementScale(
+                        workingDocumentModel,
+                        targetElement.Key,
+                        scale,
+                        parentPivot,
+                        out workingDocumentModel,
+                        out updatedSource,
+                        out _)
+                    : _structureService.TryPrependElementScale(
                         updatedSource,
                         targetElement.Key,
                         scale,
-                        ToParentSpacePoint(targetElement.ParentWorldTransform, pivot),
+                        parentPivot,
                         out updatedSource,
-                        out _))
+                        out _);
+
+                if (!scaleSucceeded)
                 {
                     return false;
                 }
@@ -173,12 +211,23 @@ namespace UnitySvgEditor.Editor
                 targetSceneRect.yMin - currentSceneRect.yMin);
             if (sceneDelta.sqrMagnitude > Mathf.Epsilon)
             {
-                if (!_structureService.TryPrependElementTranslation(
+                Vector2 parentDelta = ToParentSpaceDelta(targetElement.ParentWorldTransform, sceneDelta);
+                bool translateSucceeded = canUseModelMutation
+                    ? _documentModelMutationService.TryPrependElementTranslation(
+                        workingDocumentModel,
+                        targetElement.Key,
+                        parentDelta,
+                        out workingDocumentModel,
+                        out updatedSource,
+                        out _)
+                    : _structureService.TryPrependElementTranslation(
                         updatedSource,
                         targetElement.Key,
-                        ToParentSpaceDelta(targetElement.ParentWorldTransform, sceneDelta),
+                        parentDelta,
                         out updatedSource,
-                        out _))
+                        out _);
+
+                if (!translateSucceeded)
                 {
                     return false;
                 }

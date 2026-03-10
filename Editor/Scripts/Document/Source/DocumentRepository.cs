@@ -12,6 +12,7 @@ namespace UnitySvgEditor.Editor
     {
         private static readonly UTF8Encoding _utf8WithoutBom = new(false);
         private readonly SvgDocumentModelLoader _documentModelLoader = new();
+        private readonly SvgDocumentModelSerializer _documentModelSerializer = new();
 
         #region Public Methods
 
@@ -109,18 +110,19 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
-            if (!ValidateXml(document.WorkingSourceText, out error))
+            if (!TryResolveSourceTextToPersist(document, out string sourceTextToPersist, out error))
             {
                 return false;
             }
 
             try
             {
-                File.WriteAllText(document.AbsolutePath, document.WorkingSourceText, _utf8WithoutBom);
+                File.WriteAllText(document.AbsolutePath, sourceTextToPersist, _utf8WithoutBom);
                 AssetDatabase.ImportAsset(document.AssetPath, ImportAssetOptions.ForceUpdate);
-                document.OriginalSourceText = document.WorkingSourceText;
+                document.WorkingSourceText = sourceTextToPersist;
+                document.OriginalSourceText = sourceTextToPersist;
                 document.VectorImageAsset = AssetDatabase.LoadAssetAtPath<VectorImage>(document.AssetPath);
-                RefreshDocumentModelSnapshot(document, document.WorkingSourceText);
+                RefreshDocumentModelSnapshot(document, sourceTextToPersist);
                 return true;
             }
             catch (Exception ex)
@@ -136,6 +138,28 @@ namespace UnitySvgEditor.Editor
                 return;
 
             RefreshDocumentModelSnapshot(document, document.WorkingSourceText);
+        }
+
+        internal bool TryResolveSourceTextToPersist(DocumentSession document, out string sourceText, out string error)
+        {
+            sourceText = document?.WorkingSourceText ?? string.Empty;
+            error = string.Empty;
+
+            if (document == null)
+            {
+                error = "Document is null.";
+                return false;
+            }
+
+            if (document.DocumentModel != null &&
+                string.IsNullOrWhiteSpace(document.DocumentModelLoadError) &&
+                string.Equals(document.DocumentModel.SourceText, document.WorkingSourceText, StringComparison.Ordinal))
+            {
+                if (!_documentModelSerializer.TrySerialize(document.DocumentModel, out sourceText, out error))
+                    return false;
+            }
+
+            return ValidateXml(sourceText, out error);
         }
 
         #endregion Public Methods

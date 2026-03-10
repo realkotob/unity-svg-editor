@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using NUnit.Framework;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -40,10 +41,13 @@ namespace UnitySvgEditor.Editor.Tests
             controller.RefreshTargets(host.CurrentDocument.WorkingSourceText);
             Assert.That(controller.TrySelectTargetByKey("node", out _), Is.True);
 
-            root.Q<FloatField>("inspector-frame-x").value = 100f;
-            root.Q<FloatField>("inspector-frame-y").value = 200f;
-            root.Q<FloatField>("inspector-frame-width").value = 300f;
-            root.Q<FloatField>("inspector-frame-height").value = 400f;
+            root.Q<FloatField>("inspector-frame-x").SetValueWithoutNotify(100f);
+            root.Q<FloatField>("inspector-frame-y").SetValueWithoutNotify(200f);
+            root.Q<FloatField>("inspector-frame-width").SetValueWithoutNotify(300f);
+            root.Q<FloatField>("inspector-frame-height").SetValueWithoutNotify(400f);
+
+            QueueFrameRectApply(controller);
+            QueueFrameRectApply(controller);
 
             Assert.That(host.ApplyFrameRectCallCount, Is.EqualTo(0));
             Assert.That(scheduler.ScheduledCount, Is.EqualTo(1));
@@ -53,6 +57,15 @@ namespace UnitySvgEditor.Editor.Tests
             Assert.That(host.ApplyFrameRectCallCount, Is.EqualTo(1));
             Assert.That(host.AppliedFrameTargetKey, Is.EqualTo("node"));
             Assert.That(host.AppliedFrameRect, Is.EqualTo(new Rect(100f, 200f, 300f, 400f)));
+        }
+
+        private static void QueueFrameRectApply(InspectorPanelController controller)
+        {
+            MethodInfo method = typeof(InspectorPanelController).GetMethod(
+                "QueueFrameRectApply",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.That(method, Is.Not.Null);
+            method.Invoke(controller, null);
         }
 
         private sealed class DeferredScheduler

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Core.UI.Foundation;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -15,6 +14,7 @@ namespace UnitySvgEditor.Editor
         }
 
         private readonly StructureEditor _structureEditor;
+        private readonly SvgDocumentModelMutationService _documentModelMutationService = new();
 
         private TreeView _treeView;
         private IStructureHierarchyHost _host;
@@ -131,7 +131,7 @@ namespace UnitySvgEditor.Editor
                 _shouldSuppressHierarchyRowClick = true;
             }
 
-            UpdateHierarchyInsertionIndicator((Vector2)evt.position, draggedItem);
+            UpdateHierarchyInsertionIndicator((Vector2)evt.position, evt.target as VisualElement, draggedItem);
             evt.StopPropagation();
         }
 
@@ -145,12 +145,34 @@ namespace UnitySvgEditor.Editor
                 !string.IsNullOrWhiteSpace(_pressedHierarchyElementKey) &&
                 _pendingHierarchyDropChildIndex >= 0)
             {
-                if (_structureEditor.TryReorderElementWithinSameParent(
+                bool reorderSucceeded = false;
+                string reorderedSource = string.Empty;
+                string error = string.Empty;
+
+                if (_host.CurrentDocument.DocumentModel != null &&
+                    string.IsNullOrWhiteSpace(_host.CurrentDocument.DocumentModelLoadError) &&
+                    string.Equals(_host.CurrentDocument.DocumentModel.SourceText, _host.CurrentDocument.WorkingSourceText, StringComparison.Ordinal))
+                {
+                    reorderSucceeded = _documentModelMutationService.TryReorderElementWithinSameParent(
+                        _host.CurrentDocument.DocumentModel,
+                        _pressedHierarchyElementKey,
+                        _pendingHierarchyDropChildIndex,
+                        out SvgDocumentModel _,
+                        out reorderedSource,
+                        out error);
+                }
+
+                if (!reorderSucceeded)
+                {
+                    reorderSucceeded = _structureEditor.TryReorderElementWithinSameParent(
                         _host.CurrentDocument.WorkingSourceText,
                         _pressedHierarchyElementKey,
                         _pendingHierarchyDropChildIndex,
-                        out string reorderedSource,
-                        out string error))
+                        out reorderedSource,
+                        out error);
+                }
+
+                if (reorderSucceeded)
                 {
                     if (!string.Equals(reorderedSource, _host.CurrentDocument.WorkingSourceText, StringComparison.Ordinal))
                         _host.ApplyUpdatedSource(reorderedSource, $"Reordered #{_pressedHierarchyElementKey}.");
@@ -170,7 +192,7 @@ namespace UnitySvgEditor.Editor
                 ResetDragState();
         }
 
-        private void UpdateHierarchyInsertionIndicator(Vector2 pointerPosition, StructureNode draggedItem)
+        private void UpdateHierarchyInsertionIndicator(Vector2 pointerPosition, VisualElement hoveredElement, StructureNode draggedItem)
         {
             if (_treeView == null || _host == null)
                 return;
@@ -183,15 +205,13 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            List<TreeViewItemData<StructureNode>> siblings = parentItem.children.ToList();
-            if (siblings.Count == 0)
+            if (!parentItem.hasChildren)
             {
                 HideInsertionIndicator();
                 return;
             }
 
-            List<VisualElement> rowElements = _treeView.Query<VisualElement>(className: AssetHierarchyTreeRow.UssClassName.ITEM).ToList();
-            VisualElement hoveredRow = rowElements.FirstOrDefault(row => row.worldBound.Contains(pointerPosition));
+            VisualElement hoveredRow = FindHoveredHierarchyRow(hoveredElement);
             if (hoveredRow?.userData is not string hoveredKey)
             {
                 HideInsertionIndicator();
@@ -205,7 +225,7 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            int hoveredIndex = siblings.FindIndex(child => string.Equals(child.data?.Key, hoveredKey, StringComparison.Ordinal));
+            int hoveredIndex = FindChildIndex(parentItem.children, hoveredKey);
             if (hoveredIndex < 0)
             {
                 HideInsertionIndicator();
@@ -225,6 +245,35 @@ namespace UnitySvgEditor.Editor
             _insertionIndicator.style.left = indicatorLeft;
             _insertionIndicator.style.right = 8f;
             _insertionIndicator.style.top = indicatorTop;
+        }
+
+        private VisualElement FindHoveredHierarchyRow(VisualElement hoveredElement)
+        {
+            for (VisualElement current = hoveredElement; current != null && current != _treeView; current = current.parent)
+            {
+                if (current.ClassListContains(AssetHierarchyTreeRow.UssClassName.ITEM))
+                {
+                    return current;
+                }
+            }
+
+            return null;
+        }
+
+        private static int FindChildIndex(IEnumerable<TreeViewItemData<StructureNode>> items, string targetKey)
+        {
+            int index = 0;
+            foreach (TreeViewItemData<StructureNode> item in items)
+            {
+                if (string.Equals(item.data?.Key, targetKey, StringComparison.Ordinal))
+                {
+                    return index;
+                }
+
+                index++;
+            }
+
+            return -1;
         }
 
         private void HideInsertionIndicator()

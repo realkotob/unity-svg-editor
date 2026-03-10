@@ -85,5 +85,20 @@ namespace UnitySvgEditor.Editor.Tests
             Assert.That(preparedDocument.PreserveAspectRatioMode.AlignX, Is.EqualTo(SvgPreserveAspectRatioAlignX.Max));
             Assert.That(preparedDocument.PreserveAspectRatioMode.AlignY, Is.EqualTo(SvgPreserveAspectRatioAlignY.Min));
         }
+
+        [Test]
+        public void TryBuildSnapshot_FromDocumentModel_FallsBackToImportedSnapshotContract()
+        {
+            SvgDocumentModel documentModel = SvgFixtureTestUtility.LoadFixtureModel("no-viewbox-basic.svg");
+            PreviewSnapshotBuilder builder = new();
+
+            bool success = builder.TryBuildSnapshot(documentModel, default, out PreviewSnapshot snapshot, out string error);
+
+            Assert.That(success, Is.True, error);
+            Assert.That(snapshot, Is.Not.Null);
+            Assert.That(snapshot.PreviewVectorImage, Is.Not.Null);
+            Assert.That(snapshot.Elements, Is.Not.Empty);
+            Assert.That(snapshot.HasProjectionRect || snapshot.HasVisualContentBounds, Is.True);
+        }
     }
 }

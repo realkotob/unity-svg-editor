@@ -80,11 +80,21 @@ namespace UnitySvgEditor.Editor
             }
 
             Rect preferredViewportRect = PreviewSnapshot?.ProjectionRect ?? default;
-            if (!_previewSnapshotBuilder.TryBuildSnapshot(
-                    currentDocument.WorkingSourceText,
+            bool builtSnapshot = currentDocument.DocumentModel != null &&
+                                 string.IsNullOrWhiteSpace(currentDocument.DocumentModelLoadError) &&
+                                 string.Equals(currentDocument.DocumentModel.SourceText, currentDocument.WorkingSourceText, StringComparison.Ordinal)
+                ? _previewSnapshotBuilder.TryBuildSnapshot(
+                    currentDocument.DocumentModel,
                     preferredViewportRect,
                     out PreviewSnapshot snapshot,
-                    out _))
+                    out _)
+                : _previewSnapshotBuilder.TryBuildSnapshot(
+                    currentDocument.WorkingSourceText,
+                    preferredViewportRect,
+                    out snapshot,
+                    out _);
+
+            if (!builtSnapshot)
             {
                 if (!keepExistingPreviewOnFailure)
                 {
