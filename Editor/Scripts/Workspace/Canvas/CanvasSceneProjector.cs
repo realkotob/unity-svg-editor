@@ -61,6 +61,16 @@ namespace UnitySvgEditor.Editor
                 out contentViewportRect);
         }
 
+        public bool TryGetFrameVisibleViewportRect(PreviewSnapshot previewSnapshot, out Rect visibleViewportRect)
+        {
+            return CanvasProjectionMath.TryGetFrameVisibleViewportRect(
+                _viewportState,
+                previewSnapshot,
+                _framePadding,
+                _frameHeaderHeight,
+                out visibleViewportRect);
+        }
+
         public bool TryGetFrameContentViewportRect(Rect projectionSceneRect, out Rect contentViewportRect)
         {
             return CanvasProjectionMath.TryGetFrameContentViewportRect(
@@ -304,20 +314,25 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            if (!TryGetFrameContentViewportRect(previewSnapshot, out Rect contentViewportRect))
+            if (!CanvasProjectionMath.TryGetFrameContentLayout(
+                    _viewportState,
+                    previewSnapshot,
+                    _framePadding,
+                    _frameHeaderHeight,
+                    out CanvasProjectionMath.FrameContentLayout layout))
             {
                 overlayController.ClearFrame();
                 return;
             }
 
-            previewImage.scaleMode = previewSnapshot.PreserveAspectRatioMode == SvgPreserveAspectRatioMode.None
+            previewImage.scaleMode = previewSnapshot.PreserveAspectRatioMode.IsNone
                 ? ScaleMode.StretchToFill
                 : ScaleMode.ScaleToFit;
-            overlayController.SetFrame(contentViewportRect, GetCanvasFrameLabel(currentDocument));
-            previewImage.style.left = 0f;
-            previewImage.style.top = 0f;
-            previewImage.style.width = contentViewportRect.width;
-            previewImage.style.height = contentViewportRect.height;
+            overlayController.SetFrame(layout.VisibleViewportRect, GetCanvasFrameLabel(currentDocument));
+            previewImage.style.left = layout.ImageViewportRect.xMin - layout.VisibleViewportRect.xMin;
+            previewImage.style.top = layout.ImageViewportRect.yMin - layout.VisibleViewportRect.yMin;
+            previewImage.style.width = layout.ImageViewportRect.width;
+            previewImage.style.height = layout.ImageViewportRect.height;
         }
 
         private static string GetCanvasFrameLabel(DocumentSession currentDocument)

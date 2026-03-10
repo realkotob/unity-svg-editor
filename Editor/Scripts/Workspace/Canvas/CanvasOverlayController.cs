@@ -93,9 +93,13 @@ namespace UnitySvgEditor.Editor
             _overlay.Add(_sizeBadge);
 
             CreateHandle(CanvasHandle.TopLeft);
+            CreateHandle(CanvasHandle.Top);
             CreateHandle(CanvasHandle.TopRight);
+            CreateHandle(CanvasHandle.Right);
             CreateHandle(CanvasHandle.BottomRight);
+            CreateHandle(CanvasHandle.Bottom);
             CreateHandle(CanvasHandle.BottomLeft);
+            CreateHandle(CanvasHandle.Left);
 
             ClearFrame();
             ClearSelection();
@@ -268,9 +272,13 @@ namespace UnitySvgEditor.Editor
             }
 
             PositionHandle(CanvasHandle.TopLeft, selection.Rect.xMin, selection.Rect.yMin);
+            PositionHandle(CanvasHandle.Top, selection.Rect.center.x, selection.Rect.yMin);
             PositionHandle(CanvasHandle.TopRight, selection.Rect.xMax, selection.Rect.yMin);
+            PositionHandle(CanvasHandle.Right, selection.Rect.xMax, selection.Rect.center.y);
             PositionHandle(CanvasHandle.BottomRight, selection.Rect.xMax, selection.Rect.yMax);
+            PositionHandle(CanvasHandle.Bottom, selection.Rect.center.x, selection.Rect.yMax);
             PositionHandle(CanvasHandle.BottomLeft, selection.Rect.xMin, selection.Rect.yMax);
+            PositionHandle(CanvasHandle.Left, selection.Rect.xMin, selection.Rect.center.y);
         }
 
         public bool TryHitTestHandle(Vector2 localPoint, out CanvasHandle handle)

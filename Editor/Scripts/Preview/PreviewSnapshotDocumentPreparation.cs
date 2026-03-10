@@ -44,16 +44,7 @@ namespace UnitySvgEditor.Editor
 
         private static SvgPreserveAspectRatioMode ResolvePreserveAspectRatioMode(XmlElement root)
         {
-            if (root == null)
-                return SvgPreserveAspectRatioMode.Meet;
-
-            string value = root.GetAttribute("preserveAspectRatio");
-            if (string.IsNullOrWhiteSpace(value))
-                return SvgPreserveAspectRatioMode.Meet;
-
-            return value.TrimStart().StartsWith("none", StringComparison.OrdinalIgnoreCase)
-                ? SvgPreserveAspectRatioMode.None
-                : SvgPreserveAspectRatioMode.Meet;
+            return SvgPreserveAspectRatioMode.Parse(root?.GetAttribute("preserveAspectRatio"));
         }
 
         private static void CollectExistingIds(XmlElement root, ISet<string> usedIds)

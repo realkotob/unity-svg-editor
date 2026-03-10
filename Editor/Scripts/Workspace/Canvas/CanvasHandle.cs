@@ -4,8 +4,12 @@ namespace UnitySvgEditor.Editor
     {
         None,
         TopLeft,
+        Top,
         TopRight,
+        Right,
         BottomRight,
-        BottomLeft
+        Bottom,
+        BottomLeft,
+        Left
     }
 }

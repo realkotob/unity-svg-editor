@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="200"
+     height="100"
+     viewBox="0 0 100 100"
+     preserveAspectRatio="xMaxYMin slice">
+  <rect x="0" y="0" width="100" height="100" fill="#0f172a"/>
+  <rect id="anchor-top-right" x="72" y="8" width="20" height="20" fill="#f97316"/>
+  <circle id="anchor-center" cx="50" cy="50" r="20" fill="#22c55e"/>
+  <rect id="anchor-bottom-left" x="8" y="72" width="20" height="20" fill="#38bdf8"/>
+  <path id="slice-diagonal" d="M 0 100 L 100 0" stroke="#f8fafc" stroke-width="4" fill="none"/>
+</svg>

@@ -68,5 +68,22 @@ namespace UnitySvgEditor.Editor.Tests
             Assert.That(preparedDocument, Is.Not.Null);
             Assert.That(preparedDocument.PreserveAspectRatioMode, Is.EqualTo(SvgPreserveAspectRatioMode.None));
         }
+
+        [Test]
+        public void TryPrepare_ParsesAlignmentAndSlice_FromRoot()
+        {
+            const string source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"200\" height=\"100\" viewBox=\"0 0 100 100\" preserveAspectRatio=\"xMaxYMin slice\"><rect id=\"r\" x=\"0\" y=\"0\" width=\"100\" height=\"100\" /></svg>";
+
+            bool success = PreviewSnapshotDocumentPreparation.TryPrepare(
+                source,
+                out PreviewSnapshotPreparedDocument preparedDocument,
+                out string error);
+
+            Assert.That(success, Is.True, error);
+            Assert.That(preparedDocument, Is.Not.Null);
+            Assert.That(preparedDocument.PreserveAspectRatioMode.ScaleMode, Is.EqualTo(SvgPreserveAspectRatioScaleMode.Slice));
+            Assert.That(preparedDocument.PreserveAspectRatioMode.AlignX, Is.EqualTo(SvgPreserveAspectRatioAlignX.Max));
+            Assert.That(preparedDocument.PreserveAspectRatioMode.AlignY, Is.EqualTo(SvgPreserveAspectRatioAlignY.Min));
+        }
     }
 }

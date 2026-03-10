@@ -6,17 +6,29 @@ namespace UnitySvgEditor.Editor
 {
     internal static class CanvasProjectionMath
     {
+        internal readonly struct FrameContentLayout
+        {
+            public FrameContentLayout(Rect visibleViewportRect, Rect imageViewportRect)
+            {
+                VisibleViewportRect = visibleViewportRect;
+                ImageViewportRect = imageViewportRect;
+            }
+
+            public Rect VisibleViewportRect { get; }
+            public Rect ImageViewportRect { get; }
+        }
+
         private readonly struct SceneViewportMapping
         {
-            public SceneViewportMapping(Rect sceneRect, Rect viewportRect, Vector2 scale)
+            public SceneViewportMapping(Rect sceneRect, FrameContentLayout layout, Vector2 scale)
             {
                 SceneRect = sceneRect;
-                ViewportRect = viewportRect;
+                Layout = layout;
                 Scale = scale;
             }
 
             public Rect SceneRect { get; }
-            public Rect ViewportRect { get; }
+            public FrameContentLayout Layout { get; }
             public Vector2 Scale { get; }
         }
 
@@ -43,80 +55,6 @@ namespace UnitySvgEditor.Editor
             return previewSnapshot?.CanvasViewportRect ?? default;
         }
 
-        private static Rect GetContentViewportRect(
-            Rect frameViewportRect,
-            Vector2 contentSize,
-            SvgPreserveAspectRatioMode preserveAspectRatioMode,
-            float padding,
-            float headerHeight)
-        {
-            Rect innerRect = new(
-                frameViewportRect.xMin + padding,
-                frameViewportRect.yMin + headerHeight + padding,
-                Mathf.Max(1f, frameViewportRect.width - (padding * 2f)),
-                Mathf.Max(1f, frameViewportRect.height - headerHeight - (padding * 2f)));
-
-            return preserveAspectRatioMode == SvgPreserveAspectRatioMode.None
-                ? innerRect
-                : RectFitUtility.FitRectWithin(innerRect, contentSize);
-        }
-
-        private static bool TryGetSceneViewportMapping(
-            CanvasViewportState viewportState,
-            Rect projectionSceneRect,
-            SvgPreserveAspectRatioMode preserveAspectRatioMode,
-            float framePadding,
-            float frameHeaderHeight,
-            out SceneViewportMapping mapping)
-        {
-            mapping = default;
-            if (viewportState == null ||
-                !viewportState.HasFrame ||
-                projectionSceneRect.width <= Mathf.Epsilon ||
-                projectionSceneRect.height <= Mathf.Epsilon)
-            {
-                return false;
-            }
-
-            Rect frameViewportRect = viewportState.CanvasToViewport(viewportState.FrameRect);
-            Rect contentViewportRect = GetContentViewportRect(
-                frameViewportRect,
-                projectionSceneRect.size,
-                preserveAspectRatioMode,
-                framePadding,
-                frameHeaderHeight);
-            if (contentViewportRect.width <= Mathf.Epsilon ||
-                contentViewportRect.height <= Mathf.Epsilon)
-            {
-                return false;
-            }
-
-            var scale = new Vector2(
-                contentViewportRect.width / projectionSceneRect.width,
-                contentViewportRect.height / projectionSceneRect.height);
-            if (scale.x <= Mathf.Epsilon || scale.y <= Mathf.Epsilon)
-                return false;
-
-            mapping = new SceneViewportMapping(projectionSceneRect, contentViewportRect, scale);
-            return true;
-        }
-
-        private static bool TryGetSceneViewportMapping(
-            CanvasViewportState viewportState,
-            PreviewSnapshot previewSnapshot,
-            float framePadding,
-            float frameHeaderHeight,
-            out SceneViewportMapping mapping)
-        {
-            return TryGetSceneViewportMapping(
-                viewportState,
-                GetPreviewSceneRect(previewSnapshot),
-                previewSnapshot?.PreserveAspectRatioMode ?? SvgPreserveAspectRatioMode.Meet,
-                framePadding,
-                frameHeaderHeight,
-                out mapping);
-        }
-
         public static bool TryGetFrameViewportRect(CanvasViewportState viewportState, out Rect frameViewportRect)
         {
             frameViewportRect = default;
@@ -124,6 +62,52 @@ namespace UnitySvgEditor.Editor
                 return false;
 
             frameViewportRect = viewportState.CanvasToViewport(viewportState.FrameRect);
+            return true;
+        }
+
+        public static bool TryGetFrameVisibleViewportRect(
+            CanvasViewportState viewportState,
+            PreviewSnapshot previewSnapshot,
+            float framePadding,
+            float frameHeaderHeight,
+            out Rect visibleViewportRect)
+        {
+            visibleViewportRect = default;
+            if (!TryGetFrameContentLayout(
+                    viewportState,
+                    previewSnapshot,
+                    framePadding,
+                    frameHeaderHeight,
+                    out FrameContentLayout layout))
+            {
+                return false;
+            }
+
+            visibleViewportRect = layout.VisibleViewportRect;
+            return true;
+        }
+
+        public static bool TryGetFrameVisibleViewportRect(
+            CanvasViewportState viewportState,
+            Rect projectionSceneRect,
+            SvgPreserveAspectRatioMode preserveAspectRatioMode,
+            float framePadding,
+            float frameHeaderHeight,
+            out Rect visibleViewportRect)
+        {
+            visibleViewportRect = default;
+            if (!TryGetFrameContentLayout(
+                    viewportState,
+                    projectionSceneRect,
+                    preserveAspectRatioMode,
+                    framePadding,
+                    frameHeaderHeight,
+                    out FrameContentLayout layout))
+            {
+                return false;
+            }
+
+            visibleViewportRect = layout.VisibleViewportRect;
             return true;
         }
 
@@ -135,17 +119,17 @@ namespace UnitySvgEditor.Editor
             out Rect contentViewportRect)
         {
             contentViewportRect = default;
-            if (!TryGetSceneViewportMapping(
+            if (!TryGetFrameContentLayout(
                     viewportState,
                     previewSnapshot,
                     framePadding,
                     frameHeaderHeight,
-                    out SceneViewportMapping mapping))
+                    out FrameContentLayout layout))
             {
                 return false;
             }
 
-            contentViewportRect = mapping.ViewportRect;
+            contentViewportRect = layout.ImageViewportRect;
             return true;
         }
 
@@ -174,18 +158,18 @@ namespace UnitySvgEditor.Editor
             out Rect contentViewportRect)
         {
             contentViewportRect = default;
-            if (!TryGetSceneViewportMapping(
+            if (!TryGetFrameContentLayout(
                     viewportState,
                     projectionSceneRect,
                     preserveAspectRatioMode,
                     framePadding,
                     frameHeaderHeight,
-                    out SceneViewportMapping mapping))
+                    out FrameContentLayout layout))
             {
                 return false;
             }
 
-            contentViewportRect = mapping.ViewportRect;
+            contentViewportRect = layout.ImageViewportRect;
             return true;
         }
 
@@ -209,8 +193,8 @@ namespace UnitySvgEditor.Editor
             }
 
             viewportRect = new Rect(
-                mapping.ViewportRect.xMin + ((sceneRect.xMin - mapping.SceneRect.xMin) * mapping.Scale.x),
-                mapping.ViewportRect.yMin + ((sceneRect.yMin - mapping.SceneRect.yMin) * mapping.Scale.y),
+                mapping.Layout.ImageViewportRect.xMin + ((sceneRect.xMin - mapping.SceneRect.xMin) * mapping.Scale.x),
+                mapping.Layout.ImageViewportRect.yMin + ((sceneRect.yMin - mapping.SceneRect.yMin) * mapping.Scale.y),
                 sceneRect.width * mapping.Scale.x,
                 sceneRect.height * mapping.Scale.y);
             return true;
@@ -306,8 +290,8 @@ namespace UnitySvgEditor.Editor
             }
 
             scenePoint = new Vector2(
-                mapping.SceneRect.xMin + ((viewportPoint.x - mapping.ViewportRect.xMin) / mapping.Scale.x),
-                mapping.SceneRect.yMin + ((viewportPoint.y - mapping.ViewportRect.yMin) / mapping.Scale.y));
+                mapping.SceneRect.xMin + ((viewportPoint.x - mapping.Layout.ImageViewportRect.xMin) / mapping.Scale.x),
+                mapping.SceneRect.yMin + ((viewportPoint.y - mapping.Layout.ImageViewportRect.yMin) / mapping.Scale.y));
             return true;
         }
 
@@ -376,18 +360,18 @@ namespace UnitySvgEditor.Editor
             float verticalGuideX = 0f;
             float horizontalGuideY = 0f;
             if (kind == CanvasSelectionKind.Element &&
-                TryGetFrameContentViewportRect(
+                TryGetFrameContentLayout(
                     viewportState,
                     projectionSceneRect,
                     preserveAspectRatioMode,
                     framePadding,
                     frameHeaderHeight,
-                    out Rect contentViewportRect))
+                    out FrameContentLayout layout))
             {
-                showVerticalGuide = Mathf.Abs(viewportRect.center.x - contentViewportRect.center.x) <= alignmentGuideThreshold;
-                showHorizontalGuide = Mathf.Abs(viewportRect.center.y - contentViewportRect.center.y) <= alignmentGuideThreshold;
-                verticalGuideX = contentViewportRect.center.x;
-                horizontalGuideY = contentViewportRect.center.y;
+                showVerticalGuide = Mathf.Abs(viewportRect.center.x - layout.ImageViewportRect.center.x) <= alignmentGuideThreshold;
+                showHorizontalGuide = Mathf.Abs(viewportRect.center.y - layout.ImageViewportRect.center.y) <= alignmentGuideThreshold;
+                verticalGuideX = layout.ImageViewportRect.center.x;
+                horizontalGuideY = layout.ImageViewportRect.center.y;
             }
 
             return new CanvasSelectionVisual
@@ -430,9 +414,19 @@ namespace UnitySvgEditor.Editor
                     dragStartElementSceneRect.yMax - newSize.y,
                     dragStartElementSceneRect.xMax,
                     dragStartElementSceneRect.yMax),
+                CanvasHandle.Top => Rect.MinMaxRect(
+                    dragStartElementSceneRect.xMin,
+                    dragStartElementSceneRect.yMax - newSize.y,
+                    dragStartElementSceneRect.xMax,
+                    dragStartElementSceneRect.yMax),
                 CanvasHandle.TopRight => Rect.MinMaxRect(
                     dragStartElementSceneRect.xMin,
                     dragStartElementSceneRect.yMax - newSize.y,
+                    dragStartElementSceneRect.xMin + newSize.x,
+                    dragStartElementSceneRect.yMax),
+                CanvasHandle.Right => Rect.MinMaxRect(
+                    dragStartElementSceneRect.xMin,
+                    dragStartElementSceneRect.yMin,
                     dragStartElementSceneRect.xMin + newSize.x,
                     dragStartElementSceneRect.yMax),
                 CanvasHandle.BottomRight => Rect.MinMaxRect(
@@ -440,11 +434,21 @@ namespace UnitySvgEditor.Editor
                     dragStartElementSceneRect.yMin,
                     dragStartElementSceneRect.xMin + newSize.x,
                     dragStartElementSceneRect.yMin + newSize.y),
+                CanvasHandle.Bottom => Rect.MinMaxRect(
+                    dragStartElementSceneRect.xMin,
+                    dragStartElementSceneRect.yMin,
+                    dragStartElementSceneRect.xMax,
+                    dragStartElementSceneRect.yMin + newSize.y),
                 CanvasHandle.BottomLeft => Rect.MinMaxRect(
                     dragStartElementSceneRect.xMax - newSize.x,
                     dragStartElementSceneRect.yMin,
                     dragStartElementSceneRect.xMax,
                     dragStartElementSceneRect.yMin + newSize.y),
+                CanvasHandle.Left => Rect.MinMaxRect(
+                    dragStartElementSceneRect.xMax - newSize.x,
+                    dragStartElementSceneRect.yMin,
+                    dragStartElementSceneRect.xMax,
+                    dragStartElementSceneRect.yMax),
                 _ => new Rect(dragStartElementSceneRect.position, newSize)
             };
         }
@@ -473,13 +477,163 @@ namespace UnitySvgEditor.Editor
             pivot = handle switch
             {
                 CanvasHandle.TopLeft => new Vector2(dragStartElementSceneRect.xMax, dragStartElementSceneRect.yMax),
+                CanvasHandle.Top => new Vector2(dragStartElementSceneRect.center.x, dragStartElementSceneRect.yMax),
                 CanvasHandle.TopRight => new Vector2(dragStartElementSceneRect.xMin, dragStartElementSceneRect.yMax),
+                CanvasHandle.Right => new Vector2(dragStartElementSceneRect.xMin, dragStartElementSceneRect.center.y),
                 CanvasHandle.BottomRight => new Vector2(dragStartElementSceneRect.xMin, dragStartElementSceneRect.yMin),
+                CanvasHandle.Bottom => new Vector2(dragStartElementSceneRect.center.x, dragStartElementSceneRect.yMin),
                 CanvasHandle.BottomLeft => new Vector2(dragStartElementSceneRect.xMax, dragStartElementSceneRect.yMin),
+                CanvasHandle.Left => new Vector2(dragStartElementSceneRect.xMax, dragStartElementSceneRect.center.y),
                 _ => dragStartElementSceneRect.center
             };
 
             return !Mathf.Approximately(scale.x, 1f) || !Mathf.Approximately(scale.y, 1f);
+        }
+
+        public static bool TryGetFrameContentLayout(
+            CanvasViewportState viewportState,
+            PreviewSnapshot previewSnapshot,
+            float framePadding,
+            float frameHeaderHeight,
+            out FrameContentLayout layout)
+        {
+            return TryGetFrameContentLayout(
+                viewportState,
+                GetPreviewSceneRect(previewSnapshot),
+                previewSnapshot?.PreserveAspectRatioMode ?? SvgPreserveAspectRatioMode.Meet,
+                framePadding,
+                frameHeaderHeight,
+                out layout);
+        }
+
+        public static bool TryGetFrameContentLayout(
+            CanvasViewportState viewportState,
+            Rect projectionSceneRect,
+            SvgPreserveAspectRatioMode preserveAspectRatioMode,
+            float framePadding,
+            float frameHeaderHeight,
+            out FrameContentLayout layout)
+        {
+            layout = default;
+            if (viewportState == null || !viewportState.HasFrame)
+                return false;
+
+            Rect frameViewportRect = viewportState.CanvasToViewport(viewportState.FrameRect);
+            Rect visibleViewportRect = new(
+                frameViewportRect.xMin + framePadding,
+                frameViewportRect.yMin + frameHeaderHeight + framePadding,
+                Mathf.Max(1f, frameViewportRect.width - (framePadding * 2f)),
+                Mathf.Max(1f, frameViewportRect.height - frameHeaderHeight - (framePadding * 2f)));
+
+            if (projectionSceneRect.width <= Mathf.Epsilon || projectionSceneRect.height <= Mathf.Epsilon)
+                return false;
+
+            Rect imageViewportRect = GetImageViewportRect(
+                visibleViewportRect,
+                projectionSceneRect.size,
+                preserveAspectRatioMode);
+            if (imageViewportRect.width <= Mathf.Epsilon || imageViewportRect.height <= Mathf.Epsilon)
+                return false;
+
+            layout = new FrameContentLayout(visibleViewportRect, imageViewportRect);
+            return true;
+        }
+
+        private static bool TryGetSceneViewportMapping(
+            CanvasViewportState viewportState,
+            PreviewSnapshot previewSnapshot,
+            float framePadding,
+            float frameHeaderHeight,
+            out SceneViewportMapping mapping)
+        {
+            return TryGetSceneViewportMapping(
+                viewportState,
+                GetPreviewSceneRect(previewSnapshot),
+                previewSnapshot?.PreserveAspectRatioMode ?? SvgPreserveAspectRatioMode.Meet,
+                framePadding,
+                frameHeaderHeight,
+                out mapping);
+        }
+
+        private static bool TryGetSceneViewportMapping(
+            CanvasViewportState viewportState,
+            Rect projectionSceneRect,
+            SvgPreserveAspectRatioMode preserveAspectRatioMode,
+            float framePadding,
+            float frameHeaderHeight,
+            out SceneViewportMapping mapping)
+        {
+            mapping = default;
+            if (!TryGetFrameContentLayout(
+                    viewportState,
+                    projectionSceneRect,
+                    preserveAspectRatioMode,
+                    framePadding,
+                    frameHeaderHeight,
+                    out FrameContentLayout layout))
+            {
+                return false;
+            }
+
+            var scale = new Vector2(
+                layout.ImageViewportRect.width / projectionSceneRect.width,
+                layout.ImageViewportRect.height / projectionSceneRect.height);
+            if (scale.x <= Mathf.Epsilon || scale.y <= Mathf.Epsilon)
+                return false;
+
+            mapping = new SceneViewportMapping(projectionSceneRect, layout, scale);
+            return true;
+        }
+
+        private static Rect GetImageViewportRect(
+            Rect visibleViewportRect,
+            Vector2 contentSize,
+            SvgPreserveAspectRatioMode preserveAspectRatioMode)
+        {
+            if (preserveAspectRatioMode.IsNone)
+                return visibleViewportRect;
+
+            float safeWidth = Mathf.Max(contentSize.x, Mathf.Epsilon);
+            float safeHeight = Mathf.Max(contentSize.y, Mathf.Epsilon);
+            float scale = preserveAspectRatioMode.IsSlice
+                ? Mathf.Max(visibleViewportRect.width / safeWidth, visibleViewportRect.height / safeHeight)
+                : Mathf.Min(visibleViewportRect.width / safeWidth, visibleViewportRect.height / safeHeight);
+
+            if (float.IsNaN(scale) || float.IsInfinity(scale) || scale <= 0f)
+                scale = 1f;
+
+            Vector2 fittedSize = new(safeWidth * scale, safeHeight * scale);
+            float x = AlignWithin(visibleViewportRect.xMin, visibleViewportRect.width, fittedSize.x, preserveAspectRatioMode.AlignX);
+            float y = AlignWithin(visibleViewportRect.yMin, visibleViewportRect.height, fittedSize.y, preserveAspectRatioMode.AlignY);
+            return new Rect(x, y, fittedSize.x, fittedSize.y);
+        }
+
+        private static float AlignWithin(
+            float start,
+            float available,
+            float size,
+            SvgPreserveAspectRatioAlignX alignX)
+        {
+            return alignX switch
+            {
+                SvgPreserveAspectRatioAlignX.Min => start,
+                SvgPreserveAspectRatioAlignX.Max => start + (available - size),
+                _ => start + ((available - size) * 0.5f)
+            };
+        }
+
+        private static float AlignWithin(
+            float start,
+            float available,
+            float size,
+            SvgPreserveAspectRatioAlignY alignY)
+        {
+            return alignY switch
+            {
+                SvgPreserveAspectRatioAlignY.Min => start,
+                SvgPreserveAspectRatioAlignY.Max => start + (available - size),
+                _ => start + ((available - size) * 0.5f)
+            };
         }
     }
 }

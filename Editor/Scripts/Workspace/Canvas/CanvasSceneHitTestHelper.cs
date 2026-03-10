@@ -44,7 +44,7 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
-            if (!CanvasProjectionMath.TryGetFrameContentViewportRect(
+            if (!CanvasProjectionMath.TryGetFrameVisibleViewportRect(
                     viewportState,
                     previewSnapshot,
                     framePadding,
