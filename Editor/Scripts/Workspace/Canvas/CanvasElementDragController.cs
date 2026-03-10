@@ -212,47 +212,13 @@ namespace UnitySvgEditor.Editor
 
             string updatedSource;
             string error;
-            if (_transientDocumentModelSession.TryBuildCommittedSource(out updatedSource, out error))
+            if (!_transientDocumentModelSession.TryBuildCommittedSource(out updatedSource, out error))
             {
-            }
-            else if (dragMode == CanvasDragMode.MoveElement)
-            {
-                if (!_structureEditor.TryPrependElementTranslation(
-                        host.CurrentDocument.WorkingSourceText,
-                        _dragElementKey,
-                        ToParentSpaceDelta(sceneDelta),
-                        out updatedSource,
-                        out error))
-                {
-                    host.UpdateSourceStatus($"Move failed: {error}");
-                    return false;
-                }
-            }
-            else
-            {
-                if (!_sceneProjector.TryBuildScaleTransform(
-                        _dragStartSelectionViewportRect,
-                        _dragStartElementSceneRect,
-                        _dragCurrentSelectionViewportRect,
-                        activeHandle,
-                        _dragResizeCenterAnchor,
-                        out Vector2 scale,
-                        out Vector2 pivot))
-                {
-                    return false;
-                }
-
-                if (!_structureEditor.TryPrependElementScale(
-                        host.CurrentDocument.WorkingSourceText,
-                        _dragElementKey,
-                        scale,
-                        ToParentSpacePoint(pivot),
-                        out updatedSource,
-                        out error))
-                {
-                    host.UpdateSourceStatus($"Resize failed: {error}");
-                    return false;
-                }
+                host.UpdateSourceStatus(
+                    string.IsNullOrWhiteSpace(error)
+                        ? "Drag commit failed: transient model state is unavailable."
+                        : $"Drag commit failed: {error}");
+                return false;
             }
 
             host.ApplyUpdatedSource(

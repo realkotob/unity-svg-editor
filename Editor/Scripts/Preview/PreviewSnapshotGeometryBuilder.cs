@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Unity.VectorGraphics;
 using UnityEngine;
 
@@ -8,6 +7,20 @@ namespace UnitySvgEditor.Editor
 {
     internal static class PreviewSnapshotGeometryBuilder
     {
+        private readonly struct TessellatedNodeGeometry
+        {
+            public TessellatedNodeGeometry(IReadOnlyList<Vector2[]> triangles, Rect bounds, bool hasBounds)
+            {
+                Triangles = triangles ?? Array.Empty<Vector2[]>();
+                Bounds = bounds;
+                HasBounds = hasBounds;
+            }
+
+            public IReadOnlyList<Vector2[]> Triangles { get; }
+            public Rect Bounds { get; }
+            public bool HasBounds { get; }
+        }
+
         public static bool TryBuildVisualContentBounds(
             IReadOnlyList<PreviewElementGeometry> elements,
             out Rect visualContentBounds)
@@ -44,6 +57,7 @@ namespace UnitySvgEditor.Editor
         {
             var drawOrderByNode = BuildDrawOrderLookup(sceneInfo.Scene.Root);
             var worldTransformByNode = BuildWorldTransformLookup(sceneInfo);
+            var worldGeometryByNode = BuildWorldGeometryLookup(sceneInfo.Scene.Root, worldTransformByNode);
             var elements = new List<PreviewElementGeometry>();
 
             foreach (var pair in sceneInfo.NodeIDs)
@@ -55,8 +69,11 @@ namespace UnitySvgEditor.Editor
                     continue;
                 }
 
-                IReadOnlyList<Vector2[]> hitGeometry = BuildHitTriangles(pair.Value, worldTransformByNode);
-                bool hasExactBounds = TryBuildTriangleBounds(hitGeometry, out Rect visualBounds);
+                IReadOnlyList<Vector2[]> hitGeometry = BuildHitTriangles(
+                    pair.Value,
+                    worldGeometryByNode,
+                    out Rect visualBounds,
+                    out bool hasExactBounds);
                 if (!hasExactBounds)
                     hasExactBounds = TryBuildFallbackBounds(pair.Value, worldTransformByNode, out visualBounds);
 
@@ -85,9 +102,8 @@ namespace UnitySvgEditor.Editor
                 });
             }
 
-            return elements
-                .OrderBy(item => item.DrawOrder)
-                .ToList();
+            elements.Sort(static (left, right) => left.DrawOrder.CompareTo(right.DrawOrder));
+            return elements;
         }
 
         public static bool TryBuildSceneRootBounds(SVGParser.SceneInfo sceneInfo, out Rect worldBounds)
@@ -129,56 +145,121 @@ namespace UnitySvgEditor.Editor
             return lookup;
         }
 
-        private static IReadOnlyList<Vector2[]> BuildHitTriangles(
-            SceneNode node,
+        private static Dictionary<SceneNode, TessellatedNodeGeometry> BuildWorldGeometryLookup(
+            SceneNode root,
             IReadOnlyDictionary<SceneNode, Matrix2D> worldTransformByNode)
         {
+            var lookup = new Dictionary<SceneNode, TessellatedNodeGeometry>();
+            foreach (SceneNode node in VectorUtils.SceneNodes(root))
+            {
+                if (node?.Shapes == null || node.Shapes.Count == 0)
+                    continue;
+
+                IReadOnlyList<Vector2[]> triangles = TessellateNodeToWorldTriangles(node, worldTransformByNode);
+                bool hasBounds = TryBuildTriangleBounds(triangles, out Rect bounds);
+                lookup[node] = new TessellatedNodeGeometry(triangles, bounds, hasBounds);
+            }
+
+            return lookup;
+        }
+
+        private static IReadOnlyList<Vector2[]> BuildHitTriangles(
+            SceneNode node,
+            IReadOnlyDictionary<SceneNode, TessellatedNodeGeometry> worldGeometryByNode,
+            out Rect bounds,
+            out bool hasBounds)
+        {
+            bounds = default;
+            hasBounds = false;
             if (node == null)
                 return Array.Empty<Vector2[]>();
-            List<Vector2[]> triangles = new();
+
+            List<Vector2[]> triangles = null;
 
             foreach (SceneNode descendant in VectorUtils.SceneNodes(node))
             {
-                if (descendant?.Shapes == null || descendant.Shapes.Count == 0)
+                if (!worldGeometryByNode.TryGetValue(descendant, out TessellatedNodeGeometry geometry) ||
+                    geometry.Triangles.Count == 0)
                     continue;
 
-                if (!worldTransformByNode.TryGetValue(descendant, out Matrix2D worldTransform))
-                    worldTransform = descendant.Transform;
-
-                // Tessellate in the descendant's local space, then transform vertices into
-                // world space ourselves. This keeps preview hit geometry aligned with the
-                // same world transform basis used for bounds and interaction math.
-                var tempNode = new SceneNode
+                triangles ??= new List<Vector2[]>();
+                AddTriangles(triangles, geometry.Triangles);
+                if (geometry.HasBounds)
                 {
-                    Shapes = descendant.Shapes,
-                    Transform = Matrix2D.identity
-                };
+                    AccumulateBounds(ref hasBounds, ref bounds, geometry.Bounds);
+                }
+            }
 
-                var tempScene = new Scene
+            return triangles ?? (IReadOnlyList<Vector2[]>)Array.Empty<Vector2[]>();
+        }
+
+        private static IReadOnlyList<Vector2[]> TessellateNodeToWorldTriangles(
+            SceneNode node,
+            IReadOnlyDictionary<SceneNode, Matrix2D> worldTransformByNode)
+        {
+            if (node == null || node.Shapes == null || node.Shapes.Count == 0)
+                return Array.Empty<Vector2[]>();
+
+            if (!worldTransformByNode.TryGetValue(node, out Matrix2D worldTransform))
+                worldTransform = node.Transform;
+
+            // Tessellate each scene node only once, then reuse the world-space triangles
+            // across all ancestor element hit-geometry aggregations.
+            var tempNode = new SceneNode
+            {
+                Shapes = node.Shapes,
+                Transform = Matrix2D.identity
+            };
+
+            var tempScene = new Scene
+            {
+                Root = tempNode
+            };
+
+            var triangles = new List<Vector2[]>();
+            IEnumerable<VectorUtils.Geometry> geometries = VectorUtils.TessellateScene(
+                tempScene,
+                PreviewBuildOptions.CreateTessellationOptions());
+
+            foreach (var geometry in geometries)
+            {
+                if (geometry?.Vertices == null || geometry.Indices == null)
+                    continue;
+
+                for (var i = 0; i + 2 < geometry.Indices.Length; i += 3)
                 {
-                    Root = tempNode
-                };
-
-                IEnumerable<VectorUtils.Geometry> geometries = VectorUtils.TessellateScene(
-                    tempScene,
-                    PreviewBuildOptions.CreateTessellationOptions());
-
-                foreach (var geometry in geometries)
-                {
-                    if (geometry?.Vertices == null || geometry.Indices == null)
-                        continue;
-
-                    for (var i = 0; i + 2 < geometry.Indices.Length; i += 3)
-                    {
-                        var a = worldTransform.MultiplyPoint(geometry.Vertices[geometry.Indices[i]]);
-                        var b = worldTransform.MultiplyPoint(geometry.Vertices[geometry.Indices[i + 1]]);
-                        var c = worldTransform.MultiplyPoint(geometry.Vertices[geometry.Indices[i + 2]]);
-                        triangles.Add(new[] { a, b, c });
-                    }
+                    var a = worldTransform.MultiplyPoint(geometry.Vertices[geometry.Indices[i]]);
+                    var b = worldTransform.MultiplyPoint(geometry.Vertices[geometry.Indices[i + 1]]);
+                    var c = worldTransform.MultiplyPoint(geometry.Vertices[geometry.Indices[i + 2]]);
+                    triangles.Add(new[] { a, b, c });
                 }
             }
 
             return triangles;
+        }
+
+        private static void AddTriangles(List<Vector2[]> destination, IReadOnlyList<Vector2[]> source)
+        {
+            for (int index = 0; index < source.Count; index++)
+            {
+                destination.Add(source[index]);
+            }
+        }
+
+        private static void AccumulateBounds(ref bool hasBounds, ref Rect accumulatedBounds, Rect bounds)
+        {
+            if (!hasBounds)
+            {
+                accumulatedBounds = bounds;
+                hasBounds = true;
+                return;
+            }
+
+            accumulatedBounds = Rect.MinMaxRect(
+                Mathf.Min(accumulatedBounds.xMin, bounds.xMin),
+                Mathf.Min(accumulatedBounds.yMin, bounds.yMin),
+                Mathf.Max(accumulatedBounds.xMax, bounds.xMax),
+                Mathf.Max(accumulatedBounds.yMax, bounds.yMax));
         }
 
         private static bool TryBuildTriangleBounds(IReadOnlyList<Vector2[]> triangles, out Rect bounds)

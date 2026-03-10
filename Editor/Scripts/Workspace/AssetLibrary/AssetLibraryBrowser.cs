@@ -11,6 +11,17 @@ namespace UnitySvgEditor.Editor
     internal sealed class AssetLibraryBrowser
     {
         private static readonly StringComparer AssetNameComparer = StringComparer.OrdinalIgnoreCase;
+        private static readonly Comparison<AssetLibraryEntry> FixtureEntryComparison =
+            static (left, right) => AssetNameComparer.Compare(left?.DisplayName, right?.DisplayName);
+        private static readonly Comparison<AssetLibraryEntry> AssetEntryComparison =
+            static (left, right) =>
+            {
+                int groupComparison = AssetNameComparer.Compare(left?.GroupKey, right?.GroupKey);
+                return groupComparison != 0
+                    ? groupComparison
+                    : AssetNameComparer.Compare(left?.DisplayName, right?.DisplayName);
+            };
+
         private readonly DocumentRepository _documentRepository;
         private readonly List<AssetLibraryEntry> _allAssetItems = new();
         private readonly List<AssetLibraryEntry> _fixtureAssetItems = new();
@@ -18,6 +29,8 @@ namespace UnitySvgEditor.Editor
         private readonly List<GridViewItem> _fixtureGridItems = new();
         private readonly List<GridViewItem> _assetGridItems = new();
         private readonly AssetVectorImageCache _assetVectorCache = new();
+        private readonly HashSet<string> _fixtureAssetPaths = new(StringComparer.Ordinal);
+        private readonly HashSet<string> _filteredAssetPaths = new(StringComparer.Ordinal);
 
         private VisualElement _assetLibraryFilterBarHost;
         private VisualElement _fixtureLibrarySection;
@@ -93,6 +106,7 @@ namespace UnitySvgEditor.Editor
         {
             _allAssetItems.Clear();
             _fixtureAssetItems.Clear();
+            _fixtureAssetPaths.Clear();
             IReadOnlyList<string> assetPaths = _documentRepository.FindVectorImageAssetPaths();
             foreach (var assetPath in assetPaths)
             {
@@ -110,11 +124,15 @@ namespace UnitySvgEditor.Editor
                 if (isFixture)
                 {
                     _fixtureAssetItems.Add(entry);
+                    _fixtureAssetPaths.Add(assetPath);
                     continue;
                 }
 
                 _allAssetItems.Add(entry);
             }
+
+            _fixtureAssetItems.Sort(FixtureEntryComparison);
+            _allAssetItems.Sort(AssetEntryComparison);
 
             RebuildAssetLibraryFilters();
             ApplyAssetFilter(selectFirst);
@@ -135,7 +153,7 @@ namespace UnitySvgEditor.Editor
             }
 
             _isProgrammaticSelection = true;
-            bool isFixture = _fixtureAssetItems.Any(item => string.Equals(item.AssetPath, assetPath, StringComparison.Ordinal));
+            bool isFixture = _fixtureAssetPaths.Contains(assetPath);
             if (isFixture)
             {
                 _assetGridView.ClearSelection();
@@ -152,10 +170,8 @@ namespace UnitySvgEditor.Editor
         private void ApplyAssetFilter(bool selectFirst)
         {
             _filteredAssetItems.Clear();
-            foreach (var item in _allAssetItems)
-            {
-                _filteredAssetItems.Add(item);
-            }
+            _filteredAssetItems.AddRange(_allAssetItems);
+            RebuildFilteredAssetPathLookup();
 
             RebuildFixtureGridItems();
             RebuildAssetGridItems();
@@ -168,8 +184,8 @@ namespace UnitySvgEditor.Editor
 
             var currentAssetPath = _getCurrentAssetPath?.Invoke();
             bool hasCurrentSelection = !string.IsNullOrWhiteSpace(currentAssetPath) &&
-                                       (_filteredAssetItems.Any(item => string.Equals(item.AssetPath, currentAssetPath, StringComparison.Ordinal)) ||
-                                        _fixtureAssetItems.Any(item => string.Equals(item.AssetPath, currentAssetPath, StringComparison.Ordinal)));
+                                       (_filteredAssetPaths.Contains(currentAssetPath) ||
+                                        _fixtureAssetPaths.Contains(currentAssetPath));
             if (hasCurrentSelection)
             {
                 SetSelectionByAssetPath(currentAssetPath);
@@ -179,7 +195,7 @@ namespace UnitySvgEditor.Editor
             {
                 string firstAssetPath = _filteredAssetItems.Count > 0
                     ? _filteredAssetItems[0].AssetPath
-                    : _fixtureAssetItems.FirstOrDefault()?.AssetPath;
+                    : _fixtureAssetItems.Count > 0 ? _fixtureAssetItems[0].AssetPath : null;
                 if (string.IsNullOrWhiteSpace(firstAssetPath))
                 {
                     return;
@@ -194,7 +210,7 @@ namespace UnitySvgEditor.Editor
         {
             _fixtureGridItems.Clear();
 
-            foreach (var item in _fixtureAssetItems.OrderBy(candidate => candidate.DisplayName, AssetNameComparer))
+            foreach (var item in _fixtureAssetItems)
             {
                 _fixtureGridItems.Add(new GridViewItem
                 {
@@ -212,9 +228,7 @@ namespace UnitySvgEditor.Editor
         {
             _assetGridItems.Clear();
 
-            foreach (var item in _filteredAssetItems
-                         .OrderBy(candidate => candidate.GroupKey, AssetNameComparer)
-                         .ThenBy(candidate => candidate.DisplayName, AssetNameComparer))
+            foreach (var item in _filteredAssetItems)
             {
                 _assetGridItems.Add(new GridViewItem
                 {
@@ -320,6 +334,15 @@ namespace UnitySvgEditor.Editor
             _isProgrammaticSelection = true;
             _assetGridView?.ClearSelection();
             _isProgrammaticSelection = false;
+        }
+
+        private void RebuildFilteredAssetPathLookup()
+        {
+            _filteredAssetPaths.Clear();
+            foreach (var item in _filteredAssetItems)
+            {
+                _filteredAssetPaths.Add(item.AssetPath);
+            }
         }
     }
 }

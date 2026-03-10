@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace UnitySvgEditor.Editor
@@ -18,29 +17,46 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
-            foreach (var element in elements.OrderByDescending(item => item.DrawOrder))
+            PreviewElementGeometry boundsFallback = null;
+            float boundsFallbackArea = float.MaxValue;
+            int boundsFallbackDrawOrder = int.MinValue;
+
+            for (int index = 0; index < elements.Count; index++)
             {
-                if (!ExpandRect(element.VisualBounds, sceneHitRadius).Contains(scenePoint) ||
-                    element.HitGeometry == null ||
+                var element = elements[index];
+                Rect expandedBounds = ExpandRect(element.VisualBounds, sceneHitRadius);
+                if (!expandedBounds.Contains(scenePoint))
+                {
+                    continue;
+                }
+
+                float elementArea = element.VisualBounds.width * element.VisualBounds.height;
+                if (boundsFallback == null ||
+                    elementArea < boundsFallbackArea ||
+                    (elementArea == boundsFallbackArea && element.DrawOrder > boundsFallbackDrawOrder))
+                {
+                    boundsFallback = element;
+                    boundsFallbackArea = elementArea;
+                    boundsFallbackDrawOrder = element.DrawOrder;
+                }
+
+                if (element.HitGeometry == null ||
                     element.HitGeometry.Count == 0)
                 {
                     continue;
                 }
 
-                if (!element.HitGeometry.Any(triangle => IsPointInTriangle(scenePoint, triangle[0], triangle[1], triangle[2])))
+                if (TryHitGeometry(element, scenePoint, hitElement, out PreviewElementGeometry candidate))
                 {
-                    continue;
+                    hitElement = candidate;
                 }
+            }
 
-                hitElement = element;
+            if (hitElement != null)
+            {
                 return true;
             }
 
-            var boundsFallback = elements
-                .Where(item => ExpandRect(item.VisualBounds, sceneHitRadius).Contains(scenePoint))
-                .OrderBy(item => item.VisualBounds.width * item.VisualBounds.height)
-                .ThenByDescending(item => item.DrawOrder)
-                .FirstOrDefault();
             if (boundsFallback != null)
             {
                 hitElement = boundsFallback;
@@ -56,6 +72,32 @@ namespace UnitySvgEditor.Editor
             out PreviewElementGeometry hitElement)
         {
             return TryHitTest(elements, scenePoint, 0f, out hitElement);
+        }
+
+        private static bool TryHitGeometry(
+            PreviewElementGeometry element,
+            Vector2 scenePoint,
+            PreviewElementGeometry currentHit,
+            out PreviewElementGeometry hitElement)
+        {
+            hitElement = currentHit;
+            for (int triangleIndex = 0; triangleIndex < element.HitGeometry.Count; triangleIndex++)
+            {
+                Vector2[] triangle = element.HitGeometry[triangleIndex];
+                if (!IsPointInTriangle(scenePoint, triangle[0], triangle[1], triangle[2]))
+                {
+                    continue;
+                }
+
+                if (currentHit == null || element.DrawOrder > currentHit.DrawOrder)
+                {
+                    hitElement = element;
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
         private static bool IsPointInTriangle(Vector2 point, Vector2 a, Vector2 b, Vector2 c)

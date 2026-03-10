@@ -352,7 +352,7 @@ namespace UnitySvgEditor.Editor
             _documentLifecycleController.TryRefreshTransientPreview(sourceText);
 
         void IEditorWorkspaceHost.RefreshInspectorFromSource(string sourceText) =>
-            _inspectorPanelController.RefreshTargets(sourceText);
+            _inspectorPanelController.QueueRefreshTargets(sourceText);
 
         private bool TryApplyPatchRequest(AttributePatchRequest request, string successStatus) =>
             WorkspaceCoordinator.TryApplyPatchRequest(request, successStatus);

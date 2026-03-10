@@ -145,34 +145,22 @@ namespace UnitySvgEditor.Editor
                 !string.IsNullOrWhiteSpace(_pressedHierarchyElementKey) &&
                 _pendingHierarchyDropChildIndex >= 0)
             {
-                bool reorderSucceeded = false;
-                string reorderedSource = string.Empty;
-                string error = string.Empty;
-
-                if (_host.CurrentDocument.DocumentModel != null &&
-                    string.IsNullOrWhiteSpace(_host.CurrentDocument.DocumentModelLoadError) &&
-                    string.Equals(_host.CurrentDocument.DocumentModel.SourceText, _host.CurrentDocument.WorkingSourceText, StringComparison.Ordinal))
+                if (_host.CurrentDocument.DocumentModel == null ||
+                    !string.IsNullOrWhiteSpace(_host.CurrentDocument.DocumentModelLoadError) ||
+                    !string.Equals(_host.CurrentDocument.DocumentModel.SourceText, _host.CurrentDocument.WorkingSourceText, StringComparison.Ordinal))
                 {
-                    reorderSucceeded = _documentModelMutationService.TryReorderElementWithinSameParent(
+                    _host.UpdateSourceStatus("Reorder failed: document model is unavailable.");
+                    ResetDragState();
+                    return;
+                }
+
+                if (_documentModelMutationService.TryReorderElementWithinSameParent(
                         _host.CurrentDocument.DocumentModel,
                         _pressedHierarchyElementKey,
                         _pendingHierarchyDropChildIndex,
                         out SvgDocumentModel _,
-                        out reorderedSource,
-                        out error);
-                }
-
-                if (!reorderSucceeded)
-                {
-                    reorderSucceeded = _structureEditor.TryReorderElementWithinSameParent(
-                        _host.CurrentDocument.WorkingSourceText,
-                        _pressedHierarchyElementKey,
-                        _pendingHierarchyDropChildIndex,
-                        out reorderedSource,
-                        out error);
-                }
-
-                if (reorderSucceeded)
+                        out string reorderedSource,
+                        out string error))
                 {
                     if (!string.Equals(reorderedSource, _host.CurrentDocument.WorkingSourceText, StringComparison.Ordinal))
                         _host.ApplyUpdatedSource(reorderedSource, $"Reordered #{_pressedHierarchyElementKey}.");
