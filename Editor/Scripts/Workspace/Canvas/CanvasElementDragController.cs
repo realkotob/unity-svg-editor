@@ -15,6 +15,7 @@ namespace UnitySvgEditor.Editor
         private Rect _dragStartElementSceneRect;
         private Rect _dragStartProjectionSceneRect;
         private SvgPreserveAspectRatioMode _dragStartPreserveAspectRatioMode = SvgPreserveAspectRatioMode.Meet;
+        private bool _dragResizeCenterAnchor;
         private string _dragElementKey = string.Empty;
         private string _dragResizePreviewSourceText = string.Empty;
         private Matrix2D _dragStartParentWorldTransform = Matrix2D.identity;
@@ -24,6 +25,7 @@ namespace UnitySvgEditor.Editor
         public Rect DragStartSelectionViewportRect => _dragStartSelectionViewportRect;
         public Rect DragStartProjectionSceneRect => _dragStartProjectionSceneRect;
         public SvgPreserveAspectRatioMode DragStartPreserveAspectRatioMode => _dragStartPreserveAspectRatioMode;
+        public bool DragResizeCenterAnchor => _dragResizeCenterAnchor;
         public string DragElementKey => _dragElementKey;
         public string DragPreviewSourceText => _moveSession.PreviewSourceText;
         public string DragResizePreviewSourceText => _dragResizePreviewSourceText;
@@ -69,6 +71,7 @@ namespace UnitySvgEditor.Editor
             _dragStartSelectionViewportRect = selectionViewportRect;
             _dragCurrentSelectionViewportRect = selectionViewportRect;
             _dragStartElementSceneRect = selectionSceneRect;
+            _dragResizeCenterAnchor = false;
             _dragResizePreviewSourceText = string.Empty;
         }
 
@@ -79,8 +82,9 @@ namespace UnitySvgEditor.Editor
             return viewportDelta;
         }
 
-        public void UpdateResize(Vector2 viewportDelta, CanvasHandle activeHandle, bool uniformScale)
+        public void UpdateResize(Vector2 viewportDelta, CanvasHandle activeHandle, bool uniformScale, bool centerAnchor)
         {
+            _dragResizeCenterAnchor = centerAnchor;
             Rect resizedViewportRect = RectResizeUtility.ResizeRect(
                 _dragStartSelectionViewportRect,
                 activeHandle,
@@ -90,7 +94,8 @@ namespace UnitySvgEditor.Editor
                 _dragStartSelectionViewportRect,
                 resizedViewportRect,
                 activeHandle,
-                uniformScale);
+                uniformScale,
+                centerAnchor);
         }
 
         public Rect BuildScaledSceneRect(CanvasHandle handle)
@@ -99,7 +104,8 @@ namespace UnitySvgEditor.Editor
                 _dragStartSelectionViewportRect,
                 _dragStartElementSceneRect,
                 _dragCurrentSelectionViewportRect,
-                handle);
+                handle,
+                _dragResizeCenterAnchor);
         }
 
         public void End()
@@ -108,6 +114,7 @@ namespace UnitySvgEditor.Editor
             _dragResizePreviewSourceText = string.Empty;
             _dragStartProjectionSceneRect = default;
             _dragStartPreserveAspectRatioMode = SvgPreserveAspectRatioMode.Meet;
+            _dragResizeCenterAnchor = false;
             _dragStartParentWorldTransform = Matrix2D.identity;
             _moveSession.End();
         }
@@ -160,6 +167,7 @@ namespace UnitySvgEditor.Editor
                     _dragStartElementSceneRect,
                     _dragCurrentSelectionViewportRect,
                     activeHandle,
+                    _dragResizeCenterAnchor,
                     out Vector2 scale,
                     out Vector2 pivot))
             {
@@ -244,6 +252,7 @@ namespace UnitySvgEditor.Editor
                         _dragStartElementSceneRect,
                         _dragCurrentSelectionViewportRect,
                         activeHandle,
+                        _dragResizeCenterAnchor,
                         out Vector2 scale,
                         out Vector2 pivot))
                 {

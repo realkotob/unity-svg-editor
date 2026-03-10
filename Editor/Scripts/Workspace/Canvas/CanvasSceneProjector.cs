@@ -271,13 +271,15 @@ namespace UnitySvgEditor.Editor
             Rect dragStartSelectionViewportRect,
             Rect dragStartElementSceneRect,
             Rect currentViewportRect,
-            CanvasHandle handle)
+            CanvasHandle handle,
+            bool centerAnchor = false)
         {
             return CanvasProjectionMath.BuildScaledSceneRect(
                 dragStartSelectionViewportRect,
                 dragStartElementSceneRect,
                 currentViewportRect,
-                handle);
+                handle,
+                centerAnchor);
         }
 
         public bool TryBuildScaleTransform(
@@ -285,6 +287,7 @@ namespace UnitySvgEditor.Editor
             Rect dragStartElementSceneRect,
             Rect currentViewportRect,
             CanvasHandle handle,
+            bool centerAnchor,
             out Vector2 scale,
             out Vector2 pivot)
         {
@@ -293,6 +296,7 @@ namespace UnitySvgEditor.Editor
                 dragStartElementSceneRect,
                 currentViewportRect,
                 handle,
+                centerAnchor,
                 out scale,
                 out pivot);
         }

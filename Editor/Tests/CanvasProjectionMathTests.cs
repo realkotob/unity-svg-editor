@@ -118,6 +118,7 @@ namespace UnitySvgEditor.Editor.Tests
                 new Rect(10f, 20f, 50f, 40f),
                 new Rect(0f, -20f, 100f, 120f),
                 CanvasHandle.Top,
+                centerAnchor: false,
                 out Vector2 scale,
                 out Vector2 pivot);
 
@@ -127,13 +128,31 @@ namespace UnitySvgEditor.Editor.Tests
         }
 
         [Test]
+        public void TryBuildScaleTransform_UsesElementCenterPivot_WhenCenterAnchorIsEnabled()
+        {
+            bool success = CanvasProjectionMath.TryBuildScaleTransform(
+                new Rect(0f, 0f, 100f, 80f),
+                new Rect(10f, 20f, 50f, 40f),
+                new Rect(-50f, -40f, 200f, 160f),
+                CanvasHandle.BottomRight,
+                centerAnchor: true,
+                out Vector2 scale,
+                out Vector2 pivot);
+
+            Assert.That(success, Is.True);
+            Assert.That(scale, Is.EqualTo(new Vector2(2f, 2f)));
+            Assert.That(pivot, Is.EqualTo(new Vector2(35f, 40f)));
+        }
+
+        [Test]
         public void GetResizeViewportRect_AlwaysUsesUniformScale_ForCornerHandle()
         {
             Rect uniformRect = CanvasProjectionMath.GetResizeViewportRect(
                 new Rect(0f, 0f, 100f, 80f),
                 new Rect(0f, 0f, 150f, 90f),
                 CanvasHandle.BottomRight,
-                uniformScale: false);
+                uniformScale: false,
+                centerAnchor: false);
 
             Assert.That(uniformRect, Is.EqualTo(new Rect(0f, 0f, 150f, 120f)));
         }
@@ -145,7 +164,8 @@ namespace UnitySvgEditor.Editor.Tests
                 new Rect(0f, 0f, 100f, 80f),
                 new Rect(0f, 0f, 150f, 80f),
                 CanvasHandle.Right,
-                uniformScale: true);
+                uniformScale: true,
+                centerAnchor: false);
 
             Assert.That(resizedRect, Is.EqualTo(new Rect(0f, -20f, 150f, 120f)));
         }
@@ -157,7 +177,8 @@ namespace UnitySvgEditor.Editor.Tests
                 new Rect(0f, 0f, 100f, 80f),
                 new Rect(0f, 0f, 150f, 80f),
                 CanvasHandle.Right,
-                uniformScale: false);
+                uniformScale: false,
+                centerAnchor: false);
 
             Assert.That(resizedRect, Is.EqualTo(new Rect(0f, 0f, 150f, 80f)));
         }
@@ -169,9 +190,49 @@ namespace UnitySvgEditor.Editor.Tests
                 new Rect(0f, 0f, 100f, 80f),
                 new Rect(-50f, 0f, 150f, 80f),
                 CanvasHandle.Left,
-                uniformScale: true);
+                uniformScale: true,
+                centerAnchor: false);
 
             Assert.That(resizedRect, Is.EqualTo(new Rect(-50f, -20f, 150f, 120f)));
+        }
+
+        [Test]
+        public void GetResizeViewportRect_UsesCenterAnchor_ForCornerHandleWhenAltIsPressed()
+        {
+            Rect resizedRect = CanvasProjectionMath.GetResizeViewportRect(
+                new Rect(0f, 0f, 100f, 80f),
+                new Rect(0f, 0f, 150f, 90f),
+                CanvasHandle.BottomRight,
+                uniformScale: false,
+                centerAnchor: true);
+
+            Assert.That(resizedRect, Is.EqualTo(new Rect(-50f, -40f, 200f, 160f)));
+        }
+
+        [Test]
+        public void GetResizeViewportRect_UsesCenterAnchor_ForEdgeHandleWhenAltIsPressed()
+        {
+            Rect resizedRect = CanvasProjectionMath.GetResizeViewportRect(
+                new Rect(0f, 0f, 100f, 80f),
+                new Rect(0f, -30f, 100f, 110f),
+                CanvasHandle.Top,
+                uniformScale: false,
+                centerAnchor: true);
+
+            Assert.That(resizedRect, Is.EqualTo(new Rect(0f, -30f, 100f, 140f)));
+        }
+
+        [Test]
+        public void GetResizeViewportRect_UsesCenterAnchorUniformScale_ForEdgeHandleWhenAltShiftIsPressed()
+        {
+            Rect resizedRect = CanvasProjectionMath.GetResizeViewportRect(
+                new Rect(0f, 0f, 100f, 80f),
+                new Rect(0f, 0f, 150f, 80f),
+                CanvasHandle.Right,
+                uniformScale: true,
+                centerAnchor: true);
+
+            Assert.That(resizedRect, Is.EqualTo(new Rect(-50f, -40f, 200f, 160f)));
         }
     }
 }

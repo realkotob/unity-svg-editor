@@ -103,7 +103,8 @@ namespace UnitySvgEditor.Editor
                         _pointerDragController.DragCurrentSelectionViewportRect,
                         _pointerDragController.DragMode == CanvasDragMode.ResizeElement
                             ? _pointerDragController.ActiveHandle
-                            : CanvasHandle.None)
+                            : CanvasHandle.None,
+                        _pointerDragController.DragResizeCenterAnchor)
                     : _pointerDragController.DragStartElementSceneRect;
 
                 _overlayController.SetSelection(_sceneProjector.BuildSelectionVisual(

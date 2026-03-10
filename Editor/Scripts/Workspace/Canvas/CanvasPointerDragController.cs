@@ -57,6 +57,7 @@ namespace UnitySvgEditor.Editor
         public Rect DragStartSelectionViewportRect => _elementDragController.DragStartSelectionViewportRect;
         public Rect DragStartProjectionSceneRect => _elementDragController.DragStartProjectionSceneRect;
         public SvgPreserveAspectRatioMode DragStartPreserveAspectRatioMode => _elementDragController.DragStartPreserveAspectRatioMode;
+        public bool DragResizeCenterAnchor => _elementDragController.DragResizeCenterAnchor;
         public CanvasDragMode DragMode => _gestureRouter.DragMode;
         public CanvasHandle ActiveHandle => _gestureRouter.ActiveHandle;
 
