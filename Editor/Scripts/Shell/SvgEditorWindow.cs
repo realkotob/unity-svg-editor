@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using InspectorSection = Core.UI.Foundation.Tooling.InspectorSection;
 using InspectorSectionClasses = Core.UI.Foundation.Tooling.InspectorSectionClasses;
+using FoundationButton = Core.UI.Foundation.Components.Button.Button;
 using FoundationToggle = Core.UI.Foundation.Components.Toggle.Toggle;
 using Unity.VectorGraphics;
 using UnityEditor;
@@ -106,6 +107,7 @@ namespace UnitySvgEditor.Editor
         private void BindUxmlLayout()
         {
             ApplyToolbarIcons();
+            ApplyPositionIcons();
 
             _assetLibraryBrowser.Bind(
                 rootVisualElement,
@@ -307,6 +309,19 @@ namespace UnitySvgEditor.Editor
             ApplyToggleIcon("tool-move", "Icons/move");
         }
 
+        private void ApplyPositionIcons()
+        {
+            ApplyButtonIcon("position-align-left", SvgEditorIconClass.POSITION_ALIGN_LEFT);
+            ApplyButtonIcon("position-align-center", SvgEditorIconClass.POSITION_ALIGN_CENTER);
+            ApplyButtonIcon("position-align-right", SvgEditorIconClass.POSITION_ALIGN_RIGHT);
+            ApplyButtonIcon("position-align-top", SvgEditorIconClass.POSITION_ALIGN_TOP);
+            ApplyButtonIcon("position-align-middle", SvgEditorIconClass.POSITION_ALIGN_MIDDLE);
+            ApplyButtonIcon("position-align-bottom", SvgEditorIconClass.POSITION_ALIGN_BOTTOM);
+            ApplyButtonIcon("position-rotate-reset", SvgEditorIconClass.POSITION_ROTATE_RESET);
+            ApplyButtonIcon("position-flip-horizontal", SvgEditorIconClass.POSITION_FLIP_HORIZONTAL);
+            ApplyButtonIcon("position-flip-vertical", SvgEditorIconClass.POSITION_FLIP_VERTICAL);
+        }
+
         private void ApplyToggleIcon(string toggleName, string resourcePath)
         {
             var toggle = rootVisualElement.Q<FoundationToggle>(toggleName);
@@ -319,6 +334,24 @@ namespace UnitySvgEditor.Editor
             toggle.CheckIcon = icon == null
                 ? default
                 : new Background { vectorImage = icon };
+        }
+
+        private void ApplyButtonIcon(string buttonName, string iconClass)
+        {
+            var button = rootVisualElement.Q<FoundationButton>(buttonName);
+            if (button == null || string.IsNullOrWhiteSpace(iconClass))
+            {
+                return;
+            }
+
+            var icon = button.Q(className: Core.UI.Foundation.Components.Button.Button.ClassName.ICON);
+            if (icon == null)
+            {
+                return;
+            }
+
+            icon.AddToClassList(iconClass);
+            icon.Show();
         }
 
         #endregion Help Methods

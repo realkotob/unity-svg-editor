@@ -23,6 +23,15 @@ namespace UnitySvgEditor.Editor
         public const string HIERARCHY_PEN = IconClass.PEN;
         public const string HIERARCHY_FOLDER = IconClass.FOLDER;
         public const string HIERARCHY_FILE = IconClass.FILE;
+        public const string POSITION_ALIGN_LEFT = IconClass.ALIGN_HORIZONTAL_LEFT;
+        public const string POSITION_ALIGN_CENTER = IconClass.ALIGN_HORIZONTAL_CENTER;
+        public const string POSITION_ALIGN_RIGHT = IconClass.ALIGN_HORIZONTAL_RIGHT;
+        public const string POSITION_ALIGN_TOP = IconClass.ALIGN_VERTICAL_TOP;
+        public const string POSITION_ALIGN_MIDDLE = IconClass.ALIGN_VERTICAL_CENTER;
+        public const string POSITION_ALIGN_BOTTOM = IconClass.ALIGN_VERTICAL_BOTTOM;
+        public const string POSITION_ROTATE_RESET = "icon-refresh-ccw";
+        public const string POSITION_FLIP_HORIZONTAL = IconClass.FLIP_HORIZONTAL;
+        public const string POSITION_FLIP_VERTICAL = IconClass.FLIP_VERTICAL;
 
         internal static string ResolveHierarchyIcon(IconKind iconKind)
         {

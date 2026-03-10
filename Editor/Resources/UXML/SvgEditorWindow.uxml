@@ -32,14 +32,14 @@
                             <ui:Label text="Alignment" class="svg-editor__inspector-meta-label"/>
                             <ui:VisualElement class="svg-editor__inspector-row svg-editor__position-action-row">
                                 <button:ButtonGroup class="svg-editor__position-button-group">
-                                    <button:Button label="L" variant="Ghost" size="Small"/>
-                                    <button:Button label="C" variant="Ghost" size="Small"/>
-                                    <button:Button label="R" variant="Ghost" size="Small"/>
+                                    <button:Button name="position-align-left" variant="Ghost" size="Icon"/>
+                                    <button:Button name="position-align-center" variant="Ghost" size="Icon"/>
+                                    <button:Button name="position-align-right" variant="Ghost" size="Icon"/>
                                 </button:ButtonGroup>
                                 <button:ButtonGroup class="svg-editor__position-button-group svg-editor__position-button-group--last">
-                                    <button:Button label="T" variant="Ghost" size="Small"/>
-                                    <button:Button label="M" variant="Ghost" size="Small"/>
-                                    <button:Button label="B" variant="Ghost" size="Small"/>
+                                    <button:Button name="position-align-top" variant="Ghost" size="Icon"/>
+                                    <button:Button name="position-align-middle" variant="Ghost" size="Icon"/>
+                                    <button:Button name="position-align-bottom" variant="Ghost" size="Icon"/>
                                 </button:ButtonGroup>
                             </ui:VisualElement>
                             <ui:Label text="Position" class="svg-editor__inspector-meta-label"/>
@@ -55,9 +55,9 @@
                             <ui:VisualElement class="svg-editor__inspector-row svg-editor__position-action-row">
                                 <drag:DragNumberField name="inspector-rotate" prefix-icon-class="icon-refresh-ccw" value="0" drag-step="1" drag-sensitivity="0.1" class="svg-editor__inspector-field"/>
                                 <button:ButtonGroup class="svg-editor__position-button-group svg-editor__position-button-group--last">
-                                    <button:Button label="0" variant="Ghost" size="Small"/>
-                                    <button:Button label="H" variant="Ghost" size="Small"/>
-                                    <button:Button label="V" variant="Ghost" size="Small"/>
+                                    <button:Button name="position-rotate-reset" variant="Ghost" size="Icon"/>
+                                    <button:Button name="position-flip-horizontal" variant="Ghost" size="Icon"/>
+                                    <button:Button name="position-flip-vertical" variant="Ghost" size="Icon"/>
                                 </button:ButtonGroup>
                             </ui:VisualElement>
                         </ui:VisualElement>
