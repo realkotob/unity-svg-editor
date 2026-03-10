@@ -11,6 +11,7 @@ namespace UnitySvgEditor.Editor
     internal sealed class DocumentRepository
     {
         private static readonly UTF8Encoding _utf8WithoutBom = new(false);
+        private readonly SvgDocumentModelLoader _documentModelLoader = new();
 
         #region Public Methods
 
@@ -83,6 +84,7 @@ namespace UnitySvgEditor.Editor
                 OriginalSourceText = sourceText,
                 WorkingSourceText = sourceText
             };
+            RefreshDocumentModelSnapshot(document, sourceText);
 
             return true;
         }
@@ -118,6 +120,7 @@ namespace UnitySvgEditor.Editor
                 AssetDatabase.ImportAsset(document.AssetPath, ImportAssetOptions.ForceUpdate);
                 document.OriginalSourceText = document.WorkingSourceText;
                 document.VectorImageAsset = AssetDatabase.LoadAssetAtPath<VectorImage>(document.AssetPath);
+                RefreshDocumentModelSnapshot(document, document.WorkingSourceText);
                 return true;
             }
             catch (Exception ex)
@@ -125,6 +128,14 @@ namespace UnitySvgEditor.Editor
                 error = ex.Message;
                 return false;
             }
+        }
+
+        public void RefreshDocumentModel(DocumentSession document)
+        {
+            if (document == null)
+                return;
+
+            RefreshDocumentModelSnapshot(document, document.WorkingSourceText);
         }
 
         #endregion Public Methods
@@ -135,6 +146,23 @@ namespace UnitySvgEditor.Editor
         {
             var projectRoot = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
             return Path.GetFullPath(Path.Combine(projectRoot, assetPath));
+        }
+
+        private void RefreshDocumentModelSnapshot(DocumentSession document, string sourceText)
+        {
+            if (document == null)
+                return;
+
+            document.DocumentModel = null;
+            document.DocumentModelLoadError = string.Empty;
+
+            if (!_documentModelLoader.TryLoad(sourceText, out SvgDocumentModel documentModel, out string error))
+            {
+                document.DocumentModelLoadError = error;
+                return;
+            }
+
+            document.DocumentModel = documentModel;
         }
 
         #endregion Help Methods

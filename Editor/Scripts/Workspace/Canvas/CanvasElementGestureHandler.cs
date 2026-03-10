@@ -47,6 +47,7 @@ namespace UnitySvgEditor.Editor
                 handle,
                 localPosition,
                 pointerId,
+                _host.CurrentDocument,
                 _host.PreviewSnapshot.CanvasViewportRect,
                 _host.PreviewSnapshot.PreserveAspectRatioMode,
                 selectionViewportRect,
@@ -59,7 +60,7 @@ namespace UnitySvgEditor.Editor
         public void BeginMove(CanvasGestureState state, string elementKey, Vector2 localPosition, int pointerId, Rect elementSceneRect, Matrix2D parentWorldTransform)
         {
             state.Begin(CanvasDragMode.MoveElement, CanvasHandle.None, default, default);
-            _elementDragController.BeginMove(_host.PreviewSnapshot, elementKey, localPosition, elementSceneRect, parentWorldTransform);
+            _elementDragController.BeginMove(_host.CurrentDocument, _host.PreviewSnapshot, elementKey, localPosition, elementSceneRect, parentWorldTransform);
             _dragSession.Begin(_overlayAccessor(), pointerId, localPosition);
         }
 
@@ -75,12 +76,12 @@ namespace UnitySvgEditor.Editor
                 case CanvasDragMode.MoveElement:
                     _elementDragController.UpdateMove(localPosition);
                     _host.UpdateSelectionVisual();
-                    _elementDragController.TryRefreshMovePreview(_host, viewportDelta);
+                    _elementDragController.TryUpdateMoveTransientState(_host, viewportDelta);
                     break;
                 case CanvasDragMode.ResizeElement:
                     _elementDragController.UpdateResize(viewportDelta, state.ActiveHandle, uniformScale, centerAnchor);
                     _host.UpdateSelectionVisual();
-                    _elementDragController.TryRefreshResizePreview(_host, state.ActiveHandle);
+                    _elementDragController.TryUpdateResizeTransientState(_host, state.ActiveHandle);
                     break;
             }
         }
@@ -108,6 +109,7 @@ namespace UnitySvgEditor.Editor
             CanvasHandle handle,
             Vector2 localPosition,
             int pointerId,
+            DocumentSession currentDocument,
             Rect projectionSceneRect,
             SvgPreserveAspectRatioMode preserveAspectRatioMode,
             Rect selectionViewportRect,
@@ -117,6 +119,7 @@ namespace UnitySvgEditor.Editor
         {
             state.Begin(CanvasDragMode.ResizeElement, handle, default, default);
             _elementDragController.BeginResize(
+                currentDocument,
                 elementKey,
                 projectionSceneRect,
                 preserveAspectRatioMode,

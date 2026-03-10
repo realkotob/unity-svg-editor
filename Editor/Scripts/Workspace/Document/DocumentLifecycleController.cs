@@ -109,6 +109,7 @@ namespace UnitySvgEditor.Editor
             }
 
             CurrentDocument.WorkingSourceText = updatedSource;
+            _documentRepository.RefreshDocumentModel(CurrentDocument);
             _sourceSyncService.SyncCurrentSource(
                 successStatus,
                 keepExistingPreviewOnFailure: true,
@@ -146,6 +147,7 @@ namespace UnitySvgEditor.Editor
             }
 
             CurrentDocument.WorkingSourceText = sourceText;
+            _documentRepository.RefreshDocumentModel(CurrentDocument);
             _sourceSyncService.SyncCurrentSource(
                 CurrentDocument.IsDirty ? "Unsaved changes." : "No local changes.",
                 keepExistingPreviewOnFailure: true,

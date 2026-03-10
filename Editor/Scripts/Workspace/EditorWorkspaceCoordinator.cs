@@ -62,7 +62,7 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            if (!_structureService.TryBuildSnapshot(CurrentDocument.WorkingSourceText, out StructureOutline snapshot, out string error))
+            if (!TryBuildStructureSnapshot(CurrentDocument, out StructureOutline snapshot, out string error))
             {
                 _structurePanelState.Clear();
                 _structureHierarchyController.SetItems(_structurePanelState.HierarchyItems);
@@ -84,6 +84,21 @@ namespace UnitySvgEditor.Editor
             }
 
             ApplySelectionState(null, CanvasSelectionKind.None, syncPatchTarget: false);
+        }
+
+        private bool TryBuildStructureSnapshot(DocumentSession document, out StructureOutline snapshot, out string error)
+        {
+            snapshot = null;
+            error = string.Empty;
+
+            if (document?.DocumentModel != null &&
+                string.Equals(document.DocumentModel.SourceText, document.WorkingSourceText, StringComparison.Ordinal) &&
+                StructureDocumentModelReader.TryBuildSnapshot(document.DocumentModel, out snapshot, out error))
+            {
+                return true;
+            }
+
+            return _structureService.TryBuildSnapshot(document?.WorkingSourceText, out snapshot, out error);
         }
 
         public void UpdateStructureInteractivity(bool hasDocument)

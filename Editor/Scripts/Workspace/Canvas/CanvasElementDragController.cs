@@ -9,6 +9,7 @@ namespace UnitySvgEditor.Editor
         private readonly StructureEditor _structureEditor;
         private readonly CanvasSceneProjector _sceneProjector;
         private readonly ElementMoveSession _moveSession = new();
+        private readonly CanvasTransientDocumentModelSession _transientDocumentModelSession = new();
 
         private Rect _dragStartSelectionViewportRect;
         private Rect _dragCurrentSelectionViewportRect;
@@ -17,7 +18,6 @@ namespace UnitySvgEditor.Editor
         private SvgPreserveAspectRatioMode _dragStartPreserveAspectRatioMode = SvgPreserveAspectRatioMode.Meet;
         private bool _dragResizeCenterAnchor;
         private string _dragElementKey = string.Empty;
-        private string _dragResizePreviewSourceText = string.Empty;
         private Matrix2D _dragStartParentWorldTransform = Matrix2D.identity;
 
         public Rect DragCurrentSelectionViewportRect => _dragCurrentSelectionViewportRect;
@@ -27,8 +27,6 @@ namespace UnitySvgEditor.Editor
         public SvgPreserveAspectRatioMode DragStartPreserveAspectRatioMode => _dragStartPreserveAspectRatioMode;
         public bool DragResizeCenterAnchor => _dragResizeCenterAnchor;
         public string DragElementKey => _dragElementKey;
-        public string DragPreviewSourceText => _moveSession.PreviewSourceText;
-        public string DragResizePreviewSourceText => _dragResizePreviewSourceText;
 
         public CanvasElementDragController(StructureEditor structureEditor, CanvasSceneProjector sceneProjector)
         {
@@ -37,6 +35,7 @@ namespace UnitySvgEditor.Editor
         }
 
         public void BeginMove(
+            DocumentSession currentDocument,
             PreviewSnapshot previewSnapshot,
             string elementKey,
             Vector2 localPosition,
@@ -53,10 +52,11 @@ namespace UnitySvgEditor.Editor
             _dragCurrentSelectionViewportRect = _dragStartSelectionViewportRect;
             _dragStartElementSceneRect = elementSceneRect;
             _moveSession.Begin(elementKey, localPosition, _dragStartSelectionViewportRect, elementSceneRect);
-            _dragResizePreviewSourceText = string.Empty;
+            _transientDocumentModelSession.TryBegin(currentDocument, elementKey);
         }
 
         public void BeginResize(
+            DocumentSession currentDocument,
             string elementKey,
             Rect projectionSceneRect,
             SvgPreserveAspectRatioMode preserveAspectRatioMode,
@@ -72,7 +72,7 @@ namespace UnitySvgEditor.Editor
             _dragCurrentSelectionViewportRect = selectionViewportRect;
             _dragStartElementSceneRect = selectionSceneRect;
             _dragResizeCenterAnchor = false;
-            _dragResizePreviewSourceText = string.Empty;
+            _transientDocumentModelSession.TryBegin(currentDocument, elementKey);
         }
 
         public Vector2 UpdateMove(Vector2 localPosition)
@@ -111,15 +111,15 @@ namespace UnitySvgEditor.Editor
         public void End()
         {
             _dragElementKey = string.Empty;
-            _dragResizePreviewSourceText = string.Empty;
             _dragStartProjectionSceneRect = default;
             _dragStartPreserveAspectRatioMode = SvgPreserveAspectRatioMode.Meet;
             _dragResizeCenterAnchor = false;
             _dragStartParentWorldTransform = Matrix2D.identity;
+            _transientDocumentModelSession.End();
             _moveSession.End();
         }
 
-        public bool TryRefreshMovePreview(
+        public bool TryUpdateMoveTransientState(
             ICanvasPointerDragHost host,
             Vector2 viewportDelta)
         {
@@ -132,34 +132,24 @@ namespace UnitySvgEditor.Editor
                     _dragStartProjectionSceneRect,
                     _dragStartPreserveAspectRatioMode,
                     viewportDelta,
-                    out Vector2 sceneDelta) ||
-                sceneDelta.sqrMagnitude <= Mathf.Epsilon)
+                    out Vector2 sceneDelta))
             {
                 return false;
             }
 
             Vector2 svgTranslateDelta = ToParentSpaceDelta(sceneDelta);
-            if (_structureEditor.TryPrependElementTranslation(
-                    host.CurrentDocument.WorkingSourceText,
-                    _dragElementKey,
-                    svgTranslateDelta,
-                    out string previewSource,
-                    out _))
+            if (!_transientDocumentModelSession.TryApplyTranslation(svgTranslateDelta) ||
+                !_transientDocumentModelSession.TryBuildPreviewSource(out string previewSource, out _) ||
+                !host.TryRefreshTransientPreview(previewSource))
             {
-                _moveSession.SetPreviewSource(previewSource);
-                if (!host.TryRefreshTransientPreview(previewSource))
-                {
-                    return false;
-                }
-
-                host.RefreshInspectorFromSource(previewSource);
-                return true;
+                return false;
             }
 
-            return false;
+            host.RefreshInspectorFromSource(previewSource);
+            return true;
         }
 
-        public bool TryRefreshResizePreview(
+        public bool TryUpdateResizeTransientState(
             ICanvasPointerDragHost host,
             CanvasHandle activeHandle)
         {
@@ -181,25 +171,15 @@ namespace UnitySvgEditor.Editor
             }
 
             Vector2 svgPivot = ToParentSpacePoint(pivot);
-            if (_structureEditor.TryPrependElementScale(
-                    host.CurrentDocument.WorkingSourceText,
-                    _dragElementKey,
-                    scale,
-                    svgPivot,
-                    out string previewSource,
-                    out _))
+            if (!_transientDocumentModelSession.TryApplyScale(scale, svgPivot) ||
+                !_transientDocumentModelSession.TryBuildPreviewSource(out string previewSource, out _) ||
+                !host.TryRefreshTransientPreview(previewSource))
             {
-                _dragResizePreviewSourceText = previewSource;
-                if (!host.TryRefreshTransientPreview(previewSource))
-                {
-                    return false;
-                }
-
-                host.RefreshInspectorFromSource(previewSource);
-                return true;
+                return false;
             }
 
-            return false;
+            host.RefreshInspectorFromSource(previewSource);
+            return true;
         }
 
         public bool TryCommitDrag(
@@ -225,10 +205,6 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
-            Rect committedSceneRect = dragMode == CanvasDragMode.ResizeElement
-                ? BuildScaledSceneRect(activeHandle)
-                : new Rect(_dragStartElementSceneRect.position + sceneDelta, _dragStartElementSceneRect.size);
-
             if (host.CurrentDocument == null)
             {
                 return false;
@@ -236,13 +212,8 @@ namespace UnitySvgEditor.Editor
 
             string updatedSource;
             string error;
-            string dragPreviewSourceText = dragMode == CanvasDragMode.MoveElement
-                ? _moveSession.PreviewSourceText
-                : _dragResizePreviewSourceText;
-
-            if (!string.IsNullOrWhiteSpace(dragPreviewSourceText))
+            if (_transientDocumentModelSession.TryBuildCommittedSource(out updatedSource, out error))
             {
-                updatedSource = dragPreviewSourceText;
             }
             else if (dragMode == CanvasDragMode.MoveElement)
             {

@@ -45,7 +45,10 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            IReadOnlyList<PatchTarget> targets = _attributePatcher.ExtractTargets(sourceText);
+            IReadOnlyList<PatchTarget> targets = TryResolveDocumentModel(sourceText, out SvgDocumentModel documentModel)
+                ? InspectorDocumentModelReader.ExtractTargets(documentModel)
+                : _attributePatcher.ExtractTargets(ResolveSourceText(sourceText));
+
             _inspectorPanelState.SetTargets(targets);
             ApplyCurrentStateToView();
             ReadSelectedTargetAttributes(sourceText);
@@ -86,7 +89,7 @@ namespace UnitySvgEditor.Editor
                 ? Host.CurrentDocument.WorkingSourceText
                 : sourceTextOverride;
 
-            if (!_attributePatcher.TryReadAttributes(
+            if (!TryReadAttributesFromModelOrFallback(
                     sourceText,
                     ResolveSelectedTargetKey(),
                     out Dictionary<string, string> attributes,
@@ -218,6 +221,53 @@ namespace UnitySvgEditor.Editor
             _inspectorPanelState.FrameY = sceneRect.yMin;
             _inspectorPanelState.FrameWidth = sceneRect.width;
             _inspectorPanelState.FrameHeight = sceneRect.height;
+        }
+
+        private bool TryReadAttributesFromModelOrFallback(
+            string sourceText,
+            string targetKey,
+            out Dictionary<string, string> attributes,
+            out string error)
+        {
+            if (TryResolveDocumentModel(sourceText, out SvgDocumentModel documentModel) &&
+                InspectorDocumentModelReader.TryReadAttributes(documentModel, targetKey, out attributes, out error))
+            {
+                return true;
+            }
+
+            return _attributePatcher.TryReadAttributes(
+                sourceText,
+                targetKey,
+                out attributes,
+                out error);
+        }
+
+        private bool TryResolveDocumentModel(string sourceTextOverride, out SvgDocumentModel documentModel)
+        {
+            documentModel = null;
+            if (Host?.CurrentDocument == null ||
+                Host.CurrentDocument.DocumentModel == null ||
+                !string.IsNullOrWhiteSpace(Host.CurrentDocument.DocumentModelLoadError))
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(sourceTextOverride) &&
+                !string.Equals(sourceTextOverride, Host.CurrentDocument.WorkingSourceText, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            documentModel = Host.CurrentDocument.DocumentModel;
+            return documentModel != null;
+        }
+
+        private string ResolveSourceText(string sourceTextOverride)
+        {
+            if (!string.IsNullOrWhiteSpace(sourceTextOverride))
+                return sourceTextOverride;
+
+            return Host?.CurrentDocument?.WorkingSourceText ?? string.Empty;
         }
     }
 }

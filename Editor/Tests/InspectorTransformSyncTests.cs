@@ -88,6 +88,33 @@ namespace UnitySvgEditor.Editor.Tests
         }
 
         [Test]
+        public void RefreshTargets_UsesCurrentDocumentModelWhenSourceOverrideIsMissing()
+        {
+            const string source = "<svg xmlns=\"http://www.w3.org/2000/svg\"><rect id=\"node\" transform=\"translate(7 3)\"/></svg>";
+            var root = CreatePositionRoot();
+            root.Add(new DropdownField { name = "patch-target" });
+            var host = new FakeInspectorPanelHost
+            {
+                CurrentDocument = new DocumentSession
+                {
+                    WorkingSourceText = source,
+                    DocumentModel = SvgFixtureTestUtility.LoadModel(source)
+                }
+            };
+
+            var view = new InspectorPanelView();
+            var state = new InspectorPanelState();
+            var service = new InspectorTargetSyncService(new AttributePatcher(), state, view, () => host, null);
+
+            view.Bind(root);
+            service.RefreshTargets(null);
+            Assert.That(service.TrySelectTargetByKey("node", out _), Is.True);
+
+            Assert.That(root.Q<FloatField>("inspector-translate-x").value, Is.EqualTo(7f).Within(0.001f));
+            Assert.That(root.Q<FloatField>("inspector-translate-y").value, Is.EqualTo(3f).Within(0.001f));
+        }
+
+        [Test]
         public void SyncTransformTextFromHelper_RebuildsTransformField()
         {
             var root = CreatePositionRoot();

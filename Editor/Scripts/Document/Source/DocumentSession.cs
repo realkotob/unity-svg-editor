@@ -11,6 +11,8 @@ namespace UnitySvgEditor.Editor
         public VectorImage VectorImageAsset { get; set; }
         public string OriginalSourceText { get; set; } = string.Empty;
         public string WorkingSourceText { get; set; } = string.Empty;
+        public SvgDocumentModel DocumentModel { get; set; }
+        public string DocumentModelLoadError { get; set; } = string.Empty;
 
         public bool IsDirty => !string.Equals(OriginalSourceText, WorkingSourceText, StringComparison.Ordinal);
     }
