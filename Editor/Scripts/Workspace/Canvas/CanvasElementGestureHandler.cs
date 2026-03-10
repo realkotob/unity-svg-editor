@@ -63,7 +63,7 @@ namespace UnitySvgEditor.Editor
             _dragSession.Begin(_overlayAccessor(), pointerId, localPosition);
         }
 
-        public void ApplyElementDelta(CanvasGestureState state, Vector2 localPosition, Vector2 viewportDelta)
+        public void ApplyElementDelta(CanvasGestureState state, Vector2 localPosition, Vector2 viewportDelta, bool uniformScale)
         {
             switch (state.Mode)
             {
@@ -73,7 +73,7 @@ namespace UnitySvgEditor.Editor
                     _elementDragController.TryRefreshMovePreview(_host, viewportDelta);
                     break;
                 case CanvasDragMode.ResizeElement:
-                    _elementDragController.UpdateResize(viewportDelta, state.ActiveHandle);
+                    _elementDragController.UpdateResize(viewportDelta, state.ActiveHandle, uniformScale);
                     _host.UpdateSelectionVisual();
                     _elementDragController.TryRefreshResizePreview(_host, state.ActiveHandle);
                     break;

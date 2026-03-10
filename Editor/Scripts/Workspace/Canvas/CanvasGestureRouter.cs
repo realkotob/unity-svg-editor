@@ -106,7 +106,8 @@ namespace UnitySvgEditor.Editor
             }
             else if (_gestureState.IsElementGesture)
             {
-                _elementGestureHandler.ApplyElementDelta(_gestureState, localPosition, viewportDelta);
+                bool uniformScale = (evt.modifiers & EventModifiers.Shift) != 0;
+                _elementGestureHandler.ApplyElementDelta(_gestureState, localPosition, viewportDelta, uniformScale);
             }
 
             evt.StopPropagation();

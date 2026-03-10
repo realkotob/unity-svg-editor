@@ -125,5 +125,53 @@ namespace UnitySvgEditor.Editor.Tests
             Assert.That(scale, Is.EqualTo(new Vector2(1f, 1.2f)));
             Assert.That(pivot, Is.EqualTo(new Vector2(35f, 60f)));
         }
+
+        [Test]
+        public void GetResizeViewportRect_AlwaysUsesUniformScale_ForCornerHandle()
+        {
+            Rect uniformRect = CanvasProjectionMath.GetResizeViewportRect(
+                new Rect(0f, 0f, 100f, 80f),
+                new Rect(0f, 0f, 150f, 90f),
+                CanvasHandle.BottomRight,
+                uniformScale: false);
+
+            Assert.That(uniformRect, Is.EqualTo(new Rect(0f, 0f, 150f, 120f)));
+        }
+
+        [Test]
+        public void GetResizeViewportRect_UsesUniformScale_ForEdgeHandleWhenShiftIsPressed()
+        {
+            Rect resizedRect = CanvasProjectionMath.GetResizeViewportRect(
+                new Rect(0f, 0f, 100f, 80f),
+                new Rect(0f, 0f, 150f, 80f),
+                CanvasHandle.Right,
+                uniformScale: true);
+
+            Assert.That(resizedRect, Is.EqualTo(new Rect(0f, -20f, 150f, 120f)));
+        }
+
+        [Test]
+        public void GetResizeViewportRect_KeepsEdgeResizeNonUniform_WithoutShift()
+        {
+            Rect resizedRect = CanvasProjectionMath.GetResizeViewportRect(
+                new Rect(0f, 0f, 100f, 80f),
+                new Rect(0f, 0f, 150f, 80f),
+                CanvasHandle.Right,
+                uniformScale: false);
+
+            Assert.That(resizedRect, Is.EqualTo(new Rect(0f, 0f, 150f, 80f)));
+        }
+
+        [Test]
+        public void GetResizeViewportRect_UsesUniformScale_ForLeftEdgeHandleWhenShiftIsPressed()
+        {
+            Rect resizedRect = CanvasProjectionMath.GetResizeViewportRect(
+                new Rect(0f, 0f, 100f, 80f),
+                new Rect(-50f, 0f, 150f, 80f),
+                CanvasHandle.Left,
+                uniformScale: true);
+
+            Assert.That(resizedRect, Is.EqualTo(new Rect(-50f, -20f, 150f, 120f)));
+        }
     }
 }

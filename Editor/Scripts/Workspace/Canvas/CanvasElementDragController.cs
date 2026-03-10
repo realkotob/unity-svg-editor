@@ -79,13 +79,18 @@ namespace UnitySvgEditor.Editor
             return viewportDelta;
         }
 
-        public void UpdateResize(Vector2 viewportDelta, CanvasHandle activeHandle)
+        public void UpdateResize(Vector2 viewportDelta, CanvasHandle activeHandle, bool uniformScale)
         {
-            _dragCurrentSelectionViewportRect = RectResizeUtility.ResizeRect(
+            Rect resizedViewportRect = RectResizeUtility.ResizeRect(
                 _dragStartSelectionViewportRect,
                 activeHandle,
                 viewportDelta,
                 12f);
+            _dragCurrentSelectionViewportRect = CanvasProjectionMath.GetResizeViewportRect(
+                _dragStartSelectionViewportRect,
+                resizedViewportRect,
+                activeHandle,
+                uniformScale);
         }
 
         public Rect BuildScaledSceneRect(CanvasHandle handle)
