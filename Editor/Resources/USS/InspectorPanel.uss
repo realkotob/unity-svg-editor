@@ -31,16 +31,43 @@
     font-size: 12px;
 }
 
+.svg-editor__inspector-meta-label {
+    margin-top: 0;
+    margin-bottom: var(--space-1);
+    color: var(--editor-label-muted);
+    font-size: 11px;
+    -unity-font-style: bold;
+}
+
 .svg-editor__inspector-row {
     flex-direction: row;
     align-items: stretch;
     margin-bottom: var(--space-1-5);
 }
 
+.svg-editor__position-action-row {
+    align-items: center;
+}
+
 .svg-editor__inspector-field {
     flex-basis: 0;
     flex-grow: 1;
     margin-right: var(--space-1-5);
+}
+
+.svg-editor__advanced-transform-field {
+    min-height: 88px;
+    margin-right: 0;
+}
+
+.svg-editor__position-button-group {
+    flex-basis: 0;
+    flex-grow: 1;
+    margin-right: var(--space-1-5);
+}
+
+.svg-editor__position-button-group--last {
+    margin-right: 0;
 }
 
 .svg-editor__inspector-field--last,
@@ -97,6 +124,13 @@
     border-width: 1px;
     background-color: var(--editor-control-bg);
     color: var(--foreground);
+}
+
+.svg-editor__advanced-transform-field .unity-text-field__input {
+    min-height: 72px;
+    padding-top: var(--space-1);
+    padding-bottom: var(--space-1);
+    white-space: normal;
 }
 
 .svg-editor__inspector-section .unity-toggle {

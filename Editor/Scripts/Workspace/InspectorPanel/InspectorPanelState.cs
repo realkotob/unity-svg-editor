@@ -26,7 +26,6 @@ namespace UnitySvgEditor.Editor
             Rotate = 0f;
         }
 
-        public IReadOnlyList<string> TargetChoices => _targetSelection.TargetChoices;
         public string SelectedTargetKey => _targetSelection.SelectedTargetKey;
         public string SelectedTargetLabel => _targetSelection.SelectedTargetLabel;
 
@@ -49,6 +48,11 @@ namespace UnitySvgEditor.Editor
         public float DashGap { get; set; }
         public bool TransformEnabled { get; set; }
         public string Transform { get; set; } = string.Empty;
+        public bool FramePositionEnabled { get; set; }
+        public float FrameX { get; set; }
+        public float FrameY { get; set; }
+        public float FrameWidth { get; set; }
+        public float FrameHeight { get; set; }
 
         public float TranslateX { get; set; }
         public float TranslateY { get; set; }
@@ -59,11 +63,6 @@ namespace UnitySvgEditor.Editor
         public void SetTargets(IReadOnlyList<PatchTarget> targets)
         {
             _targetSelection.SetTargets(targets);
-        }
-
-        public void SelectTargetLabel(string label)
-        {
-            _targetSelection.SelectTargetLabel(label);
         }
 
         public string ResolveSelectedTargetKey()

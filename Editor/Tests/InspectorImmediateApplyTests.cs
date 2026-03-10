@@ -139,6 +139,17 @@ namespace UnitySvgEditor.Editor.Tests
                 return true;
             }
 
+            public bool TryApplyTargetFrameRect(string targetKey, Rect targetSceneRect, string successStatus)
+            {
+                return true;
+            }
+
+            public bool TryGetTargetSceneRect(string targetKey, out Rect sceneRect)
+            {
+                sceneRect = default;
+                return false;
+            }
+
             public void SyncSelectionFromInspectorTarget(string targetKey)
             {
             }

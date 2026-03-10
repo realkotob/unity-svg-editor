@@ -6,6 +6,7 @@ using System.Reflection;
 using InspectorSection = Core.UI.Foundation.Tooling.InspectorSection;
 using InspectorSectionClasses = Core.UI.Foundation.Tooling.InspectorSectionClasses;
 using FoundationToggle = Core.UI.Foundation.Components.Toggle.Toggle;
+using Unity.VectorGraphics;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -350,6 +351,9 @@ namespace UnitySvgEditor.Editor
         bool IEditorWorkspaceHost.TryRefreshTransientPreview(string sourceText) =>
             _documentLifecycleController.TryRefreshTransientPreview(sourceText);
 
+        void IEditorWorkspaceHost.RefreshInspectorFromSource(string sourceText) =>
+            _inspectorPanelController.RefreshTargets(sourceText);
+
         private bool TryApplyPatchRequest(AttributePatchRequest request, string successStatus) =>
             WorkspaceCoordinator.TryApplyPatchRequest(request, successStatus);
 
@@ -378,6 +382,30 @@ namespace UnitySvgEditor.Editor
 
         DocumentSession IInspectorPanelHost.CurrentDocument => _documentLifecycleController.CurrentDocument;
         bool IInspectorPanelHost.TryApplyPatchRequest(AttributePatchRequest request, string successStatus) => TryApplyPatchRequest(request, successStatus);
+        bool IInspectorPanelHost.TryApplyTargetFrameRect(string targetKey, Rect targetSceneRect, string successStatus) =>
+            WorkspaceCoordinator.TryApplyTargetFrameRect(targetKey, targetSceneRect, successStatus);
+        bool IInspectorPanelHost.TryGetTargetSceneRect(string targetKey, out Rect sceneRect)
+        {
+            sceneRect = default;
+            var snapshot = _documentLifecycleController.PreviewSnapshot;
+            if (snapshot?.Elements == null || string.IsNullOrWhiteSpace(targetKey))
+                return false;
+
+            for (var i = 0; i < snapshot.Elements.Count; i++)
+            {
+                var element = snapshot.Elements[i];
+                if (element == null)
+                    continue;
+
+                if (!string.Equals(element.TargetKey, targetKey, StringComparison.Ordinal))
+                    continue;
+
+                sceneRect = element.VisualBounds;
+                return true;
+            }
+
+            return false;
+        }
         void IInspectorPanelHost.SyncSelectionFromInspectorTarget(string targetKey) => WorkspaceCoordinator.SyncSelectionFromInspectorTarget(targetKey);
         void IInspectorPanelHost.UpdateSourceStatus(string status) => UpdateSourceStatus(status);
 

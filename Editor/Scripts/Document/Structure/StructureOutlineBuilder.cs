@@ -120,10 +120,12 @@ namespace UnitySvgEditor.Editor
             int siblingIndex)
         {
             var hasStableId = SvgDocumentXmlUtility.TryGetId(element, out string stableId);
+            var elementKey = SvgDocumentXmlUtility.BuildElementKey(element, root);
+            var isRoot = ReferenceEquals(element, root);
             return new StructureNode
             {
-                Key = SvgDocumentXmlUtility.BuildElementKey(element, root),
-                TargetKey = hasStableId ? stableId : string.Empty,
+                Key = elementKey,
+                TargetKey = isRoot ? string.Empty : elementKey,
                 TagName = element.LocalName,
                 Depth = depth,
                 ParentKey = parentKey,

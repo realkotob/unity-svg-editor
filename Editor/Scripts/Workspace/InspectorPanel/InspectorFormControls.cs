@@ -8,7 +8,6 @@ namespace UnitySvgEditor.Editor
 {
     internal sealed class InspectorFormControls
     {
-        public PopupField<string> TargetPopup { get; private set; }
         public ColorField FillColorField { get; private set; }
         public ColorField StrokeColorField { get; private set; }
         public FloatField StrokeWidthField { get; private set; }
@@ -18,6 +17,10 @@ namespace UnitySvgEditor.Editor
         public FloatField DashLengthField { get; private set; }
         public FloatField DashGapField { get; private set; }
         public TextField TransformField { get; private set; }
+        public FloatField FrameXField { get; private set; }
+        public FloatField FrameYField { get; private set; }
+        public FloatField FrameWidthField { get; private set; }
+        public FloatField FrameHeightField { get; private set; }
         public FloatField TranslateXField { get; private set; }
         public FloatField TranslateYField { get; private set; }
         public FloatField RotateField { get; private set; }
@@ -33,7 +36,6 @@ namespace UnitySvgEditor.Editor
             OpacitySlider != null ||
             TransformField != null;
 
-        public string SelectedTargetLabel => TargetPopup?.value ?? string.Empty;
         public bool FillEnabled => FillColorField != null;
         public bool StrokeEnabled => StrokeColorField != null;
         public bool StrokeWidthEnabled => StrokeWidthField != null;
@@ -49,7 +51,6 @@ namespace UnitySvgEditor.Editor
             if (root == null)
                 return;
 
-            TargetPopup = root.Q<DropdownField>("patch-target");
             FillColorField = root.Q<ColorField>("inspector-fill-color");
             StrokeColorField = root.Q<ColorField>("inspector-stroke-color");
             StrokeWidthField = root.Q<FloatField>("inspector-stroke-width");
@@ -59,6 +60,10 @@ namespace UnitySvgEditor.Editor
             DashLengthField = root.Q<FloatField>("inspector-dash-length");
             DashGapField = root.Q<FloatField>("inspector-dash-gap");
             TransformField = root.Q<TextField>("inspector-transform");
+            FrameXField = root.Q<FloatField>("inspector-frame-x");
+            FrameYField = root.Q<FloatField>("inspector-frame-y");
+            FrameWidthField = root.Q<FloatField>("inspector-frame-width");
+            FrameHeightField = root.Q<FloatField>("inspector-frame-height");
             TranslateXField = root.Q<FloatField>("inspector-translate-x");
             TranslateYField = root.Q<FloatField>("inspector-translate-y");
             RotateField = root.Q<FloatField>("inspector-rotate");
@@ -70,11 +75,11 @@ namespace UnitySvgEditor.Editor
 
             ConfigureStrokePopup(LinecapPopup, new List<string> { string.Empty, "butt", "round", "square" });
             ConfigureStrokePopup(LinejoinPopup, new List<string> { string.Empty, "miter", "round", "bevel" });
+
         }
 
         public void Unbind()
         {
-            TargetPopup = null;
             FillColorField = null;
             StrokeColorField = null;
             StrokeWidthField = null;
@@ -84,6 +89,10 @@ namespace UnitySvgEditor.Editor
             DashLengthField = null;
             DashGapField = null;
             TransformField = null;
+            FrameXField = null;
+            FrameYField = null;
+            FrameWidthField = null;
+            FrameHeightField = null;
             TranslateXField = null;
             TranslateYField = null;
             RotateField = null;
@@ -92,24 +101,6 @@ namespace UnitySvgEditor.Editor
             ReadButton = null;
             BuildTransformButton = null;
             ApplyButton = null;
-        }
-
-        public void SetTargetChoices(IReadOnlyList<string> choices)
-        {
-            if (TargetPopup != null)
-                TargetPopup.choices = choices?.ToList() ?? new List<string>();
-        }
-
-        public void SetSelectedTargetLabel(string label, bool notify)
-        {
-            if (TargetPopup == null)
-                return;
-
-            var value = label ?? string.Empty;
-            if (notify)
-                TargetPopup.value = value;
-            else
-                TargetPopup.SetValueWithoutNotify(value);
         }
 
         public void SetTransformText(string transform)

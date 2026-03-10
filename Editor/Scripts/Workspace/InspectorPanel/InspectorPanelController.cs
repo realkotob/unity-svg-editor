@@ -18,8 +18,8 @@ namespace UnitySvgEditor.Editor
                 () => _host,
                 () => UpdateInteractivity(_host?.CurrentDocument != null));
 
-            _view.TargetChanged += OnTargetChanged;
             _view.ImmediateApplyRequested += OnImmediateApplyRequested;
+            _view.FrameRectChanged += OnFrameRectChanged;
             _view.TransformHelperChanged += OnTransformHelperChanged;
             _view.TransformTextChanged += OnTransformTextChanged;
             _view.ReadRequested += OnReadTargetClicked;
@@ -55,7 +55,6 @@ namespace UnitySvgEditor.Editor
 
         public void UpdateInteractivity(bool hasDocument)
         {
-            SetEnabledIfNotNull(_view.TargetControl, hasDocument);
             SetEnabledIfNotNull(_view.FillColorControl, hasDocument);
             SetEnabledIfNotNull(_view.StrokeColorControl, hasDocument);
             SetEnabledIfNotNull(_view.StrokeWidthControl, hasDocument);
@@ -63,6 +62,10 @@ namespace UnitySvgEditor.Editor
             SetEnabledIfNotNull(_view.DashLengthControl, hasDocument);
             SetEnabledIfNotNull(_view.DashGapControl, hasDocument);
             SetEnabledIfNotNull(_view.TransformControl, hasDocument);
+            SetEnabledIfNotNull(_view.FrameXControl, hasDocument);
+            SetEnabledIfNotNull(_view.FrameYControl, hasDocument);
+            SetEnabledIfNotNull(_view.FrameWidthControl, hasDocument);
+            SetEnabledIfNotNull(_view.FrameHeightControl, hasDocument);
             SetEnabledIfNotNull(_view.LinecapControl, hasDocument);
             SetEnabledIfNotNull(_view.LinejoinControl, hasDocument);
             SetEnabledIfNotNull(_view.TranslateXControl, hasDocument);
@@ -75,9 +78,9 @@ namespace UnitySvgEditor.Editor
             SetEnabledIfNotNull(_view.ApplyButtonControl, hasDocument);
         }
 
-        private void OnTargetChanged(string label) => _targetSyncService.HandleTargetSelectionChanged(label);
-
         private void OnImmediateApplyRequested(InspectorPanelView.ImmediateApplyField field) => _targetSyncService.ApplyImmediatePatch(field);
+
+        private void OnFrameRectChanged() => _targetSyncService.ApplyFrameRectFromView();
 
         private void OnTransformHelperChanged() => _targetSyncService.SyncTransformTextFromHelper();
 

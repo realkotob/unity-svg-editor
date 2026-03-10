@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -115,6 +116,68 @@ namespace UnitySvgEditor.Editor
             return true;
         }
 
+        public bool TryApplyTargetFrameRect(string targetKey, Rect targetSceneRect, string successStatus)
+        {
+            if (CurrentDocument == null || string.IsNullOrWhiteSpace(targetKey))
+                return false;
+
+            PreviewElementGeometry targetElement = _host.PreviewSnapshot?.Elements?
+                .FirstOrDefault(item => string.Equals(item?.TargetKey, targetKey, StringComparison.Ordinal));
+            if (targetElement == null)
+                return false;
+
+            var currentSceneRect = targetElement.VisualBounds;
+            var updatedSource = CurrentDocument.WorkingSourceText;
+            var hasChanged = false;
+
+            if (currentSceneRect.width > Mathf.Epsilon &&
+                currentSceneRect.height > Mathf.Epsilon &&
+                (!Mathf.Approximately(currentSceneRect.width, targetSceneRect.width) ||
+                 !Mathf.Approximately(currentSceneRect.height, targetSceneRect.height)))
+            {
+                var scale = new Vector2(
+                    Mathf.Max(0f, targetSceneRect.width) / currentSceneRect.width,
+                    Mathf.Max(0f, targetSceneRect.height) / currentSceneRect.height);
+                var pivot = new Vector2(currentSceneRect.xMin, currentSceneRect.yMin);
+                if (!_structureService.TryPrependElementScale(
+                        updatedSource,
+                        targetElement.Key,
+                        scale,
+                        ToParentSpacePoint(targetElement.ParentWorldTransform, pivot),
+                        out updatedSource,
+                        out _))
+                {
+                    return false;
+                }
+
+                hasChanged = true;
+            }
+
+            var sceneDelta = new Vector2(
+                targetSceneRect.xMin - currentSceneRect.xMin,
+                targetSceneRect.yMin - currentSceneRect.yMin);
+            if (sceneDelta.sqrMagnitude > Mathf.Epsilon)
+            {
+                if (!_structureService.TryPrependElementTranslation(
+                        updatedSource,
+                        targetElement.Key,
+                        ToParentSpaceDelta(targetElement.ParentWorldTransform, sceneDelta),
+                        out updatedSource,
+                        out _))
+                {
+                    return false;
+                }
+
+                hasChanged = true;
+            }
+
+            if (!hasChanged || string.Equals(updatedSource, CurrentDocument.WorkingSourceText, StringComparison.Ordinal))
+                return false;
+
+            _host.ApplyUpdatedSource(updatedSource, successStatus);
+            return true;
+        }
+
         public void ResetCanvasView(bool clearSelection = false) => _canvasWorkspaceController.ResetCanvasView(clearSelection);
 
         public void SyncCanvasFrameToPreview() => _canvasWorkspaceController.SyncCanvasFrameToPreview();
@@ -212,6 +275,7 @@ namespace UnitySvgEditor.Editor
         void ICanvasWorkspaceHost.UpdateSourceStatus(string status) => _host.UpdateSourceStatus(status);
         void ICanvasWorkspaceHost.RefreshLivePreview(bool keepExistingPreviewOnFailure) => _host.RefreshLivePreview(keepExistingPreviewOnFailure);
         bool ICanvasWorkspaceHost.TryRefreshTransientPreview(string sourceText) => _host.TryRefreshTransientPreview(sourceText);
+        void ICanvasWorkspaceHost.RefreshInspectorFromSource(string sourceText) => _host.RefreshInspectorFromSource(sourceText);
         void ICanvasWorkspaceHost.ApplyUpdatedSource(string updatedSource, string successStatus) => _host.ApplyUpdatedSource(updatedSource, successStatus);
 
         DocumentSession IStructureHierarchyHost.CurrentDocument => CurrentDocument;
@@ -252,6 +316,16 @@ namespace UnitySvgEditor.Editor
                 selectedItem,
                 selectedItem != null ? CanvasSelectionKind.Element : CanvasSelectionKind.None,
                 syncPatchTarget: false);
+        }
+
+        private static Vector2 ToParentSpaceDelta(Matrix2D parentWorldTransform, Vector2 worldDelta)
+        {
+            return parentWorldTransform.Inverse().MultiplyVector(worldDelta);
+        }
+
+        private static Vector2 ToParentSpacePoint(Matrix2D parentWorldTransform, Vector2 worldPoint)
+        {
+            return parentWorldTransform.Inverse().MultiplyPoint(worldPoint);
         }
     }
 }

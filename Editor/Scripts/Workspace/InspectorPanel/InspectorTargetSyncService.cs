@@ -35,7 +35,6 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            _view.SetTargetChoices(_inspectorPanelState.TargetChoices);
             _view.ApplyState(_inspectorPanelState);
         }
 
@@ -49,7 +48,7 @@ namespace UnitySvgEditor.Editor
             IReadOnlyList<PatchTarget> targets = _attributePatcher.ExtractTargets(sourceText);
             _inspectorPanelState.SetTargets(targets);
             ApplyCurrentStateToView();
-            ReadSelectedTargetAttributes();
+            ReadSelectedTargetAttributes(sourceText);
         }
 
         public bool TrySelectTargetByKey(string targetKey, out string label)
@@ -65,51 +64,30 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
-            _suppressSelectionSync = true;
-            try
-            {
-                _view.SetSelectedTargetLabel(label, notify: true);
-            }
-            finally
-            {
-                _suppressSelectionSync = false;
-            }
-
             ReadSelectedTargetAttributes();
             return true;
         }
 
-        public string ResolveSelectedTargetKey()
-        {
-            if (_view.IsBound)
-            {
-                _inspectorPanelState.SelectTargetLabel(_view.SelectedTargetLabel);
-            }
-
-            return _inspectorPanelState.ResolveSelectedTargetKey();
-        }
-
-        public void HandleTargetSelectionChanged(string label)
-        {
-            _inspectorPanelState.SelectTargetLabel(label);
-            if (_suppressSelectionSync)
-            {
-                return;
-            }
-
-            Host?.SyncSelectionFromInspectorTarget(ResolveSelectedTargetKey());
-            ReadSelectedTargetAttributes();
-        }
+        public string ResolveSelectedTargetKey() => _inspectorPanelState.ResolveSelectedTargetKey();
 
         public void ReadSelectedTargetAttributes()
+        {
+            ReadSelectedTargetAttributes(null);
+        }
+
+        private void ReadSelectedTargetAttributes(string sourceTextOverride)
         {
             if (Host?.CurrentDocument == null)
             {
                 return;
             }
 
+            var sourceText = string.IsNullOrWhiteSpace(sourceTextOverride)
+                ? Host.CurrentDocument.WorkingSourceText
+                : sourceTextOverride;
+
             if (!_attributePatcher.TryReadAttributes(
-                    Host.CurrentDocument.WorkingSourceText,
+                    sourceText,
                     ResolveSelectedTargetKey(),
                     out Dictionary<string, string> attributes,
                     out string error))
@@ -119,6 +97,7 @@ namespace UnitySvgEditor.Editor
             }
 
             _inspectorPanelState.SyncFromAttributes(attributes);
+            SyncFramePositionFromPreview();
             _view.ApplyState(_inspectorPanelState);
             _updateInteractivity?.Invoke();
         }
@@ -163,6 +142,31 @@ namespace UnitySvgEditor.Editor
             return true;
         }
 
+        public void ApplyFrameRectFromView()
+        {
+            if (Host?.CurrentDocument == null || !_view.IsBound)
+            {
+                return;
+            }
+
+            var targetKey = ResolveSelectedTargetKey();
+            if (string.IsNullOrWhiteSpace(targetKey) ||
+                string.Equals(targetKey, AttributePatcher.ROOT_TARGET_KEY, StringComparison.Ordinal) ||
+                !Host.TryGetTargetSceneRect(targetKey, out _))
+            {
+                return;
+            }
+
+            _view.CaptureState(_inspectorPanelState);
+            var desiredSceneRect = new UnityEngine.Rect(
+                _inspectorPanelState.FrameX,
+                _inspectorPanelState.FrameY,
+                Math.Max(0f, _inspectorPanelState.FrameWidth),
+                Math.Max(0f, _inspectorPanelState.FrameHeight));
+
+            Host.TryApplyTargetFrameRect(targetKey, desiredSceneRect, "Frame rect updated.");
+        }
+
         public void ApplyPatchToSource()
         {
             ApplyPatchToSource("Patch applied to source.");
@@ -192,6 +196,28 @@ namespace UnitySvgEditor.Editor
             _view.CaptureState(_inspectorPanelState);
             var request = _inspectorPanelState.BuildPatchRequest(field);
             Host.TryApplyPatchRequest(request, "Inspector changes applied.");
+        }
+
+        private void SyncFramePositionFromPreview()
+        {
+            _inspectorPanelState.FramePositionEnabled = false;
+            _inspectorPanelState.FrameX = 0f;
+            _inspectorPanelState.FrameY = 0f;
+
+            var targetKey = ResolveSelectedTargetKey();
+            if (Host == null ||
+                string.IsNullOrWhiteSpace(targetKey) ||
+                string.Equals(targetKey, AttributePatcher.ROOT_TARGET_KEY, StringComparison.Ordinal) ||
+                !Host.TryGetTargetSceneRect(targetKey, out var sceneRect))
+            {
+                return;
+            }
+
+            _inspectorPanelState.FramePositionEnabled = true;
+            _inspectorPanelState.FrameX = sceneRect.xMin;
+            _inspectorPanelState.FrameY = sceneRect.yMin;
+            _inspectorPanelState.FrameWidth = sceneRect.width;
+            _inspectorPanelState.FrameHeight = sceneRect.height;
         }
     }
 }

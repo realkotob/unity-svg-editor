@@ -147,7 +147,13 @@ namespace UnitySvgEditor.Editor
                     out _))
             {
                 _moveSession.SetPreviewSource(previewSource);
-                return host.TryRefreshTransientPreview(previewSource);
+                if (!host.TryRefreshTransientPreview(previewSource))
+                {
+                    return false;
+                }
+
+                host.RefreshInspectorFromSource(previewSource);
+                return true;
             }
 
             return false;
@@ -184,7 +190,13 @@ namespace UnitySvgEditor.Editor
                     out _))
             {
                 _dragResizePreviewSourceText = previewSource;
-                return host.TryRefreshTransientPreview(previewSource);
+                if (!host.TryRefreshTransientPreview(previewSource))
+                {
+                    return false;
+                }
+
+                host.RefreshInspectorFromSource(previewSource);
+                return true;
             }
 
             return false;

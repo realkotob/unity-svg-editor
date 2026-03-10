@@ -73,7 +73,7 @@ namespace UnitySvgEditor.Editor
             if (ShouldRegisterPreviewElement(element, root, hasStableId))
             {
                 var key = SvgDocumentXmlUtility.BuildElementKey(element, root);
-                var targetKey = hasStableId ? stableId : string.Empty;
+                var targetKey = key;
                 var nodeId = stableId;
                 if (string.IsNullOrWhiteSpace(nodeId))
                 {

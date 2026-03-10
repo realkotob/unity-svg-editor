@@ -18,6 +18,7 @@ namespace UnitySvgEditor.Editor
         void UpdateSourceStatus(string status);
         void RefreshLivePreview(bool keepExistingPreviewOnFailure);
         bool TryRefreshTransientPreview(string sourceText);
+        void RefreshInspectorFromSource(string sourceText);
         void ApplyUpdatedSource(string updatedSource, string successStatus);
     }
 }

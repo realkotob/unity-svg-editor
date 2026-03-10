@@ -16,13 +16,20 @@ namespace UnitySvgEditor.Editor
 
             foreach (var element in SvgDocumentXmlUtility.EnumerateElementsDepthFirst(root))
             {
-                if (!SvgDocumentXmlUtility.TryGetId(element, out var id) || !knownIds.Add(id))
+                if (ReferenceEquals(element, root))
                     continue;
 
+                var key = SvgDocumentXmlUtility.BuildElementKey(element, root);
+                if (!knownIds.Add(key))
+                    continue;
+
+                SvgDocumentXmlUtility.TryGetId(element, out var id);
                 targets.Add(new PatchTarget
                 {
-                    Key = id,
-                    DisplayName = $"#{id}  <{element.LocalName}>"
+                    Key = key,
+                    DisplayName = string.IsNullOrWhiteSpace(id)
+                        ? $"{element.LocalName}  [{SvgDocumentXmlUtility.GetElementIndex(element) + 1}]"
+                        : $"#{id}  <{element.LocalName}>"
                 });
             }
 
@@ -88,14 +95,20 @@ namespace UnitySvgEditor.Editor
                 return true;
             }
 
-            if (!SvgDocumentXmlUtility.TryFindElementById(root, normalizedTarget, out var xmlElement))
+            if (SvgDocumentXmlUtility.TryFindElementById(root, normalizedTarget, out var xmlElement) ||
+                SvgDocumentXmlUtility.TryFindElementByKey(root, root, normalizedTarget, out xmlElement))
             {
-                error = $"Could not find target '{normalizedTarget}'.";
+                targetElement = xmlElement;
+                return true;
+            }
+
+            if (string.IsNullOrWhiteSpace(normalizedTarget))
+            {
                 return false;
             }
 
-            targetElement = xmlElement;
-            return true;
+            error = $"Could not find target '{normalizedTarget}'.";
+            return false;
         }
 
         private static string NormalizeTargetKey(string targetKey)

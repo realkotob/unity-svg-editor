@@ -15,6 +15,7 @@ namespace UnitySvgEditor.Editor
         void UpdateEditorInteractivity();
         void RefreshLivePreview(bool keepExistingPreviewOnFailure);
         bool TryRefreshTransientPreview(string sourceText);
+        void RefreshInspectorFromSource(string sourceText);
         bool TrySelectPatchTargetByKey(string targetKey);
         string ResolveSelectedPatchTargetKey();
         string FormatNumber(float value);

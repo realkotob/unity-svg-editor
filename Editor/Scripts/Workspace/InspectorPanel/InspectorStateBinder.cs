@@ -10,7 +10,6 @@ namespace UnitySvgEditor.Editor
             if (form == null || inspectorPanelState == null)
                 return;
 
-            inspectorPanelState.SelectTargetLabel(form.SelectedTargetLabel);
             inspectorPanelState.FillEnabled = form.FillColorField != null;
             inspectorPanelState.FillColor = form.FillColorField?.value ?? Color.white;
             inspectorPanelState.StrokeEnabled = form.StrokeColorField != null;
@@ -26,6 +25,10 @@ namespace UnitySvgEditor.Editor
             inspectorPanelState.DashGap = form.DashGapField?.value ?? 2f;
             inspectorPanelState.TransformEnabled = form.TransformField != null;
             inspectorPanelState.Transform = form.TransformField?.value ?? string.Empty;
+            inspectorPanelState.FrameX = form.FrameXField?.value ?? 0f;
+            inspectorPanelState.FrameY = form.FrameYField?.value ?? 0f;
+            inspectorPanelState.FrameWidth = form.FrameWidthField?.value ?? 0f;
+            inspectorPanelState.FrameHeight = form.FrameHeightField?.value ?? 0f;
             inspectorPanelState.TranslateX = form.TranslateXField?.value ?? 0f;
             inspectorPanelState.TranslateY = form.TranslateYField?.value ?? 0f;
             inspectorPanelState.Rotate = form.RotateField?.value ?? 0f;
@@ -38,7 +41,6 @@ namespace UnitySvgEditor.Editor
             if (form == null || inspectorPanelState == null)
                 return;
 
-            form.SetSelectedTargetLabel(inspectorPanelState.SelectedTargetLabel, notify: false);
             form.FillColorField?.SetValueWithoutNotify(inspectorPanelState.FillColor);
             form.StrokeColorField?.SetValueWithoutNotify(inspectorPanelState.StrokeColor);
             form.StrokeWidthField?.SetValueWithoutNotify(inspectorPanelState.StrokeWidth);
@@ -48,6 +50,10 @@ namespace UnitySvgEditor.Editor
             form.DashLengthField?.SetValueWithoutNotify(inspectorPanelState.DashLength);
             form.DashGapField?.SetValueWithoutNotify(inspectorPanelState.DashGap);
             form.TransformField?.SetValueWithoutNotify(inspectorPanelState.Transform);
+            form.FrameXField?.SetValueWithoutNotify(inspectorPanelState.FrameX);
+            form.FrameYField?.SetValueWithoutNotify(inspectorPanelState.FrameY);
+            form.FrameWidthField?.SetValueWithoutNotify(inspectorPanelState.FrameWidth);
+            form.FrameHeightField?.SetValueWithoutNotify(inspectorPanelState.FrameHeight);
             form.TranslateXField?.SetValueWithoutNotify(inspectorPanelState.TranslateX);
             form.TranslateYField?.SetValueWithoutNotify(inspectorPanelState.TranslateY);
             form.RotateField?.SetValueWithoutNotify(inspectorPanelState.Rotate);

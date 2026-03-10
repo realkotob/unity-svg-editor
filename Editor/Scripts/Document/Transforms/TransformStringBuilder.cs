@@ -67,7 +67,7 @@ namespace UnitySvgEditor.Editor
                 return true;
             }
 
-            var stage = 0;
+            var matrix = AffineTransform2D.Identity;
             var index = 0;
             while (index < transform.Length)
             {
@@ -109,43 +109,41 @@ namespace UnitySvgEditor.Editor
                     return false;
                 }
 
+                AffineTransform2D commandTransform;
                 switch (command)
                 {
                     case "translate":
-                        if (stage > 0 || args.Count is < 1 or > 2)
+                        if (args.Count is < 1 or > 2)
                         {
                             return false;
                         }
 
-                        translateX = args[0];
-                        translateY = args.Count > 1 ? args[1] : 0f;
-                        stage = 1;
+                        commandTransform = AffineTransform2D.Translate(args[0], args.Count > 1 ? args[1] : 0f);
                         break;
                     case "rotate":
-                        if (stage > 1 || args.Count != 1)
+                        if (args.Count != 1)
                         {
                             return false;
                         }
 
-                        rotate = args[0];
-                        stage = 2;
+                        commandTransform = AffineTransform2D.Rotate(args[0]);
                         break;
                     case "scale":
-                        if (stage > 2 || args.Count is < 1 or > 2)
+                        if (args.Count is < 1 or > 2)
                         {
                             return false;
                         }
 
-                        scaleX = args[0];
-                        scaleY = args.Count > 1 ? args[1] : args[0];
-                        stage = 3;
+                        commandTransform = AffineTransform2D.Scale(args[0], args.Count > 1 ? args[1] : args[0]);
                         break;
                     default:
                         return false;
                 }
+
+                matrix = matrix * commandTransform;
             }
 
-            return true;
+            return TryDecompose(matrix, out translateX, out translateY, out rotate, out scaleX, out scaleY);
         }
 
         private static bool TryParseArguments(string argsText, out List<float> values)
@@ -171,6 +169,85 @@ namespace UnitySvgEditor.Editor
             while (index < text.Length && char.IsWhiteSpace(text[index]))
             {
                 index++;
+            }
+        }
+
+        private static bool TryDecompose(
+            AffineTransform2D matrix,
+            out float translateX,
+            out float translateY,
+            out float rotate,
+            out float scaleX,
+            out float scaleY)
+        {
+            translateX = matrix.M02;
+            translateY = matrix.M12;
+            rotate = 0f;
+            scaleX = 1f;
+            scaleY = 1f;
+
+            var firstColumn = new Vector2(matrix.M00, matrix.M10);
+            if (firstColumn.sqrMagnitude <= Mathf.Epsilon)
+            {
+                return false;
+            }
+
+            scaleX = firstColumn.magnitude;
+            var rotationAxis = firstColumn / scaleX;
+            var shear = Vector2.Dot(new Vector2(matrix.M01, matrix.M11), rotationAxis);
+            if (Mathf.Abs(shear) > 0.0001f)
+            {
+                return false;
+            }
+
+            var secondAxis = new Vector2(-rotationAxis.y, rotationAxis.x);
+            scaleY = Vector2.Dot(new Vector2(matrix.M01, matrix.M11), secondAxis);
+            rotate = Mathf.Atan2(rotationAxis.y, rotationAxis.x) * Mathf.Rad2Deg;
+            return true;
+        }
+
+        private readonly struct AffineTransform2D
+        {
+            public static readonly AffineTransform2D Identity = new(1f, 0f, 0f, 0f, 1f, 0f);
+
+            public AffineTransform2D(float m00, float m01, float m02, float m10, float m11, float m12)
+            {
+                M00 = m00;
+                M01 = m01;
+                M02 = m02;
+                M10 = m10;
+                M11 = m11;
+                M12 = m12;
+            }
+
+            public float M00 { get; }
+            public float M01 { get; }
+            public float M02 { get; }
+            public float M10 { get; }
+            public float M11 { get; }
+            public float M12 { get; }
+
+            public static AffineTransform2D Translate(float x, float y) => new(1f, 0f, x, 0f, 1f, y);
+
+            public static AffineTransform2D Rotate(float degrees)
+            {
+                var radians = degrees * Mathf.Deg2Rad;
+                var cos = Mathf.Cos(radians);
+                var sin = Mathf.Sin(radians);
+                return new(cos, -sin, 0f, sin, cos, 0f);
+            }
+
+            public static AffineTransform2D Scale(float x, float y) => new(x, 0f, 0f, 0f, y, 0f);
+
+            public static AffineTransform2D operator *(AffineTransform2D lhs, AffineTransform2D rhs)
+            {
+                return new AffineTransform2D(
+                    lhs.M00 * rhs.M00 + lhs.M01 * rhs.M10,
+                    lhs.M00 * rhs.M01 + lhs.M01 * rhs.M11,
+                    lhs.M00 * rhs.M02 + lhs.M01 * rhs.M12 + lhs.M02,
+                    lhs.M10 * rhs.M00 + lhs.M11 * rhs.M10,
+                    lhs.M10 * rhs.M01 + lhs.M11 * rhs.M11,
+                    lhs.M10 * rhs.M02 + lhs.M11 * rhs.M12 + lhs.M12);
             }
         }
 

@@ -21,8 +21,8 @@ namespace UnitySvgEditor.Editor
 
         private readonly InspectorFormControls _form = new();
 
-        public event Action<string> TargetChanged;
         public event Action<ImmediateApplyField> ImmediateApplyRequested;
+        public event Action FrameRectChanged;
         public event Action TransformHelperChanged;
         public event Action TransformTextChanged;
         public event Action ReadRequested;
@@ -30,7 +30,6 @@ namespace UnitySvgEditor.Editor
         public event Action ApplyRequested;
 
         public bool IsBound => _form.IsBound;
-        public string SelectedTargetLabel => _form.SelectedTargetLabel;
         public bool FillEnabled => _form.FillEnabled;
         public bool StrokeEnabled => _form.StrokeEnabled;
         public bool StrokeWidthEnabled => _form.StrokeWidthEnabled;
@@ -38,7 +37,6 @@ namespace UnitySvgEditor.Editor
         public bool DasharrayEnabled => _form.DasharrayEnabled;
         public bool TransformEnabled => _form.TransformEnabled;
 
-        public VisualElement TargetControl => _form.TargetPopup;
         public VisualElement FillColorControl => _form.FillColorField;
         public VisualElement StrokeColorControl => _form.StrokeColorField;
         public VisualElement StrokeWidthControl => _form.StrokeWidthField;
@@ -46,6 +44,10 @@ namespace UnitySvgEditor.Editor
         public VisualElement DashLengthControl => _form.DashLengthField;
         public VisualElement DashGapControl => _form.DashGapField;
         public VisualElement TransformControl => _form.TransformField;
+        public VisualElement FrameXControl => _form.FrameXField;
+        public VisualElement FrameYControl => _form.FrameYField;
+        public VisualElement FrameWidthControl => _form.FrameWidthField;
+        public VisualElement FrameHeightControl => _form.FrameHeightField;
         public VisualElement LinecapControl => _form.LinecapPopup;
         public VisualElement LinejoinControl => _form.LinejoinPopup;
         public VisualElement TranslateXControl => _form.TranslateXField;
@@ -73,16 +75,6 @@ namespace UnitySvgEditor.Editor
             _form.Unbind();
         }
 
-        public void SetTargetChoices(IReadOnlyList<string> choices)
-        {
-            _form.SetTargetChoices(choices);
-        }
-
-        public void SetSelectedTargetLabel(string label, bool notify)
-        {
-            _form.SetSelectedTargetLabel(label, notify);
-        }
-
         public void SetTransformText(string transform)
         {
             _form.SetTransformText(transform);
@@ -100,12 +92,6 @@ namespace UnitySvgEditor.Editor
 
         private void RegisterCallbacks()
         {
-            if (_form.TargetPopup != null)
-            {
-                _form.TargetPopup.UnregisterValueChangedCallback(OnTargetChanged);
-                _form.TargetPopup.RegisterValueChangedCallback(OnTargetChanged);
-            }
-
             RegisterImmediateApplyCallback(_form.FillColorField, OnFillColorChanged);
             RegisterImmediateApplyCallback(_form.StrokeColorField, OnStrokeColorChanged);
             RegisterImmediateApplyCallback(_form.StrokeWidthField, OnStrokeWidthChanged);
@@ -114,6 +100,10 @@ namespace UnitySvgEditor.Editor
             RegisterImmediateApplyCallback(_form.DashGapField, OnStrokeDasharrayChanged);
             RegisterImmediateApplyCallback(_form.LinecapPopup, OnStrokeLinecapChanged);
             RegisterImmediateApplyCallback(_form.LinejoinPopup, OnStrokeLinejoinChanged);
+            RegisterFrameRectCallback(_form.FrameXField, OnFrameRectChanged);
+            RegisterFrameRectCallback(_form.FrameYField, OnFrameRectChanged);
+            RegisterFrameRectCallback(_form.FrameWidthField, OnFrameRectChanged);
+            RegisterFrameRectCallback(_form.FrameHeightField, OnFrameRectChanged);
             RegisterTransformHelperCallback(_form.TranslateXField, OnTransformHelperChanged);
             RegisterTransformHelperCallback(_form.TranslateYField, OnTransformHelperChanged);
             RegisterTransformHelperCallback(_form.RotateField, OnTransformHelperChanged);
@@ -131,9 +121,6 @@ namespace UnitySvgEditor.Editor
 
         private void UnregisterCallbacks()
         {
-            if (_form.TargetPopup != null)
-                _form.TargetPopup.UnregisterValueChangedCallback(OnTargetChanged);
-
             UnregisterImmediateApplyCallback(_form.FillColorField, OnFillColorChanged);
             UnregisterImmediateApplyCallback(_form.StrokeColorField, OnStrokeColorChanged);
             UnregisterImmediateApplyCallback(_form.StrokeWidthField, OnStrokeWidthChanged);
@@ -142,6 +129,10 @@ namespace UnitySvgEditor.Editor
             UnregisterImmediateApplyCallback(_form.DashGapField, OnStrokeDasharrayChanged);
             UnregisterImmediateApplyCallback(_form.LinecapPopup, OnStrokeLinecapChanged);
             UnregisterImmediateApplyCallback(_form.LinejoinPopup, OnStrokeLinejoinChanged);
+            UnregisterFrameRectCallback(_form.FrameXField, OnFrameRectChanged);
+            UnregisterFrameRectCallback(_form.FrameYField, OnFrameRectChanged);
+            UnregisterFrameRectCallback(_form.FrameWidthField, OnFrameRectChanged);
+            UnregisterFrameRectCallback(_form.FrameHeightField, OnFrameRectChanged);
             UnregisterTransformHelperCallback(_form.TranslateXField, OnTransformHelperChanged);
             UnregisterTransformHelperCallback(_form.TranslateYField, OnTransformHelperChanged);
             UnregisterTransformHelperCallback(_form.RotateField, OnTransformHelperChanged);
@@ -157,8 +148,6 @@ namespace UnitySvgEditor.Editor
                 _form.ApplyButton.clicked -= OnApplyRequested;
         }
 
-        private void OnTargetChanged(ChangeEvent<string> evt) => TargetChanged?.Invoke(evt.newValue ?? string.Empty);
-
         private void OnFillColorChanged(ChangeEvent<Color> evt) => ImmediateApplyRequested?.Invoke(ImmediateApplyField.FillColor);
 
         private void OnStrokeColorChanged(ChangeEvent<Color> evt) => ImmediateApplyRequested?.Invoke(ImmediateApplyField.StrokeColor);
@@ -172,6 +161,8 @@ namespace UnitySvgEditor.Editor
         private void OnStrokeLinejoinChanged(ChangeEvent<string> evt) => ImmediateApplyRequested?.Invoke(ImmediateApplyField.StrokeLinejoin);
 
         private void OnStrokeDasharrayChanged(ChangeEvent<float> evt) => ImmediateApplyRequested?.Invoke(ImmediateApplyField.StrokeDasharray);
+
+        private void OnFrameRectChanged(ChangeEvent<float> evt) => FrameRectChanged?.Invoke();
 
         private void OnTransformHelperChanged(ChangeEvent<float> evt) => TransformHelperChanged?.Invoke();
 
@@ -239,6 +230,27 @@ namespace UnitySvgEditor.Editor
         private static void UnregisterImmediateApplyCallback(
             PopupField<string> field,
             EventCallback<ChangeEvent<string>> callback)
+        {
+            if (field == null)
+                return;
+
+            field.UnregisterValueChangedCallback(callback);
+        }
+
+        private static void RegisterFrameRectCallback(
+            BaseField<float> field,
+            EventCallback<ChangeEvent<float>> callback)
+        {
+            if (field == null)
+                return;
+
+            field.UnregisterValueChangedCallback(callback);
+            field.RegisterValueChangedCallback(callback);
+        }
+
+        private static void UnregisterFrameRectCallback(
+            BaseField<float> field,
+            EventCallback<ChangeEvent<float>> callback)
         {
             if (field == null)
                 return;

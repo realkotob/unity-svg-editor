@@ -1,4 +1,4 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:toggle="Core.UI.Foundation.Components.Toggle" xmlns:togglegroup="Core.UI.Foundation.Components.ToggleGroup" xmlns:svg="UnitySvgEditor.Editor" editor-extension-mode="True">
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:toggle="Core.UI.Foundation.Components.Toggle" xmlns:togglegroup="Core.UI.Foundation.Components.ToggleGroup" xmlns:button="Core.UI.Foundation.Components.Button" xmlns:drag="Core.UI.Foundation.Components.DragNumberField" xmlns:svg="UnitySvgEditor.Editor" editor-extension-mode="True">
     <ui:VisualElement class="svg-editor">
         <ui:TwoPaneSplitView name="main-split" fixed-pane-index="0" fixed-pane-initial-dimension="240" orientation="Horizontal" class="svg-editor__main-split">
             <ui:VisualElement name="asset-panel" class="svg-editor__asset-panel">
@@ -29,23 +29,38 @@
                     <ui:VisualElement name="design-inspector" class="svg-editor__inspector-mode">
                         <ui:VisualElement name="position-panel" class="svg-editor__inspector-section svg-editor__inspector-card">
                             <ui:Label text="Position" class="svg-editor__subsection-title"/>
+                            <ui:Label text="Alignment" class="svg-editor__inspector-meta-label"/>
+                            <ui:VisualElement class="svg-editor__inspector-row svg-editor__position-action-row">
+                                <button:ButtonGroup class="svg-editor__position-button-group">
+                                    <button:Button label="L" variant="Ghost" size="Small"/>
+                                    <button:Button label="C" variant="Ghost" size="Small"/>
+                                    <button:Button label="R" variant="Ghost" size="Small"/>
+                                </button:ButtonGroup>
+                                <button:ButtonGroup class="svg-editor__position-button-group svg-editor__position-button-group--last">
+                                    <button:Button label="T" variant="Ghost" size="Small"/>
+                                    <button:Button label="M" variant="Ghost" size="Small"/>
+                                    <button:Button label="B" variant="Ghost" size="Small"/>
+                                </button:ButtonGroup>
+                            </ui:VisualElement>
+                            <ui:Label text="Position" class="svg-editor__inspector-meta-label"/>
                             <ui:VisualElement class="svg-editor__inspector-row">
-                                <ui:FloatField name="inspector-translate-x" label="X" value="0" class="svg-editor__inspector-field"/>
-                                <ui:FloatField name="inspector-translate-y" label="Y" value="0" class="svg-editor__inspector-field svg-editor__inspector-field--last"/>
+                                <drag:DragNumberField name="inspector-frame-x" prefix="X" value="0" drag-step="1" drag-sensitivity="0.25" class="svg-editor__inspector-field"/>
+                                <drag:DragNumberField name="inspector-frame-y" prefix="Y" value="0" drag-step="1" drag-sensitivity="0.25" class="svg-editor__inspector-field svg-editor__inspector-field--last"/>
                             </ui:VisualElement>
                             <ui:VisualElement class="svg-editor__inspector-row">
-                                <ui:FloatField name="inspector-rotate" label="Rotation" value="0" class="svg-editor__inspector-field"/>
-                                <ui:FloatField name="inspector-scale-x" label="Scale X" value="1" class="svg-editor__inspector-field svg-editor__inspector-field--last"/>
+                                <drag:DragNumberField name="inspector-frame-width" prefix="W" value="0" min-value="0" drag-step="1" drag-sensitivity="0.25" class="svg-editor__inspector-field"/>
+                                <drag:DragNumberField name="inspector-frame-height" prefix="H" value="0" min-value="0" drag-step="1" drag-sensitivity="0.25" class="svg-editor__inspector-field svg-editor__inspector-field--last"/>
                             </ui:VisualElement>
-                            <ui:VisualElement class="svg-editor__inspector-row">
-                                <ui:FloatField name="inspector-scale-y" label="Scale Y" value="1" class="svg-editor__inspector-field"/>
-                                <ui:Button name="inspector-build-transform" text="Build Transform" class="svg-editor__inspector-btn svg-editor__inspector-btn--last"/>
-                            </ui:VisualElement>
-                            <ui:VisualElement class="svg-editor__inspector-field">
-                                <ui:TextField name="inspector-transform" label="Transform" multiline="true"/>
+                            <ui:Label text="Rotation" class="svg-editor__inspector-meta-label"/>
+                            <ui:VisualElement class="svg-editor__inspector-row svg-editor__position-action-row">
+                                <drag:DragNumberField name="inspector-rotate" prefix-icon-class="icon-refresh-ccw" value="0" drag-step="1" drag-sensitivity="0.1" class="svg-editor__inspector-field"/>
+                                <button:ButtonGroup class="svg-editor__position-button-group svg-editor__position-button-group--last">
+                                    <button:Button label="0" variant="Ghost" size="Small"/>
+                                    <button:Button label="H" variant="Ghost" size="Small"/>
+                                    <button:Button label="V" variant="Ghost" size="Small"/>
+                                </button:ButtonGroup>
                             </ui:VisualElement>
                         </ui:VisualElement>
-                        <Core.UI.Foundation.Components.Separator.Separator class="svg-editor__inspector-separator"/>
                         <ui:VisualElement name="appearance-panel" class="svg-editor__inspector-section svg-editor__inspector-card">
                             <ui:Label text="Appearance" class="svg-editor__subsection-title"/>
                             <ui:VisualElement class="svg-editor__inspector-field">
@@ -79,6 +94,16 @@
                             <ui:VisualElement class="svg-editor__inspector-row">
                                 <ui:FloatField name="inspector-dash-length" label="Dash" value="4" class="svg-editor__inspector-field"/>
                                 <ui:FloatField name="inspector-dash-gap" label="Gap" value="2" class="svg-editor__inspector-field svg-editor__inspector-field--last"/>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                        <Core.UI.Foundation.Components.Separator.Separator class="svg-editor__inspector-separator"/>
+                        <ui:VisualElement name="advanced-transform-panel" class="svg-editor__inspector-section svg-editor__inspector-card">
+                            <ui:Label text="Advanced" class="svg-editor__subsection-title"/>
+                            <ui:VisualElement class="svg-editor__inspector-row">
+                                <ui:Button name="inspector-build-transform" text="Rebuild Transform" class="svg-editor__inspector-btn svg-editor__inspector-btn--last"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="svg-editor__inspector-field svg-editor__advanced-transform-field">
+                                <ui:TextField name="inspector-transform" label="Transform" multiline="true" class="svg-editor__advanced-transform-field"/>
                             </ui:VisualElement>
                         </ui:VisualElement>
                     </ui:VisualElement>

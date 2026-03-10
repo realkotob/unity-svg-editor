@@ -11,6 +11,7 @@ namespace UnitySvgEditor.Editor
 
         void RefreshLivePreview(bool keepExistingPreviewOnFailure);
         bool TryRefreshTransientPreview(string sourceText);
+        void RefreshInspectorFromSource(string sourceText);
         void ApplyUpdatedSource(string updatedSource, string successStatus);
         void UpdateSourceStatus(string status);
         StructureNode FindStructureNode(string elementKey);
