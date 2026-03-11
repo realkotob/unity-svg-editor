@@ -85,7 +85,7 @@ namespace UnitySvgEditor.Editor
                 LegacyTargetKey = isRoot
                     ? SvgDocumentTargets.RootTargetKey
                     : legacyElementKey,
-                TextContent = IsTextTag(element.LocalName) ? element.InnerText?.Trim() ?? string.Empty : string.Empty,
+                TextContent = IsTextTag(element.LocalName) ? BuildDirectTextContent(element) : string.Empty,
                 Depth = depth,
                 SiblingIndex = siblingIndex,
                 IsDefinitionNode = isDefinitionNode && !isRoot,
@@ -220,6 +220,23 @@ namespace UnitySvgEditor.Editor
             return string.Equals(localName, "text", StringComparison.OrdinalIgnoreCase) ||
                    string.Equals(localName, "tspan", StringComparison.OrdinalIgnoreCase) ||
                    string.Equals(localName, "textPath", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string BuildDirectTextContent(XmlElement element)
+        {
+            if (element == null || !element.HasChildNodes)
+                return string.Empty;
+
+            System.Text.StringBuilder builder = new();
+            foreach (XmlNode child in element.ChildNodes)
+            {
+                if (child == null || child.NodeType != XmlNodeType.Text)
+                    continue;
+
+                builder.Append(child.InnerText);
+            }
+
+            return builder.ToString().Trim();
         }
 
         private static bool IsShapeTag(string localName)

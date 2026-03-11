@@ -19,8 +19,33 @@ namespace UnitySvgEditor.Editor
             if (string.IsNullOrWhiteSpace(elementKey) || previewSnapshot?.Elements == null)
                 return null;
 
-            return previewSnapshot.Elements.FirstOrDefault(item =>
-                string.Equals(item.Key, elementKey, StringComparison.Ordinal));
+            PreviewElementGeometry bestMatch = null;
+            float bestArea = float.MinValue;
+            int bestDrawOrder = int.MinValue;
+
+            for (int index = 0; index < previewSnapshot.Elements.Count; index++)
+            {
+                PreviewElementGeometry candidate = previewSnapshot.Elements[index];
+                if (candidate == null || !string.Equals(candidate.Key, elementKey, StringComparison.Ordinal))
+                    continue;
+
+                float area = candidate.VisualBounds.width * candidate.VisualBounds.height;
+                bool isBetter =
+                    bestMatch == null ||
+                    (candidate.IsTextOverlay && !bestMatch.IsTextOverlay) ||
+                    (candidate.IsTextOverlay == bestMatch.IsTextOverlay &&
+                     (area > bestArea ||
+                      (Mathf.Approximately(area, bestArea) && candidate.DrawOrder > bestDrawOrder)));
+
+                if (!isBetter)
+                    continue;
+
+                bestMatch = candidate;
+                bestArea = area;
+                bestDrawOrder = candidate.DrawOrder;
+            }
+
+            return bestMatch;
         }
 
         public bool TryHitTestFrame(CanvasViewportState viewportState, Vector2 canvasLocalPoint, out Rect frameViewportRect)

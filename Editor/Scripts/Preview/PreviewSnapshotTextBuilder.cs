@@ -14,7 +14,15 @@ namespace UnitySvgEditor.Editor
             if (documentModel?.Root == null)
                 return overlays;
 
-            BuildNodeOverlays(documentModel, documentModel.Root, Matrix2D.identity, overlays);
+            BuildNodeOverlays(documentModel, documentModel.Root, Matrix2D.identity, new TextStyleContext
+            {
+                ScenePosition = Vector2.zero,
+                HasPosition = false,
+                FontSize = 16f,
+                Color = Color.white,
+                TextAnchor = "start",
+                WorldTransform = Matrix2D.identity
+            }, overlays);
             return overlays;
         }
 
@@ -56,6 +64,7 @@ namespace UnitySvgEditor.Editor
             SvgDocumentModel documentModel,
             SvgNodeModel node,
             Matrix2D parentWorldTransform,
+            TextStyleContext inheritedStyle,
             List<PreviewTextOverlay> overlays)
         {
             if (node == null)
@@ -63,23 +72,23 @@ namespace UnitySvgEditor.Editor
 
             Matrix2D localTransform = ParseTransform(node.RawAttributes);
             Matrix2D worldTransform = parentWorldTransform * localTransform;
+            TextStyleContext currentStyle = ResolveTextStyle(node, inheritedStyle, worldTransform);
 
             if (node.Kind == SvgNodeKind.Text &&
                 !string.IsNullOrWhiteSpace(node.TextContent) &&
-                TryGetFloat(node.RawAttributes, "x", out float x) &&
-                TryGetFloat(node.RawAttributes, "y", out float y))
+                currentStyle.HasPosition)
             {
                 PreviewTextOverlay overlay = new PreviewTextOverlay
                 {
                     Key = node.LegacyElementKey,
                     TargetKey = node.LegacyTargetKey,
                     Text = node.TextContent,
-                    ScenePosition = worldTransform.MultiplyPoint(new Vector2(x, y)),
-                    FontSize = TryGetFloat(node.RawAttributes, "font-size", out float fontSize) ? Mathf.Max(1f, fontSize) : 16f,
-                    Color = TryGetColor(node.RawAttributes, "fill", out Color color) ? color : Color.white,
-                    TextAnchor = TryGetAttribute(node.RawAttributes, "text-anchor", out string textAnchor)
-                        ? textAnchor
-                        : "start"
+                    ScenePosition = currentStyle.ScenePosition,
+                    FontSize = currentStyle.FontSize,
+                    WidthScale = currentStyle.ScaleX,
+                    HeightScale = currentStyle.ScaleY,
+                    Color = currentStyle.Color,
+                    TextAnchor = currentStyle.TextAnchor
                 };
                 overlay.SceneBounds = EstimateTextBounds(overlay);
                 overlays.Add(overlay);
@@ -91,8 +100,56 @@ namespace UnitySvgEditor.Editor
                 if (!documentModel.TryGetNode(childId, out SvgNodeModel childNode) || childNode == null)
                     continue;
 
-                BuildNodeOverlays(documentModel, childNode, worldTransform, overlays);
+                BuildNodeOverlays(documentModel, childNode, worldTransform, currentStyle, overlays);
             }
+        }
+
+        private static TextStyleContext ResolveTextStyle(
+            SvgNodeModel node,
+            TextStyleContext inheritedStyle,
+            Matrix2D worldTransform)
+        {
+            TextStyleContext style = inheritedStyle;
+            style.WorldTransform = worldTransform;
+
+            if (TryGetFloat(node.RawAttributes, "font-size", out float fontSize))
+                style.FontSize = Mathf.Max(1f, fontSize);
+
+            if (TryGetColor(node.RawAttributes, "fill", out Color color))
+                style.Color = color;
+
+            if (TryGetAttribute(node.RawAttributes, "text-anchor", out string textAnchor))
+                style.TextAnchor = textAnchor;
+
+            bool hasX = TryGetFloat(node.RawAttributes, "x", out float x);
+            bool hasY = TryGetFloat(node.RawAttributes, "y", out float y);
+            bool hasDx = TryGetFloat(node.RawAttributes, "dx", out float dx);
+            bool hasDy = TryGetFloat(node.RawAttributes, "dy", out float dy);
+
+            Vector2 scenePosition = style.ScenePosition;
+            bool hasPosition = style.HasPosition;
+
+            if (hasX || hasY)
+            {
+                float localX = hasX ? x : 0f;
+                float localY = hasY ? y : 0f;
+                scenePosition = worldTransform.MultiplyPoint(new Vector2(localX, localY));
+                hasPosition = true;
+            }
+
+            if (hasDx || hasDy)
+            {
+                Vector2 delta = worldTransform.MultiplyVector(new Vector2(hasDx ? dx : 0f, hasDy ? dy : 0f));
+                scenePosition += delta;
+                hasPosition = true;
+            }
+
+            style.ScenePosition = scenePosition;
+            style.HasPosition = hasPosition;
+            ResolveScale(worldTransform, out float scaleX, out float scaleY);
+            style.ScaleX = scaleX;
+            style.ScaleY = scaleY;
+            return style;
         }
 
         private static Matrix2D ParseTransform(IReadOnlyDictionary<string, string> attributes)
@@ -233,8 +290,10 @@ namespace UnitySvgEditor.Editor
 
         private static Rect EstimateTextBounds(PreviewTextOverlay overlay)
         {
-            float fontSize = Mathf.Max(1f, overlay.FontSize);
-            float width = Mathf.Max(fontSize * 0.5f, overlay.Text.Length * fontSize * 0.55f);
+            float heightScale = Mathf.Max(0.01f, overlay.HeightScale);
+            float widthScale = Mathf.Max(0.01f, overlay.WidthScale);
+            float fontSize = Mathf.Max(1f, overlay.FontSize * heightScale);
+            float width = Mathf.Max(fontSize * 0.5f, overlay.Text.Length * overlay.FontSize * 0.55f * widthScale);
             float height = fontSize * 1.2f;
             float x = overlay.ScenePosition.x;
             float y = overlay.ScenePosition.y - fontSize;
@@ -245,6 +304,17 @@ namespace UnitySvgEditor.Editor
                 x -= width;
 
             return new Rect(x, y, width, height);
+        }
+
+        private static void ResolveScale(Matrix2D matrix, out float scaleX, out float scaleY)
+        {
+            scaleX = new Vector2(matrix.m00, matrix.m10).magnitude;
+            scaleY = new Vector2(matrix.m01, matrix.m11).magnitude;
+
+            if (scaleX <= Mathf.Epsilon)
+                scaleX = 1f;
+            if (scaleY <= Mathf.Epsilon)
+                scaleY = 1f;
         }
 
         private static IReadOnlyList<Vector2[]> BuildRectHitGeometry(Rect bounds)
@@ -258,6 +328,18 @@ namespace UnitySvgEditor.Editor
                 new[] { topLeft, topRight, bottomRight },
                 new[] { topLeft, bottomRight, bottomLeft }
             };
+        }
+
+        private struct TextStyleContext
+        {
+            public Vector2 ScenePosition { get; set; }
+            public bool HasPosition { get; set; }
+            public float FontSize { get; set; }
+            public float ScaleX { get; set; }
+            public float ScaleY { get; set; }
+            public Color Color { get; set; }
+            public string TextAnchor { get; set; }
+            public Matrix2D WorldTransform { get; set; }
         }
     }
 }

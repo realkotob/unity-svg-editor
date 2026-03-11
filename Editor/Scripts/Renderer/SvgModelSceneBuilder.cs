@@ -164,6 +164,10 @@ namespace UnitySvgEditor.Editor
                     return TryAddEllipseShape(documentModel, node, nodesByXmlId, sceneNode, out error);
                 case "line":
                     return TryAddLineShape(documentModel, node, nodesByXmlId, sceneNode, out error);
+                case "polyline":
+                    return TryAddPolylineShape(documentModel, node, nodesByXmlId, sceneNode, out error, closed: false);
+                case "polygon":
+                    return TryAddPolylineShape(documentModel, node, nodesByXmlId, sceneNode, out error, closed: true);
                 case "path":
                     return TryAddPathShape(documentModel, node, nodesByXmlId, sceneNode, out error);
                 case "text":
@@ -320,6 +324,46 @@ namespace UnitySvgEditor.Editor
             Shape shape = CreateStyledShape(documentModel, node, nodesByXmlId, allowDefaultFill: false);
             shape.Contours = contours;
             shape.IsConvex = false;
+            sceneNode.Shapes.Add(shape);
+            return true;
+        }
+
+        private bool TryAddPolylineShape(
+            SvgDocumentModel documentModel,
+            SvgNodeModel node,
+            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
+            SceneNode sceneNode,
+            out string error,
+            bool closed)
+        {
+            error = string.Empty;
+            if (!TryGetAttribute(node.RawAttributes, "points", out string pointsText) ||
+                !TryParsePoints(pointsText, out List<Vector2> points) ||
+                points.Count < 2)
+            {
+                error = $"Polyline data on '{node.LegacyElementKey}' was invalid.";
+                return false;
+            }
+
+            List<BezierSegment> segments = new();
+            for (int index = 1; index < points.Count; index++)
+            {
+                segments.Add(VectorUtils.MakeLine(points[index - 1], points[index]));
+            }
+
+            if (closed && (points[0] - points[^1]).sqrMagnitude > Mathf.Epsilon)
+                segments.Add(VectorUtils.MakeLine(points[^1], points[0]));
+
+            Shape shape = CreateStyledShape(documentModel, node, nodesByXmlId, allowDefaultFill: closed);
+            shape.Contours = new[]
+            {
+                new BezierContour
+                {
+                    Segments = VectorUtils.BezierSegmentsToPath(segments.ToArray()),
+                    Closed = closed
+                }
+            };
+            shape.IsConvex = closed;
             sceneNode.Shapes.Add(shape);
             return true;
         }
@@ -1124,6 +1168,26 @@ namespace UnitySvgEditor.Editor
 
             return index > start &&
                    TryParseFloat(text.Substring(start, index - start), out value);
+        }
+
+        private static bool TryParsePoints(string pointsText, out List<Vector2> points)
+        {
+            points = new List<Vector2>();
+            if (string.IsNullOrWhiteSpace(pointsText))
+                return false;
+
+            int index = 0;
+            while (index < pointsText.Length)
+            {
+                if (!TryReadFloatToken(pointsText, ref index, out float x))
+                    break;
+                if (!TryReadFloatToken(pointsText, ref index, out float y))
+                    return false;
+
+                points.Add(new Vector2(x, y));
+            }
+
+            return points.Count >= 2;
         }
 
         private static Matrix2D ParseTransform(IReadOnlyDictionary<string, string> attributes)
