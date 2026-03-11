@@ -93,6 +93,9 @@ namespace UnitySvgEditor.Editor
                 Transform = ParseTransform(node.RawAttributes)
             };
 
+            if (!TryAttachClipper(documentModel, nodesByXmlId, node, sceneNode, out error))
+                return false;
+
             if (!TryBuildShapes(documentModel, nodesByXmlId, node, sceneNode, out error))
                 return false;
 
@@ -343,6 +346,9 @@ namespace UnitySvgEditor.Editor
                 Transform = ParseTransform(node.RawAttributes)
             };
 
+            if (!TryAttachClipper(documentModel, nodesByXmlId, node, sceneNode, out error))
+                return false;
+
             if (!TryBuildShapes(documentModel, nodesByXmlId, node, sceneNode, out error))
                 return false;
 
@@ -360,6 +366,77 @@ namespace UnitySvgEditor.Editor
                     if (childSceneNode != null)
                         sceneNode.Children.Add(childSceneNode);
                 }
+            }
+
+            return true;
+        }
+
+        private bool TryAttachClipper(
+            SvgDocumentModel documentModel,
+            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
+            SvgNodeModel node,
+            SceneNode sceneNode,
+            out string error)
+        {
+            error = string.Empty;
+            if (!TryGetAttribute(node?.RawAttributes, "clip-path", out string clipPathValue))
+                return true;
+
+            if (!TryExtractFragmentId(clipPathValue, out string fragmentId) ||
+                nodesByXmlId == null ||
+                !nodesByXmlId.TryGetValue(fragmentId, out SvgNodeModel clipNode) ||
+                !string.Equals(clipNode.TagName, "clipPath", StringComparison.OrdinalIgnoreCase))
+            {
+                error = $"Direct renderer could not resolve clipPath for '{node?.LegacyElementKey}'.";
+                return false;
+            }
+
+            if (!TryBuildClipNode(documentModel, nodesByXmlId, clipNode, out SceneNode clipSceneNode, out error))
+                return false;
+
+            sceneNode.Clipper = clipSceneNode;
+            return true;
+        }
+
+        private bool TryBuildClipNode(
+            SvgDocumentModel documentModel,
+            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
+            SvgNodeModel clipNode,
+            out SceneNode sceneNode,
+            out string error)
+        {
+            sceneNode = new SceneNode
+            {
+                Children = new List<SceneNode>(),
+                Shapes = new List<Shape>(),
+                Transform = ParseTransform(clipNode?.RawAttributes)
+            };
+            error = string.Empty;
+
+            if (clipNode == null)
+            {
+                error = "Clip node was null.";
+                return false;
+            }
+
+            for (int index = 0; index < clipNode.Children.Count; index++)
+            {
+                SvgNodeId childId = clipNode.Children[index];
+                if (!documentModel.TryGetNode(childId, out SvgNodeModel childNode) || childNode == null || IsHidden(childNode))
+                    continue;
+
+                SceneNode clipChildNode = new()
+                {
+                    Children = new List<SceneNode>(),
+                    Shapes = new List<Shape>(),
+                    Transform = ParseTransform(childNode.RawAttributes)
+                };
+
+                if (!TryBuildShapes(documentModel, nodesByXmlId, childNode, clipChildNode, out error))
+                    return false;
+
+                if (clipChildNode.Shapes.Count > 0 || clipChildNode.Children.Count > 0)
+                    sceneNode.Children.Add(clipChildNode);
             }
 
             return true;
