@@ -17,7 +17,6 @@ namespace UnitySvgEditor.Editor
         private bool _hasPendingFrameRectApply;
 
         public InspectorPanelController(
-            AttributePatcher attributePatcher,
             InspectorPanelState inspectorPanelState,
             System.Action<System.Action> scheduleDeferredCall = null,
             System.Action<System.Action> unscheduleDeferredCall = null)
@@ -26,11 +25,10 @@ namespace UnitySvgEditor.Editor
             _unscheduleDeferredCall = unscheduleDeferredCall ?? UnscheduleDeferredCall;
             _view = new InspectorPanelView();
             _targetSyncService = new InspectorTargetSyncService(
-                attributePatcher,
                 inspectorPanelState,
                 _view,
                 () => _host,
-                () => UpdateInteractivity(_host?.CurrentDocument != null));
+                () => UpdateInteractivity(HasInspectableDocument()));
 
             _view.ImmediateApplyRequested += OnImmediateApplyRequested;
             _view.FrameRectChanged += OnFrameRectChanged;
@@ -39,6 +37,16 @@ namespace UnitySvgEditor.Editor
             _view.ReadRequested += OnReadTargetClicked;
             _view.BuildTransformRequested += OnBuildTransformClicked;
             _view.ApplyRequested += OnApplyPatchClicked;
+            _view.PositionActionRequested += OnPositionActionRequested;
+        }
+
+        public InspectorPanelController(
+            AttributePatcher attributePatcher,
+            InspectorPanelState inspectorPanelState,
+            System.Action<System.Action> scheduleDeferredCall = null,
+            System.Action<System.Action> unscheduleDeferredCall = null)
+            : this(inspectorPanelState, scheduleDeferredCall, unscheduleDeferredCall)
+        {
         }
 
         private static void ScheduleDeferredCall(System.Action callback)
@@ -68,7 +76,7 @@ namespace UnitySvgEditor.Editor
 
             _host = host;
             _targetSyncService.ApplyCurrentStateToView();
-            UpdateInteractivity(_host?.CurrentDocument != null);
+            UpdateInteractivity(HasInspectableDocument());
         }
 
         public void Unbind()
@@ -107,6 +115,14 @@ namespace UnitySvgEditor.Editor
 
         public string ResolveSelectedTargetKey() => _targetSyncService.ResolveSelectedTargetKey();
 
+        private bool HasInspectableDocument()
+        {
+            var currentDocument = _host?.CurrentDocument;
+            return currentDocument?.DocumentModel != null &&
+                   string.IsNullOrWhiteSpace(currentDocument.DocumentModelLoadError) &&
+                   string.Equals(currentDocument.DocumentModel.SourceText, currentDocument.WorkingSourceText, System.StringComparison.Ordinal);
+        }
+
         public void UpdateInteractivity(bool hasDocument)
         {
             SetEnabledIfNotNull(_view.FillColorControl, hasDocument);
@@ -127,6 +143,15 @@ namespace UnitySvgEditor.Editor
             SetEnabledIfNotNull(_view.RotateControl, hasDocument);
             SetEnabledIfNotNull(_view.ScaleXControl, hasDocument);
             SetEnabledIfNotNull(_view.ScaleYControl, hasDocument);
+            SetEnabledIfNotNull(_view.PositionAlignLeftControl, hasDocument);
+            SetEnabledIfNotNull(_view.PositionAlignCenterControl, hasDocument);
+            SetEnabledIfNotNull(_view.PositionAlignRightControl, hasDocument);
+            SetEnabledIfNotNull(_view.PositionAlignTopControl, hasDocument);
+            SetEnabledIfNotNull(_view.PositionAlignMiddleControl, hasDocument);
+            SetEnabledIfNotNull(_view.PositionAlignBottomControl, hasDocument);
+            SetEnabledIfNotNull(_view.PositionRotateResetControl, hasDocument);
+            SetEnabledIfNotNull(_view.PositionFlipHorizontalControl, hasDocument);
+            SetEnabledIfNotNull(_view.PositionFlipVerticalControl, hasDocument);
             SetEnabledIfNotNull(_view.ReadButtonControl, hasDocument);
             SetEnabledIfNotNull(_view.BuildTransformButtonControl, hasDocument);
             SetEnabledIfNotNull(_view.ApplyButtonControl, hasDocument);
@@ -145,6 +170,8 @@ namespace UnitySvgEditor.Editor
         private void OnBuildTransformClicked() => _targetSyncService.BuildTransformFromHelper();
 
         private void OnReadTargetClicked() => _targetSyncService.ReadSelectedTargetAttributes();
+
+        private void OnPositionActionRequested(InspectorPanelView.PositionAction action) => _targetSyncService.ApplyPositionAction(action);
 
         private static void SetEnabledIfNotNull(VisualElement element, bool enabled)
         {

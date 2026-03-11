@@ -62,7 +62,7 @@ namespace UnitySvgEditor.Editor
         public SvgEditorWindow()
         {
             _assetLibraryBrowser = new AssetLibraryBrowser(_documentRepository);
-            _inspectorPanelController = new InspectorPanelController(new AttributePatcher(), new InspectorPanelState());
+            _inspectorPanelController = new InspectorPanelController(new InspectorPanelState());
             _documentLifecycleController = new DocumentLifecycleController(
                 _documentRepository,
                 _previewSnapshotBuilder,
@@ -227,10 +227,14 @@ namespace UnitySvgEditor.Editor
 
         private void UpdateEditorInteractivity()
         {
-            var hasDocument = _documentLifecycleController.CurrentDocument != null;
+            var currentDocument = _documentLifecycleController.CurrentDocument;
+            var hasDocument = currentDocument != null;
+            var hasInspectableDocument = currentDocument?.DocumentModel != null &&
+                                         string.IsNullOrWhiteSpace(currentDocument.DocumentModelLoadError) &&
+                                         string.Equals(currentDocument.DocumentModel.SourceText, currentDocument.WorkingSourceText, StringComparison.Ordinal);
 
             _documentLifecycleController.UpdateInteractivity();
-            _inspectorPanelController.UpdateInteractivity(hasDocument);
+            _inspectorPanelController.UpdateInteractivity(hasInspectableDocument);
             WorkspaceCoordinator.UpdateStructureInteractivity(hasDocument);
         }
 
@@ -268,6 +272,38 @@ namespace UnitySvgEditor.Editor
             }
 
             return false;
+        }
+        bool IInspectorPanelHost.TryGetTargetParentWorldTransform(string targetKey, out Matrix2D parentWorldTransform)
+        {
+            parentWorldTransform = Matrix2D.identity;
+            var snapshot = _documentLifecycleController.PreviewSnapshot;
+            if (snapshot?.Elements == null || string.IsNullOrWhiteSpace(targetKey))
+                return false;
+
+            for (var i = 0; i < snapshot.Elements.Count; i++)
+            {
+                var element = snapshot.Elements[i];
+                if (element == null)
+                    continue;
+
+                if (!string.Equals(element.TargetKey, targetKey, StringComparison.Ordinal))
+                    continue;
+
+                parentWorldTransform = element.ParentWorldTransform;
+                return true;
+            }
+
+            return false;
+        }
+        bool IInspectorPanelHost.TryGetCanvasViewportSceneRect(out Rect sceneRect)
+        {
+            sceneRect = default;
+            var snapshot = _documentLifecycleController.PreviewSnapshot;
+            if (snapshot == null)
+                return false;
+
+            sceneRect = snapshot.CanvasViewportRect;
+            return sceneRect.width > 0f || sceneRect.height > 0f;
         }
         void IInspectorPanelHost.SyncSelectionFromInspectorTarget(string targetKey) => WorkspaceCoordinator.SyncSelectionFromInspectorTarget(targetKey);
         void IInspectorPanelHost.UpdateSourceStatus(string status) => UpdateSourceStatus(status);

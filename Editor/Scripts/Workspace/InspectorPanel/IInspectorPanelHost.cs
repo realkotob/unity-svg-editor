@@ -1,3 +1,4 @@
+using Unity.VectorGraphics;
 using UnityEngine;
 
 namespace UnitySvgEditor.Editor
@@ -9,6 +10,8 @@ namespace UnitySvgEditor.Editor
         bool TryApplyPatchRequest(AttributePatchRequest request, string successStatus);
         bool TryApplyTargetFrameRect(string targetKey, Rect targetSceneRect, string successStatus);
         bool TryGetTargetSceneRect(string targetKey, out Rect sceneRect);
+        bool TryGetTargetParentWorldTransform(string targetKey, out Matrix2D parentWorldTransform);
+        bool TryGetCanvasViewportSceneRect(out Rect sceneRect);
         void SyncSelectionFromInspectorTarget(string targetKey);
         void UpdateSourceStatus(string status);
     }

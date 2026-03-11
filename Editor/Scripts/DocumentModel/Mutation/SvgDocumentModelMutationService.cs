@@ -12,17 +12,17 @@ namespace UnitySvgEditor.Editor
             if (request == null)
                 return false;
 
-            return request.Transform == null &&
-                   request.Display == null &&
-                   (request.Fill != null ||
-                    request.Stroke != null ||
-                    request.StrokeWidth != null ||
-                    request.Opacity != null ||
-                    request.FillOpacity != null ||
-                    request.StrokeOpacity != null ||
-                    request.StrokeLinecap != null ||
-                    request.StrokeLinejoin != null ||
-                    request.StrokeDasharray != null);
+            return request.Fill != null ||
+                   request.Stroke != null ||
+                   request.StrokeWidth != null ||
+                   request.Opacity != null ||
+                   request.FillOpacity != null ||
+                   request.StrokeOpacity != null ||
+                   request.StrokeLinecap != null ||
+                   request.StrokeLinejoin != null ||
+                   request.StrokeDasharray != null ||
+                   request.Transform != null ||
+                   request.Display != null;
         }
 
         public bool TryApplyAttributePatch(
@@ -65,6 +65,8 @@ namespace UnitySvgEditor.Editor
             ApplyAttribute(attributes, "stroke-linecap", request.StrokeLinecap);
             ApplyAttribute(attributes, "stroke-linejoin", request.StrokeLinejoin);
             ApplyAttribute(attributes, "stroke-dasharray", request.StrokeDasharray);
+            ApplyAttribute(attributes, "transform", request.Transform);
+            ApplyAttribute(attributes, "display", request.Display);
 
             targetNode.RawAttributes = attributes;
             targetNode.References = RebuildReferences(attributes);

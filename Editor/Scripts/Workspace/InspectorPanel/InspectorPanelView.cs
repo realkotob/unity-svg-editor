@@ -19,6 +19,19 @@ namespace UnitySvgEditor.Editor
             StrokeDasharray
         }
 
+        internal enum PositionAction
+        {
+            AlignLeft,
+            AlignCenter,
+            AlignRight,
+            AlignTop,
+            AlignMiddle,
+            AlignBottom,
+            RotateReset,
+            FlipHorizontal,
+            FlipVertical
+        }
+
         private readonly InspectorFormControls _form = new();
 
         public event Action<ImmediateApplyField> ImmediateApplyRequested;
@@ -28,6 +41,7 @@ namespace UnitySvgEditor.Editor
         public event Action ReadRequested;
         public event Action BuildTransformRequested;
         public event Action ApplyRequested;
+        public event Action<PositionAction> PositionActionRequested;
 
         public bool IsBound => _form.IsBound;
         public bool FillEnabled => _form.FillEnabled;
@@ -55,6 +69,15 @@ namespace UnitySvgEditor.Editor
         public VisualElement RotateControl => _form.RotateField;
         public VisualElement ScaleXControl => _form.ScaleXField;
         public VisualElement ScaleYControl => _form.ScaleYField;
+        public VisualElement PositionAlignLeftControl => _form.PositionAlignLeftButton;
+        public VisualElement PositionAlignCenterControl => _form.PositionAlignCenterButton;
+        public VisualElement PositionAlignRightControl => _form.PositionAlignRightButton;
+        public VisualElement PositionAlignTopControl => _form.PositionAlignTopButton;
+        public VisualElement PositionAlignMiddleControl => _form.PositionAlignMiddleButton;
+        public VisualElement PositionAlignBottomControl => _form.PositionAlignBottomButton;
+        public VisualElement PositionRotateResetControl => _form.PositionRotateResetButton;
+        public VisualElement PositionFlipHorizontalControl => _form.PositionFlipHorizontalButton;
+        public VisualElement PositionFlipVerticalControl => _form.PositionFlipVerticalButton;
         public VisualElement ReadButtonControl => _form.ReadButton;
         public VisualElement BuildTransformButtonControl => _form.BuildTransformButton;
         public VisualElement ApplyButtonControl => _form.ApplyButton;
@@ -110,6 +133,15 @@ namespace UnitySvgEditor.Editor
             RegisterTransformHelperCallback(_form.ScaleXField, OnTransformHelperChanged);
             RegisterTransformHelperCallback(_form.ScaleYField, OnTransformHelperChanged);
             RegisterTransformTextCallback(_form.TransformField, OnTransformTextChanged);
+            RegisterButtonClicked(_form.PositionAlignLeftButton, OnPositionAlignLeftRequested);
+            RegisterButtonClicked(_form.PositionAlignCenterButton, OnPositionAlignCenterRequested);
+            RegisterButtonClicked(_form.PositionAlignRightButton, OnPositionAlignRightRequested);
+            RegisterButtonClicked(_form.PositionAlignTopButton, OnPositionAlignTopRequested);
+            RegisterButtonClicked(_form.PositionAlignMiddleButton, OnPositionAlignMiddleRequested);
+            RegisterButtonClicked(_form.PositionAlignBottomButton, OnPositionAlignBottomRequested);
+            RegisterButtonClicked(_form.PositionRotateResetButton, OnPositionRotateResetRequested);
+            RegisterButtonClicked(_form.PositionFlipHorizontalButton, OnPositionFlipHorizontalRequested);
+            RegisterButtonClicked(_form.PositionFlipVerticalButton, OnPositionFlipVerticalRequested);
 
             if (_form.ReadButton != null)
                 _form.ReadButton.clicked += OnReadRequested;
@@ -139,6 +171,15 @@ namespace UnitySvgEditor.Editor
             UnregisterTransformHelperCallback(_form.ScaleXField, OnTransformHelperChanged);
             UnregisterTransformHelperCallback(_form.ScaleYField, OnTransformHelperChanged);
             UnregisterTransformTextCallback(_form.TransformField, OnTransformTextChanged);
+            UnregisterButtonClicked(_form.PositionAlignLeftButton, OnPositionAlignLeftRequested);
+            UnregisterButtonClicked(_form.PositionAlignCenterButton, OnPositionAlignCenterRequested);
+            UnregisterButtonClicked(_form.PositionAlignRightButton, OnPositionAlignRightRequested);
+            UnregisterButtonClicked(_form.PositionAlignTopButton, OnPositionAlignTopRequested);
+            UnregisterButtonClicked(_form.PositionAlignMiddleButton, OnPositionAlignMiddleRequested);
+            UnregisterButtonClicked(_form.PositionAlignBottomButton, OnPositionAlignBottomRequested);
+            UnregisterButtonClicked(_form.PositionRotateResetButton, OnPositionRotateResetRequested);
+            UnregisterButtonClicked(_form.PositionFlipHorizontalButton, OnPositionFlipHorizontalRequested);
+            UnregisterButtonClicked(_form.PositionFlipVerticalButton, OnPositionFlipVerticalRequested);
 
             if (_form.ReadButton != null)
                 _form.ReadButton.clicked -= OnReadRequested;
@@ -173,6 +214,41 @@ namespace UnitySvgEditor.Editor
         private void OnBuildTransformRequested() => BuildTransformRequested?.Invoke();
 
         private void OnApplyRequested() => ApplyRequested?.Invoke();
+
+        private void OnPositionAlignLeftRequested() => PositionActionRequested?.Invoke(PositionAction.AlignLeft);
+
+        private void OnPositionAlignCenterRequested() => PositionActionRequested?.Invoke(PositionAction.AlignCenter);
+
+        private void OnPositionAlignRightRequested() => PositionActionRequested?.Invoke(PositionAction.AlignRight);
+
+        private void OnPositionAlignTopRequested() => PositionActionRequested?.Invoke(PositionAction.AlignTop);
+
+        private void OnPositionAlignMiddleRequested() => PositionActionRequested?.Invoke(PositionAction.AlignMiddle);
+
+        private void OnPositionAlignBottomRequested() => PositionActionRequested?.Invoke(PositionAction.AlignBottom);
+
+        private void OnPositionRotateResetRequested() => PositionActionRequested?.Invoke(PositionAction.RotateReset);
+
+        private void OnPositionFlipHorizontalRequested() => PositionActionRequested?.Invoke(PositionAction.FlipHorizontal);
+
+        private void OnPositionFlipVerticalRequested() => PositionActionRequested?.Invoke(PositionAction.FlipVertical);
+
+        private static void RegisterButtonClicked(Button button, Action callback)
+        {
+            if (button == null || callback == null)
+                return;
+
+            button.clicked -= callback;
+            button.clicked += callback;
+        }
+
+        private static void UnregisterButtonClicked(Button button, Action callback)
+        {
+            if (button == null || callback == null)
+                return;
+
+            button.clicked -= callback;
+        }
 
         private static void RegisterImmediateApplyCallback(
             ColorField field,

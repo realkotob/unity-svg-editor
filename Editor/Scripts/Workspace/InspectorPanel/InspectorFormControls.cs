@@ -26,6 +26,15 @@ namespace UnitySvgEditor.Editor
         public FloatField RotateField { get; private set; }
         public FloatField ScaleXField { get; private set; }
         public FloatField ScaleYField { get; private set; }
+        public Button PositionAlignLeftButton { get; private set; }
+        public Button PositionAlignCenterButton { get; private set; }
+        public Button PositionAlignRightButton { get; private set; }
+        public Button PositionAlignTopButton { get; private set; }
+        public Button PositionAlignMiddleButton { get; private set; }
+        public Button PositionAlignBottomButton { get; private set; }
+        public Button PositionRotateResetButton { get; private set; }
+        public Button PositionFlipHorizontalButton { get; private set; }
+        public Button PositionFlipVerticalButton { get; private set; }
         public Button ReadButton { get; private set; }
         public Button BuildTransformButton { get; private set; }
         public Button ApplyButton { get; private set; }
@@ -69,6 +78,15 @@ namespace UnitySvgEditor.Editor
             RotateField = root.Q<FloatField>("inspector-rotate");
             ScaleXField = root.Q<FloatField>("inspector-scale-x");
             ScaleYField = root.Q<FloatField>("inspector-scale-y");
+            PositionAlignLeftButton = root.Q<Button>("position-align-left");
+            PositionAlignCenterButton = root.Q<Button>("position-align-center");
+            PositionAlignRightButton = root.Q<Button>("position-align-right");
+            PositionAlignTopButton = root.Q<Button>("position-align-top");
+            PositionAlignMiddleButton = root.Q<Button>("position-align-middle");
+            PositionAlignBottomButton = root.Q<Button>("position-align-bottom");
+            PositionRotateResetButton = root.Q<Button>("position-rotate-reset");
+            PositionFlipHorizontalButton = root.Q<Button>("position-flip-horizontal");
+            PositionFlipVerticalButton = root.Q<Button>("position-flip-vertical");
             ReadButton = root.Q<Button>("inspector-read-target");
             BuildTransformButton = root.Q<Button>("inspector-build-transform");
             ApplyButton = root.Q<Button>("inspector-apply");
@@ -98,6 +116,15 @@ namespace UnitySvgEditor.Editor
             RotateField = null;
             ScaleXField = null;
             ScaleYField = null;
+            PositionAlignLeftButton = null;
+            PositionAlignCenterButton = null;
+            PositionAlignRightButton = null;
+            PositionAlignTopButton = null;
+            PositionAlignMiddleButton = null;
+            PositionAlignBottomButton = null;
+            PositionRotateResetButton = null;
+            PositionFlipHorizontalButton = null;
+            PositionFlipVerticalButton = null;
             ReadButton = null;
             BuildTransformButton = null;
             ApplyButton = null;

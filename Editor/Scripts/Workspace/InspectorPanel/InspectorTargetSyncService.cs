@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace UnitySvgEditor.Editor
 {
@@ -11,6 +12,15 @@ namespace UnitySvgEditor.Editor
         private readonly Func<IInspectorPanelHost> _hostAccessor;
         private readonly Action _updateInteractivity;
         private bool _suppressSelectionSync;
+
+        public InspectorTargetSyncService(
+            InspectorPanelState inspectorPanelState,
+            InspectorPanelView view,
+            Func<IInspectorPanelHost> hostAccessor,
+            Action updateInteractivity)
+            : this(new AttributePatcher(), inspectorPanelState, view, hostAccessor, updateInteractivity)
+        {
+        }
 
         public InspectorTargetSyncService(
             AttributePatcher attributePatcher,
@@ -201,6 +211,35 @@ namespace UnitySvgEditor.Editor
             Host.TryApplyPatchRequest(request, "Inspector changes applied.");
         }
 
+        public void ApplyPositionAction(InspectorPanelView.PositionAction action)
+        {
+            if (Host?.CurrentDocument == null || !_view.IsBound)
+            {
+                return;
+            }
+
+            switch (action)
+            {
+                case InspectorPanelView.PositionAction.AlignLeft:
+                case InspectorPanelView.PositionAction.AlignCenter:
+                case InspectorPanelView.PositionAction.AlignRight:
+                case InspectorPanelView.PositionAction.AlignTop:
+                case InspectorPanelView.PositionAction.AlignMiddle:
+                case InspectorPanelView.PositionAction.AlignBottom:
+                    ApplyAlignmentAction(action);
+                    break;
+                case InspectorPanelView.PositionAction.RotateReset:
+                    ApplyRotateResetAction();
+                    break;
+                case InspectorPanelView.PositionAction.FlipHorizontal:
+                    ApplyFlipAction(new Vector2(1f, -1f), "Flipped horizontally.");
+                    break;
+                case InspectorPanelView.PositionAction.FlipVertical:
+                    ApplyFlipAction(new Vector2(-1f, 1f), "Flipped vertically.");
+                    break;
+            }
+        }
+
         private void SyncFramePositionFromPreview()
         {
             _inspectorPanelState.FramePositionEnabled = false;
@@ -221,6 +260,143 @@ namespace UnitySvgEditor.Editor
             _inspectorPanelState.FrameY = sceneRect.yMin;
             _inspectorPanelState.FrameWidth = sceneRect.width;
             _inspectorPanelState.FrameHeight = sceneRect.height;
+        }
+
+        private void ApplyAlignmentAction(InspectorPanelView.PositionAction action)
+        {
+            var targetKey = ResolveSelectedTargetKey();
+            if (string.IsNullOrWhiteSpace(targetKey) ||
+                string.Equals(targetKey, AttributePatcher.ROOT_TARGET_KEY, StringComparison.Ordinal))
+            {
+                Host?.UpdateSourceStatus("Alignment requires a non-root target.");
+                return;
+            }
+
+            if (!Host.TryGetTargetSceneRect(targetKey, out Rect currentRect) ||
+                !Host.TryGetCanvasViewportSceneRect(out Rect canvasRect))
+            {
+                Host?.UpdateSourceStatus("Alignment failed: preview bounds are unavailable.");
+                return;
+            }
+
+            Rect desiredRect = currentRect;
+            string successStatus = "Position updated.";
+            switch (action)
+            {
+                case InspectorPanelView.PositionAction.AlignLeft:
+                    desiredRect.x = canvasRect.xMin;
+                    successStatus = "Aligned left.";
+                    break;
+                case InspectorPanelView.PositionAction.AlignCenter:
+                    desiredRect.x = canvasRect.center.x - (currentRect.width * 0.5f);
+                    successStatus = "Aligned center.";
+                    break;
+                case InspectorPanelView.PositionAction.AlignRight:
+                    desiredRect.x = canvasRect.xMax - currentRect.width;
+                    successStatus = "Aligned right.";
+                    break;
+                case InspectorPanelView.PositionAction.AlignTop:
+                    desiredRect.y = canvasRect.yMin;
+                    successStatus = "Aligned top.";
+                    break;
+                case InspectorPanelView.PositionAction.AlignMiddle:
+                    desiredRect.y = canvasRect.center.y - (currentRect.height * 0.5f);
+                    successStatus = "Aligned middle.";
+                    break;
+                case InspectorPanelView.PositionAction.AlignBottom:
+                    desiredRect.y = canvasRect.yMax - currentRect.height;
+                    successStatus = "Aligned bottom.";
+                    break;
+            }
+
+            Host.TryApplyTargetFrameRect(targetKey, desiredRect, successStatus);
+        }
+
+        private void ApplyRotateResetAction()
+        {
+            var targetKey = ResolveSelectedTargetKey();
+            if (string.IsNullOrWhiteSpace(targetKey))
+            {
+                return;
+            }
+
+            _view.CaptureState(_inspectorPanelState);
+            if (!_inspectorPanelState.TrySyncTransformHelperFromText())
+            {
+                Host?.UpdateSourceStatus("Rotation reset failed: transform cannot be decomposed.");
+                return;
+            }
+
+            _inspectorPanelState.Rotate = 0f;
+            string transform = _inspectorPanelState.BuildTransformFromHelper();
+            _view.ApplyState(_inspectorPanelState);
+            Host.TryApplyPatchRequest(
+                new AttributePatchRequest
+                {
+                    TargetKey = targetKey,
+                    Transform = transform
+                },
+                "Rotation reset.");
+        }
+
+        private void ApplyFlipAction(Vector2 scale, string successStatus)
+        {
+            var targetKey = ResolveSelectedTargetKey();
+            if (string.IsNullOrWhiteSpace(targetKey) ||
+                string.Equals(targetKey, AttributePatcher.ROOT_TARGET_KEY, StringComparison.Ordinal))
+            {
+                Host?.UpdateSourceStatus("Flip requires a non-root target.");
+                return;
+            }
+
+            if (!Host.TryGetTargetSceneRect(targetKey, out Rect sceneRect))
+            {
+                Host?.UpdateSourceStatus("Flip failed: preview bounds are unavailable.");
+                return;
+            }
+
+            if (!Host.TryGetTargetParentWorldTransform(targetKey, out var parentWorldTransform))
+            {
+                Host?.UpdateSourceStatus("Flip failed: parent transform is unavailable.");
+                return;
+            }
+
+            _view.CaptureState(_inspectorPanelState);
+            Vector2 parentPivot = ToParentSpacePoint(parentWorldTransform, sceneRect.center);
+            string existingTransform = _inspectorPanelState.Transform ?? string.Empty;
+            string transform = PrependTransform(
+                existingTransform,
+                TransformStringBuilder.BuildScaleAround(scale, parentPivot));
+            _inspectorPanelState.Transform = transform;
+            _inspectorPanelState.TransformEnabled = true;
+            _view.ApplyState(_inspectorPanelState);
+            Host.TryApplyPatchRequest(
+                new AttributePatchRequest
+                {
+                    TargetKey = targetKey,
+                    Transform = transform
+                },
+                successStatus);
+        }
+
+        private static Vector2 ToParentSpacePoint(Unity.VectorGraphics.Matrix2D parentWorldTransform, Vector2 worldPoint)
+        {
+            return parentWorldTransform.Inverse().MultiplyPoint(worldPoint);
+        }
+
+        private static string PrependTransform(string existingTransform, string transformSegment)
+        {
+            if (string.IsNullOrWhiteSpace(transformSegment))
+            {
+                return existingTransform ?? string.Empty;
+            }
+
+            if (string.IsNullOrWhiteSpace(existingTransform))
+            {
+                return transformSegment;
+            }
+
+            return $"{transformSegment} {existingTransform}";
         }
 
         private bool TryReadAttributesFromModelOrFallback(
