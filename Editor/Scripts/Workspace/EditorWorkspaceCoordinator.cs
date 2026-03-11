@@ -116,7 +116,10 @@ namespace UnitySvgEditor.Editor
             _structureHierarchyController.SetEnabled(hasDocument);
         }
 
-        public bool TryApplyPatchRequest(AttributePatchRequest request, string successStatus)
+        public bool TryApplyPatchRequest(
+            AttributePatchRequest request,
+            string successStatus,
+            HistoryRecordingMode recordingMode = HistoryRecordingMode.Immediate)
         {
             if (CurrentDocument == null || request == null)
                 return false;
@@ -162,11 +165,15 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
-            _host.ApplyUpdatedSource(patched, successStatus);
+            _host.ApplyUpdatedSource(patched, successStatus, recordingMode);
             return true;
         }
 
-        public bool TryApplyTargetFrameRect(string targetKey, Rect targetSceneRect, string successStatus)
+        public bool TryApplyTargetFrameRect(
+            string targetKey,
+            Rect targetSceneRect,
+            string successStatus,
+            HistoryRecordingMode recordingMode = HistoryRecordingMode.Immediate)
         {
             if (CurrentDocument == null || string.IsNullOrWhiteSpace(targetKey))
                 return false;
@@ -240,7 +247,7 @@ namespace UnitySvgEditor.Editor
             if (!hasChanged || string.Equals(updatedSource, CurrentDocument.WorkingSourceText, StringComparison.Ordinal))
                 return false;
 
-            _host.ApplyUpdatedSource(updatedSource, successStatus);
+            _host.ApplyUpdatedSource(updatedSource, successStatus, recordingMode);
             return true;
         }
 

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Core.UI.Foundation.Components.ColorPercentField;
+using SelectElement = Core.UI.Foundation.Components.Select.Select;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -19,8 +20,8 @@ namespace UnitySvgEditor.Editor
         public FloatField StrokeWidthField { get; private set; }
         public BaseField<float> OpacityField { get; private set; }
         public FloatField CornerRadiusField { get; private set; }
-        public PopupField<string> LinecapPopup { get; private set; }
-        public PopupField<string> LinejoinPopup { get; private set; }
+        public SelectElement LinecapPopup { get; private set; }
+        public SelectElement LinejoinPopup { get; private set; }
         public FloatField DashLengthField { get; private set; }
         public FloatField DashGapField { get; private set; }
         public TextField TransformField { get; private set; }
@@ -83,8 +84,8 @@ namespace UnitySvgEditor.Editor
             VisualElement opacityElement = root.Q<VisualElement>("inspector-opacity");
             OpacityField = opacityElement as BaseField<float>;
             CornerRadiusField = root.Q<FloatField>("inspector-corner-radius");
-            LinecapPopup = root.Q<DropdownField>("inspector-linecap");
-            LinejoinPopup = root.Q<DropdownField>("inspector-linejoin");
+            LinecapPopup = root.Q<SelectElement>("inspector-linecap");
+            LinejoinPopup = root.Q<SelectElement>("inspector-linejoin");
             DashLengthField = root.Q<FloatField>("inspector-dash-length");
             DashGapField = root.Q<FloatField>("inspector-dash-gap");
             TransformField = root.Q<TextField>("inspector-transform");
@@ -107,8 +108,6 @@ namespace UnitySvgEditor.Editor
             PositionFlipHorizontalButton = root.Q<Button>("position-flip-horizontal");
             PositionFlipVerticalButton = root.Q<Button>("position-flip-vertical");
 
-            ConfigureStrokePopup(LinecapPopup, new List<string> { string.Empty, "butt", "round", "square" });
-            ConfigureStrokePopup(LinejoinPopup, new List<string> { string.Empty, "miter", "round", "bevel" });
             ConfigureNumericFieldFormat(StrokeWidthField);
             ConfigureNumericFieldFormat(OpacityField as FloatField);
             ConfigureNumericFieldFormat(CornerRadiusField);
@@ -186,21 +185,6 @@ namespace UnitySvgEditor.Editor
         public void SetTransformText(string transform)
         {
             TransformField?.SetValueWithoutNotify(transform ?? string.Empty);
-        }
-
-        private static void ConfigureStrokePopup(PopupField<string> popup, List<string> choices)
-        {
-            if (popup == null)
-                return;
-
-            popup.choices = choices;
-            popup.formatListItemCallback = FormatStrokePopupItem;
-            popup.formatSelectedValueCallback = FormatStrokePopupItem;
-        }
-
-        private static string FormatStrokePopupItem(string value)
-        {
-            return string.IsNullOrWhiteSpace(value) ? "(remove)" : value;
         }
 
         private static void ConfigureNumericFieldFormat(FloatField field)

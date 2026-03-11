@@ -108,6 +108,16 @@
     -unity-font-style: bold;
 }
 
+.svg-editor__inspector-section .color-percent-field .unity-base-field__label,
+.svg-editor__source-panel .color-percent-field .unity-base-field__label {
+    min-width: initial;
+    margin-right: initial;
+    margin-bottom: initial;
+    color: initial;
+    font-size: initial;
+    -unity-font-style: normal;
+}
+
 .svg-editor__inspector-section .unity-base-field__input,
 .svg-editor__inspector-section .unity-base-popup-field__input,
 .svg-editor__inspector-section .unity-text-field__input,
@@ -120,6 +130,20 @@
     border-width: 1px;
     background-color: var(--editor-control-bg);
     color: var(--foreground);
+}
+
+.svg-editor__inspector-section .color-percent-field .unity-base-field__input,
+.svg-editor__inspector-section .color-percent-field .unity-base-popup-field__input,
+.svg-editor__inspector-section .color-percent-field .unity-text-field__input,
+.svg-editor__inspector-section .color-percent-field .unity-color-field__input {
+    min-height: initial;
+    padding-left: initial;
+    padding-right: initial;
+    border-radius: initial;
+    border-color: initial;
+    border-width: initial;
+    background-color: initial;
+    color: initial;
 }
 
 .svg-editor__advanced-transform-field .unity-text-field__input {

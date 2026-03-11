@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UIElements;
+using SelectElement = Core.UI.Foundation.Components.Select.Select;
 
 namespace UnitySvgEditor.Editor
 {
@@ -22,8 +23,8 @@ namespace UnitySvgEditor.Editor
                 ? Mathf.Clamp01(opacityValue)
                 : Mathf.Clamp01(opacityValue / 100f);
             inspectorPanelState.CornerRadius = Mathf.Max(0f, form.CornerRadiusField?.value ?? 0f);
-            inspectorPanelState.StrokeLinecap = form.LinecapPopup?.value ?? string.Empty;
-            inspectorPanelState.StrokeLinejoin = form.LinejoinPopup?.value ?? string.Empty;
+            inspectorPanelState.StrokeLinecap = form.LinecapPopup?.Value ?? string.Empty;
+            inspectorPanelState.StrokeLinejoin = form.LinejoinPopup?.Value ?? string.Empty;
             inspectorPanelState.DasharrayEnabled = form.DashLengthField != null || form.DashGapField != null;
             inspectorPanelState.DashLength = form.DashLengthField?.value ?? 4f;
             inspectorPanelState.DashGap = form.DashGapField?.value ?? 2f;
@@ -73,15 +74,17 @@ namespace UnitySvgEditor.Editor
             form.ScaleYField?.SetValueWithoutNotify(inspectorPanelState.ScaleY);
         }
 
-        private static void SetPopupValue(PopupField<string> popup, string value)
+        private static void SetPopupValue(SelectElement popup, string value)
         {
             if (popup == null)
                 return;
 
-            if (!string.IsNullOrWhiteSpace(value) && popup.choices.Contains(value))
-                popup.SetValueWithoutNotify(value);
-            else
-                popup.SetValueWithoutNotify(string.Empty);
+            string[] choices = string.IsNullOrWhiteSpace(popup.Choices)
+                ? System.Array.Empty<string>()
+                : popup.Choices.Split(',');
+
+            int index = System.Array.IndexOf(choices, value ?? string.Empty);
+            popup.Index = index;
         }
     }
 }

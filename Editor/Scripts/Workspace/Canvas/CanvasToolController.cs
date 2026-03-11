@@ -135,8 +135,8 @@ namespace UnitySvgEditor.Editor
             {
                 KeyCode.LeftArrow => Vector2.left,
                 KeyCode.RightArrow => Vector2.right,
-                KeyCode.UpArrow => Vector2.up,
-                KeyCode.DownArrow => Vector2.down,
+                KeyCode.UpArrow => Vector2.down,
+                KeyCode.DownArrow => Vector2.up,
                 _ => Vector2.zero
             };
             if (nudgeDelta != Vector2.zero)

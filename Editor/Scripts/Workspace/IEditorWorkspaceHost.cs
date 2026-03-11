@@ -10,6 +10,7 @@ namespace UnitySvgEditor.Editor
         Image PreviewImage { get; }
 
         void ApplyUpdatedSource(string updatedSource, string successStatus);
+        void ApplyUpdatedSource(string updatedSource, string successStatus, HistoryRecordingMode recordingMode);
         void UpdateSourceStatus(string status);
         void UpdateEditorInteractivity();
         void RefreshLivePreview(bool keepExistingPreviewOnFailure);

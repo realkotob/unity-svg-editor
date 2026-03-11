@@ -1,4 +1,4 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:toggle="Core.UI.Foundation.Components.Toggle" xmlns:togglegroup="Core.UI.Foundation.Components.ToggleGroup" xmlns:button="Core.UI.Foundation.Components.Button" xmlns:drag="Core.UI.Foundation.Components.DragNumberField" xmlns:colorpercent="Core.UI.Foundation.Components.ColorPercentField" xmlns:svg="UnitySvgEditor.Editor" editor-extension-mode="True">
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:toggle="Core.UI.Foundation.Components.Toggle" xmlns:togglegroup="Core.UI.Foundation.Components.ToggleGroup" xmlns:button="Core.UI.Foundation.Components.Button" xmlns:drag="Core.UI.Foundation.Components.DragNumberField" xmlns:colorpercent="Core.UI.Foundation.Components.ColorPercentField" xmlns:select="Core.UI.Foundation.Components.Select" xmlns:svg="UnitySvgEditor.Editor" editor-extension-mode="True">
     <ui:VisualElement class="svg-editor">
         <ui:TwoPaneSplitView name="main-split" fixed-pane-index="0" fixed-pane-initial-dimension="240" orientation="Horizontal" class="svg-editor__main-split">
             <ui:VisualElement name="asset-panel" class="svg-editor__asset-panel">
@@ -95,31 +95,41 @@
                         <ui:VisualElement name="fill-panel" class="svg-editor__inspector-section svg-editor__inspector-card">
                             <ui:Label text="Fill" class="svg-editor__subsection-title"/>
                             <ui:VisualElement class="svg-editor__inspector-row">
-                                <ui:VisualElement class="svg-editor__inspector-field">
-                                    <ui:Label text="Color" class="svg-editor__inspector-meta-label"/>
-                                    <colorpercent:ColorPercentField name="inspector-fill-color" hex-value="FFFFFF" percentage="100" picker-preview="false"/>
-                                </ui:VisualElement>
+                                <colorpercent:ColorPercentField name="inspector-fill-color" hex-value="FFFFFF" percentage="100" picker-preview="false" style="width: 100%;"/>
                             </ui:VisualElement>
                         </ui:VisualElement>
                         <Core.UI.Foundation.Components.Separator.Separator class="svg-editor__inspector-separator"/>
                         <ui:VisualElement name="stroke-panel" class="svg-editor__inspector-section svg-editor__inspector-card">
                             <ui:Label text="Stroke" class="svg-editor__subsection-title"/>
                             <ui:VisualElement class="svg-editor__inspector-row">
+                                <colorpercent:ColorPercentField name="inspector-stroke-color" hex-value="000000" percentage="100" picker-preview="false" style="width: 100%;"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="svg-editor__inspector-row">
                                 <ui:VisualElement class="svg-editor__inspector-field">
-                                    <ui:Label text="Color" class="svg-editor__inspector-meta-label"/>
-                                    <colorpercent:ColorPercentField name="inspector-stroke-color" hex-value="000000" percentage="100" picker-preview="false"/>
+                                    <ui:Label text="Weight" class="svg-editor__inspector-meta-label"/>
+                                    <drag:DragNumberField name="inspector-stroke-width" prefix-icon-class="icon-maximize-2" value="1" min-value="0" drag-step="1" drag-sensitivity="0.25"/>
+                                </ui:VisualElement>
+                                <ui:VisualElement class="svg-editor__inspector-field">
+                                    <ui:Label text="Dash" class="svg-editor__inspector-meta-label"/>
+                                    <drag:DragNumberField name="inspector-dash-length" prefix-icon-class="icon-refresh-ccw" value="4" min-value="0" drag-step="1" drag-sensitivity="0.25"/>
                                 </ui:VisualElement>
                                 <ui:VisualElement class="svg-editor__inspector-field svg-editor__inspector-field--last">
-                                    <ui:FloatField name="inspector-stroke-width" label="Weight" value="1"/>
+                                    <ui:Label text="Gap" class="svg-editor__inspector-meta-label"/>
+                                    <drag:DragNumberField name="inspector-dash-gap" prefix-icon-class="icon-circle" value="2" min-value="0" drag-step="1" drag-sensitivity="0.25"/>
                                 </ui:VisualElement>
                             </ui:VisualElement>
                             <ui:VisualElement class="svg-editor__inspector-row">
-                                <ui:DropdownField name="inspector-linecap" label="Line Cap" class="svg-editor__inspector-field"/>
-                                <ui:DropdownField name="inspector-linejoin" label="Line Join" class="svg-editor__inspector-field svg-editor__inspector-field--last"/>
+                                <ui:VisualElement class="svg-editor__inspector-field svg-editor__inspector-field--last"/>
                             </ui:VisualElement>
                             <ui:VisualElement class="svg-editor__inspector-row">
-                                <ui:FloatField name="inspector-dash-length" label="Dash" value="4" class="svg-editor__inspector-field"/>
-                                <ui:FloatField name="inspector-dash-gap" label="Gap" value="2" class="svg-editor__inspector-field svg-editor__inspector-field--last"/>
+                                <ui:VisualElement class="svg-editor__inspector-field">
+                                    <ui:Label text="Line Cap" class="svg-editor__inspector-meta-label"/>
+                                    <select:Select name="inspector-linecap" placeholder-text="(remove)" choices="butt,round,square"/>
+                                </ui:VisualElement>
+                                <ui:VisualElement class="svg-editor__inspector-field svg-editor__inspector-field--last">
+                                    <ui:Label text="Line Join" class="svg-editor__inspector-meta-label"/>
+                                    <select:Select name="inspector-linejoin" placeholder-text="(remove)" choices="miter,round,bevel"/>
+                                </ui:VisualElement>
                             </ui:VisualElement>
                         </ui:VisualElement>
                     </ui:VisualElement>

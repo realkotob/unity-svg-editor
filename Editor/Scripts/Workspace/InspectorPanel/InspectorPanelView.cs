@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Core.UI.Foundation.Components.ColorPercentField;
+using SelectElement = Core.UI.Foundation.Components.Select.Select;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -263,14 +264,14 @@ namespace UnitySvgEditor.Editor
         }
 
         private static void RegisterImmediateApplyCallback(
-            PopupField<string> field,
+            SelectElement field,
             EventCallback<ChangeEvent<string>> callback)
         {
             if (field == null)
                 return;
 
-            field.UnregisterValueChangedCallback(callback);
-            field.RegisterValueChangedCallback(callback);
+            field.UnregisterCallback(callback);
+            field.RegisterCallback(callback);
         }
 
         private static void UnregisterImmediateApplyCallback(
@@ -304,13 +305,13 @@ namespace UnitySvgEditor.Editor
         }
 
         private static void UnregisterImmediateApplyCallback(
-            PopupField<string> field,
+            SelectElement field,
             EventCallback<ChangeEvent<string>> callback)
         {
             if (field == null)
                 return;
 
-            field.UnregisterValueChangedCallback(callback);
+            field.UnregisterCallback(callback);
         }
 
         private static void RegisterFrameRectCallback(

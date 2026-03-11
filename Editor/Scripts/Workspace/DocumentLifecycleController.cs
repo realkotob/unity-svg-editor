@@ -96,7 +96,12 @@ namespace UnitySvgEditor.Editor
 
         public void ApplyUpdatedSource(string updatedSource, string successStatus)
         {
-            ApplyUpdatedSource(updatedSource, successStatus, recordHistory: true);
+            ApplyUpdatedSource(updatedSource, successStatus, HistoryRecordingMode.Immediate);
+        }
+
+        public void ApplyUpdatedSource(string updatedSource, string successStatus, HistoryRecordingMode recordingMode)
+        {
+            ApplyUpdatedSource(updatedSource, successStatus, recordHistory: true, recordingMode);
         }
 
         public bool TryUndo()
@@ -107,7 +112,7 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
-            ApplyUpdatedSource(restoredSource, "Undo.", recordHistory: false);
+            ApplyUpdatedSource(restoredSource, "Undo.", recordHistory: false, HistoryRecordingMode.Immediate);
             return true;
         }
 
@@ -119,7 +124,7 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
-            ApplyUpdatedSource(restoredSource, "Redo.", recordHistory: false);
+            ApplyUpdatedSource(restoredSource, "Redo.", recordHistory: false, HistoryRecordingMode.Immediate);
             return true;
         }
 
@@ -128,7 +133,11 @@ namespace UnitySvgEditor.Editor
             OnSaveClicked();
         }
 
-        private void ApplyUpdatedSource(string updatedSource, string successStatus, bool recordHistory)
+        private void ApplyUpdatedSource(
+            string updatedSource,
+            string successStatus,
+            bool recordHistory,
+            HistoryRecordingMode recordingMode)
         {
             if (CurrentDocument == null)
             {
@@ -139,7 +148,7 @@ namespace UnitySvgEditor.Editor
             string nextSource = updatedSource ?? string.Empty;
             if (recordHistory)
             {
-                _editHistory.RecordChange(previousSource, nextSource);
+                _editHistory.RecordChange(previousSource, nextSource, recordingMode);
             }
             else
             {
@@ -191,9 +200,12 @@ namespace UnitySvgEditor.Editor
             if (CurrentDocument == null)
                 return;
 
-            _inspectorPanelController.RefreshTargets();
             if (!skipPreviewRefresh)
+            {
                 _previewService.RefreshLivePreview(keepExistingPreviewOnFailure);
+            }
+
+            _inspectorPanelController.RefreshTargets();
 
             WorkspaceCoordinator?.RefreshStructureViews();
             _updateEditorInteractivity?.Invoke();

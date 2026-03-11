@@ -223,12 +223,23 @@ namespace UnitySvgEditor.Editor
         void IEditorWorkspaceHost.RefreshInspector(SvgDocumentModel documentModel) =>
             _inspectorPanelController.RefreshTargets(documentModel);
 
-        private bool TryApplyPatchRequest(AttributePatchRequest request, string successStatus) =>
-            WorkspaceCoordinator.TryApplyPatchRequest(request, successStatus);
+        private bool TryApplyPatchRequest(
+            AttributePatchRequest request,
+            string successStatus,
+            HistoryRecordingMode recordingMode = HistoryRecordingMode.Immediate) =>
+            WorkspaceCoordinator.TryApplyPatchRequest(request, successStatus, recordingMode);
 
         void IEditorWorkspaceHost.ApplyUpdatedSource(string updatedSource, string successStatus)
         {
             _documentLifecycleController.ApplyUpdatedSource(updatedSource, successStatus);
+        }
+
+        void IEditorWorkspaceHost.ApplyUpdatedSource(
+            string updatedSource,
+            string successStatus,
+            HistoryRecordingMode recordingMode)
+        {
+            _documentLifecycleController.ApplyUpdatedSource(updatedSource, successStatus, recordingMode);
         }
 
         private void UpdateEditorInteractivity()
@@ -254,9 +265,16 @@ namespace UnitySvgEditor.Editor
         void IEditorWorkspaceHost.UpdateSourceStatus(string status) => UpdateSourceStatus(status);
 
         DocumentSession IInspectorPanelHost.CurrentDocument => _documentLifecycleController.CurrentDocument;
-        bool IInspectorPanelHost.TryApplyPatchRequest(AttributePatchRequest request, string successStatus) => TryApplyPatchRequest(request, successStatus);
-        bool IInspectorPanelHost.TryApplyTargetFrameRect(string targetKey, Rect targetSceneRect, string successStatus) =>
-            WorkspaceCoordinator.TryApplyTargetFrameRect(targetKey, targetSceneRect, successStatus);
+        bool IInspectorPanelHost.TryApplyPatchRequest(
+            AttributePatchRequest request,
+            string successStatus,
+            HistoryRecordingMode recordingMode) => TryApplyPatchRequest(request, successStatus, recordingMode);
+        bool IInspectorPanelHost.TryApplyTargetFrameRect(
+            string targetKey,
+            Rect targetSceneRect,
+            string successStatus,
+            HistoryRecordingMode recordingMode) =>
+            WorkspaceCoordinator.TryApplyTargetFrameRect(targetKey, targetSceneRect, successStatus, recordingMode);
         bool IInspectorPanelHost.TryGetTargetSceneRect(string targetKey, out Rect sceneRect)
         {
             sceneRect = default;

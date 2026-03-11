@@ -8,6 +8,10 @@ namespace UnitySvgEditor.Editor
 {
     internal static class InspectorPanelStateValueCodec
     {
+        private const float MissingStrokeWidth = 0f;
+        private const float MissingDashLength = 0f;
+        private const float MissingDashGap = 0f;
+
         public static AttributePatchRequest BuildPatchRequest(InspectorPanelState state)
         {
             var request = CreatePatchRequest(state);
@@ -94,6 +98,7 @@ namespace UnitySvgEditor.Editor
             if (TryGetFloat(attributes, "stroke-opacity", out var strokeOpacity))
                 state.StrokeColor = WithCombinedAlpha(state.StrokeColor, strokeOpacity);
 
+            state.StrokeWidth = MissingStrokeWidth;
             state.StrokeWidthEnabled = TryGetFloat(attributes, "stroke-width", out var strokeWidth);
             if (state.StrokeWidthEnabled)
                 state.StrokeWidth = Mathf.Max(0f, strokeWidth);
@@ -112,6 +117,8 @@ namespace UnitySvgEditor.Editor
                     state.CornerRadius = Mathf.Max(0f, radiusY);
             }
 
+            state.DashLength = MissingDashLength;
+            state.DashGap = MissingDashGap;
             state.DasharrayEnabled = TryGetNonEmpty(attributes, "stroke-dasharray", out var dashRaw);
             if (state.DasharrayEnabled)
             {
@@ -188,8 +195,8 @@ namespace UnitySvgEditor.Editor
 
         private static void ParseDasharray(string raw, out float dash, out float gap)
         {
-            dash = 4f;
-            gap = 2f;
+            dash = MissingDashLength;
+            gap = MissingDashGap;
             if (string.IsNullOrWhiteSpace(raw))
                 return;
 

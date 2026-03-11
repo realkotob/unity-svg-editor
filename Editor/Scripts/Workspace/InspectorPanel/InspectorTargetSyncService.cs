@@ -172,7 +172,11 @@ namespace UnitySvgEditor.Editor
                 Math.Max(0f, _inspectorPanelState.FrameWidth),
                 Math.Max(0f, _inspectorPanelState.FrameHeight));
 
-            Host.TryApplyTargetFrameRect(targetKey, desiredSceneRect, "Frame rect updated.");
+            Host.TryApplyTargetFrameRect(
+                targetKey,
+                desiredSceneRect,
+                "Frame rect updated.",
+                HistoryRecordingMode.Coalesced);
         }
 
         public void ApplyTransformFromHelper()
@@ -199,7 +203,8 @@ namespace UnitySvgEditor.Editor
                     TargetKey = targetKey,
                     Transform = transform
                 },
-                "Transform updated.");
+                "Transform updated.",
+                HistoryRecordingMode.Coalesced);
         }
 
         public void ApplyPatchToSource()
@@ -230,7 +235,7 @@ namespace UnitySvgEditor.Editor
 
             _view.CaptureState(_inspectorPanelState);
             var request = _inspectorPanelState.BuildPatchRequest(field);
-            Host.TryApplyPatchRequest(request, "Inspector changes applied.");
+            Host.TryApplyPatchRequest(request, "Inspector changes applied.", HistoryRecordingMode.Coalesced);
         }
 
         public void ApplyPositionAction(InspectorPanelView.PositionAction action)
