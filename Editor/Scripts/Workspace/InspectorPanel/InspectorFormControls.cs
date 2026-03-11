@@ -8,6 +8,8 @@ namespace UnitySvgEditor.Editor
 {
     internal sealed class InspectorFormControls
     {
+        private const string NumericDisplayFormat = "0.##";
+
         public ColorField FillColorField { get; private set; }
         public ColorField StrokeColorField { get; private set; }
         public FloatField StrokeWidthField { get; private set; }
@@ -93,6 +95,18 @@ namespace UnitySvgEditor.Editor
 
             ConfigureStrokePopup(LinecapPopup, new List<string> { string.Empty, "butt", "round", "square" });
             ConfigureStrokePopup(LinejoinPopup, new List<string> { string.Empty, "miter", "round", "bevel" });
+            ConfigureNumericFieldFormat(StrokeWidthField);
+            ConfigureNumericFieldFormat(DashLengthField);
+            ConfigureNumericFieldFormat(DashGapField);
+            ConfigureNumericFieldFormat(FrameXField);
+            ConfigureNumericFieldFormat(FrameYField);
+            ConfigureNumericFieldFormat(FrameWidthField);
+            ConfigureNumericFieldFormat(FrameHeightField);
+            ConfigureNumericFieldFormat(TranslateXField);
+            ConfigureNumericFieldFormat(TranslateYField);
+            ConfigureNumericFieldFormat(RotateField);
+            ConfigureNumericFieldFormat(ScaleXField);
+            ConfigureNumericFieldFormat(ScaleYField);
 
         }
 
@@ -148,6 +162,14 @@ namespace UnitySvgEditor.Editor
         private static string FormatStrokePopupItem(string value)
         {
             return string.IsNullOrWhiteSpace(value) ? "(remove)" : value;
+        }
+
+        private static void ConfigureNumericFieldFormat(FloatField field)
+        {
+            if (field == null)
+                return;
+
+            field.formatString = NumericDisplayFormat;
         }
     }
 }
