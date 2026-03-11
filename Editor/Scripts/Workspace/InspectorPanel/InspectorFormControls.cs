@@ -40,7 +40,7 @@ namespace UnitySvgEditor.Editor
         public Button PositionAlignTopButton { get; private set; }
         public Button PositionAlignMiddleButton { get; private set; }
         public Button PositionAlignBottomButton { get; private set; }
-        public Button PositionRotateResetButton { get; private set; }
+        public Button PositionRotateClockwise90Button { get; private set; }
         public Button PositionFlipHorizontalButton { get; private set; }
         public Button PositionFlipVerticalButton { get; private set; }
 
@@ -104,7 +104,7 @@ namespace UnitySvgEditor.Editor
             PositionAlignTopButton = root.Q<Button>("position-align-top");
             PositionAlignMiddleButton = root.Q<Button>("position-align-middle");
             PositionAlignBottomButton = root.Q<Button>("position-align-bottom");
-            PositionRotateResetButton = root.Q<Button>("position-rotate-reset");
+            PositionRotateClockwise90Button = root.Q<Button>("position-rotate-clockwise-90");
             PositionFlipHorizontalButton = root.Q<Button>("position-flip-horizontal");
             PositionFlipVerticalButton = root.Q<Button>("position-flip-vertical");
 
@@ -155,7 +155,7 @@ namespace UnitySvgEditor.Editor
             PositionAlignTopButton = null;
             PositionAlignMiddleButton = null;
             PositionAlignBottomButton = null;
-            PositionRotateResetButton = null;
+            PositionRotateClockwise90Button = null;
             PositionFlipHorizontalButton = null;
             PositionFlipVerticalButton = null;
         }

@@ -126,6 +126,21 @@ namespace UnitySvgEditor.Editor
             return true;
         }
 
+        public bool TryGetCurrentTransform(out string transform)
+        {
+            transform = string.Empty;
+            if (_workingDocumentModel == null ||
+                !_workingDocumentModel.TryGetNode(_activeNodeId, out SvgNodeModel node) ||
+                node?.RawAttributes == null ||
+                !node.RawAttributes.TryGetValue("transform", out string currentTransform))
+            {
+                return false;
+            }
+
+            transform = currentTransform ?? string.Empty;
+            return true;
+        }
+
         public void End()
         {
             _workingDocumentModel = null;

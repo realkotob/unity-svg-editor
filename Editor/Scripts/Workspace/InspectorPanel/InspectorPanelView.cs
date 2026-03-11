@@ -30,7 +30,7 @@ namespace UnitySvgEditor.Editor
             AlignTop,
             AlignMiddle,
             AlignBottom,
-            RotateReset,
+            RotateClockwise90,
             FlipHorizontal,
             FlipVertical
         }
@@ -74,7 +74,7 @@ namespace UnitySvgEditor.Editor
         public VisualElement PositionAlignTopControl => _form.PositionAlignTopButton;
         public VisualElement PositionAlignMiddleControl => _form.PositionAlignMiddleButton;
         public VisualElement PositionAlignBottomControl => _form.PositionAlignBottomButton;
-        public VisualElement PositionRotateResetControl => _form.PositionRotateResetButton;
+        public VisualElement PositionRotateClockwise90Control => _form.PositionRotateClockwise90Button;
         public VisualElement PositionFlipHorizontalControl => _form.PositionFlipHorizontalButton;
         public VisualElement PositionFlipVerticalControl => _form.PositionFlipVerticalButton;
 
@@ -137,7 +137,7 @@ namespace UnitySvgEditor.Editor
             RegisterButtonClicked(_form.PositionAlignTopButton, OnPositionAlignTopRequested);
             RegisterButtonClicked(_form.PositionAlignMiddleButton, OnPositionAlignMiddleRequested);
             RegisterButtonClicked(_form.PositionAlignBottomButton, OnPositionAlignBottomRequested);
-            RegisterButtonClicked(_form.PositionRotateResetButton, OnPositionRotateResetRequested);
+            RegisterButtonClicked(_form.PositionRotateClockwise90Button, OnPositionRotateClockwise90Requested);
             RegisterButtonClicked(_form.PositionFlipHorizontalButton, OnPositionFlipHorizontalRequested);
             RegisterButtonClicked(_form.PositionFlipVerticalButton, OnPositionFlipVerticalRequested);
         }
@@ -170,7 +170,7 @@ namespace UnitySvgEditor.Editor
             UnregisterButtonClicked(_form.PositionAlignTopButton, OnPositionAlignTopRequested);
             UnregisterButtonClicked(_form.PositionAlignMiddleButton, OnPositionAlignMiddleRequested);
             UnregisterButtonClicked(_form.PositionAlignBottomButton, OnPositionAlignBottomRequested);
-            UnregisterButtonClicked(_form.PositionRotateResetButton, OnPositionRotateResetRequested);
+            UnregisterButtonClicked(_form.PositionRotateClockwise90Button, OnPositionRotateClockwise90Requested);
             UnregisterButtonClicked(_form.PositionFlipHorizontalButton, OnPositionFlipHorizontalRequested);
             UnregisterButtonClicked(_form.PositionFlipVerticalButton, OnPositionFlipVerticalRequested);
         }
@@ -207,7 +207,7 @@ namespace UnitySvgEditor.Editor
 
         private void OnPositionAlignBottomRequested() => PositionActionRequested?.Invoke(PositionAction.AlignBottom);
 
-        private void OnPositionRotateResetRequested() => PositionActionRequested?.Invoke(PositionAction.RotateReset);
+        private void OnPositionRotateClockwise90Requested() => PositionActionRequested?.Invoke(PositionAction.RotateClockwise90);
 
         private void OnPositionFlipHorizontalRequested() => PositionActionRequested?.Invoke(PositionAction.FlipHorizontal);
 

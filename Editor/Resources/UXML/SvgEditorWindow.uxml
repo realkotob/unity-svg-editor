@@ -62,7 +62,7 @@
                             <ui:VisualElement class="svg-editor__inspector-row svg-editor__position-action-row">
                                 <drag:DragNumberField name="inspector-rotate" prefix-icon-class="icon-refresh-ccw" value="0" drag-step="1" drag-sensitivity="0.1" class="svg-editor__inspector-field"/>
                                 <button:ButtonGroup class="svg-editor__position-button-group svg-editor__position-button-group--last">
-                                    <button:Button name="position-rotate-reset" variant="Ghost" size="Icon"/>
+                                    <button:Button name="position-rotate-clockwise-90" variant="Ghost" size="Icon"/>
                                     <button:Button name="position-flip-horizontal" variant="Ghost" size="Icon"/>
                                     <button:Button name="position-flip-vertical" variant="Ghost" size="Icon"/>
                                 </button:ButtonGroup>
@@ -106,7 +106,7 @@
                             </ui:VisualElement>
                             <ui:VisualElement class="svg-editor__inspector-row">
                                 <ui:VisualElement class="svg-editor__inspector-field">
-                                    <ui:Label text="Weight" class="svg-editor__inspector-meta-label"/>
+                                    <ui:Label text="Width" class="svg-editor__inspector-meta-label"/>
                                     <drag:DragNumberField name="inspector-stroke-width" prefix-icon-class="icon-maximize-2" value="1" min-value="0" drag-step="1" drag-sensitivity="0.25"/>
                                 </ui:VisualElement>
                                 <ui:VisualElement class="svg-editor__inspector-field">

@@ -29,7 +29,7 @@ namespace UnitySvgEditor.Editor
         public const string POSITION_ALIGN_TOP = IconClass.ALIGN_VERTICAL_TOP;
         public const string POSITION_ALIGN_MIDDLE = IconClass.ALIGN_VERTICAL_CENTER;
         public const string POSITION_ALIGN_BOTTOM = IconClass.ALIGN_VERTICAL_BOTTOM;
-        public const string POSITION_ROTATE_RESET = "icon-refresh-ccw";
+        public const string POSITION_ROTATE_CLOCKWISE_90 = "icon-refresh-ccw";
         public const string POSITION_FLIP_HORIZONTAL = IconClass.FLIP_HORIZONTAL;
         public const string POSITION_FLIP_VERTICAL = IconClass.FLIP_VERTICAL;
 

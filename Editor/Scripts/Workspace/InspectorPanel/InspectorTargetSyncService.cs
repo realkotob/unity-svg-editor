@@ -10,6 +10,7 @@ namespace UnitySvgEditor.Editor
         private readonly InspectorPanelView _view;
         private readonly Func<IInspectorPanelHost> _hostAccessor;
         private readonly Action _updateInteractivity;
+        private readonly CanvasTransientDocumentModelSession _rotationSession = new();
         private bool _suppressSelectionSync;
 
         public InspectorTargetSyncService(
@@ -255,8 +256,8 @@ namespace UnitySvgEditor.Editor
                 case InspectorPanelView.PositionAction.AlignBottom:
                     ApplyAlignmentAction(action);
                     break;
-                case InspectorPanelView.PositionAction.RotateReset:
-                    ApplyRotateResetAction();
+                case InspectorPanelView.PositionAction.RotateClockwise90:
+                    ApplyRotateClockwiseAction(90f);
                     break;
                 case InspectorPanelView.PositionAction.FlipHorizontal:
                     ApplyFlipAction(new Vector2(1f, -1f), "Flipped horizontally.");
@@ -339,31 +340,51 @@ namespace UnitySvgEditor.Editor
             Host.TryApplyTargetFrameRect(targetKey, desiredRect, successStatus);
         }
 
-        private void ApplyRotateResetAction()
+        private void ApplyRotateClockwiseAction(float deltaDegrees)
         {
             var targetKey = ResolveSelectedTargetKey();
-            if (string.IsNullOrWhiteSpace(targetKey))
+            if (string.IsNullOrWhiteSpace(targetKey) ||
+                string.Equals(targetKey, SvgDocumentTargets.RootTargetKey, StringComparison.Ordinal))
             {
+                Host?.UpdateSourceStatus("Rotation requires a non-root target.");
+                return;
+            }
+
+            if (!Host.TryGetTargetSceneRect(targetKey, out Rect sceneRect))
+            {
+                Host?.UpdateSourceStatus("Rotation failed: preview bounds are unavailable.");
+                return;
+            }
+
+            if (!Host.TryGetTargetParentWorldTransform(targetKey, out var parentWorldTransform))
+            {
+                Host?.UpdateSourceStatus("Rotation failed: parent transform is unavailable.");
                 return;
             }
 
             _view.CaptureState(_inspectorPanelState);
-            if (!_inspectorPanelState.TrySyncTransformHelperFromText())
+            Vector2 parentPivot = ToParentSpacePoint(parentWorldTransform, sceneRect.center);
+            if (!_rotationSession.TryBegin(Host.CurrentDocument, targetKey) ||
+                !_rotationSession.TryApplyRotation(deltaDegrees, parentPivot) ||
+                !_rotationSession.TryGetCurrentTransform(out string transform))
             {
-                Host?.UpdateSourceStatus("Rotation reset failed: transform cannot be decomposed.");
+                Host?.UpdateSourceStatus("Rotation failed: transform update could not be prepared.");
+                _rotationSession.End();
                 return;
             }
 
-            _inspectorPanelState.Rotate = 0f;
-            string transform = _inspectorPanelState.BuildTransformFromHelper();
+            _inspectorPanelState.Transform = transform;
+            _inspectorPanelState.TransformEnabled = true;
+            _inspectorPanelState.TrySyncTransformHelperFromText();
             _view.ApplyState(_inspectorPanelState);
+            _rotationSession.End();
             Host.TryApplyPatchRequest(
                 new AttributePatchRequest
                 {
                     TargetKey = targetKey,
                     Transform = transform
                 },
-                "Rotation reset.");
+                $"Rotated {deltaDegrees:+0;-0}°.");
         }
 
         private void ApplyFlipAction(Vector2 scale, string successStatus)

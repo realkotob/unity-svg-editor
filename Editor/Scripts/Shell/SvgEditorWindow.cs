@@ -30,6 +30,7 @@ namespace UnitySvgEditor.Editor
         private const string WINDOW_MENU_PATH = "Window/Unity SVG Editor/SVG Editor";
         private const string THEME_RESOURCE_PATH = "Theme/SvgEditorTheme";
         private const string WINDOW_RESOURCE_PATH = "UXML/SvgEditorWindow";
+        private const double ShortcutDedupSeconds = 0.05d;
 
         #region Variables
 
@@ -40,6 +41,9 @@ namespace UnitySvgEditor.Editor
         private readonly DocumentLifecycleController _documentLifecycleController;
 
         private EditorWorkspaceCoordinator _workspaceCoordinator;
+        private double _lastShortcutHandledAt;
+        private KeyCode _lastShortcutKey = KeyCode.None;
+        private EventModifiers _lastShortcutModifiers;
 
         VisualElement IEditorWorkspaceHost.RootVisualElement => rootVisualElement;
         DocumentSession IEditorWorkspaceHost.CurrentDocument => _documentLifecycleController.CurrentDocument;
@@ -100,6 +104,18 @@ namespace UnitySvgEditor.Editor
             _inspectorPanelController.Unbind();
             _documentLifecycleController.Dispose();
             _workspaceCoordinator?.Dispose();
+        }
+
+        private void OnGUI()
+        {
+            Event currentEvent = Event.current;
+            if (currentEvent == null || currentEvent.type != EventType.KeyDown)
+                return;
+
+            if (!TryHandleShortcut(currentEvent.keyCode, currentEvent.modifiers))
+                return;
+
+            currentEvent.Use();
         }
 
         #endregion Unity Methods
@@ -371,37 +387,60 @@ namespace UnitySvgEditor.Editor
 
         private void OnRootKeyDown(KeyDownEvent evt)
         {
-            if (_documentLifecycleController.CurrentDocument == null)
-            {
+            if (!TryHandleShortcut(evt.keyCode, evt.modifiers))
                 return;
-            }
 
-            bool isActionKeyPressed = (evt.modifiers & EventModifiers.Command) != 0 ||
-                                      (evt.modifiers & EventModifiers.Control) != 0;
-            if (!isActionKeyPressed)
-            {
-                return;
-            }
+            evt.StopPropagation();
+        }
+
+        private bool TryHandleShortcut(KeyCode keyCode, EventModifiers modifiers)
+        {
+            if (_documentLifecycleController.CurrentDocument == null)
+                return false;
+
+            EventModifiers normalizedModifiers = NormalizeShortcutModifiers(modifiers);
+            if ((normalizedModifiers & (EventModifiers.Command | EventModifiers.Control)) == 0)
+                return false;
+
+            if (IsDuplicateShortcut(keyCode, normalizedModifiers))
+                return true;
 
             bool handled = false;
-            if (evt.keyCode == KeyCode.Z)
+            if (keyCode == KeyCode.Z)
             {
-                handled = (evt.modifiers & EventModifiers.Shift) != 0
+                handled = (normalizedModifiers & EventModifiers.Shift) != 0
                     ? _documentLifecycleController.TryRedo()
                     : _documentLifecycleController.TryUndo();
             }
-            else if (evt.keyCode == KeyCode.S)
+            else if (keyCode == KeyCode.S)
             {
                 _documentLifecycleController.SaveCurrentDocument();
                 handled = true;
             }
 
-            if (!handled)
-            {
-                return;
-            }
+            if (handled)
+                RememberHandledShortcut(keyCode, normalizedModifiers);
 
-            evt.StopPropagation();
+            return handled;
+        }
+
+        private bool IsDuplicateShortcut(KeyCode keyCode, EventModifiers modifiers)
+        {
+            return keyCode == _lastShortcutKey &&
+                   modifiers == _lastShortcutModifiers &&
+                   EditorApplication.timeSinceStartup - _lastShortcutHandledAt <= ShortcutDedupSeconds;
+        }
+
+        private void RememberHandledShortcut(KeyCode keyCode, EventModifiers modifiers)
+        {
+            _lastShortcutHandledAt = EditorApplication.timeSinceStartup;
+            _lastShortcutKey = keyCode;
+            _lastShortcutModifiers = modifiers;
+        }
+
+        private static EventModifiers NormalizeShortcutModifiers(EventModifiers modifiers)
+        {
+            return modifiers & (EventModifiers.Command | EventModifiers.Control | EventModifiers.Shift);
         }
 
         private void ApplyPositionIcons()
@@ -412,7 +451,7 @@ namespace UnitySvgEditor.Editor
             ApplyButtonIcon("position-align-top", SvgEditorIconClass.POSITION_ALIGN_TOP);
             ApplyButtonIcon("position-align-middle", SvgEditorIconClass.POSITION_ALIGN_MIDDLE);
             ApplyButtonIcon("position-align-bottom", SvgEditorIconClass.POSITION_ALIGN_BOTTOM);
-            ApplyButtonIcon("position-rotate-reset", SvgEditorIconClass.POSITION_ROTATE_RESET);
+            ApplyButtonIcon("position-rotate-clockwise-90", SvgEditorIconClass.POSITION_ROTATE_CLOCKWISE_90);
             ApplyButtonIcon("position-flip-horizontal", SvgEditorIconClass.POSITION_FLIP_HORIZONTAL);
             ApplyButtonIcon("position-flip-vertical", SvgEditorIconClass.POSITION_FLIP_VERTICAL);
         }

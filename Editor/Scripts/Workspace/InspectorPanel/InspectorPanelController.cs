@@ -147,7 +147,7 @@ namespace UnitySvgEditor.Editor
             SetEnabledIfNotNull(_view.PositionAlignTopControl, hasDocument);
             SetEnabledIfNotNull(_view.PositionAlignMiddleControl, hasDocument);
             SetEnabledIfNotNull(_view.PositionAlignBottomControl, hasDocument);
-            SetEnabledIfNotNull(_view.PositionRotateResetControl, hasDocument);
+            SetEnabledIfNotNull(_view.PositionRotateClockwise90Control, hasDocument);
             SetEnabledIfNotNull(_view.PositionFlipHorizontalControl, hasDocument);
             SetEnabledIfNotNull(_view.PositionFlipVerticalControl, hasDocument);
         }
