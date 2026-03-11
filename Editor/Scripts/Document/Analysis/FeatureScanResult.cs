@@ -10,6 +10,8 @@ namespace UnitySvgEditor.Editor
         public bool HasMask { get; set; }
         public bool HasFilter { get; set; }
         public bool HasText { get; set; }
+        public bool HasTspan { get; set; }
+        public bool HasTextPath { get; set; }
         public bool HasImage { get; set; }
         public bool HasUse { get; set; }
         public bool HasStyleTag { get; set; }

@@ -132,12 +132,13 @@ namespace UnitySvgEditor.Editor
                 _sceneProjector.TryResolveSelectedElementSceneRect(PreviewSnapshot, _host.SelectedElementKey, out Rect selectedElementSceneRect) &&
                 _sceneProjector.TrySceneRectToViewportRect(PreviewSnapshot, selectedElementSceneRect, out Rect elementViewportRect))
             {
+                bool showHandles = !IsResizeUnsupported(_host.SelectedElementKey);
                 _overlayController.SetSelection(_sceneProjector.BuildSelectionVisual(
                     PreviewSnapshot,
                     CanvasSelectionKind.Element,
                     elementViewportRect,
                     selectedElementSceneRect.size,
-                    true));
+                    showHandles));
                 return;
             }
 
@@ -202,5 +203,12 @@ namespace UnitySvgEditor.Editor
         void ICanvasPointerDragHost.SetHoveredElement(string elementKey) => SetHoveredElement(elementKey);
         void ICanvasPointerDragHost.ClearHover() => ClearHover();
         void ICanvasPointerDragHost.UpdateHoverVisual() => UpdateHoverVisual();
+
+        private bool IsResizeUnsupported(string elementKey)
+        {
+            string tagName = _host.FindStructureNode(elementKey)?.TagName;
+            return string.Equals(tagName, "tspan", System.StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(tagName, "textPath", System.StringComparison.OrdinalIgnoreCase);
+        }
     }
 }

@@ -53,8 +53,13 @@ namespace UnitySvgEditor.Editor
                         result.HasFilter = true;
                         break;
                     case "text":
-                    case "textPath":
                         result.HasText = true;
+                        break;
+                    case "tspan":
+                        result.HasTspan = true;
+                        break;
+                    case "textPath":
+                        result.HasTextPath = true;
                         break;
                     case "image":
                         result.HasImage = true;

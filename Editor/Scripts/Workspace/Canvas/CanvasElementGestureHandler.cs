@@ -40,6 +40,14 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
+            string tagName = _host.FindStructureNode(_host.SelectedElementKey)?.TagName;
+            if (string.Equals(tagName, "tspan", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(tagName, "textPath", StringComparison.OrdinalIgnoreCase))
+            {
+                _host.UpdateSourceStatus($"Resize is not supported for <{tagName}>. Move/select is still available.");
+                return false;
+            }
+
             PreviewElementGeometry selectedGeometry = _sceneProjector.FindPreviewElement(_host.PreviewSnapshot, _host.SelectedElementKey);
             Matrix2D parentWorldTransform = selectedGeometry?.ParentWorldTransform ?? Matrix2D.identity;
             BeginResize(

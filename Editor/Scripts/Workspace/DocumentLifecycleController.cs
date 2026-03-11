@@ -1,5 +1,6 @@
 using System;
 using UnityEditor;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace UnitySvgEditor.Editor
@@ -138,6 +139,7 @@ namespace UnitySvgEditor.Editor
                 return;
 
             SyncCurrentSource("Loaded SVG source.", keepExistingPreviewOnFailure: false, updateSourceField: true);
+            LogRendererDiagnostics();
             WorkspaceCoordinator?.ResetCanvasView(clearSelection: true);
         }
 
@@ -157,6 +159,17 @@ namespace UnitySvgEditor.Editor
             WorkspaceCoordinator?.RefreshStructureViews();
             _updateEditorInteractivity?.Invoke();
             _view.SetStatus(status);
+        }
+
+        private void LogRendererDiagnostics()
+        {
+            if (CurrentDocument == null)
+                return;
+
+            FeatureScanResult scanResult = FeatureScanner.Scan(CurrentDocument.WorkingSourceText);
+            string warning = RendererSupportDiagnostics.BuildConsoleWarning(scanResult);
+            if (!string.IsNullOrWhiteSpace(warning))
+                Debug.LogWarning(warning);
         }
 
         private void OnSaveClicked()
