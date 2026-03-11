@@ -60,7 +60,7 @@
                             </ui:VisualElement>
                             <ui:Label text="Rotation" name="Label" class="svg-editor__inspector-meta-label"/>
                             <ui:VisualElement class="svg-editor__inspector-row svg-editor__position-action-row">
-                                <drag:DragNumberField name="inspector-rotate" prefix-icon-class="icon-refresh-ccw" value="0" drag-step="1" drag-sensitivity="0.1" class="svg-editor__inspector-field"/>
+                                <drag:DragNumberField name="inspector-rotate" prefix-icon-class="icon-angle-right" value="0" drag-step="1" drag-sensitivity="0.1" class="svg-editor__inspector-field"/>
                                 <button:ButtonGroup class="svg-editor__position-button-group svg-editor__position-button-group--last">
                                     <button:Button name="position-rotate-clockwise-90" variant="Ghost" size="Icon"/>
                                     <button:Button name="position-flip-horizontal" variant="Ghost" size="Icon"/>
@@ -83,11 +83,11 @@
                             <ui:VisualElement class="svg-editor__inspector-row">
                                 <ui:VisualElement class="svg-editor__inspector-field">
                                     <ui:Label text="Opacity" class="svg-editor__inspector-meta-label"/>
-                                    <drag:DragNumberField name="inspector-opacity" prefix-icon-class="icon-circle" value="100" min-value="0" max-value="100" drag-step="1" drag-sensitivity="0.25"/>
+                                    <drag:DragNumberField name="inspector-opacity" prefix-icon-class="icon-opacity" value="100" min-value="0" max-value="100" drag-step="1" drag-sensitivity="0.25"/>
                                 </ui:VisualElement>
                                 <ui:VisualElement class="svg-editor__inspector-field svg-editor__inspector-field--last">
                                     <ui:Label text="Corner radius" class="svg-editor__inspector-meta-label"/>
-                                    <drag:DragNumberField name="inspector-corner-radius" prefix-icon-class="icon-maximize-2" value="0" min-value="0" drag-step="1" drag-sensitivity="0.25"/>
+                                    <drag:DragNumberField name="inspector-corner-radius" prefix-icon-class="icon-maximize" value="0" min-value="0" drag-step="1" drag-sensitivity="0.25"/>
                                 </ui:VisualElement>
                             </ui:VisualElement>
                         </ui:VisualElement>
@@ -107,15 +107,15 @@
                             <ui:VisualElement class="svg-editor__inspector-row">
                                 <ui:VisualElement class="svg-editor__inspector-field">
                                     <ui:Label text="Width" class="svg-editor__inspector-meta-label"/>
-                                    <drag:DragNumberField name="inspector-stroke-width" prefix-icon-class="icon-maximize-2" value="1" min-value="0" drag-step="1" drag-sensitivity="0.25"/>
+                                    <drag:DragNumberField name="inspector-stroke-width" prefix-icon-class="icon-border-width" value="1" min-value="0" drag-step="1" drag-sensitivity="0.25"/>
                                 </ui:VisualElement>
                                 <ui:VisualElement class="svg-editor__inspector-field">
                                     <ui:Label text="Dash" class="svg-editor__inspector-meta-label"/>
-                                    <drag:DragNumberField name="inspector-dash-length" prefix-icon-class="icon-refresh-ccw" value="4" min-value="0" drag-step="1" drag-sensitivity="0.25"/>
+                                    <drag:DragNumberField name="inspector-dash-length" prefix-icon-class="icon-dash" value="4" min-value="0" drag-step="1" drag-sensitivity="0.25"/>
                                 </ui:VisualElement>
                                 <ui:VisualElement class="svg-editor__inspector-field svg-editor__inspector-field--last">
                                     <ui:Label text="Gap" class="svg-editor__inspector-meta-label"/>
-                                    <drag:DragNumberField name="inspector-dash-gap" prefix-icon-class="icon-circle" value="2" min-value="0" drag-step="1" drag-sensitivity="0.25"/>
+                                    <drag:DragNumberField name="inspector-dash-gap" prefix-icon-class="icon-gap" value="2" min-value="0" drag-step="1" drag-sensitivity="0.25"/>
                                 </ui:VisualElement>
                             </ui:VisualElement>
                             <ui:VisualElement class="svg-editor__inspector-row">
