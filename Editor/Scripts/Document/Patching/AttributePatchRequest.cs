@@ -2,7 +2,7 @@ namespace UnitySvgEditor.Editor
 {
     internal sealed class AttributePatchRequest
     {
-        public string TargetKey { get; set; } = AttributePatcher.ROOT_TARGET_KEY;
+        public string TargetKey { get; set; } = SvgDocumentTargets.RootTargetKey;
         public string Fill { get; set; }
         public string Stroke { get; set; }
         public string StrokeWidth { get; set; }
@@ -12,6 +12,8 @@ namespace UnitySvgEditor.Editor
         public string StrokeLinecap { get; set; }
         public string StrokeLinejoin { get; set; }
         public string StrokeDasharray { get; set; }
+        public string CornerRadiusX { get; set; }
+        public string CornerRadiusY { get; set; }
         public string Transform { get; set; }
         public string Display { get; set; }
     }

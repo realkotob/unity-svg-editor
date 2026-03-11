@@ -21,6 +21,8 @@ namespace UnitySvgEditor.Editor
                    request.StrokeLinecap != null ||
                    request.StrokeLinejoin != null ||
                    request.StrokeDasharray != null ||
+                   request.CornerRadiusX != null ||
+                   request.CornerRadiusY != null ||
                    request.Transform != null ||
                    request.Display != null;
         }
@@ -65,6 +67,8 @@ namespace UnitySvgEditor.Editor
             ApplyAttribute(attributes, "stroke-linecap", request.StrokeLinecap);
             ApplyAttribute(attributes, "stroke-linejoin", request.StrokeLinejoin);
             ApplyAttribute(attributes, "stroke-dasharray", request.StrokeDasharray);
+            ApplyAttribute(attributes, "rx", request.CornerRadiusX);
+            ApplyAttribute(attributes, "ry", request.CornerRadiusY);
             ApplyAttribute(attributes, "transform", request.Transform);
             ApplyAttribute(attributes, "display", request.Display);
 
@@ -252,9 +256,9 @@ namespace UnitySvgEditor.Editor
                 return false;
 
             string normalizedTargetKey = string.IsNullOrWhiteSpace(targetKey)
-                ? AttributePatcher.ROOT_TARGET_KEY
+                ? SvgDocumentTargets.RootTargetKey
                 : targetKey;
-            if (string.Equals(normalizedTargetKey, AttributePatcher.ROOT_TARGET_KEY, StringComparison.Ordinal))
+            if (string.Equals(normalizedTargetKey, SvgDocumentTargets.RootTargetKey, StringComparison.Ordinal))
             {
                 node = documentModel.Root;
                 return true;

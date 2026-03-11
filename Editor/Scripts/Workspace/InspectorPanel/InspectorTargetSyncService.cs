@@ -6,7 +6,6 @@ namespace UnitySvgEditor.Editor
 {
     internal sealed class InspectorTargetSyncService
     {
-        private readonly AttributePatcher _attributePatcher;
         private readonly InspectorPanelState _inspectorPanelState;
         private readonly InspectorPanelView _view;
         private readonly Func<IInspectorPanelHost> _hostAccessor;
@@ -18,18 +17,7 @@ namespace UnitySvgEditor.Editor
             InspectorPanelView view,
             Func<IInspectorPanelHost> hostAccessor,
             Action updateInteractivity)
-            : this(new AttributePatcher(), inspectorPanelState, view, hostAccessor, updateInteractivity)
         {
-        }
-
-        public InspectorTargetSyncService(
-            AttributePatcher attributePatcher,
-            InspectorPanelState inspectorPanelState,
-            InspectorPanelView view,
-            Func<IInspectorPanelHost> hostAccessor,
-            Action updateInteractivity)
-        {
-            _attributePatcher = attributePatcher;
             _inspectorPanelState = inspectorPanelState;
             _view = view;
             _hostAccessor = hostAccessor;
@@ -48,20 +36,25 @@ namespace UnitySvgEditor.Editor
             _view.ApplyState(_inspectorPanelState);
         }
 
-        public void RefreshTargets(string sourceText)
+        public void RefreshTargets()
+        {
+            RefreshTargets(ResolveCurrentDocumentModel());
+        }
+
+        public void RefreshTargets(SvgDocumentModel documentModel)
         {
             if (!_view.IsBound)
             {
                 return;
             }
 
-            IReadOnlyList<PatchTarget> targets = TryResolveDocumentModel(sourceText, out SvgDocumentModel documentModel)
+            IReadOnlyList<PatchTarget> targets = documentModel != null
                 ? InspectorDocumentModelReader.ExtractTargets(documentModel)
-                : _attributePatcher.ExtractTargets(ResolveSourceText(sourceText));
+                : Array.Empty<PatchTarget>();
 
             _inspectorPanelState.SetTargets(targets);
             ApplyCurrentStateToView();
-            ReadSelectedTargetAttributes(sourceText);
+            ReadSelectedTargetAttributes(documentModel);
         }
 
         public bool TrySelectTargetByKey(string targetKey, out string label)
@@ -73,9 +66,7 @@ namespace UnitySvgEditor.Editor
             }
 
             if (!_inspectorPanelState.TrySelectTargetByKey(targetKey, out label))
-            {
                 return false;
-            }
 
             ReadSelectedTargetAttributes();
             return true;
@@ -85,31 +76,33 @@ namespace UnitySvgEditor.Editor
 
         public void ReadSelectedTargetAttributes()
         {
-            ReadSelectedTargetAttributes(null);
+            ReadSelectedTargetAttributes(ResolveCurrentDocumentModel());
         }
 
-        private void ReadSelectedTargetAttributes(string sourceTextOverride)
+        private void ReadSelectedTargetAttributes(SvgDocumentModel documentModel)
         {
             if (Host?.CurrentDocument == null)
             {
                 return;
             }
 
-            var sourceText = string.IsNullOrWhiteSpace(sourceTextOverride)
-                ? Host.CurrentDocument.WorkingSourceText
-                : sourceTextOverride;
+            string error = documentModel == null
+                ? "Document model was not available."
+                : string.Empty;
 
-            if (!TryReadAttributesFromModelOrFallback(
-                    sourceText,
+            if (documentModel == null ||
+                !InspectorDocumentModelReader.TryReadAttributes(
+                    documentModel,
                     ResolveSelectedTargetKey(),
                     out Dictionary<string, string> attributes,
-                    out string error))
+                    out string tagName,
+                    out error))
             {
                 Host.UpdateSourceStatus($"Read target failed: {error}");
                 return;
             }
 
-            _inspectorPanelState.SyncFromAttributes(attributes);
+            _inspectorPanelState.SyncFromAttributes(attributes, tagName);
             SyncFramePositionFromPreview();
             _view.ApplyState(_inspectorPanelState);
             _updateInteractivity?.Invoke();
@@ -164,7 +157,7 @@ namespace UnitySvgEditor.Editor
 
             var targetKey = ResolveSelectedTargetKey();
             if (string.IsNullOrWhiteSpace(targetKey) ||
-                string.Equals(targetKey, AttributePatcher.ROOT_TARGET_KEY, StringComparison.Ordinal) ||
+                string.Equals(targetKey, SvgDocumentTargets.RootTargetKey, StringComparison.Ordinal) ||
                 !Host.TryGetTargetSceneRect(targetKey, out _))
             {
                 return;
@@ -249,7 +242,7 @@ namespace UnitySvgEditor.Editor
             var targetKey = ResolveSelectedTargetKey();
             if (Host == null ||
                 string.IsNullOrWhiteSpace(targetKey) ||
-                string.Equals(targetKey, AttributePatcher.ROOT_TARGET_KEY, StringComparison.Ordinal) ||
+                string.Equals(targetKey, SvgDocumentTargets.RootTargetKey, StringComparison.Ordinal) ||
                 !Host.TryGetTargetSceneRect(targetKey, out var sceneRect))
             {
                 return;
@@ -266,7 +259,7 @@ namespace UnitySvgEditor.Editor
         {
             var targetKey = ResolveSelectedTargetKey();
             if (string.IsNullOrWhiteSpace(targetKey) ||
-                string.Equals(targetKey, AttributePatcher.ROOT_TARGET_KEY, StringComparison.Ordinal))
+                string.Equals(targetKey, SvgDocumentTargets.RootTargetKey, StringComparison.Ordinal))
             {
                 Host?.UpdateSourceStatus("Alignment requires a non-root target.");
                 return;
@@ -343,7 +336,7 @@ namespace UnitySvgEditor.Editor
         {
             var targetKey = ResolveSelectedTargetKey();
             if (string.IsNullOrWhiteSpace(targetKey) ||
-                string.Equals(targetKey, AttributePatcher.ROOT_TARGET_KEY, StringComparison.Ordinal))
+                string.Equals(targetKey, SvgDocumentTargets.RootTargetKey, StringComparison.Ordinal))
             {
                 Host?.UpdateSourceStatus("Flip requires a non-root target.");
                 return;
@@ -399,51 +392,16 @@ namespace UnitySvgEditor.Editor
             return $"{transformSegment} {existingTransform}";
         }
 
-        private bool TryReadAttributesFromModelOrFallback(
-            string sourceText,
-            string targetKey,
-            out Dictionary<string, string> attributes,
-            out string error)
+        private SvgDocumentModel ResolveCurrentDocumentModel()
         {
-            if (TryResolveDocumentModel(sourceText, out SvgDocumentModel documentModel) &&
-                InspectorDocumentModelReader.TryReadAttributes(documentModel, targetKey, out attributes, out error))
-            {
-                return true;
-            }
-
-            return _attributePatcher.TryReadAttributes(
-                sourceText,
-                targetKey,
-                out attributes,
-                out error);
-        }
-
-        private bool TryResolveDocumentModel(string sourceTextOverride, out SvgDocumentModel documentModel)
-        {
-            documentModel = null;
             if (Host?.CurrentDocument == null ||
                 Host.CurrentDocument.DocumentModel == null ||
                 !string.IsNullOrWhiteSpace(Host.CurrentDocument.DocumentModelLoadError))
             {
-                return false;
+                return null;
             }
 
-            if (!string.IsNullOrWhiteSpace(sourceTextOverride) &&
-                !string.Equals(sourceTextOverride, Host.CurrentDocument.WorkingSourceText, StringComparison.Ordinal))
-            {
-                return false;
-            }
-
-            documentModel = Host.CurrentDocument.DocumentModel;
-            return documentModel != null;
-        }
-
-        private string ResolveSourceText(string sourceTextOverride)
-        {
-            if (!string.IsNullOrWhiteSpace(sourceTextOverride))
-                return sourceTextOverride;
-
-            return Host?.CurrentDocument?.WorkingSourceText ?? string.Empty;
+            return Host.CurrentDocument.DocumentModel;
         }
     }
 }

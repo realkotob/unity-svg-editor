@@ -15,6 +15,7 @@ namespace UnitySvgEditor.Editor
             StrokeColor = Color.black;
             StrokeWidth = 1f;
             Opacity = 1f;
+            CornerRadius = 0f;
             FillOpacity = 1f;
             StrokeOpacity = 1f;
             DashLength = 4f;
@@ -37,6 +38,8 @@ namespace UnitySvgEditor.Editor
         public float StrokeWidth { get; set; }
         public bool OpacityEnabled { get; set; }
         public float Opacity { get; set; }
+        public bool CornerRadiusEnabled { get; set; }
+        public float CornerRadius { get; set; }
         public bool FillOpacityEnabled { get; set; }
         public float FillOpacity { get; set; }
         public bool StrokeOpacityEnabled { get; set; }
@@ -95,9 +98,9 @@ namespace UnitySvgEditor.Editor
             return InspectorPanelStateValueCodec.TrySyncTransformHelperFromText(this);
         }
 
-        public void SyncFromAttributes(IReadOnlyDictionary<string, string> attributes)
+        public void SyncFromAttributes(IReadOnlyDictionary<string, string> attributes, string tagName)
         {
-            InspectorPanelStateValueCodec.SyncFromAttributes(this, attributes);
+            InspectorPanelStateValueCodec.SyncFromAttributes(this, attributes, tagName);
         }
     }
 }

@@ -10,8 +10,9 @@ namespace UnitySvgEditor.Editor
         CanvasSelectionKind SelectionKind { get; set; }
 
         void RefreshLivePreview(bool keepExistingPreviewOnFailure);
-        bool TryRefreshTransientPreview(string sourceText);
-        void RefreshInspectorFromSource(string sourceText);
+        bool TryRefreshTransientPreview(SvgDocumentModel documentModel);
+        void RefreshInspector();
+        void RefreshInspector(SvgDocumentModel documentModel);
         void ApplyUpdatedSource(string updatedSource, string successStatus);
         void UpdateSourceStatus(string status);
         StructureNode FindStructureNode(string elementKey);

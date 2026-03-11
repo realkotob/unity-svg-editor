@@ -37,9 +37,11 @@ namespace UnitySvgEditor.Editor
             SvgDocumentModel documentModel,
             string targetKey,
             out Dictionary<string, string> attributes,
+            out string tagName,
             out string error)
         {
             attributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            tagName = string.Empty;
             error = string.Empty;
 
             if (documentModel?.Root == null)
@@ -49,7 +51,7 @@ namespace UnitySvgEditor.Editor
             }
 
             string normalizedTargetKey = string.IsNullOrWhiteSpace(targetKey)
-                ? AttributePatcher.ROOT_TARGET_KEY
+                ? SvgDocumentTargets.RootTargetKey
                 : targetKey;
 
             if (!TryFindNodeByTargetKey(documentModel, normalizedTargetKey, out SvgNodeModel node))
@@ -57,6 +59,8 @@ namespace UnitySvgEditor.Editor
                 error = $"Could not find target '{normalizedTargetKey}'.";
                 return false;
             }
+
+            tagName = node.TagName ?? string.Empty;
 
             if (node.RawAttributes == null)
                 return true;

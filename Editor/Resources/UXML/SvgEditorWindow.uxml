@@ -28,7 +28,7 @@
                 <ui:ScrollView name="inspector-panel" mode="Vertical" vertical-scroller-visibility="Hidden" horizontal-scroller-visibility="Hidden" class="svg-editor__inspector-panel">
                     <ui:VisualElement name="design-inspector" class="svg-editor__inspector-mode">
                         <ui:VisualElement name="position-panel" class="svg-editor__inspector-section svg-editor__inspector-card">
-                            <ui:Label text="Position" class="svg-editor__subsection-title"/>
+                            <ui:Label text="Position" class="svg-editor__subsection-title mt-2"/>
                             <ui:Label text="Alignment" class="svg-editor__inspector-meta-label"/>
                             <ui:VisualElement class="svg-editor__inspector-row svg-editor__position-action-row">
                                 <button:ButtonGroup class="svg-editor__position-button-group">
@@ -47,11 +47,7 @@
                                 <drag:DragNumberField name="inspector-frame-x" prefix="X" value="0" drag-step="1" drag-sensitivity="0.25" class="svg-editor__inspector-field"/>
                                 <drag:DragNumberField name="inspector-frame-y" prefix="Y" value="0" drag-step="1" drag-sensitivity="0.25" class="svg-editor__inspector-field svg-editor__inspector-field--last"/>
                             </ui:VisualElement>
-                            <ui:VisualElement class="svg-editor__inspector-row">
-                                <drag:DragNumberField name="inspector-frame-width" prefix="W" value="0" min-value="0" drag-step="1" drag-sensitivity="0.25" class="svg-editor__inspector-field"/>
-                                <drag:DragNumberField name="inspector-frame-height" prefix="H" value="0" min-value="0" drag-step="1" drag-sensitivity="0.25" class="svg-editor__inspector-field svg-editor__inspector-field--last"/>
-                            </ui:VisualElement>
-                            <ui:Label text="Rotation" class="svg-editor__inspector-meta-label"/>
+                            <ui:Label text="Rotation" name="Label" class="svg-editor__inspector-meta-label"/>
                             <ui:VisualElement class="svg-editor__inspector-row svg-editor__position-action-row">
                                 <drag:DragNumberField name="inspector-rotate" prefix-icon-class="icon-refresh-ccw" value="0" drag-step="1" drag-sensitivity="0.1" class="svg-editor__inspector-field"/>
                                 <button:ButtonGroup class="svg-editor__position-button-group svg-editor__position-button-group--last">
@@ -61,10 +57,27 @@
                                 </button:ButtonGroup>
                             </ui:VisualElement>
                         </ui:VisualElement>
+                        <Core.UI.Foundation.Components.Separator.Separator class="svg-editor__inspector-separator"/>
+                        <ui:VisualElement name="layout-panel" class="svg-editor__inspector-section svg-editor__inspector-card">
+                            <ui:Label text="Layout" class="svg-editor__subsection-title"/>
+                            <ui:Label text="Dimenssions" class="svg-editor__inspector-meta-label"/>
+                            <ui:VisualElement class="svg-editor__inspector-row">
+                                <drag:DragNumberField name="inspector-frame-width" prefix="W" value="0" min-value="0" drag-step="1" drag-sensitivity="0.25" class="svg-editor__inspector-field"/>
+                                <drag:DragNumberField name="inspector-frame-height" prefix="H" value="0" min-value="0" drag-step="1" drag-sensitivity="0.25" class="svg-editor__inspector-field svg-editor__inspector-field--last"/>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                        <Core.UI.Foundation.Components.Separator.Separator class="svg-editor__inspector-separator"/>
                         <ui:VisualElement name="appearance-panel" class="svg-editor__inspector-section svg-editor__inspector-card">
                             <ui:Label text="Appearance" class="svg-editor__subsection-title"/>
-                            <ui:VisualElement class="svg-editor__inspector-field">
-                                <ui:Slider name="inspector-opacity" label="Opacity" low-value="0" high-value="1" value="1"/>
+                            <ui:VisualElement class="svg-editor__inspector-row">
+                                <ui:VisualElement class="svg-editor__inspector-field">
+                                    <ui:Label text="Opacity" class="svg-editor__inspector-meta-label"/>
+                                    <drag:DragNumberField name="inspector-opacity" prefix-icon-class="icon-circle" value="100" min-value="0" max-value="100" drag-step="1" drag-sensitivity="0.25"/>
+                                </ui:VisualElement>
+                                <ui:VisualElement class="svg-editor__inspector-field svg-editor__inspector-field--last">
+                                    <ui:Label text="Corner radius" class="svg-editor__inspector-meta-label"/>
+                                    <drag:DragNumberField name="inspector-corner-radius" prefix-icon-class="icon-maximize-2" value="0" min-value="0" drag-step="1" drag-sensitivity="0.25"/>
+                                </ui:VisualElement>
                             </ui:VisualElement>
                         </ui:VisualElement>
                         <Core.UI.Foundation.Components.Separator.Separator class="svg-editor__inspector-separator"/>
@@ -109,9 +122,9 @@
                         <ui:VisualElement name="document-panel" class="svg-editor__inspector-section svg-editor__inspector-card">
                             <ui:Label text="Document" class="svg-editor__subsection-title"/>
                             <ui:VisualElement class="svg-editor__inspector-row">
-                                <ui:Button name="source-save" text="Save &amp; Reimport" class="svg-editor__inspector-btn svg-editor__inspector-btn--last"/>
+                                <ui:Button name="document-save" text="Save &amp; Reimport" class="svg-editor__inspector-btn svg-editor__inspector-btn--last"/>
                             </ui:VisualElement>
-                            <ui:Label name="source-status" text="Select an SVG asset to begin." class="svg-editor__source-status"/>
+                            <ui:Label name="document-status" text="Select an SVG asset to begin." class="svg-editor__document-status"/>
                         </ui:VisualElement>
                     </ui:VisualElement>
                 </ui:ScrollView>

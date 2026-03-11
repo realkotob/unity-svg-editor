@@ -67,30 +67,20 @@
 - [InspectorTargetSelectionState.cs](/Users/maemi/Documents/Git/04.Unity/CoreLibrary/Assets/unity-svg-editor/Editor/Scripts/Workspace/InspectorPanel/InspectorTargetSelectionState.cs)
 - [InspectorTargetSyncService.cs](/Users/maemi/Documents/Git/04.Unity/CoreLibrary/Assets/unity-svg-editor/Editor/Scripts/Workspace/InspectorPanel/InspectorTargetSyncService.cs)
 
-## 의도적으로 남겨둔 것
+## cleanup 기준 메모
 
-아래는 이름에 `Patch`가 남아 있어도 지금은 의도된 상태다.
+cleanup 단계 기준으로 아래 원칙을 고정한다.
 
-- `PatchTarget`
-- `AttributePatchRequest`
-- `AttributePatcher`
-
-이건 UI 레이어가 아니라 SVG source patch 도메인 타입이다.
+- inspector read/update 경로는 document model만 사용한다
+- drag 중 inspector 값도 transient document model 기준으로 실시간 갱신한다
+- XML source editor / code inspector는 다시 살리지 않는다
+- edit-time XML patch 경로는 늘리지 않는다
 
 ## 아직 안 끝난 것
 
-### 1. Inspector 편집 흐름 완성
+### 1. Inspector 편집 흐름
 
-지금 UI는 inspector처럼 보이지만, 아직 실제 편집 흐름은 완전히 정리되지 않았다.
-
-결정이 필요한 항목:
-
-- 값 변경 시 즉시 반영할지
-- 포커스 아웃 시 반영할지
-- 엔터 시 반영할지
-- `Build Transform` 버튼은 유지할지
-
-추천 방향:
+핵심 필드는 model mutation 기준 즉시 반영으로 수렴한다.
 
 - `Opacity`
 - `Fill Color`
@@ -99,17 +89,10 @@
 - `Line Cap / Line Join`
 - `Dash Length / Dash Gap`
 
-위 항목부터 `즉시 반영`으로 바꾸는 것이 좋다.
+### 2. 내부 target 모델
 
-### 2. 내부 target 모델 정리
-
-UI에서는 target/read/apply를 거의 걷어냈지만 내부는 아직 target 기반 state를 유지한다.
-다음 단계에서 아래 중 하나를 선택해야 한다.
-
-- 선택된 element를 자동 target으로 간주하고 내부 모델도 단순화
-- 혹은 target 모델은 유지하되 UI는 계속 숨김
-
-현재는 후자 상태다.
+UI에서 target/read/apply patch 흐름을 다시 드러내지 않는다.
+내부 target key는 selection sync와 root/non-root 구분용 상태로만 유지한다.
 
 ### 3. 실제 화면 기준 미세 조정
 
@@ -162,12 +145,12 @@ UI에서는 target/read/apply를 거의 걷어냈지만 내부는 아직 target 
 
 우선순위는 이 순서가 맞다.
 
-1. Inspector core field 즉시 반영 정책 확정
-2. `Opacity / Fill / Stroke / Stroke Width / Dash / Join`에 대해 실제 source patch 연결
+1. runtime inspector read path에서 XML fallback 제거 유지
+2. drag/resize transient model과 inspector 실시간 동기 유지
 3. `Position` 섹션의 `Transform` helper와 직접 입력 충돌 정리
-4. target 기반 내부 상태를 계속 유지할지 축소할지 결정
+4. dead code와 `source/patch` 용어 잔존 정리
 
 한 줄 요약:
 
-- UI 정리와 이름 정리는 끝났다
-- 다음은 “실제 편집이 언제 반영되는가”를 구현하는 단계다
+- inspector는 patch tool이 아니라 model-driven editor UI다
+- 다음 작업은 그 전제를 흔드는 fallback과 용어를 정리하는 것이다

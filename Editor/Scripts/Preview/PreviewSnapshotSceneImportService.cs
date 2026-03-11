@@ -79,6 +79,28 @@ namespace UnitySvgEditor.Editor
             return FinalizePreviewVectorImage(vectorImage ?? VectorUtils.BuildVectorImage(sceneInfo));
         }
 
+        public static VectorImage BuildPreviewVectorImage(Scene scene, Dictionary<SceneNode, float> nodeOpacity, Rect previewRect)
+        {
+            IEnumerable<VectorUtils.Geometry> geometries = VectorUtils.TessellateScene(
+                scene,
+                PreviewBuildOptions.CreateTessellationOptions(),
+                nodeOpacity);
+
+            if (InternalBuildVectorImageMethod == null)
+                return FinalizePreviewVectorImage(VectorUtils.BuildVectorImage(geometries, PreviewBuildOptions.GRADIENT_RESOLUTION));
+
+            VectorImage vectorImage = InternalBuildVectorImageMethod.Invoke(
+                null,
+                new object[]
+                {
+                    geometries,
+                    previewRect,
+                    PreviewBuildOptions.GRADIENT_RESOLUTION
+                }) as VectorImage;
+
+            return FinalizePreviewVectorImage(vectorImage ?? VectorUtils.BuildVectorImage(geometries, PreviewBuildOptions.GRADIENT_RESOLUTION));
+        }
+
         private static VectorImage FinalizePreviewVectorImage(VectorImage vectorImage)
         {
             if (vectorImage == null)

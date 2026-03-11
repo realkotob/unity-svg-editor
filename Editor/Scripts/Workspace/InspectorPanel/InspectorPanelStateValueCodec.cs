@@ -23,6 +23,7 @@ namespace UnitySvgEditor.Editor
 
             request.StrokeWidth = state.StrokeWidthEnabled ? FormatNumber(Mathf.Max(0f, state.StrokeWidth)) : null;
             request.Opacity = state.OpacityEnabled ? FormatNumber(Mathf.Clamp01(state.Opacity)) : null;
+            ApplyCornerRadius(request, state);
             request.StrokeLinecap = state.StrokeLinecap;
             request.StrokeLinejoin = state.StrokeLinejoin;
             request.StrokeDasharray = state.DasharrayEnabled ? BuildDasharrayValue(state) : null;
@@ -37,6 +38,9 @@ namespace UnitySvgEditor.Editor
             {
                 case InspectorPanelView.ImmediateApplyField.Opacity:
                     request.Opacity = FormatNumber(Mathf.Clamp01(state.Opacity));
+                    break;
+                case InspectorPanelView.ImmediateApplyField.CornerRadius:
+                    ApplyCornerRadius(request, state);
                     break;
                 case InspectorPanelView.ImmediateApplyField.FillColor:
                     ApplyFill(request, state);
@@ -76,7 +80,7 @@ namespace UnitySvgEditor.Editor
             return state.Transform;
         }
 
-        public static void SyncFromAttributes(InspectorPanelState state, IReadOnlyDictionary<string, string> attributes)
+        public static void SyncFromAttributes(InspectorPanelState state, IReadOnlyDictionary<string, string> attributes, string tagName)
         {
             state.FillEnabled = TryGetNonEmpty(attributes, "fill", out var fillRaw);
             if (state.FillEnabled && ColorUtility.TryParseHtmlString(fillRaw.Trim(), out var fillColor))
@@ -97,6 +101,16 @@ namespace UnitySvgEditor.Editor
             state.OpacityEnabled = TryGetFloat(attributes, "opacity", out var opacity);
             if (state.OpacityEnabled)
                 state.Opacity = Mathf.Clamp01(opacity);
+
+            state.CornerRadiusEnabled = string.Equals(tagName, "rect", System.StringComparison.OrdinalIgnoreCase);
+            state.CornerRadius = 0f;
+            if (state.CornerRadiusEnabled)
+            {
+                if (TryGetFloat(attributes, "rx", out var radiusX))
+                    state.CornerRadius = Mathf.Max(0f, radiusX);
+                else if (TryGetFloat(attributes, "ry", out var radiusY))
+                    state.CornerRadius = Mathf.Max(0f, radiusY);
+            }
 
             state.DasharrayEnabled = TryGetNonEmpty(attributes, "stroke-dasharray", out var dashRaw);
             if (state.DasharrayEnabled)
@@ -160,6 +174,16 @@ namespace UnitySvgEditor.Editor
         {
             request.Stroke = ColorToRgbHex(state.StrokeColor);
             request.StrokeOpacity = FormatAlphaAttribute(state.StrokeColor.a);
+        }
+
+        private static void ApplyCornerRadius(AttributePatchRequest request, InspectorPanelState state)
+        {
+            if (!state.CornerRadiusEnabled)
+                return;
+
+            var radius = FormatNumber(Mathf.Max(0f, state.CornerRadius));
+            request.CornerRadiusX = radius;
+            request.CornerRadiusY = radius;
         }
 
         private static void ParseDasharray(string raw, out float dash, out float gap)

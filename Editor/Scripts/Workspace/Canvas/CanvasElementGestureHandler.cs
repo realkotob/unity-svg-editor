@@ -95,7 +95,7 @@ namespace UnitySvgEditor.Editor
             }
 
             _host.RefreshLivePreview(keepExistingPreviewOnFailure: true);
-            _host.RefreshInspectorFromSource(_host.CurrentDocument?.WorkingSourceText);
+            _host.RefreshInspector();
             _host.UpdateSelectionVisual();
         }
 

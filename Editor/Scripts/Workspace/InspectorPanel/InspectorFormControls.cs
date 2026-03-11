@@ -13,7 +13,8 @@ namespace UnitySvgEditor.Editor
         public ColorField FillColorField { get; private set; }
         public ColorField StrokeColorField { get; private set; }
         public FloatField StrokeWidthField { get; private set; }
-        public Slider OpacitySlider { get; private set; }
+        public Slider OpacityField { get; private set; }
+        public FloatField CornerRadiusField { get; private set; }
         public PopupField<string> LinecapPopup { get; private set; }
         public PopupField<string> LinejoinPopup { get; private set; }
         public FloatField DashLengthField { get; private set; }
@@ -44,13 +45,13 @@ namespace UnitySvgEditor.Editor
         public bool IsBound =>
             FillColorField != null ||
             StrokeColorField != null ||
-            OpacitySlider != null ||
+            OpacityField != null ||
             TransformField != null;
 
         public bool FillEnabled => FillColorField != null;
         public bool StrokeEnabled => StrokeColorField != null;
         public bool StrokeWidthEnabled => StrokeWidthField != null;
-        public bool OpacityEnabled => OpacitySlider != null;
+        public bool OpacityEnabled => OpacityField != null;
         public bool DasharrayEnabled => DashLengthField != null && DashGapField != null;
         public bool TransformEnabled => TransformField != null;
 
@@ -65,7 +66,8 @@ namespace UnitySvgEditor.Editor
             FillColorField = root.Q<ColorField>("inspector-fill-color");
             StrokeColorField = root.Q<ColorField>("inspector-stroke-color");
             StrokeWidthField = root.Q<FloatField>("inspector-stroke-width");
-            OpacitySlider = root.Q<Slider>("inspector-opacity");
+            OpacityField = root.Q<Slider>("inspector-opacity");
+            CornerRadiusField = root.Q<FloatField>("inspector-corner-radius");
             LinecapPopup = root.Q<DropdownField>("inspector-linecap");
             LinejoinPopup = root.Q<DropdownField>("inspector-linejoin");
             DashLengthField = root.Q<FloatField>("inspector-dash-length");
@@ -96,6 +98,7 @@ namespace UnitySvgEditor.Editor
             ConfigureStrokePopup(LinecapPopup, new List<string> { string.Empty, "butt", "round", "square" });
             ConfigureStrokePopup(LinejoinPopup, new List<string> { string.Empty, "miter", "round", "bevel" });
             ConfigureNumericFieldFormat(StrokeWidthField);
+            ConfigureNumericFieldFormat(CornerRadiusField);
             ConfigureNumericFieldFormat(DashLengthField);
             ConfigureNumericFieldFormat(DashGapField);
             ConfigureNumericFieldFormat(FrameXField);
@@ -115,7 +118,8 @@ namespace UnitySvgEditor.Editor
             FillColorField = null;
             StrokeColorField = null;
             StrokeWidthField = null;
-            OpacitySlider = null;
+            OpacityField = null;
+            CornerRadiusField = null;
             LinecapPopup = null;
             LinejoinPopup = null;
             DashLengthField = null;

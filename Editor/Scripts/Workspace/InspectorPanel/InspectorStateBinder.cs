@@ -16,8 +16,9 @@ namespace UnitySvgEditor.Editor
             inspectorPanelState.StrokeColor = form.StrokeColorField?.value ?? Color.black;
             inspectorPanelState.StrokeWidthEnabled = form.StrokeWidthField != null;
             inspectorPanelState.StrokeWidth = form.StrokeWidthField?.value ?? 1f;
-            inspectorPanelState.OpacityEnabled = form.OpacitySlider != null;
-            inspectorPanelState.Opacity = form.OpacitySlider?.value ?? 1f;
+            inspectorPanelState.OpacityEnabled = form.OpacityField != null;
+            inspectorPanelState.Opacity = Mathf.Clamp01(form.OpacityField?.value ?? 1f);
+            inspectorPanelState.CornerRadius = Mathf.Max(0f, form.CornerRadiusField?.value ?? 0f);
             inspectorPanelState.StrokeLinecap = form.LinecapPopup?.value ?? string.Empty;
             inspectorPanelState.StrokeLinejoin = form.LinejoinPopup?.value ?? string.Empty;
             inspectorPanelState.DasharrayEnabled = form.DashLengthField != null || form.DashGapField != null;
@@ -44,7 +45,8 @@ namespace UnitySvgEditor.Editor
             form.FillColorField?.SetValueWithoutNotify(inspectorPanelState.FillColor);
             form.StrokeColorField?.SetValueWithoutNotify(inspectorPanelState.StrokeColor);
             form.StrokeWidthField?.SetValueWithoutNotify(inspectorPanelState.StrokeWidth);
-            form.OpacitySlider?.SetValueWithoutNotify(inspectorPanelState.Opacity);
+            form.OpacityField?.SetValueWithoutNotify(inspectorPanelState.Opacity);
+            form.CornerRadiusField?.SetValueWithoutNotify(inspectorPanelState.CornerRadius);
             SetPopupValue(form.LinecapPopup, inspectorPanelState.StrokeLinecap);
             SetPopupValue(form.LinejoinPopup, inspectorPanelState.StrokeLinejoin);
             form.DashLengthField?.SetValueWithoutNotify(inspectorPanelState.DashLength);

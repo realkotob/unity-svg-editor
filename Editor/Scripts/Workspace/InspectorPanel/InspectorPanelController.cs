@@ -5,6 +5,7 @@ namespace UnitySvgEditor.Editor
 {
     internal sealed class InspectorPanelController
     {
+        private readonly InspectorPanelState _inspectorPanelState;
         private readonly InspectorPanelView _view;
         private readonly InspectorTargetSyncService _targetSyncService;
         private readonly System.Action<System.Action> _scheduleDeferredCall;
@@ -12,7 +13,7 @@ namespace UnitySvgEditor.Editor
         private IInspectorPanelHost _host;
         private bool _isRefreshScheduled;
         private bool _hasPendingRefresh;
-        private string _pendingSourceText = string.Empty;
+        private SvgDocumentModel _pendingDocumentModel;
         private bool _isFrameRectApplyScheduled;
         private bool _hasPendingFrameRectApply;
 
@@ -21,6 +22,7 @@ namespace UnitySvgEditor.Editor
             System.Action<System.Action> scheduleDeferredCall = null,
             System.Action<System.Action> unscheduleDeferredCall = null)
         {
+            _inspectorPanelState = inspectorPanelState;
             _scheduleDeferredCall = scheduleDeferredCall ?? ScheduleDeferredCall;
             _unscheduleDeferredCall = unscheduleDeferredCall ?? UnscheduleDeferredCall;
             _view = new InspectorPanelView();
@@ -38,15 +40,6 @@ namespace UnitySvgEditor.Editor
             _view.BuildTransformRequested += OnBuildTransformClicked;
             _view.ApplyRequested += OnApplyPatchClicked;
             _view.PositionActionRequested += OnPositionActionRequested;
-        }
-
-        public InspectorPanelController(
-            AttributePatcher attributePatcher,
-            InspectorPanelState inspectorPanelState,
-            System.Action<System.Action> scheduleDeferredCall = null,
-            System.Action<System.Action> unscheduleDeferredCall = null)
-            : this(inspectorPanelState, scheduleDeferredCall, unscheduleDeferredCall)
-        {
         }
 
         private static void ScheduleDeferredCall(System.Action callback)
@@ -87,20 +80,26 @@ namespace UnitySvgEditor.Editor
             _host = null;
         }
 
-        public void RefreshTargets(string sourceText)
+        public void RefreshTargets()
         {
             ClearPendingRefresh();
-            _targetSyncService.RefreshTargets(sourceText);
+            _targetSyncService.RefreshTargets();
         }
 
-        public void QueueRefreshTargets(string sourceText)
+        public void RefreshTargets(SvgDocumentModel documentModel)
+        {
+            ClearPendingRefresh();
+            _targetSyncService.RefreshTargets(documentModel);
+        }
+
+        public void QueueRefreshTargets()
         {
             if (!_view.IsBound)
             {
                 return;
             }
 
-            _pendingSourceText = sourceText ?? string.Empty;
+            _pendingDocumentModel = null;
             _hasPendingRefresh = true;
             if (_isRefreshScheduled)
             {
@@ -129,6 +128,7 @@ namespace UnitySvgEditor.Editor
             SetEnabledIfNotNull(_view.StrokeColorControl, hasDocument);
             SetEnabledIfNotNull(_view.StrokeWidthControl, hasDocument);
             SetEnabledIfNotNull(_view.OpacityControl, hasDocument);
+            SetEnabledIfNotNull(_view.CornerRadiusControl, hasDocument && _inspectorPanelState.CornerRadiusEnabled);
             SetEnabledIfNotNull(_view.DashLengthControl, hasDocument);
             SetEnabledIfNotNull(_view.DashGapControl, hasDocument);
             SetEnabledIfNotNull(_view.TransformControl, hasDocument);
@@ -189,15 +189,21 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            string sourceText = _pendingSourceText;
-            _pendingSourceText = string.Empty;
+            SvgDocumentModel documentModel = _pendingDocumentModel;
+            _pendingDocumentModel = null;
             _hasPendingRefresh = false;
-            _targetSyncService.RefreshTargets(sourceText);
+            if (documentModel != null)
+            {
+                _targetSyncService.RefreshTargets(documentModel);
+                return;
+            }
+
+            _targetSyncService.RefreshTargets();
         }
 
         private void ClearPendingRefresh()
         {
-            _pendingSourceText = string.Empty;
+            _pendingDocumentModel = null;
             _hasPendingRefresh = false;
             if (!_isRefreshScheduled)
             {

@@ -14,7 +14,7 @@
 
 .svg-editor__inspector-card {
     padding: var(--space-2) var(--space-2-5);
-    background-color: var(--editor-surface-soft);
+    /*background-color: var(--editor-surface-soft);*/
 }
 
 .svg-editor__inspector-card--accent {
@@ -24,8 +24,7 @@
 }
 
 .svg-editor__subsection-title {
-    margin-top: 0;
-    margin-bottom: var(--space-1-5);
+    margin-bottom: var(--space-2);
     color: var(--foreground);
     -unity-font-style: bold;
     font-size: 12px;
@@ -33,16 +32,15 @@
 
 .svg-editor__inspector-meta-label {
     margin-top: 0;
-    margin-bottom: var(--space-1);
+    margin-bottom: var(--space-1-5);
     color: var(--editor-label-muted);
-    font-size: 11px;
-    -unity-font-style: bold;
+    font-size: 10px;
 }
 
 .svg-editor__inspector-row {
     flex-direction: row;
     align-items: stretch;
-    margin-bottom: var(--space-1-5);
+    margin-bottom: var(--space-2-5);
 }
 
 .svg-editor__position-action-row {
@@ -92,9 +90,7 @@
 }
 
 .svg-editor__inspector-separator {
-    margin-top: 2px;
-    margin-bottom: 2px;
-    opacity: 0.65;
+    margin-bottom: var(--space-2);
 }
 
 .svg-editor__inspector-section .unity-base-field,

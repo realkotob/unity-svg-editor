@@ -24,16 +24,7 @@ namespace UnitySvgEditor.Editor
             out PreviewSnapshot snapshot,
             out string error)
         {
-            if (_canvasRenderer.TryBuildPreviewSnapshot(documentModel, preferredViewportRect, out snapshot, out error))
-                return true;
-
-            if (documentModel == null || string.IsNullOrWhiteSpace(documentModel.SourceText))
-            {
-                snapshot = new PreviewSnapshot();
-                return false;
-            }
-
-            return TryBuildImportedSnapshot(documentModel.SourceText, preferredViewportRect, out snapshot, out error);
+            return _canvasRenderer.TryBuildPreviewSnapshot(documentModel, preferredViewportRect, out snapshot, out error);
         }
 
         internal static bool TryBuildImportedSnapshot(
@@ -92,7 +83,7 @@ namespace UnitySvgEditor.Editor
             catch (Exception ex)
             {
                 if (previewVectorImage != null)
-                    UnityEngine.Object.DestroyImmediate(previewVectorImage);
+                    UnityEngine.Object.Destroy(previewVectorImage);
 
                 error = $"Preview build failed: {ex.Message}";
                 return false;

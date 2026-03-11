@@ -14,6 +14,7 @@ namespace UnitySvgEditor.Editor
         private bool _hasPendingMutation;
 
         public bool HasPendingMutation => _hasPendingMutation;
+        public SvgDocumentModel WorkingDocumentModel => _workingDocumentModel;
 
         public bool TryBegin(DocumentSession document, string elementKey)
         {
@@ -82,12 +83,16 @@ namespace UnitySvgEditor.Editor
             if (_workingDocumentModel == null || !_hasPendingMutation)
                 return false;
 
-            return _serializer.TrySerialize(_workingDocumentModel, out sourceText, out error);
+            if (!TrySerializeWorkingDocumentModel(out sourceText, out error))
+                return false;
+
+            _workingDocumentModel.SourceText = sourceText;
+            return true;
         }
 
-        public bool TryBuildPreviewSource(out string sourceText, out string error)
+        public bool TryBuildPreviewDocumentModel(out SvgDocumentModel documentModel, out string error)
         {
-            sourceText = string.Empty;
+            documentModel = null;
             error = string.Empty;
 
             if (_workingDocumentModel == null)
@@ -96,7 +101,12 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
-            return _serializer.TrySerialize(_workingDocumentModel, out sourceText, out error);
+            if (!TrySerializeWorkingDocumentModel(out string sourceText, out error))
+                return false;
+
+            _workingDocumentModel.SourceText = sourceText;
+            documentModel = _workingDocumentModel;
+            return true;
         }
 
         public void End()
@@ -123,6 +133,15 @@ namespace UnitySvgEditor.Editor
                 attributes["transform"] = transformValue;
 
             node.RawAttributes = attributes;
+        }
+
+        private bool TrySerializeWorkingDocumentModel(out string sourceText, out string error)
+        {
+            sourceText = string.Empty;
+            error = string.Empty;
+
+            return _workingDocumentModel != null &&
+                   _serializer.TrySerialize(_workingDocumentModel, out sourceText, out error);
         }
 
         private static bool TryFindNodeByLegacyElementKey(

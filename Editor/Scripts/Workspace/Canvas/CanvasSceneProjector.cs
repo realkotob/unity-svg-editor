@@ -329,12 +329,13 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            previewImage.scaleMode = previewSnapshot.PreserveAspectRatioMode.IsNone
-                ? ScaleMode.StretchToFill
-                : ScaleMode.ScaleToFit;
-            overlayController.SetFrame(layout.VisibleViewportRect, GetCanvasFrameLabel(currentDocument));
-            previewImage.style.left = layout.ImageViewportRect.xMin - layout.VisibleViewportRect.xMin;
-            previewImage.style.top = layout.ImageViewportRect.yMin - layout.VisibleViewportRect.yMin;
+            // The image rect is already aspect-resolved in viewport space, so the
+            // visual canvas frame should follow it directly instead of the larger
+            // visible viewport container.
+            overlayController.SetFrame(layout.ImageViewportRect, GetCanvasFrameLabel(currentDocument));
+            previewImage.scaleMode = ScaleMode.StretchToFill;
+            previewImage.style.left = 0f;
+            previewImage.style.top = 0f;
             previewImage.style.width = layout.ImageViewportRect.width;
             previewImage.style.height = layout.ImageViewportRect.height;
         }

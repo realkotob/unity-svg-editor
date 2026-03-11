@@ -88,7 +88,7 @@ namespace UnitySvgEditor.Editor
             BindUxmlLayout();
 
             ApplyThemeStyleSheet();
-            _assetLibraryBrowser.RefreshAssetList(selectFirst: true);
+            _assetLibraryBrowser.RefreshAssetList(selectFirst: false);
         }
 
         private void OnDisable()
@@ -211,11 +211,14 @@ namespace UnitySvgEditor.Editor
         void IEditorWorkspaceHost.RefreshLivePreview(bool keepExistingPreviewOnFailure) =>
             _documentLifecycleController.RefreshLivePreview(keepExistingPreviewOnFailure);
 
-        bool IEditorWorkspaceHost.TryRefreshTransientPreview(string sourceText) =>
-            _documentLifecycleController.TryRefreshTransientPreview(sourceText);
+        bool IEditorWorkspaceHost.TryRefreshTransientPreview(SvgDocumentModel documentModel) =>
+            _documentLifecycleController.TryRefreshTransientPreview(documentModel);
 
-        void IEditorWorkspaceHost.RefreshInspectorFromSource(string sourceText) =>
-            _inspectorPanelController.QueueRefreshTargets(sourceText);
+        void IEditorWorkspaceHost.RefreshInspector() =>
+            _inspectorPanelController.QueueRefreshTargets();
+
+        void IEditorWorkspaceHost.RefreshInspector(SvgDocumentModel documentModel) =>
+            _inspectorPanelController.RefreshTargets(documentModel);
 
         private bool TryApplyPatchRequest(AttributePatchRequest request, string successStatus) =>
             WorkspaceCoordinator.TryApplyPatchRequest(request, successStatus);

@@ -83,7 +83,7 @@ namespace UnitySvgEditor.Editor
                 XmlId = xmlId ?? string.Empty,
                 LegacyElementKey = legacyElementKey,
                 LegacyTargetKey = isRoot
-                    ? AttributePatcher.ROOT_TARGET_KEY
+                    ? SvgDocumentTargets.RootTargetKey
                     : legacyElementKey,
                 Depth = depth,
                 SiblingIndex = siblingIndex,

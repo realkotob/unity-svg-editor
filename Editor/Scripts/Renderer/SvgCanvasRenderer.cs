@@ -1,10 +1,13 @@
 using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace UnitySvgEditor.Editor
 {
     internal sealed class SvgCanvasRenderer
     {
         private readonly SvgDocumentModelSerializer _serializer = new();
+        private readonly SvgModelSceneBuilder _sceneBuilder = new();
 
         public bool TryBuildRenderDocument(
             SvgDocumentModel documentModel,
@@ -65,14 +68,46 @@ namespace UnitySvgEditor.Editor
             if (!TryBuildRenderDocument(documentModel, out _, out error))
                 return false;
 
+            if (_sceneBuilder.TryBuild(documentModel, out SvgModelSceneBuildResult sceneBuildResult, out error))
+            {
+                IReadOnlyList<PreviewElementGeometry> elements = PreviewSnapshotGeometryBuilder.BuildElementBounds(
+                    sceneBuildResult.Scene,
+                    sceneBuildResult.NodeMappings,
+                    sceneBuildResult.NodeOpacities);
+                Rect fallbackVisualContentBounds = PreviewSnapshotGeometryBuilder.TryBuildSceneRootBounds(
+                    sceneBuildResult.Scene,
+                    sceneBuildResult.NodeOpacities,
+                    out Rect sceneRootBounds)
+                    ? sceneRootBounds
+                    : default;
+                Rect visualContentBounds = PreviewSnapshotGeometryBuilder.TryBuildVisualContentBounds(elements, out Rect resolvedVisualContentBounds)
+                    ? resolvedVisualContentBounds
+                    : fallbackVisualContentBounds;
+                Rect projectionRect = PreviewSnapshotSceneImportService.ResolveProjectionRect(
+                    sceneBuildResult.DocumentViewportRect,
+                    visualContentBounds,
+                    preferredViewportRect);
+                VectorImage previewVectorImage = PreviewSnapshotSceneImportService.BuildPreviewVectorImage(
+                    sceneBuildResult.Scene,
+                    sceneBuildResult.NodeOpacities,
+                    projectionRect);
+
+                snapshot = new PreviewSnapshot
+                {
+                    PreviewVectorImage = previewVectorImage,
+                    DocumentViewportRect = sceneBuildResult.DocumentViewportRect,
+                    ProjectionRect = projectionRect,
+                    VisualContentBounds = visualContentBounds,
+                    PreserveAspectRatioMode = sceneBuildResult.PreserveAspectRatioMode,
+                    Elements = elements
+                };
+                return previewVectorImage != null;
+            }
+
             if (!_serializer.TrySerialize(documentModel, out string sourceText, out error))
                 return false;
 
-            return PreviewSnapshotBuilder.TryBuildImportedSnapshot(
-                sourceText,
-                preferredViewportRect,
-                out snapshot,
-                out error);
+            return PreviewSnapshotBuilder.TryBuildImportedSnapshot(sourceText, preferredViewportRect, out snapshot, out error);
         }
     }
 }

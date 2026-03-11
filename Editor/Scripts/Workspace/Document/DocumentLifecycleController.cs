@@ -108,7 +108,7 @@ namespace UnitySvgEditor.Editor
 
         public void RefreshLivePreview(bool keepExistingPreviewOnFailure) => _previewService.RefreshLivePreview(keepExistingPreviewOnFailure);
 
-        public bool TryRefreshTransientPreview(string sourceText) => _previewService.TryRefreshTransientPreview(sourceText);
+        public bool TryRefreshTransientPreview(SvgDocumentModel documentModel) => _previewService.TryRefreshTransientPreview(documentModel);
 
         public void UpdateInteractivity()
         {
@@ -150,7 +150,7 @@ namespace UnitySvgEditor.Editor
             if (CurrentDocument == null)
                 return;
 
-            _inspectorPanelController.RefreshTargets(CurrentDocument.WorkingSourceText);
+            _inspectorPanelController.RefreshTargets();
             if (!skipPreviewRefresh)
                 _previewService.RefreshLivePreview(keepExistingPreviewOnFailure);
 

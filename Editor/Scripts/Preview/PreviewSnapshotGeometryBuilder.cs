@@ -106,6 +106,58 @@ namespace UnitySvgEditor.Editor
             return elements;
         }
 
+        public static IReadOnlyList<PreviewElementGeometry> BuildElementBounds(
+            Scene scene,
+            IReadOnlyDictionary<SceneNode, (string Key, string TargetKey)> keyByNode,
+            Dictionary<SceneNode, float> nodeOpacity)
+        {
+            if (scene?.Root == null || keyByNode == null || keyByNode.Count == 0)
+                return Array.Empty<PreviewElementGeometry>();
+
+            Dictionary<SceneNode, int> drawOrderByNode = BuildDrawOrderLookup(scene.Root);
+            Dictionary<SceneNode, Matrix2D> worldTransformByNode = BuildWorldTransformLookup(scene, nodeOpacity);
+            Dictionary<SceneNode, TessellatedNodeGeometry> worldGeometryByNode = BuildWorldGeometryLookup(scene.Root, worldTransformByNode);
+            List<PreviewElementGeometry> elements = new();
+
+            foreach (KeyValuePair<SceneNode, (string Key, string TargetKey)> pair in keyByNode)
+            {
+                if (pair.Key == null)
+                    continue;
+
+                IReadOnlyList<Vector2[]> hitGeometry = BuildHitTriangles(
+                    pair.Key,
+                    worldGeometryByNode,
+                    out Rect visualBounds,
+                    out bool hasExactBounds);
+                if (!hasExactBounds)
+                    hasExactBounds = TryBuildFallbackBounds(pair.Key, worldTransformByNode, out visualBounds);
+
+                Matrix2D resolvedWorldTransform = worldTransformByNode.TryGetValue(pair.Key, out Matrix2D wt)
+                    ? wt
+                    : pair.Key.Transform;
+                Matrix2D parentWorldTransform = resolvedWorldTransform * pair.Key.Transform.Inverse();
+
+                elements.Add(new PreviewElementGeometry
+                {
+                    Key = pair.Value.Key,
+                    TargetKey = pair.Value.TargetKey,
+                    VisualBounds = visualBounds,
+                    DrawOrder = drawOrderByNode.TryGetValue(pair.Key, out int order) ? order : -1,
+                    HitGeometry = hitGeometry,
+                    BoundsQuality = hasExactBounds
+                        ? BoundsQuality.Exact
+                        : (visualBounds.width > Mathf.Epsilon || visualBounds.height > Mathf.Epsilon
+                            ? BoundsQuality.Fallback
+                            : BoundsQuality.Unknown),
+                    WorldTransform = resolvedWorldTransform,
+                    ParentWorldTransform = parentWorldTransform
+                });
+            }
+
+            elements.Sort(static (left, right) => left.DrawOrder.CompareTo(right.DrawOrder));
+            return elements;
+        }
+
         public static bool TryBuildSceneRootBounds(SVGParser.SceneInfo sceneInfo, out Rect worldBounds)
         {
             worldBounds = default;
@@ -114,6 +166,19 @@ namespace UnitySvgEditor.Editor
 
             var worldTransformByNode = BuildWorldTransformLookup(sceneInfo);
             return TryBuildFallbackBounds(sceneInfo.Scene.Root, worldTransformByNode, out worldBounds);
+        }
+
+        public static bool TryBuildSceneRootBounds(
+            Scene scene,
+            Dictionary<SceneNode, float> nodeOpacity,
+            out Rect worldBounds)
+        {
+            worldBounds = default;
+            if (scene?.Root == null)
+                return false;
+
+            Dictionary<SceneNode, Matrix2D> worldTransformByNode = BuildWorldTransformLookup(scene, nodeOpacity);
+            return TryBuildFallbackBounds(scene.Root, worldTransformByNode, out worldBounds);
         }
 
         private static Dictionary<SceneNode, int> BuildDrawOrderLookup(SceneNode root)
@@ -135,6 +200,22 @@ namespace UnitySvgEditor.Editor
         {
             var lookup = new Dictionary<SceneNode, Matrix2D>();
             foreach (var item in VectorUtils.WorldTransformedSceneNodes(sceneInfo.Scene.Root, sceneInfo.NodeOpacity))
+            {
+                if (item.Node == null)
+                    continue;
+
+                lookup[item.Node] = item.WorldTransform;
+            }
+
+            return lookup;
+        }
+
+        private static Dictionary<SceneNode, Matrix2D> BuildWorldTransformLookup(
+            Scene scene,
+            Dictionary<SceneNode, float> nodeOpacity)
+        {
+            Dictionary<SceneNode, Matrix2D> lookup = new();
+            foreach (var item in VectorUtils.WorldTransformedSceneNodes(scene.Root, nodeOpacity))
             {
                 if (item.Node == null)
                     continue;

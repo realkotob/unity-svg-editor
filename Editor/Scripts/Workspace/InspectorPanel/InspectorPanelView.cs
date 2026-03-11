@@ -11,6 +11,7 @@ namespace UnitySvgEditor.Editor
         internal enum ImmediateApplyField
         {
             Opacity,
+            CornerRadius,
             FillColor,
             StrokeColor,
             StrokeWidth,
@@ -54,7 +55,8 @@ namespace UnitySvgEditor.Editor
         public VisualElement FillColorControl => _form.FillColorField;
         public VisualElement StrokeColorControl => _form.StrokeColorField;
         public VisualElement StrokeWidthControl => _form.StrokeWidthField;
-        public VisualElement OpacityControl => _form.OpacitySlider;
+        public VisualElement OpacityControl => _form.OpacityField;
+        public VisualElement CornerRadiusControl => _form.CornerRadiusField;
         public VisualElement DashLengthControl => _form.DashLengthField;
         public VisualElement DashGapControl => _form.DashGapField;
         public VisualElement TransformControl => _form.TransformField;
@@ -118,7 +120,8 @@ namespace UnitySvgEditor.Editor
             RegisterImmediateApplyCallback(_form.FillColorField, OnFillColorChanged);
             RegisterImmediateApplyCallback(_form.StrokeColorField, OnStrokeColorChanged);
             RegisterImmediateApplyCallback(_form.StrokeWidthField, OnStrokeWidthChanged);
-            RegisterImmediateApplyCallback(_form.OpacitySlider, OnOpacityChanged);
+            RegisterImmediateApplyCallback(_form.OpacityField, OnOpacityChanged);
+            RegisterImmediateApplyCallback(_form.CornerRadiusField, OnCornerRadiusChanged);
             RegisterImmediateApplyCallback(_form.DashLengthField, OnStrokeDasharrayChanged);
             RegisterImmediateApplyCallback(_form.DashGapField, OnStrokeDasharrayChanged);
             RegisterImmediateApplyCallback(_form.LinecapPopup, OnStrokeLinecapChanged);
@@ -156,7 +159,8 @@ namespace UnitySvgEditor.Editor
             UnregisterImmediateApplyCallback(_form.FillColorField, OnFillColorChanged);
             UnregisterImmediateApplyCallback(_form.StrokeColorField, OnStrokeColorChanged);
             UnregisterImmediateApplyCallback(_form.StrokeWidthField, OnStrokeWidthChanged);
-            UnregisterImmediateApplyCallback(_form.OpacitySlider, OnOpacityChanged);
+            UnregisterImmediateApplyCallback(_form.OpacityField, OnOpacityChanged);
+            UnregisterImmediateApplyCallback(_form.CornerRadiusField, OnCornerRadiusChanged);
             UnregisterImmediateApplyCallback(_form.DashLengthField, OnStrokeDasharrayChanged);
             UnregisterImmediateApplyCallback(_form.DashGapField, OnStrokeDasharrayChanged);
             UnregisterImmediateApplyCallback(_form.LinecapPopup, OnStrokeLinecapChanged);
@@ -196,6 +200,8 @@ namespace UnitySvgEditor.Editor
         private void OnStrokeWidthChanged(ChangeEvent<float> evt) => ImmediateApplyRequested?.Invoke(ImmediateApplyField.StrokeWidth);
 
         private void OnOpacityChanged(ChangeEvent<float> evt) => ImmediateApplyRequested?.Invoke(ImmediateApplyField.Opacity);
+
+        private void OnCornerRadiusChanged(ChangeEvent<float> evt) => ImmediateApplyRequested?.Invoke(ImmediateApplyField.CornerRadius);
 
         private void OnStrokeLinecapChanged(ChangeEvent<string> evt) => ImmediateApplyRequested?.Invoke(ImmediateApplyField.StrokeLinecap);
 

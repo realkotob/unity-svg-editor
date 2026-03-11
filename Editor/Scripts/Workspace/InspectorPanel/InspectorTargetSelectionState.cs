@@ -7,14 +7,14 @@ namespace UnitySvgEditor.Editor
     internal sealed class InspectorTargetSelectionState
     {
         private readonly Dictionary<string, string> _labelsByKey = new(StringComparer.Ordinal);
-        public string SelectedTargetKey { get; private set; } = AttributePatcher.ROOT_TARGET_KEY;
+        public string SelectedTargetKey { get; private set; } = SvgDocumentTargets.RootTargetKey;
         public string SelectedTargetLabel => ResolveSelectedTargetLabel();
 
         public void SetTargets(IReadOnlyList<PatchTarget> targets)
         {
             var previousSelectedKey = SelectedTargetKey;
             _labelsByKey.Clear();
-            _labelsByKey[AttributePatcher.ROOT_TARGET_KEY] = "Root <svg>";
+            _labelsByKey[SvgDocumentTargets.RootTargetKey] = "Root <svg>";
 
             if (targets != null)
             {
@@ -30,7 +30,7 @@ namespace UnitySvgEditor.Editor
 
             SelectedTargetKey = _labelsByKey.ContainsKey(previousSelectedKey)
                 ? previousSelectedKey
-                : AttributePatcher.ROOT_TARGET_KEY;
+                : SvgDocumentTargets.RootTargetKey;
         }
 
         public bool TrySelectTargetByKey(string targetKey, out string label)
@@ -50,7 +50,7 @@ namespace UnitySvgEditor.Editor
         {
             return _labelsByKey.ContainsKey(SelectedTargetKey)
                 ? SelectedTargetKey
-                : AttributePatcher.ROOT_TARGET_KEY;
+                : SvgDocumentTargets.RootTargetKey;
         }
 
         private string ResolveSelectedTargetLabel()

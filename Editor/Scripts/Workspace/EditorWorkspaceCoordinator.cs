@@ -90,14 +90,25 @@ namespace UnitySvgEditor.Editor
             snapshot = null;
             error = string.Empty;
 
-            if (document?.DocumentModel != null &&
-                string.Equals(document.DocumentModel.SourceText, document.WorkingSourceText, StringComparison.Ordinal) &&
-                StructureDocumentModelReader.TryBuildSnapshot(document.DocumentModel, out snapshot, out error))
+            if (document?.DocumentModel == null)
             {
-                return true;
+                error = "Document model is unavailable.";
+                return false;
             }
 
-            return StructureOutlineBuilder.TryBuildSnapshot(document?.WorkingSourceText, out snapshot, out error);
+            if (!string.IsNullOrWhiteSpace(document.DocumentModelLoadError))
+            {
+                error = document.DocumentModelLoadError;
+                return false;
+            }
+
+            if (!string.Equals(document.DocumentModel.SourceText, document.WorkingSourceText, StringComparison.Ordinal))
+            {
+                error = "Document model is out of sync with the working source.";
+                return false;
+            }
+
+            return StructureDocumentModelReader.TryBuildSnapshot(document.DocumentModel, out snapshot, out error);
         }
 
         public void UpdateStructureInteractivity(bool hasDocument)
@@ -302,7 +313,7 @@ namespace UnitySvgEditor.Editor
                 return true;
             }
 
-            if (string.Equals(selectedTargetKey, AttributePatcher.ROOT_TARGET_KEY, StringComparison.Ordinal))
+            if (string.Equals(selectedTargetKey, SvgDocumentTargets.RootTargetKey, StringComparison.Ordinal))
             {
                 selectionKind = CanvasSelectionKind.Frame;
                 return true;
@@ -329,8 +340,9 @@ namespace UnitySvgEditor.Editor
         void ICanvasWorkspaceHost.UpdateStructureInteractivity(bool hasDocument) => UpdateStructureInteractivity(hasDocument);
         void ICanvasWorkspaceHost.UpdateSourceStatus(string status) => _host.UpdateSourceStatus(status);
         void ICanvasWorkspaceHost.RefreshLivePreview(bool keepExistingPreviewOnFailure) => _host.RefreshLivePreview(keepExistingPreviewOnFailure);
-        bool ICanvasWorkspaceHost.TryRefreshTransientPreview(string sourceText) => _host.TryRefreshTransientPreview(sourceText);
-        void ICanvasWorkspaceHost.RefreshInspectorFromSource(string sourceText) => _host.RefreshInspectorFromSource(sourceText);
+        bool ICanvasWorkspaceHost.TryRefreshTransientPreview(SvgDocumentModel documentModel) => _host.TryRefreshTransientPreview(documentModel);
+        void ICanvasWorkspaceHost.RefreshInspector() => _host.RefreshInspector();
+        void ICanvasWorkspaceHost.RefreshInspector(SvgDocumentModel documentModel) => _host.RefreshInspector(documentModel);
         void ICanvasWorkspaceHost.ApplyUpdatedSource(string updatedSource, string successStatus) => _host.ApplyUpdatedSource(updatedSource, successStatus);
 
         DocumentSession IStructureHierarchyHost.CurrentDocument => CurrentDocument;
@@ -360,7 +372,7 @@ namespace UnitySvgEditor.Editor
 
         internal void SyncSelectionFromInspectorTarget(string targetKey)
         {
-            if (string.Equals(targetKey, AttributePatcher.ROOT_TARGET_KEY, StringComparison.Ordinal))
+            if (string.Equals(targetKey, SvgDocumentTargets.RootTargetKey, StringComparison.Ordinal))
             {
                 ApplySelectionState(null, CanvasSelectionKind.Frame, syncPatchTarget: false);
                 return;

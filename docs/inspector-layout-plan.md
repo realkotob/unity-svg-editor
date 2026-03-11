@@ -1,6 +1,10 @@
 # Inspector Layout Plan
 
-이 문서는 `unity-svg-editor`의 Inspector 레이아웃 기획안이다.
+이 문서는 현재 구현의 상위 계획이 아니라, 초기 inspector 구조를 정리하던 시점의 레이아웃 메모다.
+cleanup 단계 기준의 최종 원칙은 아래 두 가지다.
+
+- inspector는 document model 기반 편집 UI다
+- XML source editor / code inspector / edit-time XML patch UX는 다시 도입하지 않는다
 
 기준:
 
@@ -61,19 +65,15 @@ Inspector 최상단에는 선택 정보만 간단히 노출한다.
 
 ### 2.2 Quick Actions
 
-헤더 바로 아래에는 항상 공통 액션을 둔다.
+이 섹션의 초기 제안 중 아래 항목은 현재 기준에서 폐기됐다.
 
 - `Read From Target`
 - `Apply Patch`
 - `Reset`
 - `Validate`
-- `Save & Reimport`
 
-원칙:
-
-- 어떤 노드가 선택됐든 위치가 바뀌지 않는다
-- 액션은 Inspector 최상단 헤더 영역에 통합한다
-- 별도 `Patch Context` 섹션 카드는 두지 않는다
+현재 유지되는 문서 액션은 저장 시점의 `Save & Reimport`만이다.
+편집 중 변경은 inspector와 canvas가 document model을 직접 갱신하는 흐름을 따른다.
 
 ## 3. 본문 섹션 구조
 

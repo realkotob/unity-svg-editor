@@ -137,13 +137,13 @@ namespace UnitySvgEditor.Editor
 
             Vector2 svgTranslateDelta = ToParentSpaceDelta(sceneDelta);
             if (!_transientDocumentModelSession.TryApplyTranslation(svgTranslateDelta) ||
-                !_transientDocumentModelSession.TryBuildPreviewSource(out string previewSource, out _) ||
-                !host.TryRefreshTransientPreview(previewSource))
+                !_transientDocumentModelSession.TryBuildPreviewDocumentModel(out SvgDocumentModel previewDocumentModel, out _) ||
+                !host.TryRefreshTransientPreview(previewDocumentModel))
             {
                 return false;
             }
 
-            host.RefreshInspectorFromSource(previewSource);
+            host.RefreshInspector(previewDocumentModel);
             return true;
         }
 
@@ -170,13 +170,13 @@ namespace UnitySvgEditor.Editor
 
             Vector2 svgPivot = ToParentSpacePoint(pivot);
             if (!_transientDocumentModelSession.TryApplyScale(scale, svgPivot) ||
-                !_transientDocumentModelSession.TryBuildPreviewSource(out string previewSource, out _) ||
-                !host.TryRefreshTransientPreview(previewSource))
+                !_transientDocumentModelSession.TryBuildPreviewDocumentModel(out SvgDocumentModel previewDocumentModel, out _) ||
+                !host.TryRefreshTransientPreview(previewDocumentModel))
             {
                 return false;
             }
 
-            host.RefreshInspectorFromSource(previewSource);
+            host.RefreshInspector(previewDocumentModel);
             return true;
         }
 

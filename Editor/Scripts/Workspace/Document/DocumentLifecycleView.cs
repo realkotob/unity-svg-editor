@@ -36,8 +36,8 @@ namespace UnitySvgEditor.Editor
                 _previewImage.style.height = Length.Percent(100);
             }
 
-            _saveButton = root.Q<Button>("source-save");
-            _sourceStatusLabel = root.Q<Label>("source-status");
+            _saveButton = root.Q<Button>("document-save");
+            _sourceStatusLabel = root.Q<Label>("document-status");
 
             if (_saveButton != null)
             {

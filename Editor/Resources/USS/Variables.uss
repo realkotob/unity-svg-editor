@@ -35,8 +35,6 @@
     --height-floating-toolbar: 52px;
     --offset-floating-toolbar-x: -250px;
     --offset-floating-toolbar-bottom: 16px;
-    --min-height-source-panel: 280px;
-    --min-height-source-field: 180px;
     --width-page-add: 24px;
     --radius-page-add: 12px;
     --height-tab: 24px;
