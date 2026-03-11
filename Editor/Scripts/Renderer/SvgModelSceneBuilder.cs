@@ -587,7 +587,8 @@ namespace UnitySvgEditor.Editor
             if (!TryExtractFragmentId(fillValue, out string fragmentId) ||
                 nodesByXmlId == null ||
                 !nodesByXmlId.TryGetValue(fragmentId, out SvgNodeModel gradientNode) ||
-                !string.Equals(gradientNode.TagName, "linearGradient", StringComparison.OrdinalIgnoreCase))
+                !(string.Equals(gradientNode.TagName, "linearGradient", StringComparison.OrdinalIgnoreCase) ||
+                  string.Equals(gradientNode.TagName, "radialGradient", StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }
@@ -624,9 +625,13 @@ namespace UnitySvgEditor.Editor
             if (stops.Count == 0)
                 return false;
 
+            GradientFillType gradientType = string.Equals(gradientNode.TagName, "radialGradient", StringComparison.OrdinalIgnoreCase)
+                ? GradientFillType.Radial
+                : GradientFillType.Linear;
+
             fill = new GradientFill
             {
-                Type = GradientFillType.Linear,
+                Type = gradientType,
                 Stops = stops.ToArray(),
                 Mode = ResolveFillMode(consumerNode),
                 Opacity = ResolveFillOpacity(consumerNode),
