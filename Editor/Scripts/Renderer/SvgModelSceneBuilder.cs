@@ -93,6 +93,9 @@ namespace UnitySvgEditor.Editor
                 Transform = ParseTransform(node.RawAttributes)
             };
 
+            if (!TryAttachMask(documentModel, nodesByXmlId, node, sceneNode, out error))
+                return false;
+
             if (!TryAttachClipper(documentModel, nodesByXmlId, node, sceneNode, out error))
                 return false;
 
@@ -108,6 +111,32 @@ namespace UnitySvgEditor.Editor
             if (!node.Id.IsRoot)
                 result.NodeMappings[sceneNode] = (node.LegacyElementKey, node.LegacyTargetKey);
 
+            return true;
+        }
+
+        private bool TryAttachMask(
+            SvgDocumentModel documentModel,
+            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
+            SvgNodeModel node,
+            SceneNode sceneNode,
+            out string error)
+        {
+            error = string.Empty;
+            if (!TryGetAttribute(node?.RawAttributes, "mask", out string maskValue))
+                return true;
+
+            if (!TryExtractFragmentId(maskValue, out string fragmentId) ||
+                nodesByXmlId == null ||
+                !nodesByXmlId.TryGetValue(fragmentId, out SvgNodeModel maskNode) ||
+                !string.Equals(maskNode.TagName, "mask", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (!TryBuildMaskClipNode(documentModel, nodesByXmlId, maskNode, out SceneNode maskClipNode, out error))
+                return false;
+
+            sceneNode.Clipper = maskClipNode;
             return true;
         }
 
@@ -140,8 +169,7 @@ namespace UnitySvgEditor.Editor
                 case "text":
                 case "tspan":
                 case "textPath":
-                    error = $"Direct renderer does not yet support <{node.TagName}> on '{node.LegacyElementKey}'.";
-                    return false;
+                    return true;
                 case "use":
                     return TryAddUseNode(documentModel, nodesByXmlId, node, sceneNode, out error);
                 default:
@@ -346,6 +374,9 @@ namespace UnitySvgEditor.Editor
                 Transform = ParseTransform(node.RawAttributes)
             };
 
+            if (!TryAttachMask(documentModel, nodesByXmlId, node, sceneNode, out error))
+                return false;
+
             if (!TryAttachClipper(documentModel, nodesByXmlId, node, sceneNode, out error))
                 return false;
 
@@ -440,6 +471,55 @@ namespace UnitySvgEditor.Editor
             }
 
             return true;
+        }
+
+        private bool TryBuildMaskClipNode(
+            SvgDocumentModel documentModel,
+            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
+            SvgNodeModel maskNode,
+            out SceneNode sceneNode,
+            out string error)
+        {
+            sceneNode = new SceneNode
+            {
+                Children = new List<SceneNode>(),
+                Shapes = new List<Shape>(),
+                Transform = ParseTransform(maskNode?.RawAttributes)
+            };
+            error = string.Empty;
+
+            if (maskNode == null)
+            {
+                error = "Mask node was null.";
+                return false;
+            }
+
+            for (int index = 0; index < maskNode.Children.Count; index++)
+            {
+                SvgNodeId childId = maskNode.Children[index];
+                if (!documentModel.TryGetNode(childId, out SvgNodeModel childNode) ||
+                    childNode == null ||
+                    IsHidden(childNode) ||
+                    !ShouldIncludeMaskNode(childNode))
+                {
+                    continue;
+                }
+
+                SceneNode maskChildNode = new()
+                {
+                    Children = new List<SceneNode>(),
+                    Shapes = new List<Shape>(),
+                    Transform = ParseTransform(childNode.RawAttributes)
+                };
+
+                if (!TryBuildShapes(documentModel, nodesByXmlId, childNode, maskChildNode, out error))
+                    return false;
+
+                if (maskChildNode.Shapes.Count > 0 || maskChildNode.Children.Count > 0)
+                    sceneNode.Children.Add(maskChildNode);
+            }
+
+            return sceneNode.Children.Count > 0;
         }
 
         private Shape CreateStyledShape(
@@ -1327,6 +1407,19 @@ namespace UnitySvgEditor.Editor
         {
             return TryGetAttribute(node?.RawAttributes, "display", out string display) &&
                    string.Equals(display, "none", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool ShouldIncludeMaskNode(SvgNodeModel node)
+        {
+            if (!TryGetAttribute(node?.RawAttributes, "fill", out string fillValue))
+                return false;
+
+            if (!TryParseColor(fillValue, out Color color))
+                return false;
+
+            float opacity = ResolveOpacity(node?.RawAttributes, "fill-opacity");
+            float luminance = (color.r * 0.2126f) + (color.g * 0.7152f) + (color.b * 0.0722f);
+            return opacity > 0.5f && luminance > 0.5f;
         }
 
         private static bool TryGetAttribute(IReadOnlyDictionary<string, string> attributes, string name, out string value)
