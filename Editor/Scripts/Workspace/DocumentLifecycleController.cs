@@ -184,7 +184,7 @@ namespace UnitySvgEditor.Editor
 
             SyncCurrentSource("Loaded SVG source.", keepExistingPreviewOnFailure: false, updateSourceField: true);
             LogRendererDiagnostics();
-            WorkspaceCoordinator?.ResetCanvasView(clearSelection: true);
+            WorkspaceCoordinator?.FitCanvasView(clearSelection: true);
         }
 
         private void SyncCurrentSource(

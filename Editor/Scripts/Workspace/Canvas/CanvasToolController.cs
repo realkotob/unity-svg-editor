@@ -17,9 +17,9 @@ namespace UnitySvgEditor.Editor
         }
 
         private const float MIN_CANVAS_ZOOM = 0.25f;
-        private const float MAX_CANVAS_ZOOM = 8f;
-        private const float CANVAS_FRAME_PADDING = 12f;
-        private const float CANVAS_FRAME_HEADER_HEIGHT = 24f;
+        private const float MAX_CANVAS_ZOOM = 16f;
+        private const float CANVAS_FRAME_PADDING = 0f;
+        private const float CANVAS_FRAME_HEADER_HEIGHT = 0f;
         private const float CANVAS_FRAME_MARGIN = 72f;
 
         private readonly Dictionary<CanvasTool, Toggle> _toolButtons = new();
@@ -89,9 +89,16 @@ namespace UnitySvgEditor.Editor
             CanvasViewportState viewportState,
             Action updateCanvasVisualState)
         {
-            if (!sceneProjector.TryGetCanvasLocalPosition(canvasOverlay, evt.mousePosition, out Vector2 localPosition))
+            if (canvasOverlay == null || previewSnapshot == null)
             {
                 return;
+            }
+
+            Vector2 localPosition = evt.localMousePosition;
+            if (!canvasOverlay.contentRect.Contains(localPosition) &&
+                !sceneProjector.TryGetCanvasLocalPosition(canvasOverlay, evt.mousePosition, out localPosition))
+            {
+                localPosition = canvasOverlay.contentRect.center;
             }
 
             viewportState.ZoomAtPoint(
@@ -130,6 +137,11 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
+            if (canvasOverlay == null || previewSnapshot == null)
+            {
+                return false;
+            }
+
             if (evt.keyCode == KeyCode.Alpha0)
             {
                 viewportState.ResetToFit(
@@ -145,7 +157,11 @@ namespace UnitySvgEditor.Editor
 
             if (evt.keyCode == KeyCode.Alpha1)
             {
-                viewportState.SetZoomPercent(1f);
+                viewportState.ResetToActualSize(
+                    sceneProjector.GetCanvasBounds(canvasOverlay),
+                    sceneProjector.GetPreviewSceneRect(previewSnapshot),
+                    CANVAS_FRAME_PADDING,
+                    CANVAS_FRAME_HEADER_HEIGHT);
                 updateCanvasVisualState?.Invoke();
                 evt.StopPropagation();
                 return true;

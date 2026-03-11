@@ -166,6 +166,16 @@ namespace UnitySvgEditor.Editor
                 out viewportPoint);
         }
 
+        public bool TryGetDisplayedZoomScale(PreviewSnapshot previewSnapshot, out float displayedZoomScale)
+        {
+            return CanvasProjectionMath.TryGetDisplayedZoomScale(
+                _viewportState,
+                previewSnapshot,
+                _framePadding,
+                _frameHeaderHeight,
+                out displayedZoomScale);
+        }
+
         public PreviewElementGeometry FindPreviewElement(PreviewSnapshot previewSnapshot, string elementKey)
         {
             return _hitTestHelper.FindPreviewElement(previewSnapshot, elementKey);

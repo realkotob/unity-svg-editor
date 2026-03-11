@@ -246,6 +246,8 @@ namespace UnitySvgEditor.Editor
 
         public void ResetCanvasView(bool clearSelection = false) => _canvasWorkspaceController.ResetCanvasView(clearSelection);
 
+        public void FitCanvasView(bool clearSelection = false) => _canvasWorkspaceController.FitCanvasView(clearSelection);
+
         public void SyncCanvasFrameToPreview() => _canvasWorkspaceController.SyncCanvasFrameToPreview();
 
         public void ResetSelection() => _canvasWorkspaceController.ResetSelection();

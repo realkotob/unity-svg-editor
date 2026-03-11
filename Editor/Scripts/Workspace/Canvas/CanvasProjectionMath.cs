@@ -320,6 +320,28 @@ namespace UnitySvgEditor.Editor
             return true;
         }
 
+        public static bool TryGetDisplayedZoomScale(
+            CanvasViewportState viewportState,
+            PreviewSnapshot previewSnapshot,
+            float framePadding,
+            float frameHeaderHeight,
+            out float displayedZoomScale)
+        {
+            displayedZoomScale = 1f;
+            if (!TryGetSceneViewportMapping(
+                    viewportState,
+                    previewSnapshot,
+                    framePadding,
+                    frameHeaderHeight,
+                    out SceneViewportMapping mapping))
+            {
+                return false;
+            }
+
+            displayedZoomScale = ResolveDisplayedZoomScale(mapping.Scale);
+            return displayedZoomScale > Mathf.Epsilon;
+        }
+
         public static CanvasSelectionVisual BuildSelectionVisual(
             CanvasViewportState viewportState,
             PreviewSnapshot previewSnapshot,
@@ -836,6 +858,16 @@ namespace UnitySvgEditor.Editor
         private static bool IsCornerHandle(CanvasHandle handle)
         {
             return handle is CanvasHandle.TopLeft or CanvasHandle.TopRight or CanvasHandle.BottomRight or CanvasHandle.BottomLeft;
+        }
+
+        private static float ResolveDisplayedZoomScale(Vector2 scale)
+        {
+            if (scale.x <= Mathf.Epsilon || scale.y <= Mathf.Epsilon)
+                return 0f;
+
+            return Mathf.Abs(scale.x - scale.y) <= 0.0001f
+                ? scale.x
+                : Mathf.Min(scale.x, scale.y);
         }
 
         private static float GetMinimumUniformScaleFactor(Vector2 size)

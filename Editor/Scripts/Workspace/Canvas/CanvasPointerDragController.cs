@@ -8,7 +8,7 @@ namespace UnitySvgEditor.Editor
     {
         private const float CanvasFrameMargin = 72f;
         private const float CanvasFramePadding = 0f;
-        private const float CanvasFrameHeaderHeight = 24f;
+        private const float CanvasFrameHeaderHeight = 0f;
 
         private readonly ICanvasPointerDragHost _host;
         private readonly CanvasViewportState _viewportState;
@@ -21,6 +21,7 @@ namespace UnitySvgEditor.Editor
         private readonly CanvasGestureRouter _gestureRouter;
 
         private VisualElement _canvasOverlay;
+        private CanvasStageView _canvasStageView;
 
         public CanvasPointerDragController(
             ICanvasPointerDragHost host,
@@ -59,6 +60,7 @@ namespace UnitySvgEditor.Editor
         public bool DragResizeCenterAnchor => _elementDragController.DragResizeCenterAnchor;
         public CanvasDragMode DragMode => _gestureRouter.DragMode;
         public CanvasHandle ActiveHandle => _gestureRouter.ActiveHandle;
+        public float Zoom => _viewportState.Zoom;
 
         public void ResetViewportToFit()
         {
@@ -66,6 +68,21 @@ namespace UnitySvgEditor.Editor
                 _sceneProjector.GetCanvasBounds(_canvasOverlay),
                 _sceneProjector.GetPreviewSceneRect(_host.PreviewSnapshot),
                 CanvasFrameMargin,
+                CanvasFramePadding,
+                CanvasFrameHeaderHeight);
+        }
+
+        public void ResetViewportToActualSize()
+        {
+            if (_canvasOverlay == null || _host.PreviewSnapshot == null)
+            {
+                _viewportState.Clear();
+                return;
+            }
+
+            _viewportState.ResetToActualSize(
+                _sceneProjector.GetCanvasBounds(_canvasOverlay),
+                _sceneProjector.GetPreviewSceneRect(_host.PreviewSnapshot),
                 CanvasFramePadding,
                 CanvasFrameHeaderHeight);
         }
@@ -90,8 +107,10 @@ namespace UnitySvgEditor.Editor
         {
             Dispose();
             _toolController.BindMoveTool(moveToolToggle);
+            _canvasStageView = canvasStageView;
             if (canvasStageView != null)
             {
+                canvasStageView.ResetRequested += OnCanvasResetRequested;
                 BuildCanvasInteractionOverlay(canvasStageView.StageElement, canvasStageView.FrameElement);
             }
         }
@@ -100,6 +119,12 @@ namespace UnitySvgEditor.Editor
         {
             _gestureRouter.EndCanvasDrag();
             _toolController.Dispose();
+            if (_canvasStageView != null)
+            {
+                _canvasStageView.ResetRequested -= OnCanvasResetRequested;
+                _canvasStageView = null;
+            }
+
             UnbindCanvasInteractionOverlay();
         }
 
@@ -202,18 +227,18 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            _viewportState.ResetToFit(
-                _sceneProjector.GetCanvasBounds(_canvasOverlay),
-                _sceneProjector.GetPreviewSceneRect(_host.PreviewSnapshot),
-                CanvasFrameMargin,
-                CanvasFramePadding,
-                CanvasFrameHeaderHeight);
+            ResetViewportToActualSize();
             _host.UpdateCanvasVisualState();
         }
 
         private VisualElement GetCanvasOverlay()
         {
             return _canvasOverlay;
+        }
+
+        private void OnCanvasResetRequested()
+        {
+            ResetCanvasViewInternal();
         }
     }
 }

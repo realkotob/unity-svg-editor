@@ -6,11 +6,13 @@ namespace UnitySvgEditor.Editor
     internal sealed class CanvasInteractionController : ICanvasPointerDragHost
     {
         private readonly ICanvasWorkspaceHost _host;
+        private readonly CanvasViewportState _viewportState;
         private readonly CanvasSceneProjector _sceneProjector;
         private readonly CanvasOverlayController _overlayController;
         private readonly CanvasPointerDragController _pointerDragController;
         private CanvasSelectionKind _selectionKind = CanvasSelectionKind.None;
         private string _hoveredElementKey = string.Empty;
+        private CanvasStageView _canvasStageView;
 
         public CanvasInteractionController(
             ICanvasWorkspaceHost host,
@@ -19,6 +21,7 @@ namespace UnitySvgEditor.Editor
             CanvasSceneProjector sceneProjector)
         {
             _host = host;
+            _viewportState = viewportState;
             _sceneProjector = sceneProjector;
             _overlayController = overlayController;
             _pointerDragController = new CanvasPointerDragController(
@@ -35,12 +38,15 @@ namespace UnitySvgEditor.Editor
 
         public void Bind(CanvasStageView canvasStageView, Toggle moveToolToggle)
         {
+            _canvasStageView = canvasStageView;
             _pointerDragController.Bind(canvasStageView, moveToolToggle);
+            UpdateZoomHud();
         }
 
         public void Dispose()
         {
             _pointerDragController.Dispose();
+            _canvasStageView = null;
         }
 
         public void SetSelectionKind(CanvasSelectionKind selectionKind)
@@ -49,6 +55,23 @@ namespace UnitySvgEditor.Editor
         }
 
         public void ResetCanvasView(bool clearSelection = false)
+        {
+            if (PreviewSnapshot == null)
+            {
+                UpdateCanvasVisualState();
+                return;
+            }
+
+            _pointerDragController.ResetViewportToActualSize();
+            if (clearSelection)
+            {
+                ResetSelection();
+            }
+
+            UpdateCanvasVisualState();
+        }
+
+        public void FitCanvasView(bool clearSelection = false)
         {
             if (PreviewSnapshot == null)
             {
@@ -80,6 +103,7 @@ namespace UnitySvgEditor.Editor
         public void UpdateCanvasVisualState()
         {
             _sceneProjector.UpdateFrameVisual(PreviewImage, PreviewSnapshot, _overlayController, _host.CurrentDocument, _pointerDragController.CanvasOverlay);
+            UpdateZoomHud();
             UpdateSelectionVisual();
             UpdateHoverVisual();
         }
@@ -209,6 +233,24 @@ namespace UnitySvgEditor.Editor
             string tagName = _host.FindStructureNode(elementKey)?.TagName;
             return string.Equals(tagName, "tspan", System.StringComparison.OrdinalIgnoreCase) ||
                    string.Equals(tagName, "textPath", System.StringComparison.OrdinalIgnoreCase);
+        }
+
+        private void UpdateZoomHud()
+        {
+            if (_canvasStageView == null)
+            {
+                return;
+            }
+
+            float displayedZoomScale = 1f;
+            if (PreviewSnapshot != null &&
+                _sceneProjector.TryGetDisplayedZoomScale(PreviewSnapshot, out float resolvedZoomScale))
+            {
+                displayedZoomScale = resolvedZoomScale;
+            }
+
+            _canvasStageView.SetZoomPercent(displayedZoomScale);
+            _canvasStageView.SetHudEnabled(PreviewSnapshot != null);
         }
     }
 }

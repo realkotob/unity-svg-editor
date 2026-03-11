@@ -48,6 +48,11 @@ namespace UnitySvgEditor.Editor
             _interactionController.ResetCanvasView(clearSelection);
         }
 
+        public void FitCanvasView(bool clearSelection = false)
+        {
+            _interactionController.FitCanvasView(clearSelection);
+        }
+
         public void SyncCanvasFrameToPreview()
         {
             _interactionController.SyncCanvasFrameToPreview();
