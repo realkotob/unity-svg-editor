@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Core.UI.Foundation.Components.ColorPercentField;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -52,10 +53,10 @@ namespace UnitySvgEditor.Editor
         public bool DasharrayEnabled => _form.DasharrayEnabled;
         public bool TransformEnabled => _form.TransformEnabled;
 
-        public VisualElement FillColorControl => _form.FillColorField;
-        public VisualElement StrokeColorControl => _form.StrokeColorField;
+        public VisualElement FillColorControl => _form.FillColorControl;
+        public VisualElement StrokeColorControl => _form.StrokeColorControl;
         public VisualElement StrokeWidthControl => _form.StrokeWidthField;
-        public VisualElement OpacityControl => _form.OpacityField;
+        public VisualElement OpacityControl => _form.OpacityControl;
         public VisualElement CornerRadiusControl => _form.CornerRadiusField;
         public VisualElement DashLengthControl => _form.DashLengthField;
         public VisualElement DashGapControl => _form.DashGapField;
@@ -118,7 +119,9 @@ namespace UnitySvgEditor.Editor
         private void RegisterCallbacks()
         {
             RegisterImmediateApplyCallback(_form.FillColorField, OnFillColorChanged);
+            RegisterImmediateApplyCallback(_form.FillColorLegacyField, OnFillColorChanged);
             RegisterImmediateApplyCallback(_form.StrokeColorField, OnStrokeColorChanged);
+            RegisterImmediateApplyCallback(_form.StrokeColorLegacyField, OnStrokeColorChanged);
             RegisterImmediateApplyCallback(_form.StrokeWidthField, OnStrokeWidthChanged);
             RegisterImmediateApplyCallback(_form.OpacityField, OnOpacityChanged);
             RegisterImmediateApplyCallback(_form.CornerRadiusField, OnCornerRadiusChanged);
@@ -157,7 +160,9 @@ namespace UnitySvgEditor.Editor
         private void UnregisterCallbacks()
         {
             UnregisterImmediateApplyCallback(_form.FillColorField, OnFillColorChanged);
+            UnregisterImmediateApplyCallback(_form.FillColorLegacyField, OnFillColorChanged);
             UnregisterImmediateApplyCallback(_form.StrokeColorField, OnStrokeColorChanged);
+            UnregisterImmediateApplyCallback(_form.StrokeColorLegacyField, OnStrokeColorChanged);
             UnregisterImmediateApplyCallback(_form.StrokeWidthField, OnStrokeWidthChanged);
             UnregisterImmediateApplyCallback(_form.OpacityField, OnOpacityChanged);
             UnregisterImmediateApplyCallback(_form.CornerRadiusField, OnCornerRadiusChanged);
@@ -257,6 +262,17 @@ namespace UnitySvgEditor.Editor
         }
 
         private static void RegisterImmediateApplyCallback(
+            ColorPercentField field,
+            EventCallback<ChangeEvent<Color>> callback)
+        {
+            if (field == null)
+                return;
+
+            field.UnregisterCallback(callback);
+            field.RegisterCallback(callback);
+        }
+
+        private static void RegisterImmediateApplyCallback(
             ColorField field,
             EventCallback<ChangeEvent<Color>> callback)
         {
@@ -287,6 +303,16 @@ namespace UnitySvgEditor.Editor
 
             field.UnregisterValueChangedCallback(callback);
             field.RegisterValueChangedCallback(callback);
+        }
+
+        private static void UnregisterImmediateApplyCallback(
+            ColorPercentField field,
+            EventCallback<ChangeEvent<Color>> callback)
+        {
+            if (field == null)
+                return;
+
+            field.UnregisterCallback(callback);
         }
 
         private static void UnregisterImmediateApplyCallback(

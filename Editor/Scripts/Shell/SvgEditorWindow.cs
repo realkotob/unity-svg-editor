@@ -76,6 +76,7 @@ namespace UnitySvgEditor.Editor
             _assetLibraryBrowser.Unbind();
             _inspectorPanelController.Unbind();
             _documentLifecycleController.Unbind();
+            rootVisualElement.UnregisterCallback<KeyDownEvent>(OnRootKeyDown, TrickleDown.TrickleDown);
             rootVisualElement.Clear();
             var visualTree = FindVisualTreeAsset();
             if (visualTree == null)
@@ -85,6 +86,7 @@ namespace UnitySvgEditor.Editor
             }
 
             visualTree.CloneTree(rootVisualElement);
+            rootVisualElement.RegisterCallback<KeyDownEvent>(OnRootKeyDown, TrickleDown.TrickleDown);
             BindUxmlLayout();
 
             ApplyThemeStyleSheet();
@@ -93,6 +95,7 @@ namespace UnitySvgEditor.Editor
 
         private void OnDisable()
         {
+            rootVisualElement.UnregisterCallback<KeyDownEvent>(OnRootKeyDown, TrickleDown.TrickleDown);
             _assetLibraryBrowser.Unbind();
             _inspectorPanelController.Unbind();
             _documentLifecycleController.Dispose();
@@ -346,6 +349,36 @@ namespace UnitySvgEditor.Editor
         private void ApplyToolbarIcons()
         {
             ApplyToggleIcon("tool-move", "Icons/move");
+        }
+
+        private void OnRootKeyDown(KeyDownEvent evt)
+        {
+            if (_documentLifecycleController.CurrentDocument == null)
+            {
+                return;
+            }
+
+            bool isActionKeyPressed = (evt.modifiers & EventModifiers.Command) != 0 ||
+                                      (evt.modifiers & EventModifiers.Control) != 0;
+            if (!isActionKeyPressed)
+            {
+                return;
+            }
+
+            bool handled = false;
+            if (evt.keyCode == KeyCode.Z)
+            {
+                handled = (evt.modifiers & EventModifiers.Shift) != 0
+                    ? _documentLifecycleController.TryRedo()
+                    : _documentLifecycleController.TryUndo();
+            }
+
+            if (!handled)
+            {
+                return;
+            }
+
+            evt.StopPropagation();
         }
 
         private void ApplyPositionIcons()

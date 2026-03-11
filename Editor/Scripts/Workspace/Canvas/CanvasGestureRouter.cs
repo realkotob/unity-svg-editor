@@ -108,7 +108,8 @@ namespace UnitySvgEditor.Editor
             {
                 bool uniformScale = (evt.modifiers & EventModifiers.Shift) != 0;
                 bool centerAnchor = (evt.modifiers & EventModifiers.Alt) != 0;
-                _elementGestureHandler.ApplyElementDelta(_gestureState, localPosition, viewportDelta, uniformScale, centerAnchor);
+                bool snapEnabled = (evt.modifiers & (EventModifiers.Command | EventModifiers.Control)) != 0;
+                _elementGestureHandler.ApplyElementDelta(_gestureState, localPosition, viewportDelta, uniformScale, centerAnchor, snapEnabled);
             }
 
             evt.StopPropagation();

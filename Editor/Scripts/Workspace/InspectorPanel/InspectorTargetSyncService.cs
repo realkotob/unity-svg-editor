@@ -127,7 +127,8 @@ namespace UnitySvgEditor.Editor
 
             _view.CaptureState(_inspectorPanelState);
             var transform = _inspectorPanelState.BuildTransformFromHelper();
-            _view.SetTransformText(transform);
+            _inspectorPanelState.Transform = transform;
+            _view.ApplyState(_inspectorPanelState);
             return transform;
         }
 
@@ -144,6 +145,7 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
+            _inspectorPanelState.Transform = _inspectorPanelState.BuildTransformFromHelper();
             _view.ApplyState(_inspectorPanelState);
             return true;
         }
@@ -171,6 +173,33 @@ namespace UnitySvgEditor.Editor
                 Math.Max(0f, _inspectorPanelState.FrameHeight));
 
             Host.TryApplyTargetFrameRect(targetKey, desiredSceneRect, "Frame rect updated.");
+        }
+
+        public void ApplyTransformFromHelper()
+        {
+            if (Host?.CurrentDocument == null || !_view.IsBound)
+            {
+                return;
+            }
+
+            string targetKey = ResolveSelectedTargetKey();
+            if (string.IsNullOrWhiteSpace(targetKey))
+            {
+                return;
+            }
+
+            _view.CaptureState(_inspectorPanelState);
+            string transform = _inspectorPanelState.BuildTransformFromHelper();
+            _inspectorPanelState.Transform = transform;
+            _inspectorPanelState.TransformEnabled = true;
+            _view.ApplyState(_inspectorPanelState);
+            Host.TryApplyPatchRequest(
+                new AttributePatchRequest
+                {
+                    TargetKey = targetKey,
+                    Transform = transform
+                },
+                "Transform updated.");
         }
 
         public void ApplyPatchToSource()

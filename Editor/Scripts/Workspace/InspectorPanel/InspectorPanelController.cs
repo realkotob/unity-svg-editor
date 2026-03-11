@@ -16,6 +16,8 @@ namespace UnitySvgEditor.Editor
         private SvgDocumentModel _pendingDocumentModel;
         private bool _isFrameRectApplyScheduled;
         private bool _hasPendingFrameRectApply;
+        private bool _isTransformApplyScheduled;
+        private bool _hasPendingTransformApply;
 
         public InspectorPanelController(
             InspectorPanelState inspectorPanelState,
@@ -76,6 +78,7 @@ namespace UnitySvgEditor.Editor
         {
             ClearPendingRefresh();
             ClearPendingFrameRectApply();
+            ClearPendingTransformApply();
             _view.Unbind();
             _host = null;
         }
@@ -161,7 +164,11 @@ namespace UnitySvgEditor.Editor
 
         private void OnFrameRectChanged() => QueueFrameRectApply();
 
-        private void OnTransformHelperChanged() => _targetSyncService.SyncTransformTextFromHelper();
+        private void OnTransformHelperChanged()
+        {
+            _targetSyncService.SyncTransformTextFromHelper();
+            QueueTransformApply();
+        }
 
         private void OnTransformTextChanged() => _targetSyncService.SyncTransformHelperFromText();
 
@@ -255,6 +262,49 @@ namespace UnitySvgEditor.Editor
 
             _isFrameRectApplyScheduled = false;
             _unscheduleDeferredCall(ProcessPendingFrameRectApply);
+        }
+
+        private void QueueTransformApply()
+        {
+            if (!_view.IsBound)
+            {
+                return;
+            }
+
+            _hasPendingTransformApply = true;
+            if (_isTransformApplyScheduled)
+            {
+                return;
+            }
+
+            _isTransformApplyScheduled = true;
+            _scheduleDeferredCall(ProcessPendingTransformApply);
+        }
+
+        private void ProcessPendingTransformApply()
+        {
+            _isTransformApplyScheduled = false;
+            _unscheduleDeferredCall(ProcessPendingTransformApply);
+
+            if (!_hasPendingTransformApply)
+            {
+                return;
+            }
+
+            _hasPendingTransformApply = false;
+            _targetSyncService.ApplyTransformFromHelper();
+        }
+
+        private void ClearPendingTransformApply()
+        {
+            _hasPendingTransformApply = false;
+            if (!_isTransformApplyScheduled)
+            {
+                return;
+            }
+
+            _isTransformApplyScheduled = false;
+            _unscheduleDeferredCall(ProcessPendingTransformApply);
         }
     }
 }

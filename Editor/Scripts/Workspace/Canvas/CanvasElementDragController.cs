@@ -119,7 +119,8 @@ namespace UnitySvgEditor.Editor
 
         public bool TryUpdateMoveTransientState(
             ICanvasPointerDragHost host,
-            Vector2 viewportDelta)
+            Vector2 viewportDelta,
+            bool snapEnabled)
         {
             if (host.CurrentDocument == null || string.IsNullOrWhiteSpace(_dragElementKey))
             {
@@ -133,6 +134,23 @@ namespace UnitySvgEditor.Editor
                     out Vector2 sceneDelta))
             {
                 return false;
+            }
+
+            Rect movedSceneRect = new(
+                _dragStartElementSceneRect.xMin + sceneDelta.x,
+                _dragStartElementSceneRect.yMin + sceneDelta.y,
+                _dragStartElementSceneRect.width,
+                _dragStartElementSceneRect.height);
+            if (snapEnabled)
+            {
+                movedSceneRect = EditorSnapUtility.SnapRect(movedSceneRect, snapPosition: true, snapSize: false);
+                sceneDelta = movedSceneRect.position - _dragStartElementSceneRect.position;
+            }
+
+            if (host.PreviewSnapshot != null &&
+                _sceneProjector.TrySceneRectToViewportRect(host.PreviewSnapshot, movedSceneRect, out Rect viewportRect))
+            {
+                _dragCurrentSelectionViewportRect = viewportRect;
             }
 
             Vector2 svgTranslateDelta = ToParentSpaceDelta(sceneDelta);
@@ -149,11 +167,27 @@ namespace UnitySvgEditor.Editor
 
         public bool TryUpdateResizeTransientState(
             ICanvasPointerDragHost host,
-            CanvasHandle activeHandle)
+            CanvasHandle activeHandle,
+            bool snapEnabled)
         {
             if (host.CurrentDocument == null || string.IsNullOrWhiteSpace(_dragElementKey))
             {
                 return false;
+            }
+
+            if (snapEnabled && host.PreviewSnapshot != null)
+            {
+                Rect snappedSceneRect = EditorSnapUtility.SnapRect(
+                    _sceneProjector.BuildScaledSceneRect(
+                        _dragStartSelectionViewportRect,
+                        _dragStartElementSceneRect,
+                        _dragCurrentSelectionViewportRect,
+                        activeHandle,
+                        _dragResizeCenterAnchor));
+                if (_sceneProjector.TrySceneRectToViewportRect(host.PreviewSnapshot, snappedSceneRect, out Rect snappedViewportRect))
+                {
+                    _dragCurrentSelectionViewportRect = snappedViewportRect;
+                }
             }
 
             if (!_sceneProjector.TryBuildScaleTransform(

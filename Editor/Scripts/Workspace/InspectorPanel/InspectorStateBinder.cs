@@ -10,14 +10,17 @@ namespace UnitySvgEditor.Editor
             if (form == null || inspectorPanelState == null)
                 return;
 
-            inspectorPanelState.FillEnabled = form.FillColorField != null;
-            inspectorPanelState.FillColor = form.FillColorField?.value ?? Color.white;
-            inspectorPanelState.StrokeEnabled = form.StrokeColorField != null;
-            inspectorPanelState.StrokeColor = form.StrokeColorField?.value ?? Color.black;
+            inspectorPanelState.FillEnabled = form.FillEnabled;
+            inspectorPanelState.FillColor = form.FillColorValue;
+            inspectorPanelState.StrokeEnabled = form.StrokeEnabled;
+            inspectorPanelState.StrokeColor = form.StrokeColorValue;
             inspectorPanelState.StrokeWidthEnabled = form.StrokeWidthField != null;
             inspectorPanelState.StrokeWidth = form.StrokeWidthField?.value ?? 1f;
-            inspectorPanelState.OpacityEnabled = form.OpacityField != null;
-            inspectorPanelState.Opacity = Mathf.Clamp01(form.OpacityField?.value ?? 1f);
+            inspectorPanelState.OpacityEnabled = form.OpacityControl != null;
+            float opacityValue = form.OpacityValue;
+            inspectorPanelState.Opacity = form.IsOpacitySlider
+                ? Mathf.Clamp01(opacityValue)
+                : Mathf.Clamp01(opacityValue / 100f);
             inspectorPanelState.CornerRadius = Mathf.Max(0f, form.CornerRadiusField?.value ?? 0f);
             inspectorPanelState.StrokeLinecap = form.LinecapPopup?.value ?? string.Empty;
             inspectorPanelState.StrokeLinejoin = form.LinejoinPopup?.value ?? string.Empty;
@@ -42,10 +45,12 @@ namespace UnitySvgEditor.Editor
             if (form == null || inspectorPanelState == null)
                 return;
 
-            form.FillColorField?.SetValueWithoutNotify(inspectorPanelState.FillColor);
-            form.StrokeColorField?.SetValueWithoutNotify(inspectorPanelState.StrokeColor);
+            form.SetFillColorWithoutNotify(inspectorPanelState.FillColor);
+            form.SetStrokeColorWithoutNotify(inspectorPanelState.StrokeColor);
             form.StrokeWidthField?.SetValueWithoutNotify(inspectorPanelState.StrokeWidth);
-            form.OpacityField?.SetValueWithoutNotify(inspectorPanelState.Opacity);
+            form.OpacityField?.SetValueWithoutNotify(form.IsOpacitySlider
+                ? inspectorPanelState.Opacity
+                : inspectorPanelState.Opacity * 100f);
             form.CornerRadiusField?.SetValueWithoutNotify(inspectorPanelState.CornerRadius);
             SetPopupValue(form.LinecapPopup, inspectorPanelState.StrokeLinecap);
             SetPopupValue(form.LinejoinPopup, inspectorPanelState.StrokeLinejoin);

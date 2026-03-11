@@ -13,6 +13,7 @@ namespace UnitySvgEditor.Editor
         private readonly InspectorPanelController _inspectorPanelController;
         private readonly DocumentLifecycleView _view;
         private readonly DocumentPreviewService _previewService;
+        private readonly DocumentEditHistoryService _editHistory = new();
 
         public DocumentLifecycleController(
             DocumentRepository documentRepository,
@@ -39,6 +40,8 @@ namespace UnitySvgEditor.Editor
         public DocumentSession CurrentDocument { get; private set; }
         public PreviewSnapshot PreviewSnapshot => _previewService.PreviewSnapshot;
         public Image PreviewImage => _view.PreviewImage;
+        public bool CanUndo => _editHistory.CanUndo;
+        public bool CanRedo => _editHistory.CanRedo;
 
         private EditorWorkspaceCoordinator WorkspaceCoordinator => _workspaceCoordinatorAccessor?.Invoke();
 
@@ -87,6 +90,7 @@ namespace UnitySvgEditor.Editor
             }
 
             CurrentDocument = document;
+            _editHistory.Reset(document);
             _previewService.ResetPreviewState();
             WorkspaceCoordinator?.ResetSelection();
             HandleDocumentLoaded();
@@ -94,12 +98,52 @@ namespace UnitySvgEditor.Editor
 
         public void ApplyUpdatedSource(string updatedSource, string successStatus)
         {
+            ApplyUpdatedSource(updatedSource, successStatus, recordHistory: true);
+        }
+
+        public bool TryUndo()
+        {
+            if (CurrentDocument == null ||
+                !_editHistory.TryUndo(CurrentDocument.WorkingSourceText, out string restoredSource))
+            {
+                return false;
+            }
+
+            ApplyUpdatedSource(restoredSource, "Undo.", recordHistory: false);
+            return true;
+        }
+
+        public bool TryRedo()
+        {
+            if (CurrentDocument == null ||
+                !_editHistory.TryRedo(CurrentDocument.WorkingSourceText, out string restoredSource))
+            {
+                return false;
+            }
+
+            ApplyUpdatedSource(restoredSource, "Redo.", recordHistory: false);
+            return true;
+        }
+
+        private void ApplyUpdatedSource(string updatedSource, string successStatus, bool recordHistory)
+        {
             if (CurrentDocument == null)
             {
                 return;
             }
 
-            CurrentDocument.WorkingSourceText = updatedSource;
+            string previousSource = CurrentDocument.WorkingSourceText ?? string.Empty;
+            string nextSource = updatedSource ?? string.Empty;
+            if (recordHistory)
+            {
+                _editHistory.RecordChange(previousSource, nextSource);
+            }
+            else
+            {
+                _editHistory.SyncCurrent(nextSource);
+            }
+
+            CurrentDocument.WorkingSourceText = nextSource;
             _documentRepository.RefreshDocumentModel(CurrentDocument);
             SyncCurrentSource(
                 successStatus,
@@ -186,6 +230,7 @@ namespace UnitySvgEditor.Editor
             }
 
             _previewService.ResetPreviewState();
+            _editHistory.Reset(CurrentDocument);
             SyncCurrentSource(
                 "Saved SVG and reimported asset.",
                 keepExistingPreviewOnFailure: false,

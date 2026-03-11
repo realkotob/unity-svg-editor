@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Core.UI.Foundation.Components.ColorPercentField;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -9,11 +10,14 @@ namespace UnitySvgEditor.Editor
     internal sealed class InspectorFormControls
     {
         private const string NumericDisplayFormat = "0.##";
+        private VisualElement _root;
 
-        public ColorField FillColorField { get; private set; }
-        public ColorField StrokeColorField { get; private set; }
+        public ColorPercentField FillColorField { get; private set; }
+        public ColorField FillColorLegacyField { get; private set; }
+        public ColorPercentField StrokeColorField { get; private set; }
+        public ColorField StrokeColorLegacyField { get; private set; }
         public FloatField StrokeWidthField { get; private set; }
-        public Slider OpacityField { get; private set; }
+        public BaseField<float> OpacityField { get; private set; }
         public FloatField CornerRadiusField { get; private set; }
         public PopupField<string> LinecapPopup { get; private set; }
         public PopupField<string> LinejoinPopup { get; private set; }
@@ -42,14 +46,22 @@ namespace UnitySvgEditor.Editor
         public Button BuildTransformButton { get; private set; }
         public Button ApplyButton { get; private set; }
 
+        public VisualElement FillColorControl => ResolveColorControl("inspector-fill-color", FillColorField, FillColorLegacyField);
+        public VisualElement StrokeColorControl => ResolveColorControl("inspector-stroke-color", StrokeColorField, StrokeColorLegacyField);
+        public VisualElement OpacityControl => ResolveOpacityField();
+        public Color FillColorValue => ResolveColorValue("inspector-fill-color", FillColorField, FillColorLegacyField, Color.white);
+        public Color StrokeColorValue => ResolveColorValue("inspector-stroke-color", StrokeColorField, StrokeColorLegacyField, Color.black);
+        public float OpacityValue => ResolveOpacityField()?.value ?? 1f;
+        public bool IsOpacitySlider => ResolveOpacityField() is Slider;
+
         public bool IsBound =>
-            FillColorField != null ||
-            StrokeColorField != null ||
+            FillColorControl != null ||
+            StrokeColorControl != null ||
             OpacityField != null ||
             TransformField != null;
 
-        public bool FillEnabled => FillColorField != null;
-        public bool StrokeEnabled => StrokeColorField != null;
+        public bool FillEnabled => FillColorControl != null;
+        public bool StrokeEnabled => StrokeColorControl != null;
         public bool StrokeWidthEnabled => StrokeWidthField != null;
         public bool OpacityEnabled => OpacityField != null;
         public bool DasharrayEnabled => DashLengthField != null && DashGapField != null;
@@ -63,10 +75,16 @@ namespace UnitySvgEditor.Editor
             if (root == null)
                 return;
 
-            FillColorField = root.Q<ColorField>("inspector-fill-color");
-            StrokeColorField = root.Q<ColorField>("inspector-stroke-color");
+            _root = root;
+            VisualElement fillColorElement = root.Q<VisualElement>("inspector-fill-color");
+            FillColorField = fillColorElement as ColorPercentField;
+            FillColorLegacyField = fillColorElement as ColorField;
+            VisualElement strokeColorElement = root.Q<VisualElement>("inspector-stroke-color");
+            StrokeColorField = strokeColorElement as ColorPercentField;
+            StrokeColorLegacyField = strokeColorElement as ColorField;
             StrokeWidthField = root.Q<FloatField>("inspector-stroke-width");
-            OpacityField = root.Q<Slider>("inspector-opacity");
+            VisualElement opacityElement = root.Q<VisualElement>("inspector-opacity");
+            OpacityField = opacityElement as BaseField<float>;
             CornerRadiusField = root.Q<FloatField>("inspector-corner-radius");
             LinecapPopup = root.Q<DropdownField>("inspector-linecap");
             LinejoinPopup = root.Q<DropdownField>("inspector-linejoin");
@@ -98,6 +116,7 @@ namespace UnitySvgEditor.Editor
             ConfigureStrokePopup(LinecapPopup, new List<string> { string.Empty, "butt", "round", "square" });
             ConfigureStrokePopup(LinejoinPopup, new List<string> { string.Empty, "miter", "round", "bevel" });
             ConfigureNumericFieldFormat(StrokeWidthField);
+            ConfigureNumericFieldFormat(OpacityField as FloatField);
             ConfigureNumericFieldFormat(CornerRadiusField);
             ConfigureNumericFieldFormat(DashLengthField);
             ConfigureNumericFieldFormat(DashGapField);
@@ -116,7 +135,10 @@ namespace UnitySvgEditor.Editor
         public void Unbind()
         {
             FillColorField = null;
+            FillColorLegacyField = null;
             StrokeColorField = null;
+            StrokeColorLegacyField = null;
+            _root = null;
             StrokeWidthField = null;
             OpacityField = null;
             CornerRadiusField = null;
@@ -153,6 +175,28 @@ namespace UnitySvgEditor.Editor
             TransformField?.SetValueWithoutNotify(transform ?? string.Empty);
         }
 
+        public void SetFillColorWithoutNotify(Color color)
+        {
+            if (FillColorField != null)
+            {
+                FillColorField.SetValueWithoutNotify(color);
+                return;
+            }
+
+            FillColorLegacyField?.SetValueWithoutNotify(color);
+        }
+
+        public void SetStrokeColorWithoutNotify(Color color)
+        {
+            if (StrokeColorField != null)
+            {
+                StrokeColorField.SetValueWithoutNotify(color);
+                return;
+            }
+
+            StrokeColorLegacyField?.SetValueWithoutNotify(color);
+        }
+
         private static void ConfigureStrokePopup(PopupField<string> popup, List<string> choices)
         {
             if (popup == null)
@@ -174,6 +218,42 @@ namespace UnitySvgEditor.Editor
                 return;
 
             field.formatString = NumericDisplayFormat;
+        }
+
+        private VisualElement ResolveColorControl(string name, ColorPercentField colorPercentField, ColorField colorField)
+        {
+            return (VisualElement)colorPercentField ?? colorField ?? _root?.Q<VisualElement>(name);
+        }
+
+        private Color ResolveColorValue(string name, ColorPercentField colorPercentField, ColorField colorField, Color fallback)
+        {
+            if (colorPercentField != null)
+            {
+                return colorPercentField.ColorValue;
+            }
+
+            if (colorField != null)
+            {
+                return colorField.value;
+            }
+
+            VisualElement element = _root?.Q<VisualElement>(name);
+            if (element is ColorPercentField queriedColorPercentField)
+            {
+                return queriedColorPercentField.ColorValue;
+            }
+
+            if (element is ColorField queriedColorField)
+            {
+                return queriedColorField.value;
+            }
+
+            return fallback;
+        }
+
+        private BaseField<float> ResolveOpacityField()
+        {
+            return OpacityField ?? _root?.Q<VisualElement>("inspector-opacity") as BaseField<float>;
         }
     }
 }

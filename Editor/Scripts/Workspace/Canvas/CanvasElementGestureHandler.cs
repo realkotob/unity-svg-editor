@@ -77,19 +77,20 @@ namespace UnitySvgEditor.Editor
             Vector2 localPosition,
             Vector2 viewportDelta,
             bool uniformScale,
-            bool centerAnchor)
+            bool centerAnchor,
+            bool snapEnabled)
         {
             switch (state.Mode)
             {
                 case CanvasDragMode.MoveElement:
                     _elementDragController.UpdateMove(localPosition);
                     _host.UpdateSelectionVisual();
-                    _elementDragController.TryUpdateMoveTransientState(_host, viewportDelta);
+                    _elementDragController.TryUpdateMoveTransientState(_host, viewportDelta, snapEnabled);
                     break;
                 case CanvasDragMode.ResizeElement:
                     _elementDragController.UpdateResize(viewportDelta, state.ActiveHandle, uniformScale, centerAnchor);
                     _host.UpdateSelectionVisual();
-                    _elementDragController.TryUpdateResizeTransientState(_host, state.ActiveHandle);
+                    _elementDragController.TryUpdateResizeTransientState(_host, state.ActiveHandle, snapEnabled);
                     break;
             }
         }
