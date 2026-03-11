@@ -67,6 +67,9 @@ namespace UnitySvgEditor.Editor
 
             WriteAttributes(xmlWriter, documentModel, node.RawAttributes);
 
+            if (!string.IsNullOrWhiteSpace(node.TextContent))
+                xmlWriter.WriteString(node.TextContent);
+
             foreach (SvgNodeId childId in node.Children)
             {
                 if (!documentModel.TryGetNode(childId, out SvgNodeModel childNode) || childNode == null)

@@ -14,6 +14,7 @@ namespace UnitySvgEditor.Editor
         public Rect VisualContentBounds { get; set; }
         public SvgPreserveAspectRatioMode PreserveAspectRatioMode { get; set; } = SvgPreserveAspectRatioMode.Meet;
         public IReadOnlyList<PreviewElementGeometry> Elements { get; set; } = Array.Empty<PreviewElementGeometry>();
+        public IReadOnlyList<PreviewTextOverlay> TextOverlays { get; set; } = Array.Empty<PreviewTextOverlay>();
 
         public bool HasDocumentViewport =>
             DocumentViewportRect.width > 0f && DocumentViewportRect.height > 0f;

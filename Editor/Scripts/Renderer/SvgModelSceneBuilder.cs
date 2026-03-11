@@ -134,6 +134,11 @@ namespace UnitySvgEditor.Editor
                     return TryAddLineShape(documentModel, node, nodesByXmlId, sceneNode, out error);
                 case "path":
                     return TryAddPathShape(documentModel, node, nodesByXmlId, sceneNode, out error);
+                case "text":
+                case "tspan":
+                case "textPath":
+                    error = $"Direct renderer does not yet support <{node.TagName}> on '{node.LegacyElementKey}'.";
+                    return false;
                 case "use":
                     return TryAddUseNode(documentModel, nodesByXmlId, node, sceneNode, out error);
                 default:
@@ -252,11 +257,7 @@ namespace UnitySvgEditor.Editor
             {
                 new BezierContour
                 {
-                    Segments = new[]
-                    {
-                        CreateLinearSegment(new Vector2(x1, y1)),
-                        CreateLinearSegment(new Vector2(x2, y2))
-                    },
+                    Segments = VectorUtils.BezierSegmentToPath(VectorUtils.MakeLine(new Vector2(x1, y1), new Vector2(x2, y2))),
                     Closed = false
                 }
             };
@@ -573,9 +574,13 @@ namespace UnitySvgEditor.Editor
                 return false;
 
             List<BezierContour> builtContours = new();
-            List<BezierPathSegment> currentSegments = null;
+            List<BezierSegment> currentSegments = null;
             Vector2 currentPoint = Vector2.zero;
             Vector2 subpathStart = Vector2.zero;
+            Vector2 lastCubicControl = Vector2.zero;
+            Vector2 lastQuadraticControl = Vector2.zero;
+            bool hasLastCubicControl = false;
+            bool hasLastQuadraticControl = false;
             char currentCommand = '\0';
             int index = 0;
 
@@ -604,80 +609,172 @@ namespace UnitySvgEditor.Editor
                         if (!TryReadPoint(pathData, ref index, currentCommand == 'm', currentPoint, out Vector2 movePoint))
                             return false;
 
-                        if (currentSegments != null && currentSegments.Count > 0)
-                        {
-                            builtContours.Add(new BezierContour
-                            {
-                                Segments = currentSegments.ToArray(),
-                                Closed = false
-                            });
-                        }
+                        if (!TryFinalizeContour(currentSegments, closed: false, builtContours, ref currentPoint, subpathStart))
+                            return false;
 
-                        currentSegments = new List<BezierPathSegment>
-                        {
-                            CreateLinearSegment(movePoint)
-                        };
+                        currentSegments = new List<BezierSegment>();
                         currentPoint = movePoint;
                         subpathStart = movePoint;
+                        hasLastCubicControl = false;
+                        hasLastQuadraticControl = false;
                         currentCommand = currentCommand == 'm' ? 'l' : 'L';
+
+                        while (TryReadPoint(pathData, ref index, currentCommand == 'l', currentPoint, out Vector2 implicitLinePoint))
+                        {
+                            currentSegments.Add(VectorUtils.MakeLine(currentPoint, implicitLinePoint));
+                            currentPoint = implicitLinePoint;
+                        }
                         break;
                     }
                     case 'L':
                     case 'l':
                     {
-                        if (!TryEnsurePathStarted(currentSegments))
+                        if (!TryEnsurePathStarted(currentSegments, subpathStart, ref currentPoint))
                             return false;
 
-                        if (!TryReadPoint(pathData, ref index, currentCommand == 'l', currentPoint, out Vector2 linePoint))
-                            return false;
-
-                        currentSegments.Add(CreateLinearSegment(linePoint));
-                        currentPoint = linePoint;
+                        while (TryReadPoint(pathData, ref index, currentCommand == 'l', currentPoint, out Vector2 linePoint))
+                        {
+                            currentSegments.Add(VectorUtils.MakeLine(currentPoint, linePoint));
+                            currentPoint = linePoint;
+                        }
+                        hasLastCubicControl = false;
+                        hasLastQuadraticControl = false;
                         break;
                     }
                     case 'H':
                     case 'h':
                     {
-                        if (!TryEnsurePathStarted(currentSegments))
+                        if (!TryEnsurePathStarted(currentSegments, subpathStart, ref currentPoint))
                             return false;
 
-                        if (!TryReadFloatToken(pathData, ref index, out float xValue))
-                            return false;
-
-                        currentPoint = new Vector2(
-                            currentCommand == 'h' ? currentPoint.x + xValue : xValue,
-                            currentPoint.y);
-                        currentSegments.Add(CreateLinearSegment(currentPoint));
+                        while (TryReadFloatToken(pathData, ref index, out float xValue))
+                        {
+                            Vector2 nextPoint = new(
+                                currentCommand == 'h' ? currentPoint.x + xValue : xValue,
+                                currentPoint.y);
+                            currentSegments.Add(VectorUtils.MakeLine(currentPoint, nextPoint));
+                            currentPoint = nextPoint;
+                        }
+                        hasLastCubicControl = false;
+                        hasLastQuadraticControl = false;
                         break;
                     }
                     case 'V':
                     case 'v':
                     {
-                        if (!TryEnsurePathStarted(currentSegments))
+                        if (!TryEnsurePathStarted(currentSegments, subpathStart, ref currentPoint))
                             return false;
 
-                        if (!TryReadFloatToken(pathData, ref index, out float yValue))
+                        while (TryReadFloatToken(pathData, ref index, out float yValue))
+                        {
+                            Vector2 nextPoint = new(
+                                currentPoint.x,
+                                currentCommand == 'v' ? currentPoint.y + yValue : yValue);
+                            currentSegments.Add(VectorUtils.MakeLine(currentPoint, nextPoint));
+                            currentPoint = nextPoint;
+                        }
+                        hasLastCubicControl = false;
+                        hasLastQuadraticControl = false;
+                        break;
+                    }
+                    case 'C':
+                    case 'c':
+                    {
+                        if (!TryEnsurePathStarted(currentSegments, subpathStart, ref currentPoint))
                             return false;
 
-                        currentPoint = new Vector2(
-                            currentPoint.x,
-                            currentCommand == 'v' ? currentPoint.y + yValue : yValue);
-                        currentSegments.Add(CreateLinearSegment(currentPoint));
+                        while (TryReadCurvePoints(pathData, ref index, currentCommand == 'c', currentPoint, out Vector2 c1, out Vector2 c2, out Vector2 endPoint))
+                        {
+                            currentSegments.Add(new BezierSegment
+                            {
+                                P0 = currentPoint,
+                                P1 = c1,
+                                P2 = c2,
+                                P3 = endPoint
+                            });
+                            currentPoint = endPoint;
+                            lastCubicControl = c2;
+                            hasLastCubicControl = true;
+                            hasLastQuadraticControl = false;
+                        }
+                        break;
+                    }
+                    case 'S':
+                    case 's':
+                    {
+                        if (!TryEnsurePathStarted(currentSegments, subpathStart, ref currentPoint))
+                            return false;
+
+                        while (TryReadSmoothCurvePoints(pathData, ref index, currentCommand == 's', currentPoint, out Vector2 c2, out Vector2 endPoint))
+                        {
+                            Vector2 c1 = hasLastCubicControl
+                                ? (currentPoint * 2f) - lastCubicControl
+                                : currentPoint;
+                            currentSegments.Add(new BezierSegment
+                            {
+                                P0 = currentPoint,
+                                P1 = c1,
+                                P2 = c2,
+                                P3 = endPoint
+                            });
+                            currentPoint = endPoint;
+                            lastCubicControl = c2;
+                            hasLastCubicControl = true;
+                            hasLastQuadraticControl = false;
+                        }
+                        break;
+                    }
+                    case 'Q':
+                    case 'q':
+                    {
+                        if (!TryEnsurePathStarted(currentSegments, subpathStart, ref currentPoint))
+                            return false;
+
+                        while (TryReadQuadraticPoints(pathData, ref index, currentCommand == 'q', currentPoint, out Vector2 controlPoint, out Vector2 endPoint))
+                        {
+                            currentSegments.Add(VectorUtils.QuadraticToCubic(currentPoint, controlPoint, endPoint));
+                            currentPoint = endPoint;
+                            lastQuadraticControl = controlPoint;
+                            hasLastQuadraticControl = true;
+                            hasLastCubicControl = false;
+                        }
+                        break;
+                    }
+                    case 'T':
+                    case 't':
+                    {
+                        if (!TryEnsurePathStarted(currentSegments, subpathStart, ref currentPoint))
+                            return false;
+
+                        while (TryReadPoint(pathData, ref index, currentCommand == 't', currentPoint, out Vector2 endPoint))
+                        {
+                            Vector2 controlPoint = hasLastQuadraticControl
+                                ? (currentPoint * 2f) - lastQuadraticControl
+                                : currentPoint;
+                            currentSegments.Add(VectorUtils.QuadraticToCubic(currentPoint, controlPoint, endPoint));
+                            currentPoint = endPoint;
+                            lastQuadraticControl = controlPoint;
+                            hasLastQuadraticControl = true;
+                            hasLastCubicControl = false;
+                        }
                         break;
                     }
                     case 'Z':
                     case 'z':
                     {
-                        if (!TryEnsurePathStarted(currentSegments))
+                        if (!TryEnsurePathStarted(currentSegments, subpathStart, ref currentPoint))
                             return false;
 
-                        builtContours.Add(new BezierContour
-                        {
-                            Segments = currentSegments.ToArray(),
-                            Closed = true
-                        });
+                        if ((currentPoint - subpathStart).sqrMagnitude > Mathf.Epsilon)
+                            currentSegments.Add(VectorUtils.MakeLine(currentPoint, subpathStart));
+
+                        if (!TryFinalizeContour(currentSegments, closed: true, builtContours, ref currentPoint, subpathStart))
+                            return false;
+
                         currentSegments = null;
                         currentPoint = subpathStart;
+                        hasLastCubicControl = false;
+                        hasLastQuadraticControl = false;
                         break;
                     }
                     default:
@@ -685,32 +782,50 @@ namespace UnitySvgEditor.Editor
                 }
             }
 
-            if (currentSegments != null && currentSegments.Count > 0)
-            {
-                builtContours.Add(new BezierContour
-                {
-                    Segments = currentSegments.ToArray(),
-                    Closed = false
-                });
-            }
+            if (!TryFinalizeContour(currentSegments, closed: false, builtContours, ref currentPoint, subpathStart))
+                return false;
 
             contours = builtContours.ToArray();
             return contours.Length > 0;
         }
 
-        private static bool TryEnsurePathStarted(List<BezierPathSegment> currentSegments)
+        private static bool TryEnsurePathStarted(
+            List<BezierSegment> currentSegments,
+            Vector2 subpathStart,
+            ref Vector2 currentPoint)
         {
-            return currentSegments != null && currentSegments.Count > 0;
+            if (currentSegments == null)
+                return false;
+
+            if (currentSegments.Count == 0)
+                currentPoint = subpathStart;
+
+            return true;
         }
 
-        private static BezierPathSegment CreateLinearSegment(Vector2 point)
+        private static bool TryFinalizeContour(
+            List<BezierSegment> currentSegments,
+            bool closed,
+            List<BezierContour> builtContours,
+            ref Vector2 currentPoint,
+            Vector2 subpathStart)
         {
-            return new BezierPathSegment
+            if (currentSegments == null)
+                return true;
+
+            if (currentSegments.Count == 0)
             {
-                P0 = point,
-                P1 = point,
-                P2 = point
-            };
+                currentPoint = subpathStart;
+                return true;
+            }
+
+            builtContours.Add(new BezierContour
+            {
+                Segments = VectorUtils.BezierSegmentsToPath(currentSegments.ToArray()),
+                Closed = closed
+            });
+            currentPoint = subpathStart;
+            return true;
         }
 
         private static bool TryReadPoint(
@@ -728,6 +843,69 @@ namespace UnitySvgEditor.Editor
             }
 
             point = relative ? origin + new Vector2(x, y) : new Vector2(x, y);
+            return true;
+        }
+
+        private static bool TryReadCurvePoints(
+            string pathData,
+            ref int index,
+            bool relative,
+            Vector2 origin,
+            out Vector2 c1,
+            out Vector2 c2,
+            out Vector2 endPoint)
+        {
+            c1 = Vector2.zero;
+            c2 = Vector2.zero;
+            endPoint = Vector2.zero;
+
+            if (!TryReadPoint(pathData, ref index, relative, origin, out c1) ||
+                !TryReadPoint(pathData, ref index, relative, origin, out c2) ||
+                !TryReadPoint(pathData, ref index, relative, origin, out endPoint))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool TryReadSmoothCurvePoints(
+            string pathData,
+            ref int index,
+            bool relative,
+            Vector2 origin,
+            out Vector2 c2,
+            out Vector2 endPoint)
+        {
+            c2 = Vector2.zero;
+            endPoint = Vector2.zero;
+
+            if (!TryReadPoint(pathData, ref index, relative, origin, out c2) ||
+                !TryReadPoint(pathData, ref index, relative, origin, out endPoint))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool TryReadQuadraticPoints(
+            string pathData,
+            ref int index,
+            bool relative,
+            Vector2 origin,
+            out Vector2 controlPoint,
+            out Vector2 endPoint)
+        {
+            controlPoint = Vector2.zero;
+            endPoint = Vector2.zero;
+
+            if (!TryReadPoint(pathData, ref index, relative, origin, out controlPoint) ||
+                !TryReadPoint(pathData, ref index, relative, origin, out endPoint))
+            {
+                return false;
+            }
+
             return true;
         }
 

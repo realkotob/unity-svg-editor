@@ -15,5 +15,6 @@ namespace UnitySvgEditor.Editor
         public BoundsQuality BoundsQuality { get; set; } = BoundsQuality.Unknown;
         public Matrix2D WorldTransform { get; set; } = Matrix2D.identity;
         public Matrix2D ParentWorldTransform { get; set; } = Matrix2D.identity;
+        public bool IsTextOverlay { get; set; }
     }
 }

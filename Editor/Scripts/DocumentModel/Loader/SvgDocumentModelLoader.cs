@@ -85,6 +85,7 @@ namespace UnitySvgEditor.Editor
                 LegacyTargetKey = isRoot
                     ? SvgDocumentTargets.RootTargetKey
                     : legacyElementKey,
+                TextContent = IsTextTag(element.LocalName) ? element.InnerText?.Trim() ?? string.Empty : string.Empty,
                 Depth = depth,
                 SiblingIndex = siblingIndex,
                 IsDefinitionNode = isDefinitionNode && !isRoot,

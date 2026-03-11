@@ -20,6 +20,8 @@ namespace UnitySvgEditor.Editor
             PreviewElementGeometry boundsFallback = null;
             float boundsFallbackArea = float.MaxValue;
             int boundsFallbackDrawOrder = int.MinValue;
+            bool boundsFallbackIsText = false;
+            PreviewElementGeometry textHit = null;
 
             for (int index = 0; index < elements.Count; index++)
             {
@@ -32,12 +34,22 @@ namespace UnitySvgEditor.Editor
 
                 float elementArea = element.VisualBounds.width * element.VisualBounds.height;
                 if (boundsFallback == null ||
-                    elementArea < boundsFallbackArea ||
-                    (elementArea == boundsFallbackArea && element.DrawOrder > boundsFallbackDrawOrder))
+                    (element.IsTextOverlay && !boundsFallbackIsText) ||
+                    (element.IsTextOverlay == boundsFallbackIsText &&
+                     (elementArea < boundsFallbackArea ||
+                      (elementArea == boundsFallbackArea && element.DrawOrder > boundsFallbackDrawOrder))))
                 {
                     boundsFallback = element;
                     boundsFallbackArea = elementArea;
                     boundsFallbackDrawOrder = element.DrawOrder;
+                    boundsFallbackIsText = element.IsTextOverlay;
+                }
+
+                if (element.IsTextOverlay)
+                {
+                    if (textHit == null || element.DrawOrder > textHit.DrawOrder)
+                        textHit = element;
+                    continue;
                 }
 
                 if (element.HitGeometry == null ||
@@ -50,6 +62,12 @@ namespace UnitySvgEditor.Editor
                 {
                     hitElement = candidate;
                 }
+            }
+
+            if (textHit != null)
+            {
+                hitElement = textHit;
+                return true;
             }
 
             if (hitElement != null)

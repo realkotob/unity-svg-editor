@@ -12,6 +12,7 @@ namespace UnitySvgEditor.Editor
         public string XmlId { get; set; } = string.Empty;
         public string LegacyElementKey { get; set; } = string.Empty;
         public string LegacyTargetKey { get; set; } = string.Empty;
+        public string TextContent { get; set; } = string.Empty;
         public int Depth { get; set; }
         public int SiblingIndex { get; set; }
         public bool IsDefinitionNode { get; set; }

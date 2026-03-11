@@ -155,6 +155,17 @@ namespace UnitySvgEditor.Editor
                 out scenePoint);
         }
 
+        public bool TryScenePointToViewportPoint(PreviewSnapshot previewSnapshot, Vector2 scenePoint, out Vector2 viewportPoint)
+        {
+            return CanvasProjectionMath.TryScenePointToViewportPoint(
+                _viewportState,
+                previewSnapshot,
+                _framePadding,
+                _frameHeaderHeight,
+                scenePoint,
+                out viewportPoint);
+        }
+
         public PreviewElementGeometry FindPreviewElement(PreviewSnapshot previewSnapshot, string elementKey)
         {
             return _hitTestHelper.FindPreviewElement(previewSnapshot, elementKey);
@@ -333,6 +344,7 @@ namespace UnitySvgEditor.Editor
             // visual canvas frame should follow it directly instead of the larger
             // visible viewport container.
             overlayController.SetFrame(layout.ImageViewportRect, GetCanvasFrameLabel(currentDocument));
+            overlayController.SetTextOverlays(previewSnapshot, this);
             previewImage.scaleMode = ScaleMode.StretchToFill;
             previewImage.style.left = 0f;
             previewImage.style.top = 0f;

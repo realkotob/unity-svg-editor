@@ -200,6 +200,31 @@ namespace UnitySvgEditor.Editor
             return true;
         }
 
+        public static bool TryScenePointToViewportPoint(
+            CanvasViewportState viewportState,
+            PreviewSnapshot previewSnapshot,
+            float framePadding,
+            float frameHeaderHeight,
+            Vector2 scenePoint,
+            out Vector2 viewportPoint)
+        {
+            viewportPoint = default;
+            if (!TryGetSceneViewportMapping(
+                    viewportState,
+                    previewSnapshot,
+                    framePadding,
+                    frameHeaderHeight,
+                    out SceneViewportMapping mapping))
+            {
+                return false;
+            }
+
+            viewportPoint = new Vector2(
+                mapping.Layout.ImageViewportRect.xMin + ((scenePoint.x - mapping.SceneRect.xMin) * mapping.Scale.x),
+                mapping.Layout.ImageViewportRect.yMin + ((scenePoint.y - mapping.SceneRect.yMin) * mapping.Scale.y));
+            return true;
+        }
+
         public static bool TryConvertViewportDeltaToSceneDelta(
             CanvasViewportState viewportState,
             PreviewSnapshot previewSnapshot,

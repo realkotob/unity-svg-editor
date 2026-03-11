@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -24,7 +25,35 @@ namespace UnitySvgEditor.Editor
             out PreviewSnapshot snapshot,
             out string error)
         {
-            return _canvasRenderer.TryBuildPreviewSnapshot(documentModel, preferredViewportRect, out snapshot, out error);
+            if (!_canvasRenderer.TryBuildPreviewSnapshot(documentModel, preferredViewportRect, out snapshot, out error))
+                return false;
+
+            IReadOnlyList<PreviewTextOverlay> textOverlays = PreviewSnapshotTextBuilder.BuildTextOverlays(documentModel);
+            IReadOnlyList<PreviewElementGeometry> textElements = PreviewSnapshotTextBuilder.BuildTextElements(
+                textOverlays,
+                snapshot.Elements?.Count ?? 0);
+
+            if (textElements.Count > 0)
+            {
+                List<PreviewElementGeometry> mergedElements = new();
+                if (snapshot.Elements != null)
+                    mergedElements.AddRange(snapshot.Elements);
+
+                mergedElements.AddRange(textElements);
+                snapshot.Elements = mergedElements;
+
+                if (PreviewSnapshotGeometryBuilder.TryBuildVisualContentBounds(snapshot.Elements, out Rect visualContentBounds))
+                {
+                    snapshot.VisualContentBounds = visualContentBounds;
+                    snapshot.ProjectionRect = PreviewSnapshotSceneImportService.ResolveProjectionRect(
+                        snapshot.DocumentViewportRect,
+                        visualContentBounds,
+                        preferredViewportRect);
+                }
+            }
+
+            snapshot.TextOverlays = textOverlays;
+            return true;
         }
 
         internal static bool TryBuildImportedSnapshot(

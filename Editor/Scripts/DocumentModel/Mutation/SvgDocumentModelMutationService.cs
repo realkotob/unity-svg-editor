@@ -388,6 +388,7 @@ namespace UnitySvgEditor.Editor
                     XmlId = sourceNode.XmlId,
                     LegacyElementKey = sourceNode.LegacyElementKey,
                     LegacyTargetKey = sourceNode.LegacyTargetKey,
+                    TextContent = sourceNode.TextContent,
                     Depth = sourceNode.Depth,
                     SiblingIndex = sourceNode.SiblingIndex,
                     IsDefinitionNode = sourceNode.IsDefinitionNode,
