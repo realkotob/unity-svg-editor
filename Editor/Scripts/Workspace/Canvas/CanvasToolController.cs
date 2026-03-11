@@ -121,13 +121,32 @@ namespace UnitySvgEditor.Editor
             PreviewSnapshot previewSnapshot,
             CanvasSceneProjector sceneProjector,
             CanvasViewportState viewportState,
-            Action updateCanvasVisualState)
+            Action updateCanvasVisualState,
+            Func<Vector2, bool> nudgeSelectedElement)
         {
             if (evt.keyCode == KeyCode.Space)
             {
                 IsSpacePanArmed = true;
                 evt.StopPropagation();
                 return true;
+            }
+
+            Vector2 nudgeDelta = evt.keyCode switch
+            {
+                KeyCode.LeftArrow => Vector2.left,
+                KeyCode.RightArrow => Vector2.right,
+                KeyCode.UpArrow => Vector2.up,
+                KeyCode.DownArrow => Vector2.down,
+                _ => Vector2.zero
+            };
+            if (nudgeDelta != Vector2.zero)
+            {
+                float nudgeAmount = (evt.modifiers & EventModifiers.Shift) != 0 ? 10f : 1f;
+                if (nudgeSelectedElement?.Invoke(nudgeDelta * nudgeAmount) == true)
+                {
+                    evt.StopPropagation();
+                    return true;
+                }
             }
 
             bool isActionKeyPressed = (evt.modifiers & EventModifiers.Command) != 0 ||

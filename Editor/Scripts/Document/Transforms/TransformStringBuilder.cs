@@ -48,6 +48,12 @@ namespace UnitySvgEditor.Editor
             return $"translate({numberFormatter(pivot.x)} {numberFormatter(pivot.y)}) scale({numberFormatter(scale.x)} {numberFormatter(scale.y)}) translate({numberFormatter(-pivot.x)} {numberFormatter(-pivot.y)})";
         }
 
+        public static string BuildRotateAround(float angle, Vector2 pivot, Func<float, string> numberFormatter = null)
+        {
+            numberFormatter ??= FormatNumber;
+            return $"translate({numberFormatter(pivot.x)} {numberFormatter(pivot.y)}) rotate({numberFormatter(angle)}) translate({numberFormatter(-pivot.x)} {numberFormatter(-pivot.y)})";
+        }
+
         public static bool TryParseSimpleTransform(
             string transform,
             out float translateX,

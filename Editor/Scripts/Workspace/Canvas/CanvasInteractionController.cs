@@ -5,6 +5,8 @@ namespace UnitySvgEditor.Editor
 {
     internal sealed class CanvasInteractionController : ICanvasPointerDragHost
     {
+        internal const string FrameHoverSentinel = "__canvas-frame-hover__";
+
         private readonly ICanvasWorkspaceHost _host;
         private readonly CanvasViewportState _viewportState;
         private readonly CanvasSceneProjector _sceneProjector;
@@ -135,7 +137,7 @@ namespace UnitySvgEditor.Editor
                     CanvasSelectionKind.Element,
                     _pointerDragController.DragCurrentSelectionViewportRect,
                     sourceRect.size,
-                    true));
+                    _pointerDragController.DragMode != CanvasDragMode.RotateElement));
                 return;
             }
 
@@ -192,6 +194,19 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
+            if (string.Equals(_hoveredElementKey, FrameHoverSentinel, System.StringComparison.Ordinal))
+            {
+                if (SelectionKind != CanvasSelectionKind.Frame &&
+                    _sceneProjector.TryGetFrameViewportRect(out Rect frameViewportRect))
+                {
+                    _overlayController.SetHover(frameViewportRect);
+                    return;
+                }
+
+                _overlayController.ClearHover();
+                return;
+            }
+
             if (_sceneProjector.TryResolveSelectedElementSceneRect(PreviewSnapshot, _hoveredElementKey, out Rect hoveredElementSceneRect) &&
                 _sceneProjector.TrySceneRectToViewportRect(PreviewSnapshot, hoveredElementSceneRect, out Rect hoveredElementViewportRect))
             {
@@ -228,6 +243,31 @@ namespace UnitySvgEditor.Editor
         void ICanvasPointerDragHost.ClearHover() => ClearHover();
         void ICanvasPointerDragHost.UpdateHoverVisual() => UpdateHoverVisual();
 
+        internal bool TryNudgeSelectedElement(Vector2 sceneDelta)
+        {
+            if (PreviewSnapshot == null ||
+                _selectionKind != CanvasSelectionKind.Element ||
+                string.IsNullOrWhiteSpace(_host.SelectedElementKey))
+            {
+                return false;
+            }
+
+            PreviewElementGeometry selectedGeometry = _sceneProjector.FindPreviewElement(PreviewSnapshot, _host.SelectedElementKey);
+            if (selectedGeometry == null ||
+                !_pointerDragController.TryBuildNudgedSource(
+                    _host.CurrentDocument,
+                    _host.SelectedElementKey,
+                    sceneDelta,
+                    selectedGeometry.ParentWorldTransform,
+                    out string updatedSource))
+            {
+                return false;
+            }
+
+            _host.ApplyUpdatedSource(updatedSource, $"Moved <{_host.FindStructureNode(_host.SelectedElementKey)?.TagName ?? "element"}>.");
+            return true;
+        }
+
         private bool IsResizeUnsupported(string elementKey)
         {
             string tagName = _host.FindStructureNode(elementKey)?.TagName;
@@ -251,6 +291,7 @@ namespace UnitySvgEditor.Editor
 
             _canvasStageView.SetZoomPercent(displayedZoomScale);
             _canvasStageView.SetHudEnabled(PreviewSnapshot != null);
+            _canvasStageView.SetDirtyBadgeVisible(_host.CurrentDocument?.IsDirty == true);
         }
     }
 }

@@ -37,10 +37,6 @@ namespace UnitySvgEditor.Editor
             _view.ImmediateApplyRequested += OnImmediateApplyRequested;
             _view.FrameRectChanged += OnFrameRectChanged;
             _view.TransformHelperChanged += OnTransformHelperChanged;
-            _view.TransformTextChanged += OnTransformTextChanged;
-            _view.ReadRequested += OnReadTargetClicked;
-            _view.BuildTransformRequested += OnBuildTransformClicked;
-            _view.ApplyRequested += OnApplyPatchClicked;
             _view.PositionActionRequested += OnPositionActionRequested;
         }
 
@@ -134,7 +130,6 @@ namespace UnitySvgEditor.Editor
             SetEnabledIfNotNull(_view.CornerRadiusControl, hasDocument && _inspectorPanelState.CornerRadiusEnabled);
             SetEnabledIfNotNull(_view.DashLengthControl, hasDocument);
             SetEnabledIfNotNull(_view.DashGapControl, hasDocument);
-            SetEnabledIfNotNull(_view.TransformControl, hasDocument);
             SetEnabledIfNotNull(_view.FrameXControl, hasDocument);
             SetEnabledIfNotNull(_view.FrameYControl, hasDocument);
             SetEnabledIfNotNull(_view.FrameWidthControl, hasDocument);
@@ -155,9 +150,6 @@ namespace UnitySvgEditor.Editor
             SetEnabledIfNotNull(_view.PositionRotateResetControl, hasDocument);
             SetEnabledIfNotNull(_view.PositionFlipHorizontalControl, hasDocument);
             SetEnabledIfNotNull(_view.PositionFlipVerticalControl, hasDocument);
-            SetEnabledIfNotNull(_view.ReadButtonControl, hasDocument);
-            SetEnabledIfNotNull(_view.BuildTransformButtonControl, hasDocument);
-            SetEnabledIfNotNull(_view.ApplyButtonControl, hasDocument);
         }
 
         private void OnImmediateApplyRequested(InspectorPanelView.ImmediateApplyField field) => _targetSyncService.ApplyImmediatePatch(field);
@@ -166,17 +158,8 @@ namespace UnitySvgEditor.Editor
 
         private void OnTransformHelperChanged()
         {
-            _targetSyncService.SyncTransformTextFromHelper();
             QueueTransformApply();
         }
-
-        private void OnTransformTextChanged() => _targetSyncService.SyncTransformHelperFromText();
-
-        private void OnApplyPatchClicked() => _targetSyncService.ApplyPatchToSource();
-
-        private void OnBuildTransformClicked() => _targetSyncService.BuildTransformFromHelper();
-
-        private void OnReadTargetClicked() => _targetSyncService.ReadSelectedTargetAttributes();
 
         private void OnPositionActionRequested(InspectorPanelView.PositionAction action) => _targetSyncService.ApplyPositionAction(action);
 

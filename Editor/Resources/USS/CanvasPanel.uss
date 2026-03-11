@@ -14,20 +14,48 @@
     background-color: var(--editor-canvas-stage-bg);
 }
 
-.svg-editor__canvas-zoom-hud {
+.svg-editor__canvas-hud-stack {
     position: absolute;
     bottom: var(--space-3);
     right: var(--space-3);
+    align-items: flex-end;
+}
+
+.svg-editor__canvas-zoom-hud {
     flex-direction: row;
     align-items: center;
     padding: 6px 8px;
-    border-radius: 16px;
+    border-radius: 14px;
     background-color: var(--editor-frame-label-bg);
 }
 
+.svg-editor__canvas-dirty-badge {
+    flex-direction: row;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    background-color: var(--editor-frame-label-bg);
+}
+
+.svg-editor__canvas-dirty-dot {
+    width: 6px;
+    height: 6px;
+    margin-right: 5px;
+    border-radius: 999px;
+    background-color: var(--warning);
+}
+
+.svg-editor__canvas-dirty-label {
+    color: var(--warning);
+    font-size: 10px;
+    -unity-font-style: bold;
+}
+
 .svg-editor__canvas-zoom-label {
-    min-width: 44px;
-    margin-right: var(--space-2);
+    min-width: 36px;
+    margin-right: 3px;
+    margin-left: 3px;
     color: var(--foreground);
     font-size: 11px;
     -unity-font-style: bold;
@@ -35,10 +63,10 @@
 }
 
 .svg-editor__canvas-zoom-reset-button {
-    min-width: 42px;
-    height: 24px;
-    padding: 0 10px;
-    border-radius: 10px;
+    min-width: 34px;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: 9px;
     border-width: 0;
     color: var(--foreground);
     background-color: var(--editor-surface-soft);
@@ -156,7 +184,30 @@
     margin-right: var(--space-1-5);
     margin-bottom: var(--space-1);
     padding: 2px 7px;
-    border-radius: var(--radius-full);
     color: var(--accent-foreground);
     background-color: var(--primary-20);
+}
+
+.svg-editor__toast-layer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: var(--space-4);
+    align-items: center;
+}
+
+.svg-editor__toast {
+    color: var(--foreground);
+    font-size: 11px;
+    -unity-font-style: bold;
+    background-color: var(--editor-frame-label-bg);
+    border-color: var(--border);
+    border-width: 1px;
+    border-radius: var(--radius-md);
+    padding: 6px 12px;
+}
+
+.svg-editor__toast--success {
+    color: var(--success);
+    border-color: var(--success);
 }

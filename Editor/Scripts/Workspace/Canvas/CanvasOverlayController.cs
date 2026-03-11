@@ -24,6 +24,7 @@ namespace UnitySvgEditor.Editor
         }
 
         private const float HANDLE_HALF_SIZE = 4f;
+        private const float ROTATE_HANDLE_OFFSET = 24f;
 
         private readonly Dictionary<CanvasHandle, VisualElement> _handles = new();
         private VisualElement _overlay;
@@ -63,7 +64,7 @@ namespace UnitySvgEditor.Editor
 
             _frameLabel = new Label();
             _frameLabel.AddClass(UssClassName.FRAME_LABEL);
-            _frameLabel.pickingMode = PickingMode.Ignore;
+            _frameLabel.pickingMode = PickingMode.Position;
             _overlay.Add(_frameLabel);
 
             _verticalGuide = new VisualElement();
@@ -101,6 +102,7 @@ namespace UnitySvgEditor.Editor
             CreateHandle(CanvasHandle.Bottom);
             CreateHandle(CanvasHandle.BottomLeft);
             CreateHandle(CanvasHandle.Left);
+            CreateHandle(CanvasHandle.Rotate);
 
             ClearFrame();
             ClearSelection();
@@ -212,6 +214,11 @@ namespace UnitySvgEditor.Editor
             }
 
             _textOverlays.Clear();
+        }
+
+        public bool IsFrameLabelTarget(object target)
+        {
+            return target != null && ReferenceEquals(target, _frameLabel);
         }
 
         private static float ResolveAnchorOffset(PreviewTextOverlay textOverlay)
@@ -336,6 +343,7 @@ namespace UnitySvgEditor.Editor
             PositionHandle(CanvasHandle.Bottom, selection.Rect.center.x, selection.Rect.yMax);
             PositionHandle(CanvasHandle.BottomLeft, selection.Rect.xMin, selection.Rect.yMax);
             PositionHandle(CanvasHandle.Left, selection.Rect.xMin, selection.Rect.center.y);
+            PositionHandle(CanvasHandle.Rotate, selection.Rect.center.x, selection.Rect.yMin - ROTATE_HANDLE_OFFSET);
         }
 
         public bool TryHitTestHandle(Vector2 localPoint, out CanvasHandle handle)

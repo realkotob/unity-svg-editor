@@ -75,6 +75,23 @@ namespace UnitySvgEditor.Editor
             return true;
         }
 
+        public bool TryApplyRotation(float angle, Vector2 pivot)
+        {
+            if (_workingDocumentModel == null)
+                return false;
+
+            if (Mathf.Approximately(angle, 0f))
+            {
+                ApplyTransform(_baseTransform);
+                _hasPendingMutation = false;
+                return true;
+            }
+
+            ApplyTransform(PrependTransform(_baseTransform, TransformStringBuilder.BuildRotateAround(angle, pivot)));
+            _hasPendingMutation = true;
+            return true;
+        }
+
         public bool TryBuildCommittedSource(out string sourceText, out string error)
         {
             sourceText = string.Empty;

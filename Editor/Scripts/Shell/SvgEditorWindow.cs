@@ -372,6 +372,11 @@ namespace UnitySvgEditor.Editor
                     ? _documentLifecycleController.TryRedo()
                     : _documentLifecycleController.TryUndo();
             }
+            else if (evt.keyCode == KeyCode.S)
+            {
+                _documentLifecycleController.SaveCurrentDocument();
+                handled = true;
+            }
 
             if (!handled)
             {

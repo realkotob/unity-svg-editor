@@ -10,6 +10,7 @@ namespace UnitySvgEditor.Editor
         BottomRight,
         Bottom,
         BottomLeft,
-        Left
+        Left,
+        Rotate
     }
 }

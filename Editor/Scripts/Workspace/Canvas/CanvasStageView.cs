@@ -17,6 +17,9 @@ namespace UnitySvgEditor.Editor
             public const string ZOOM_HUD = "canvas-zoom-hud";
             public const string ZOOM_LABEL = "canvas-zoom-label";
             public const string ZOOM_RESET_BUTTON = "canvas-zoom-reset-button";
+            public const string DIRTY_BADGE = "canvas-dirty-badge";
+            public const string DIRTY_DOT = "canvas-dirty-dot";
+            public const string DIRTY_LABEL = "canvas-dirty-label";
         }
 
         internal static class UssClassName
@@ -28,6 +31,9 @@ namespace UnitySvgEditor.Editor
             public const string ZOOM_HUD = "svg-editor__canvas-zoom-hud";
             public const string ZOOM_LABEL = "svg-editor__canvas-zoom-label";
             public const string ZOOM_RESET_BUTTON = "svg-editor__canvas-zoom-reset-button";
+            public const string DIRTY_BADGE = "svg-editor__canvas-dirty-badge";
+            public const string DIRTY_DOT = "svg-editor__canvas-dirty-dot";
+            public const string DIRTY_LABEL = "svg-editor__canvas-dirty-label";
         }
         #endregion Constants
 
@@ -35,9 +41,10 @@ namespace UnitySvgEditor.Editor
         private readonly VisualElement _stageElement;
         private readonly VisualElement _frameElement;
         private readonly Image _previewImageElement;
-        private readonly VisualElement _zoomHudElement;
-        private readonly Label _zoomLabelElement;
-        private readonly Button _zoomResetButton;
+        private VisualElement _zoomHudElement;
+        private Label _zoomLabelElement;
+        private Button _zoomResetButton;
+        private VisualElement _dirtyBadgeElement;
         #endregion Variables
 
         #region Properties
@@ -73,26 +80,6 @@ namespace UnitySvgEditor.Editor
             _previewImageElement.style.width = Length.Percent(100);
             _previewImageElement.style.height = Length.Percent(100);
             _frameElement.Add(_previewImageElement);
-
-            _zoomHudElement = new VisualElement()
-                .SetName(ElementName.ZOOM_HUD)
-                .AddClass(UssClassName.ZOOM_HUD);
-
-            _zoomLabelElement = new Label()
-                .SetName(ElementName.ZOOM_LABEL)
-                .AddClass(UssClassName.ZOOM_LABEL);
-            _zoomHudElement.Add(_zoomLabelElement);
-
-            _zoomResetButton = new Button(HandleResetButtonClicked)
-                .SetName(ElementName.ZOOM_RESET_BUTTON)
-                .AddClass(UssClassName.ZOOM_RESET_BUTTON);
-            _zoomResetButton.text = "1:1";
-            _zoomResetButton.tooltip = "Reset zoom to actual size";
-            _zoomHudElement.Add(_zoomResetButton);
-
-            Add(_zoomHudElement);
-            SetZoomPercent(1f);
-            SetHudEnabled(false);
         }
         #endregion Constructor
 
@@ -100,6 +87,10 @@ namespace UnitySvgEditor.Editor
         internal void PrepareRuntime()
         {
             _frameElement.style.display = DisplayStyle.None;
+            EnsureHudElements();
+            SetZoomPercent(1f);
+            SetHudEnabled(false);
+            SetDirtyBadgeVisible(false);
         }
 
         internal void SetZoomPercent(float zoom)
@@ -113,9 +104,35 @@ namespace UnitySvgEditor.Editor
             _zoomResetButton?.SetEnabled(enabled);
         }
 
+        internal void SetDirtyBadgeVisible(bool visible)
+        {
+            EnsureHudElements();
+            if (_dirtyBadgeElement == null)
+                return;
+
+            _dirtyBadgeElement.style.display = visible
+                ? DisplayStyle.Flex
+                : DisplayStyle.None;
+        }
+
         private void HandleResetButtonClicked()
         {
             ResetRequested?.Invoke();
+        }
+
+        private void EnsureHudElements()
+        {
+            _zoomHudElement ??= this.Q<VisualElement>(ElementName.ZOOM_HUD);
+            _zoomLabelElement ??= this.Q<Label>(ElementName.ZOOM_LABEL);
+            _zoomResetButton ??= this.Q<Button>(ElementName.ZOOM_RESET_BUTTON);
+            _dirtyBadgeElement ??= this.Q<VisualElement>(ElementName.DIRTY_BADGE);
+
+            if (_zoomResetButton != null)
+            {
+                _zoomResetButton.tooltip = "Reset zoom to actual size";
+                _zoomResetButton.clicked -= HandleResetButtonClicked;
+                _zoomResetButton.clicked += HandleResetButtonClicked;
+            }
         }
         #endregion Internal Methods
     }

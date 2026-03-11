@@ -33,11 +33,16 @@ namespace UnitySvgEditor.Editor
             inspectorPanelState.FrameY = form.FrameYField?.value ?? 0f;
             inspectorPanelState.FrameWidth = form.FrameWidthField?.value ?? 0f;
             inspectorPanelState.FrameHeight = form.FrameHeightField?.value ?? 0f;
-            inspectorPanelState.TranslateX = form.TranslateXField?.value ?? 0f;
-            inspectorPanelState.TranslateY = form.TranslateYField?.value ?? 0f;
-            inspectorPanelState.Rotate = form.RotateField?.value ?? 0f;
-            inspectorPanelState.ScaleX = form.ScaleXField?.value ?? 1f;
-            inspectorPanelState.ScaleY = form.ScaleYField?.value ?? 1f;
+            if (form.TranslateXField != null)
+                inspectorPanelState.TranslateX = form.TranslateXField.value;
+            if (form.TranslateYField != null)
+                inspectorPanelState.TranslateY = form.TranslateYField.value;
+            if (form.RotateField != null)
+                inspectorPanelState.Rotate = form.RotateField.value;
+            if (form.ScaleXField != null)
+                inspectorPanelState.ScaleX = form.ScaleXField.value;
+            if (form.ScaleYField != null)
+                inspectorPanelState.ScaleY = form.ScaleYField.value;
         }
 
         public static void ApplyState(InspectorFormControls form, InspectorPanelState inspectorPanelState)

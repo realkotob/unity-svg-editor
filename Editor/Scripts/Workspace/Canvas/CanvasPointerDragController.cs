@@ -1,4 +1,5 @@
 using Core.UI.Foundation;
+using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -61,6 +62,21 @@ namespace UnitySvgEditor.Editor
         public CanvasDragMode DragMode => _gestureRouter.DragMode;
         public CanvasHandle ActiveHandle => _gestureRouter.ActiveHandle;
         public float Zoom => _viewportState.Zoom;
+
+        internal bool TryBuildNudgedSource(
+            DocumentSession currentDocument,
+            string elementKey,
+            Vector2 sceneDelta,
+            Matrix2D parentWorldTransform,
+            out string updatedSource)
+        {
+            return _elementDragController.TryBuildNudgedSource(
+                currentDocument,
+                elementKey,
+                sceneDelta,
+                parentWorldTransform,
+                out updatedSource);
+        }
 
         public void ResetViewportToFit()
         {
@@ -210,7 +226,8 @@ namespace UnitySvgEditor.Editor
                 _host.PreviewSnapshot,
                 _sceneProjector,
                 _viewportState,
-                _host.UpdateCanvasVisualState);
+                _host.UpdateCanvasVisualState,
+                NudgeSelectedElement);
         }
 
         private void OnCanvasKeyUp(KeyUpEvent evt)
@@ -239,6 +256,14 @@ namespace UnitySvgEditor.Editor
         private void OnCanvasResetRequested()
         {
             ResetCanvasViewInternal();
+        }
+
+        private bool NudgeSelectedElement(Vector2 delta)
+        {
+            return _host.SelectionKind == CanvasSelectionKind.Element &&
+                   !string.IsNullOrWhiteSpace(_host.SelectedElementKey) &&
+                   _host is CanvasInteractionController interactionController &&
+                   interactionController.TryNudgeSelectedElement(delta);
         }
     }
 }

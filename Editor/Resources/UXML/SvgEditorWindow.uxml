@@ -1,4 +1,4 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:toggle="Core.UI.Foundation.Components.Toggle" xmlns:togglegroup="Core.UI.Foundation.Components.ToggleGroup" xmlns:button="Core.UI.Foundation.Components.Button" xmlns:drag="Core.UI.Foundation.Components.DragNumberField" xmlns:svg="UnitySvgEditor.Editor" editor-extension-mode="True">
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:toggle="Core.UI.Foundation.Components.Toggle" xmlns:togglegroup="Core.UI.Foundation.Components.ToggleGroup" xmlns:button="Core.UI.Foundation.Components.Button" xmlns:drag="Core.UI.Foundation.Components.DragNumberField" xmlns:colorpercent="Core.UI.Foundation.Components.ColorPercentField" xmlns:svg="UnitySvgEditor.Editor" editor-extension-mode="True">
     <ui:VisualElement class="svg-editor">
         <ui:TwoPaneSplitView name="main-split" fixed-pane-index="0" fixed-pane-initial-dimension="240" orientation="Horizontal" class="svg-editor__main-split">
             <ui:VisualElement name="asset-panel" class="svg-editor__asset-panel">
@@ -23,7 +23,18 @@
             </ui:VisualElement>
             <ui:VisualElement name="workspace-split" class="svg-editor__workspace-split">
                 <ui:VisualElement name="preview-panel" class="svg-editor__preview-panel">
-                    <svg:CanvasStageView name="canvas-stage-view"/>
+                    <svg:CanvasStageView name="canvas-stage-view">
+                        <ui:VisualElement name="canvas-hud-stack" class="svg-editor__canvas-hud-stack">
+                            <ui:VisualElement name="canvas-dirty-badge" class="svg-editor__canvas-dirty-badge">
+                                <ui:VisualElement name="canvas-dirty-dot" class="svg-editor__canvas-dirty-dot"/>
+                                <ui:Label name="canvas-dirty-label" text="Edited" class="svg-editor__canvas-dirty-label"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement name="canvas-zoom-hud" class="svg-editor__canvas-zoom-hud">
+                                <ui:Label name="canvas-zoom-label" text="100%" class="svg-editor__canvas-zoom-label"/>
+                                <ui:Button name="canvas-zoom-reset-button" text="1:1" class="svg-editor__canvas-zoom-reset-button"/>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                    </svg:CanvasStageView>
                 </ui:VisualElement>
                 <ui:ScrollView name="inspector-panel" mode="Vertical" vertical-scroller-visibility="Hidden" horizontal-scroller-visibility="Hidden" class="svg-editor__inspector-panel">
                     <ui:VisualElement name="design-inspector" class="svg-editor__inspector-mode">
@@ -85,7 +96,8 @@
                             <ui:Label text="Fill" class="svg-editor__subsection-title"/>
                             <ui:VisualElement class="svg-editor__inspector-row">
                                 <ui:VisualElement class="svg-editor__inspector-field">
-                                    <uie:ColorField name="inspector-fill-color" label="Color"/>
+                                    <ui:Label text="Color" class="svg-editor__inspector-meta-label"/>
+                                    <colorpercent:ColorPercentField name="inspector-fill-color" hex-value="FFFFFF" percentage="100" picker-preview="false"/>
                                 </ui:VisualElement>
                             </ui:VisualElement>
                         </ui:VisualElement>
@@ -94,7 +106,8 @@
                             <ui:Label text="Stroke" class="svg-editor__subsection-title"/>
                             <ui:VisualElement class="svg-editor__inspector-row">
                                 <ui:VisualElement class="svg-editor__inspector-field">
-                                    <uie:ColorField name="inspector-stroke-color" label="Color"/>
+                                    <ui:Label text="Color" class="svg-editor__inspector-meta-label"/>
+                                    <colorpercent:ColorPercentField name="inspector-stroke-color" hex-value="000000" percentage="100" picker-preview="false"/>
                                 </ui:VisualElement>
                                 <ui:VisualElement class="svg-editor__inspector-field svg-editor__inspector-field--last">
                                     <ui:FloatField name="inspector-stroke-width" label="Weight" value="1"/>
@@ -108,23 +121,6 @@
                                 <ui:FloatField name="inspector-dash-length" label="Dash" value="4" class="svg-editor__inspector-field"/>
                                 <ui:FloatField name="inspector-dash-gap" label="Gap" value="2" class="svg-editor__inspector-field svg-editor__inspector-field--last"/>
                             </ui:VisualElement>
-                        </ui:VisualElement>
-                        <Core.UI.Foundation.Components.Separator.Separator class="svg-editor__inspector-separator"/>
-                        <ui:VisualElement name="advanced-transform-panel" class="svg-editor__inspector-section svg-editor__inspector-card">
-                            <ui:Label text="Advanced" class="svg-editor__subsection-title"/>
-                            <ui:VisualElement class="svg-editor__inspector-row">
-                                <ui:Button name="inspector-build-transform" text="Rebuild Transform" class="svg-editor__inspector-btn svg-editor__inspector-btn--last"/>
-                            </ui:VisualElement>
-                            <ui:VisualElement class="svg-editor__inspector-field svg-editor__advanced-transform-field">
-                                <ui:TextField name="inspector-transform" label="Transform" multiline="true" class="svg-editor__advanced-transform-field"/>
-                            </ui:VisualElement>
-                        </ui:VisualElement>
-                        <ui:VisualElement name="document-panel" class="svg-editor__inspector-section svg-editor__inspector-card">
-                            <ui:Label text="Document" class="svg-editor__subsection-title"/>
-                            <ui:VisualElement class="svg-editor__inspector-row">
-                                <ui:Button name="document-save" text="Save &amp; Reimport" class="svg-editor__inspector-btn svg-editor__inspector-btn--last"/>
-                            </ui:VisualElement>
-                            <ui:Label name="document-status" text="Select an SVG asset to begin." class="svg-editor__document-status"/>
                         </ui:VisualElement>
                     </ui:VisualElement>
                 </ui:ScrollView>

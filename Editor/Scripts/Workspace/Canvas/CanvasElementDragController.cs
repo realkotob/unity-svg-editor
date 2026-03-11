@@ -18,6 +18,8 @@ namespace UnitySvgEditor.Editor
         private bool _dragResizeCenterAnchor;
         private string _dragElementKey = string.Empty;
         private Matrix2D _dragStartParentWorldTransform = Matrix2D.identity;
+        private Vector2 _dragStartRotateVector;
+        private float _dragCurrentRotationAngle;
 
         public Rect DragCurrentSelectionViewportRect => _dragCurrentSelectionViewportRect;
         public Rect DragStartElementSceneRect => _dragStartElementSceneRect;
@@ -73,6 +75,28 @@ namespace UnitySvgEditor.Editor
             _transientDocumentModelSession.TryBegin(currentDocument, elementKey);
         }
 
+        public void BeginRotate(
+            DocumentSession currentDocument,
+            PreviewSnapshot previewSnapshot,
+            string elementKey,
+            Vector2 localPosition,
+            Rect elementSceneRect,
+            Matrix2D parentWorldTransform)
+        {
+            _dragElementKey = elementKey;
+            _dragStartParentWorldTransform = parentWorldTransform;
+            _dragStartProjectionSceneRect = previewSnapshot?.CanvasViewportRect ?? default;
+            _dragStartPreserveAspectRatioMode = previewSnapshot?.PreserveAspectRatioMode ?? SvgPreserveAspectRatioMode.Meet;
+            _dragStartSelectionViewportRect = _sceneProjector.TrySceneRectToViewportRect(previewSnapshot, elementSceneRect, out Rect selectionViewportRect)
+                ? selectionViewportRect
+                : default;
+            _dragCurrentSelectionViewportRect = _dragStartSelectionViewportRect;
+            _dragStartElementSceneRect = elementSceneRect;
+            _dragStartRotateVector = localPosition - _dragStartSelectionViewportRect.center;
+            _dragCurrentRotationAngle = 0f;
+            _transientDocumentModelSession.TryBegin(currentDocument, elementKey);
+        }
+
         public Vector2 UpdateMove(Vector2 localPosition)
         {
             Vector2 viewportDelta = _moveSession.Update(localPosition);
@@ -113,6 +137,8 @@ namespace UnitySvgEditor.Editor
             _dragStartPreserveAspectRatioMode = SvgPreserveAspectRatioMode.Meet;
             _dragResizeCenterAnchor = false;
             _dragStartParentWorldTransform = Matrix2D.identity;
+            _dragStartRotateVector = Vector2.zero;
+            _dragCurrentRotationAngle = 0f;
             _transientDocumentModelSession.End();
             _moveSession.End();
         }
@@ -120,6 +146,7 @@ namespace UnitySvgEditor.Editor
         public bool TryUpdateMoveTransientState(
             ICanvasPointerDragHost host,
             Vector2 viewportDelta,
+            bool axisLock,
             bool snapEnabled)
         {
             if (host.CurrentDocument == null || string.IsNullOrWhiteSpace(_dragElementKey))
@@ -134,6 +161,13 @@ namespace UnitySvgEditor.Editor
                     out Vector2 sceneDelta))
             {
                 return false;
+            }
+
+            if (axisLock)
+            {
+                sceneDelta = Mathf.Abs(sceneDelta.x) >= Mathf.Abs(sceneDelta.y)
+                    ? new Vector2(sceneDelta.x, 0f)
+                    : new Vector2(0f, sceneDelta.y);
             }
 
             Rect movedSceneRect = new(
@@ -155,6 +189,41 @@ namespace UnitySvgEditor.Editor
 
             Vector2 svgTranslateDelta = ToParentSpaceDelta(sceneDelta);
             if (!_transientDocumentModelSession.TryApplyTranslation(svgTranslateDelta) ||
+                !_transientDocumentModelSession.TryBuildPreviewDocumentModel(out SvgDocumentModel previewDocumentModel, out _) ||
+                !host.TryRefreshTransientPreview(previewDocumentModel))
+            {
+                return false;
+            }
+
+            host.RefreshInspector(previewDocumentModel);
+            return true;
+        }
+
+        public bool TryUpdateRotateTransientState(
+            ICanvasPointerDragHost host,
+            Vector2 localPosition,
+            bool snapEnabled)
+        {
+            if (host.CurrentDocument == null ||
+                string.IsNullOrWhiteSpace(_dragElementKey) ||
+                _dragStartRotateVector.sqrMagnitude <= Mathf.Epsilon)
+            {
+                return false;
+            }
+
+            Vector2 currentRotateVector = localPosition - _dragStartSelectionViewportRect.center;
+            if (currentRotateVector.sqrMagnitude <= Mathf.Epsilon)
+            {
+                return false;
+            }
+
+            float rotationAngle = Vector2.SignedAngle(_dragStartRotateVector, currentRotateVector);
+            _dragCurrentRotationAngle = snapEnabled
+                ? EditorSnapUtility.SnapAngle(rotationAngle)
+                : rotationAngle;
+
+            Vector2 svgPivot = ToParentSpacePoint(_dragStartElementSceneRect.center);
+            if (!_transientDocumentModelSession.TryApplyRotation(_dragCurrentRotationAngle, svgPivot) ||
                 !_transientDocumentModelSession.TryBuildPreviewDocumentModel(out SvgDocumentModel previewDocumentModel, out _) ||
                 !host.TryRefreshTransientPreview(previewDocumentModel))
             {
@@ -220,7 +289,19 @@ namespace UnitySvgEditor.Editor
             CanvasHandle activeHandle,
             Vector2 canvasDelta)
         {
-            if (string.IsNullOrWhiteSpace(_dragElementKey) || canvasDelta.sqrMagnitude < 4f)
+            if (string.IsNullOrWhiteSpace(_dragElementKey))
+            {
+                return false;
+            }
+
+            if (dragMode == CanvasDragMode.RotateElement)
+            {
+                if (Mathf.Approximately(_dragCurrentRotationAngle, 0f))
+                {
+                    return false;
+                }
+            }
+            else if (canvasDelta.sqrMagnitude < 4f)
             {
                 return false;
             }
@@ -255,10 +336,39 @@ namespace UnitySvgEditor.Editor
 
             host.ApplyUpdatedSource(
                 updatedSource,
-                dragMode == CanvasDragMode.ResizeElement
-                    ? $"Resized <{host.FindStructureNode(_dragElementKey)?.TagName ?? "element"}>."
-                    : $"Moved <{host.FindStructureNode(_dragElementKey)?.TagName ?? "element"}>.");
+                dragMode switch
+                {
+                    CanvasDragMode.ResizeElement => $"Resized <{host.FindStructureNode(_dragElementKey)?.TagName ?? "element"}>.",
+                    CanvasDragMode.RotateElement => $"Rotated <{host.FindStructureNode(_dragElementKey)?.TagName ?? "element"}>.",
+                    _ => $"Moved <{host.FindStructureNode(_dragElementKey)?.TagName ?? "element"}>."
+                });
             return true;
+        }
+
+        public bool TryBuildNudgedSource(
+            DocumentSession currentDocument,
+            string elementKey,
+            Vector2 sceneDelta,
+            Matrix2D parentWorldTransform,
+            out string updatedSource)
+        {
+            updatedSource = string.Empty;
+            if (currentDocument?.DocumentModel == null ||
+                string.IsNullOrWhiteSpace(elementKey) ||
+                sceneDelta.sqrMagnitude <= Mathf.Epsilon)
+            {
+                return false;
+            }
+
+            Vector2 parentDelta = parentWorldTransform.Inverse().MultiplyVector(sceneDelta);
+            SvgDocumentModelMutationService mutationService = new();
+            return mutationService.TryPrependElementTranslation(
+                currentDocument.DocumentModel,
+                elementKey,
+                parentDelta,
+                out _,
+                out updatedSource,
+                out _);
         }
 
         // Converts a world-space direction vector to the element's SVG parent coordinate space.

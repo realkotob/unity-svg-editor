@@ -10,7 +10,7 @@ namespace UnitySvgEditor.Editor
         public Rect DragStartFrameRect { get; private set; }
 
         public bool IsElementGesture =>
-            Mode is CanvasDragMode.MoveElement or CanvasDragMode.ResizeElement;
+            Mode is CanvasDragMode.MoveElement or CanvasDragMode.ResizeElement or CanvasDragMode.RotateElement;
 
         public bool IsViewportGesture =>
             Mode is CanvasDragMode.PanCanvas or CanvasDragMode.MoveFrame or CanvasDragMode.ResizeFrame;

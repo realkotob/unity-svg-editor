@@ -7,6 +7,7 @@ namespace UnitySvgEditor.Editor
         MoveFrame,
         ResizeFrame,
         MoveElement,
-        ResizeElement
+        ResizeElement,
+        RotateElement
     }
 }

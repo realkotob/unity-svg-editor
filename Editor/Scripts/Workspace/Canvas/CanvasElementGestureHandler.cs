@@ -65,6 +65,28 @@ namespace UnitySvgEditor.Editor
             return true;
         }
 
+        public bool TryBeginRotateFromHandle(CanvasGestureState state, Vector2 localPosition, int pointerId)
+        {
+            if (_host.SelectionKind != CanvasSelectionKind.Element ||
+                !_sceneProjector.TryResolveSelectedElementSceneRect(_host.PreviewSnapshot, _host.SelectedElementKey, out Rect selectedElementSceneRect))
+            {
+                return false;
+            }
+
+            PreviewElementGeometry selectedGeometry = _sceneProjector.FindPreviewElement(_host.PreviewSnapshot, _host.SelectedElementKey);
+            Matrix2D parentWorldTransform = selectedGeometry?.ParentWorldTransform ?? Matrix2D.identity;
+            state.Begin(CanvasDragMode.RotateElement, CanvasHandle.Rotate, default, default);
+            _elementDragController.BeginRotate(
+                _host.CurrentDocument,
+                _host.PreviewSnapshot,
+                _host.SelectedElementKey,
+                localPosition,
+                selectedElementSceneRect,
+                parentWorldTransform);
+            _dragSession.Begin(_overlayAccessor(), pointerId, localPosition);
+            return true;
+        }
+
         public void BeginMove(CanvasGestureState state, string elementKey, Vector2 localPosition, int pointerId, Rect elementSceneRect, Matrix2D parentWorldTransform)
         {
             state.Begin(CanvasDragMode.MoveElement, CanvasHandle.None, default, default);
@@ -78,6 +100,7 @@ namespace UnitySvgEditor.Editor
             Vector2 viewportDelta,
             bool uniformScale,
             bool centerAnchor,
+            bool axisLock,
             bool snapEnabled)
         {
             switch (state.Mode)
@@ -85,12 +108,15 @@ namespace UnitySvgEditor.Editor
                 case CanvasDragMode.MoveElement:
                     _elementDragController.UpdateMove(localPosition);
                     _host.UpdateSelectionVisual();
-                    _elementDragController.TryUpdateMoveTransientState(_host, viewportDelta, snapEnabled);
+                    _elementDragController.TryUpdateMoveTransientState(_host, viewportDelta, axisLock, snapEnabled);
                     break;
                 case CanvasDragMode.ResizeElement:
                     _elementDragController.UpdateResize(viewportDelta, state.ActiveHandle, uniformScale, centerAnchor);
                     _host.UpdateSelectionVisual();
                     _elementDragController.TryUpdateResizeTransientState(_host, state.ActiveHandle, snapEnabled);
+                    break;
+                case CanvasDragMode.RotateElement:
+                    _elementDragController.TryUpdateRotateTransientState(_host, localPosition, snapEnabled);
                     break;
             }
         }

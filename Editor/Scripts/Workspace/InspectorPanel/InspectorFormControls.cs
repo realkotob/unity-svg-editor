@@ -42,9 +42,6 @@ namespace UnitySvgEditor.Editor
         public Button PositionRotateResetButton { get; private set; }
         public Button PositionFlipHorizontalButton { get; private set; }
         public Button PositionFlipVerticalButton { get; private set; }
-        public Button ReadButton { get; private set; }
-        public Button BuildTransformButton { get; private set; }
-        public Button ApplyButton { get; private set; }
 
         public VisualElement FillColorControl => ResolveColorControl("inspector-fill-color", FillColorField, FillColorLegacyField);
         public VisualElement StrokeColorControl => ResolveColorControl("inspector-stroke-color", StrokeColorField, StrokeColorLegacyField);
@@ -58,14 +55,14 @@ namespace UnitySvgEditor.Editor
             FillColorControl != null ||
             StrokeColorControl != null ||
             OpacityField != null ||
-            TransformField != null;
+            TransformField != null ||
+            FrameXField != null;
 
         public bool FillEnabled => FillColorControl != null;
         public bool StrokeEnabled => StrokeColorControl != null;
         public bool StrokeWidthEnabled => StrokeWidthField != null;
         public bool OpacityEnabled => OpacityField != null;
         public bool DasharrayEnabled => DashLengthField != null && DashGapField != null;
-        public bool TransformEnabled => TransformField != null;
 
         public IEnumerable<Toggle> InteractivityToggles => Enumerable.Empty<Toggle>();
 
@@ -109,9 +106,6 @@ namespace UnitySvgEditor.Editor
             PositionRotateResetButton = root.Q<Button>("position-rotate-reset");
             PositionFlipHorizontalButton = root.Q<Button>("position-flip-horizontal");
             PositionFlipVerticalButton = root.Q<Button>("position-flip-vertical");
-            ReadButton = root.Q<Button>("inspector-read-target");
-            BuildTransformButton = root.Q<Button>("inspector-build-transform");
-            ApplyButton = root.Q<Button>("inspector-apply");
 
             ConfigureStrokePopup(LinecapPopup, new List<string> { string.Empty, "butt", "round", "square" });
             ConfigureStrokePopup(LinejoinPopup, new List<string> { string.Empty, "miter", "round", "bevel" });
@@ -165,14 +159,6 @@ namespace UnitySvgEditor.Editor
             PositionRotateResetButton = null;
             PositionFlipHorizontalButton = null;
             PositionFlipVerticalButton = null;
-            ReadButton = null;
-            BuildTransformButton = null;
-            ApplyButton = null;
-        }
-
-        public void SetTransformText(string transform)
-        {
-            TransformField?.SetValueWithoutNotify(transform ?? string.Empty);
         }
 
         public void SetFillColorWithoutNotify(Color color)
@@ -195,6 +181,11 @@ namespace UnitySvgEditor.Editor
             }
 
             StrokeColorLegacyField?.SetValueWithoutNotify(color);
+        }
+
+        public void SetTransformText(string transform)
+        {
+            TransformField?.SetValueWithoutNotify(transform ?? string.Empty);
         }
 
         private static void ConfigureStrokePopup(PopupField<string> popup, List<string> choices)

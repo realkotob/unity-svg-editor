@@ -4,6 +4,7 @@
 }
 
 .svg-editor__floating-toolbar {
+    display: none;
     position: absolute;
     left: 55%;
     bottom: var(--offset-floating-toolbar-bottom);

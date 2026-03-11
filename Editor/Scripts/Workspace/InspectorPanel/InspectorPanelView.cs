@@ -39,10 +39,6 @@ namespace UnitySvgEditor.Editor
         public event Action<ImmediateApplyField> ImmediateApplyRequested;
         public event Action FrameRectChanged;
         public event Action TransformHelperChanged;
-        public event Action TransformTextChanged;
-        public event Action ReadRequested;
-        public event Action BuildTransformRequested;
-        public event Action ApplyRequested;
         public event Action<PositionAction> PositionActionRequested;
 
         public bool IsBound => _form.IsBound;
@@ -51,7 +47,6 @@ namespace UnitySvgEditor.Editor
         public bool StrokeWidthEnabled => _form.StrokeWidthEnabled;
         public bool OpacityEnabled => _form.OpacityEnabled;
         public bool DasharrayEnabled => _form.DasharrayEnabled;
-        public bool TransformEnabled => _form.TransformEnabled;
 
         public VisualElement FillColorControl => _form.FillColorControl;
         public VisualElement StrokeColorControl => _form.StrokeColorControl;
@@ -81,9 +76,6 @@ namespace UnitySvgEditor.Editor
         public VisualElement PositionRotateResetControl => _form.PositionRotateResetButton;
         public VisualElement PositionFlipHorizontalControl => _form.PositionFlipHorizontalButton;
         public VisualElement PositionFlipVerticalControl => _form.PositionFlipVerticalButton;
-        public VisualElement ReadButtonControl => _form.ReadButton;
-        public VisualElement BuildTransformButtonControl => _form.BuildTransformButton;
-        public VisualElement ApplyButtonControl => _form.ApplyButton;
 
         public void Bind(VisualElement root)
         {
@@ -101,11 +93,6 @@ namespace UnitySvgEditor.Editor
             _form.Unbind();
         }
 
-        public void SetTransformText(string transform)
-        {
-            _form.SetTransformText(transform);
-        }
-
         public void CaptureState(InspectorPanelState inspectorPanelState)
         {
             InspectorStateBinder.CaptureState(_form, inspectorPanelState);
@@ -114,6 +101,11 @@ namespace UnitySvgEditor.Editor
         public void ApplyState(InspectorPanelState inspectorPanelState)
         {
             InspectorStateBinder.ApplyState(_form, inspectorPanelState);
+        }
+
+        public void SetTransformText(string transform)
+        {
+            _form.SetTransformText(transform);
         }
 
         private void RegisterCallbacks()
@@ -138,7 +130,6 @@ namespace UnitySvgEditor.Editor
             RegisterTransformHelperCallback(_form.RotateField, OnTransformHelperChanged);
             RegisterTransformHelperCallback(_form.ScaleXField, OnTransformHelperChanged);
             RegisterTransformHelperCallback(_form.ScaleYField, OnTransformHelperChanged);
-            RegisterTransformTextCallback(_form.TransformField, OnTransformTextChanged);
             RegisterButtonClicked(_form.PositionAlignLeftButton, OnPositionAlignLeftRequested);
             RegisterButtonClicked(_form.PositionAlignCenterButton, OnPositionAlignCenterRequested);
             RegisterButtonClicked(_form.PositionAlignRightButton, OnPositionAlignRightRequested);
@@ -148,13 +139,6 @@ namespace UnitySvgEditor.Editor
             RegisterButtonClicked(_form.PositionRotateResetButton, OnPositionRotateResetRequested);
             RegisterButtonClicked(_form.PositionFlipHorizontalButton, OnPositionFlipHorizontalRequested);
             RegisterButtonClicked(_form.PositionFlipVerticalButton, OnPositionFlipVerticalRequested);
-
-            if (_form.ReadButton != null)
-                _form.ReadButton.clicked += OnReadRequested;
-            if (_form.BuildTransformButton != null)
-                _form.BuildTransformButton.clicked += OnBuildTransformRequested;
-            if (_form.ApplyButton != null)
-                _form.ApplyButton.clicked += OnApplyRequested;
         }
 
         private void UnregisterCallbacks()
@@ -179,7 +163,6 @@ namespace UnitySvgEditor.Editor
             UnregisterTransformHelperCallback(_form.RotateField, OnTransformHelperChanged);
             UnregisterTransformHelperCallback(_form.ScaleXField, OnTransformHelperChanged);
             UnregisterTransformHelperCallback(_form.ScaleYField, OnTransformHelperChanged);
-            UnregisterTransformTextCallback(_form.TransformField, OnTransformTextChanged);
             UnregisterButtonClicked(_form.PositionAlignLeftButton, OnPositionAlignLeftRequested);
             UnregisterButtonClicked(_form.PositionAlignCenterButton, OnPositionAlignCenterRequested);
             UnregisterButtonClicked(_form.PositionAlignRightButton, OnPositionAlignRightRequested);
@@ -189,13 +172,6 @@ namespace UnitySvgEditor.Editor
             UnregisterButtonClicked(_form.PositionRotateResetButton, OnPositionRotateResetRequested);
             UnregisterButtonClicked(_form.PositionFlipHorizontalButton, OnPositionFlipHorizontalRequested);
             UnregisterButtonClicked(_form.PositionFlipVerticalButton, OnPositionFlipVerticalRequested);
-
-            if (_form.ReadButton != null)
-                _form.ReadButton.clicked -= OnReadRequested;
-            if (_form.BuildTransformButton != null)
-                _form.BuildTransformButton.clicked -= OnBuildTransformRequested;
-            if (_form.ApplyButton != null)
-                _form.ApplyButton.clicked -= OnApplyRequested;
         }
 
         private void OnFillColorChanged(ChangeEvent<Color> evt) => ImmediateApplyRequested?.Invoke(ImmediateApplyField.FillColor);
@@ -217,14 +193,6 @@ namespace UnitySvgEditor.Editor
         private void OnFrameRectChanged(ChangeEvent<float> evt) => FrameRectChanged?.Invoke();
 
         private void OnTransformHelperChanged(ChangeEvent<float> evt) => TransformHelperChanged?.Invoke();
-
-        private void OnTransformTextChanged(ChangeEvent<string> evt) => TransformTextChanged?.Invoke();
-
-        private void OnReadRequested() => ReadRequested?.Invoke();
-
-        private void OnBuildTransformRequested() => BuildTransformRequested?.Invoke();
-
-        private void OnApplyRequested() => ApplyRequested?.Invoke();
 
         private void OnPositionAlignLeftRequested() => PositionActionRequested?.Invoke(PositionAction.AlignLeft);
 

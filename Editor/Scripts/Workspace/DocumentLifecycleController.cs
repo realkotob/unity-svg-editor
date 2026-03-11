@@ -33,8 +33,6 @@ namespace UnitySvgEditor.Editor
                 _view,
                 () => CurrentDocument,
                 _workspaceCoordinatorAccessor);
-
-            _view.SaveRequested += OnSaveClicked;
         }
 
         public DocumentSession CurrentDocument { get; private set; }
@@ -125,6 +123,11 @@ namespace UnitySvgEditor.Editor
             return true;
         }
 
+        public void SaveCurrentDocument()
+        {
+            OnSaveClicked();
+        }
+
         private void ApplyUpdatedSource(string updatedSource, string successStatus, bool recordHistory)
         {
             if (CurrentDocument == null)
@@ -157,16 +160,8 @@ namespace UnitySvgEditor.Editor
 
         public void UpdateInteractivity()
         {
-            var currentDocument = CurrentDocument;
-            var hasDocument = currentDocument != null;
-
-            SetEnabledIfNotNull(_view.SaveButtonControl, hasDocument && currentDocument.IsDirty);
-        }
-
-        private static void SetEnabledIfNotNull(VisualElement element, bool enabled)
-        {
-            if (element != null)
-                element.SetEnabled(enabled);
+            // Document panel controls were removed, so this controller no longer
+            // owns any direct interactivity toggles.
         }
 
         public void UpdateSourceStatus(string status) => _view.SetStatus(status);
@@ -230,11 +225,12 @@ namespace UnitySvgEditor.Editor
             }
 
             _previewService.ResetPreviewState();
-            _editHistory.Reset(CurrentDocument);
+            _editHistory.SyncCurrent(CurrentDocument.WorkingSourceText);
             SyncCurrentSource(
                 "Saved SVG and reimported asset.",
                 keepExistingPreviewOnFailure: false,
                 updateSourceField: false);
+            _view.ShowToast("Saved SVG", DocumentLifecycleView.ToastVariant.Success);
         }
     }
 }

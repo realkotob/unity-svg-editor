@@ -28,7 +28,6 @@
     --editor-slider-thumb-bg: rgb(244, 246, 255);
 
     --radius-xs: 4px;
-    --radius-full: 999px;
 
     --inspector-panel-width: 240px;
     --size-selection-handle: 8px;

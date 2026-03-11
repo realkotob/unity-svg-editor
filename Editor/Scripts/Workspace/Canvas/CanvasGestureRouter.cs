@@ -87,6 +87,12 @@ namespace UnitySvgEditor.Editor
                     return;
                 }
 
+                if (_overlayController.IsFrameLabelTarget(evt.target))
+                {
+                    _host.SetHoveredElement(CanvasInteractionController.FrameHoverSentinel);
+                    return;
+                }
+
                 if (_sceneProjector.TryHitTestPreviewElement(_host.PreviewSnapshot, localPosition, out PreviewElementGeometry hoveredElement))
                 {
                     _host.SetHoveredElement(hoveredElement.Key);
@@ -106,10 +112,12 @@ namespace UnitySvgEditor.Editor
             }
             else if (_gestureState.IsElementGesture)
             {
-                bool uniformScale = (evt.modifiers & EventModifiers.Shift) != 0;
+                bool shiftPressed = (evt.modifiers & EventModifiers.Shift) != 0;
+                bool uniformScale = _gestureState.Mode == CanvasDragMode.ResizeElement && shiftPressed;
+                bool axisLock = _gestureState.Mode == CanvasDragMode.MoveElement && shiftPressed;
                 bool centerAnchor = (evt.modifiers & EventModifiers.Alt) != 0;
                 bool snapEnabled = (evt.modifiers & (EventModifiers.Command | EventModifiers.Control)) != 0;
-                _elementGestureHandler.ApplyElementDelta(_gestureState, localPosition, viewportDelta, uniformScale, centerAnchor, snapEnabled);
+                _elementGestureHandler.ApplyElementDelta(_gestureState, localPosition, viewportDelta, uniformScale, centerAnchor, axisLock, snapEnabled);
             }
 
             evt.StopPropagation();
@@ -194,6 +202,17 @@ namespace UnitySvgEditor.Editor
             if (!_overlayController.TryHitTestHandle(localPosition, out CanvasHandle handle))
                 return false;
 
+            if (handle == CanvasHandle.Rotate)
+            {
+                if (_elementGestureHandler.TryBeginRotateFromHandle(_gestureState, localPosition, evt.pointerId))
+                {
+                    evt.StopPropagation();
+                    return true;
+                }
+
+                return false;
+            }
+
             if (_host.SelectionKind == CanvasSelectionKind.Frame &&
                 _sceneProjector.TryGetFrameViewportRect(out _))
             {
@@ -213,18 +232,17 @@ namespace UnitySvgEditor.Editor
 
         private void HandleCanvasSelection(PointerDownEvent evt, Vector2 localPosition)
         {
+            if (_overlayController.IsFrameLabelTarget(evt.target))
+            {
+                _selectionSyncService.SelectCanvasFrame();
+                _viewportGestureHandler.BeginFrameMove(_gestureState, localPosition, evt.pointerId);
+                evt.StopPropagation();
+                return;
+            }
+
             if (!_sceneProjector.TryHitTestPreviewElement(_host.PreviewSnapshot, localPosition, out PreviewElementGeometry hitElement))
             {
-                if (_sceneProjector.TryHitTestFrameChrome(_host.PreviewSnapshot, localPosition, out _))
-                {
-                    _selectionSyncService.SelectCanvasFrame();
-                    _viewportGestureHandler.BeginFrameMove(_gestureState, localPosition, evt.pointerId);
-                }
-                else
-                {
-                    _selectionSyncService.ClearCanvasSelection();
-                }
-
+                _selectionSyncService.ClearCanvasSelection();
                 evt.StopPropagation();
                 return;
             }

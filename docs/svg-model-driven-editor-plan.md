@@ -7,12 +7,18 @@
   - document model / loader / serializer 전환 완료
   - inspector / structure / selection read path model 전환 완료
   - drag / resize / style / reorder / save path model-first 전환 완료
+  - model mutation 기반 `Undo/Redo` 스택 도입 완료
+  - save 후 history 유지 완료
+  - `Cmd/Ctrl+S` save shortcut 도입 완료
+  - save success toast 도입 완료
+  - canvas rotate handle / transient preview / commit 도입 완료
+  - canvas drag / resize snap modifier 도입 완료
   - legacy edit-time XML patch 경로 제거 완료
   - `AttributePatcher*` 제거 완료
   - preview live/transient refresh의 외부 계약 model 전환 완료
   - renderer direct scene path 도입 완료
 - 현재 남은 일:
-  - direct renderer 지원 범위 확대
+  - Unity Vector Image 지원 범위 안에서 direct renderer 지원 범위 확대
   - unsupported SVG feature에 대한 fixture 추가와 회귀 테스트 강화
   - renderer invalidation / rebuild 비용 추가 최적화 여부 판단
 
@@ -25,6 +31,9 @@
 - drag 중 inspector 값은 transient document model 기준으로 실시간 갱신한다.
 - XML source editor / code inspector는 다시 도입하지 않는다.
 - edit-time XML patch 경로는 늘리지 않는다.
+- 새 feature 범위는 Unity Vector Image 지원 상한을 넘기지 않는다.
+- `Undo/Redo`는 document model commit 단위를 기준으로 설계한다.
+- rotate / snap 규칙은 canvas interaction과 inspector transform 입력에서 일관되어야 한다.
 
 ## 2. 현재 완료 범위
 
@@ -42,6 +51,8 @@
 - drag / resize는 transient model session 기준
 - commit은 interaction 종료 시 한 번만 수행
 - save는 model serialize + validate + import 기준
+- save 후에도 committed history는 유지한다
+- save success feedback은 status + toast 조합으로 처리한다
 
 ### 2.3 Runtime Cleanup
 
@@ -74,11 +85,27 @@
 
 - direct scene builder가 common shape / `use` / basic gradient를 처리한다.
 - unsupported feature가 나오면 `SvgCanvasRenderer` 내부에서만 import fallback을 사용한다.
+- direct renderer는 Unity Vector Image가 처리 가능한 범위 안에서만 coverage를 넓힌다.
+- Unity Vector Image 바깥 feature는 새 구현 대상으로 삼지 않는다.
 - 즉, 외부 편집 계약은 model-driven으로 정리됐고, 내부 renderer coverage만 단계적으로 넓히는 상태다.
 
 ## 4. 다음 단계
 
-남은 계획은 cleanup이 아니라 renderer coverage 확장이다.
+남은 계획은 interaction UX polish와 Unity Vector Image 범위 안에서의 renderer coverage 확장이다.
+
+### Phase E1. Editing Foundations
+
+원칙:
+
+- `Undo/Redo`는 transient drag 중간 프레임이 아니라 commit된 model mutation을 기준으로 적재한다.
+- rotate는 canvas gesture와 inspector 입력이 같은 commit 규칙을 따라야 한다.
+- snap은 위치 / 크기 / 회전 입력에 대해 동일한 정책으로 적용한다.
+
+우선순위:
+
+1. rotate interaction UX polish
+2. snap 정책 / 표시 polish
+3. shortcut / feedback polish
 
 ### Phase R1. Fixture-First Renderer Expansion
 
@@ -88,6 +115,7 @@
 - fixture는 `Assets/Resources/TestSvg/` 아래에 둔다.
 - fixture 추가 후 EditMode 테스트를 먼저 쓴다.
 - 그 다음 renderer 구현을 확장한다.
+- 단, 새 feature 후보는 Unity Vector Image 지원 범위 안에서만 고른다.
 
 우선순위:
 
@@ -127,6 +155,15 @@
 - 외부 API에서 string/XML fallback을 다시 만들지 않는다.
 - fallback이 필요하면 renderer 내부 한정으로만 유지한다.
 - 새 fallback을 넣을 때는 “왜 direct path로 못 가는지”를 테스트와 함께 남긴다.
+- Unity Vector Image 바깥 feature는 fallback으로 유지할 수는 있어도 새 coverage 목표로 승격하지 않는다.
+
+### 5.4 Interaction Rule
+
+- `Undo/Redo` 기록은 XML diff가 아니라 model mutation payload 기준으로 남긴다.
+- drag / resize / rotate 중 transient preview는 유지하되 history 적재는 interaction commit 시점 한 번만 한다.
+- snap은 canvas pointer interaction과 inspector 숫자 입력 둘 다에서 동일한 결과를 내야 한다.
+- save는 history를 끊지 않고 유지한다.
+- toast는 save success처럼 사용자 가치가 높은 완료 피드백에만 쓴다.
 
 ## 6. 현재 기준 테스트/fixture 메모
 
@@ -155,7 +192,7 @@ fixture 위치:
 다음 세션은 아래 순서로 시작한다.
 
 1. 지원하려는 SVG feature 하나를 고른다.
-2. 해당 feature fixture를 `Assets/Resources/TestSvg/`에 추가한다.
-3. 대응하는 EditMode 테스트를 먼저 추가한다.
-4. renderer를 그 fixture 기준으로만 확장한다.
-5. `UnitySvgEditor.Editor.Tests` green을 확인한다.
+2. 남은 interaction polish 하나를 고른다.
+3. 해당 기능의 commit / history / preview 규칙을 먼저 고정한다.
+4. renderer 작업이면 대응 fixture를 `Assets/Resources/TestSvg/`에 추가하고 EditMode 테스트를 먼저 쓴다.
+5. 구현 후 `UnitySvgEditor.Editor.Tests` green을 확인한다.
