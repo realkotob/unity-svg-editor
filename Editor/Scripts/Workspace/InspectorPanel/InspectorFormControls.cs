@@ -47,7 +47,7 @@ namespace UnitySvgEditor.Editor
         public VisualElement FillColorControl => ResolveColorControl("inspector-fill-color", FillColorField, FillColorLegacyField);
         public VisualElement StrokeColorControl => ResolveColorControl("inspector-stroke-color", StrokeColorField, StrokeColorLegacyField);
         public VisualElement OpacityControl => ResolveOpacityField();
-        public Color FillColorValue => ResolveColorValue("inspector-fill-color", FillColorField, FillColorLegacyField, Color.white);
+        public Color FillColorValue => ResolveColorValue("inspector-fill-color", FillColorField, FillColorLegacyField, Color.black);
         public Color StrokeColorValue => ResolveColorValue("inspector-stroke-color", StrokeColorField, StrokeColorLegacyField, Color.black);
         public float OpacityValue => ResolveOpacityField()?.value ?? 1f;
         public bool IsOpacitySlider => ResolveOpacityField() is Slider;

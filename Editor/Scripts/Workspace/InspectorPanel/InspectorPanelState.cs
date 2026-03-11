@@ -11,7 +11,7 @@ namespace UnitySvgEditor.Editor
         public InspectorPanelState()
         {
             _targetSelection.SetTargets(Array.Empty<PatchTarget>());
-            FillColor = Color.white;
+            FillColor = Color.black;
             StrokeColor = Color.black;
             StrokeWidth = 1f;
             Opacity = 1f;

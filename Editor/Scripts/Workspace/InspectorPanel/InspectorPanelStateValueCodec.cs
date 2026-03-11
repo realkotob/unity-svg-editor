@@ -86,6 +86,29 @@ namespace UnitySvgEditor.Editor
 
         public static void SyncFromAttributes(InspectorPanelState state, IReadOnlyDictionary<string, string> attributes, string tagName)
         {
+            state.FillEnabled = false;
+            state.FillColor = Color.black;
+            state.StrokeEnabled = false;
+            state.StrokeColor = Color.black;
+            state.StrokeWidth = MissingStrokeWidth;
+            state.StrokeWidthEnabled = false;
+            state.OpacityEnabled = false;
+            state.Opacity = 1f;
+            state.CornerRadiusEnabled = string.Equals(tagName, "rect", System.StringComparison.OrdinalIgnoreCase);
+            state.CornerRadius = 0f;
+            state.DashLength = MissingDashLength;
+            state.DashGap = MissingDashGap;
+            state.DasharrayEnabled = false;
+            state.TransformEnabled = false;
+            state.Transform = string.Empty;
+            state.TranslateX = 0f;
+            state.TranslateY = 0f;
+            state.Rotate = 0f;
+            state.ScaleX = 1f;
+            state.ScaleY = 1f;
+            state.StrokeLinecap = string.Empty;
+            state.StrokeLinejoin = string.Empty;
+
             state.FillEnabled = TryGetNonEmpty(attributes, "fill", out var fillRaw);
             if (state.FillEnabled && ColorUtility.TryParseHtmlString(fillRaw.Trim(), out var fillColor))
                 state.FillColor = fillColor;
@@ -98,7 +121,6 @@ namespace UnitySvgEditor.Editor
             if (TryGetFloat(attributes, "stroke-opacity", out var strokeOpacity))
                 state.StrokeColor = WithCombinedAlpha(state.StrokeColor, strokeOpacity);
 
-            state.StrokeWidth = MissingStrokeWidth;
             state.StrokeWidthEnabled = TryGetFloat(attributes, "stroke-width", out var strokeWidth);
             if (state.StrokeWidthEnabled)
                 state.StrokeWidth = Mathf.Max(0f, strokeWidth);
@@ -107,8 +129,6 @@ namespace UnitySvgEditor.Editor
             if (state.OpacityEnabled)
                 state.Opacity = Mathf.Clamp01(opacity);
 
-            state.CornerRadiusEnabled = string.Equals(tagName, "rect", System.StringComparison.OrdinalIgnoreCase);
-            state.CornerRadius = 0f;
             if (state.CornerRadiusEnabled)
             {
                 if (TryGetFloat(attributes, "rx", out var radiusX))
@@ -117,8 +137,6 @@ namespace UnitySvgEditor.Editor
                     state.CornerRadius = Mathf.Max(0f, radiusY);
             }
 
-            state.DashLength = MissingDashLength;
-            state.DashGap = MissingDashGap;
             state.DasharrayEnabled = TryGetNonEmpty(attributes, "stroke-dasharray", out var dashRaw);
             if (state.DasharrayEnabled)
             {
