@@ -61,8 +61,8 @@ namespace UnitySvgEditor.Editor
         public VisualElement FrameYControl => _form.FrameYField;
         public VisualElement FrameWidthControl => _form.FrameWidthField;
         public VisualElement FrameHeightControl => _form.FrameHeightField;
-        public VisualElement LinecapControl => _form.LinecapPopup;
-        public VisualElement LinejoinControl => _form.LinejoinPopup;
+        public VisualElement LinecapControl => (VisualElement)_form.LinecapPopup ?? _form.LinecapLegacyPopup;
+        public VisualElement LinejoinControl => (VisualElement)_form.LinejoinPopup ?? _form.LinejoinLegacyPopup;
         public VisualElement TranslateXControl => _form.TranslateXField;
         public VisualElement TranslateYControl => _form.TranslateYField;
         public VisualElement RotateControl => _form.RotateField;
@@ -121,7 +121,9 @@ namespace UnitySvgEditor.Editor
             RegisterImmediateApplyCallback(_form.DashLengthField, OnStrokeDasharrayChanged);
             RegisterImmediateApplyCallback(_form.DashGapField, OnStrokeDasharrayChanged);
             RegisterImmediateApplyCallback(_form.LinecapPopup, OnStrokeLinecapChanged);
+            RegisterImmediateApplyCallback(_form.LinecapLegacyPopup, OnStrokeLinecapChanged);
             RegisterImmediateApplyCallback(_form.LinejoinPopup, OnStrokeLinejoinChanged);
+            RegisterImmediateApplyCallback(_form.LinejoinLegacyPopup, OnStrokeLinejoinChanged);
             RegisterFrameRectCallback(_form.FrameXField, OnFrameRectChanged);
             RegisterFrameRectCallback(_form.FrameYField, OnFrameRectChanged);
             RegisterFrameRectCallback(_form.FrameWidthField, OnFrameRectChanged);
@@ -154,7 +156,9 @@ namespace UnitySvgEditor.Editor
             UnregisterImmediateApplyCallback(_form.DashLengthField, OnStrokeDasharrayChanged);
             UnregisterImmediateApplyCallback(_form.DashGapField, OnStrokeDasharrayChanged);
             UnregisterImmediateApplyCallback(_form.LinecapPopup, OnStrokeLinecapChanged);
+            UnregisterImmediateApplyCallback(_form.LinecapLegacyPopup, OnStrokeLinecapChanged);
             UnregisterImmediateApplyCallback(_form.LinejoinPopup, OnStrokeLinejoinChanged);
+            UnregisterImmediateApplyCallback(_form.LinejoinLegacyPopup, OnStrokeLinejoinChanged);
             UnregisterFrameRectCallback(_form.FrameXField, OnFrameRectChanged);
             UnregisterFrameRectCallback(_form.FrameYField, OnFrameRectChanged);
             UnregisterFrameRectCallback(_form.FrameWidthField, OnFrameRectChanged);
@@ -274,6 +278,17 @@ namespace UnitySvgEditor.Editor
             field.RegisterCallback(callback);
         }
 
+        private static void RegisterImmediateApplyCallback(
+            DropdownField field,
+            EventCallback<ChangeEvent<string>> callback)
+        {
+            if (field == null)
+                return;
+
+            field.UnregisterValueChangedCallback(callback);
+            field.RegisterValueChangedCallback(callback);
+        }
+
         private static void UnregisterImmediateApplyCallback(
             ColorPercentField field,
             EventCallback<ChangeEvent<Color>> callback)
@@ -312,6 +327,16 @@ namespace UnitySvgEditor.Editor
                 return;
 
             field.UnregisterCallback(callback);
+        }
+
+        private static void UnregisterImmediateApplyCallback(
+            DropdownField field,
+            EventCallback<ChangeEvent<string>> callback)
+        {
+            if (field == null)
+                return;
+
+            field.UnregisterValueChangedCallback(callback);
         }
 
         private static void RegisterFrameRectCallback(

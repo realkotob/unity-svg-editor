@@ -23,8 +23,8 @@ namespace UnitySvgEditor.Editor
                 ? Mathf.Clamp01(opacityValue)
                 : Mathf.Clamp01(opacityValue / 100f);
             inspectorPanelState.CornerRadius = Mathf.Max(0f, form.CornerRadiusField?.value ?? 0f);
-            inspectorPanelState.StrokeLinecap = form.LinecapPopup?.Value ?? string.Empty;
-            inspectorPanelState.StrokeLinejoin = form.LinejoinPopup?.Value ?? string.Empty;
+            inspectorPanelState.StrokeLinecap = form.LinecapPopup?.Value ?? form.LinecapLegacyPopup?.value ?? string.Empty;
+            inspectorPanelState.StrokeLinejoin = form.LinejoinPopup?.Value ?? form.LinejoinLegacyPopup?.value ?? string.Empty;
             inspectorPanelState.DasharrayEnabled = form.DashLengthField != null || form.DashGapField != null;
             inspectorPanelState.DashLength = form.DashLengthField?.value ?? 4f;
             inspectorPanelState.DashGap = form.DashGapField?.value ?? 2f;
@@ -59,7 +59,9 @@ namespace UnitySvgEditor.Editor
                 : inspectorPanelState.Opacity * 100f);
             form.CornerRadiusField?.SetValueWithoutNotify(inspectorPanelState.CornerRadius);
             SetPopupValue(form.LinecapPopup, inspectorPanelState.StrokeLinecap);
+            SetPopupValue(form.LinecapLegacyPopup, inspectorPanelState.StrokeLinecap);
             SetPopupValue(form.LinejoinPopup, inspectorPanelState.StrokeLinejoin);
+            SetPopupValue(form.LinejoinLegacyPopup, inspectorPanelState.StrokeLinejoin);
             form.DashLengthField?.SetValueWithoutNotify(inspectorPanelState.DashLength);
             form.DashGapField?.SetValueWithoutNotify(inspectorPanelState.DashGap);
             form.TransformField?.SetValueWithoutNotify(inspectorPanelState.Transform);
@@ -85,6 +87,14 @@ namespace UnitySvgEditor.Editor
 
             int index = System.Array.IndexOf(choices, value ?? string.Empty);
             popup.Index = index;
+        }
+
+        private static void SetPopupValue(DropdownField popup, string value)
+        {
+            if (popup == null)
+                return;
+
+            popup.SetValueWithoutNotify(value ?? string.Empty);
         }
     }
 }

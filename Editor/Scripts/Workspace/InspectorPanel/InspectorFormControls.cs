@@ -21,7 +21,9 @@ namespace UnitySvgEditor.Editor
         public BaseField<float> OpacityField { get; private set; }
         public FloatField CornerRadiusField { get; private set; }
         public SelectElement LinecapPopup { get; private set; }
+        public DropdownField LinecapLegacyPopup { get; private set; }
         public SelectElement LinejoinPopup { get; private set; }
+        public DropdownField LinejoinLegacyPopup { get; private set; }
         public FloatField DashLengthField { get; private set; }
         public FloatField DashGapField { get; private set; }
         public TextField TransformField { get; private set; }
@@ -84,8 +86,12 @@ namespace UnitySvgEditor.Editor
             VisualElement opacityElement = root.Q<VisualElement>("inspector-opacity");
             OpacityField = opacityElement as BaseField<float>;
             CornerRadiusField = root.Q<FloatField>("inspector-corner-radius");
-            LinecapPopup = root.Q<SelectElement>("inspector-linecap");
-            LinejoinPopup = root.Q<SelectElement>("inspector-linejoin");
+            VisualElement linecapElement = root.Q<VisualElement>("inspector-linecap");
+            LinecapPopup = linecapElement as SelectElement;
+            LinecapLegacyPopup = linecapElement as DropdownField;
+            VisualElement linejoinElement = root.Q<VisualElement>("inspector-linejoin");
+            LinejoinPopup = linejoinElement as SelectElement;
+            LinejoinLegacyPopup = linejoinElement as DropdownField;
             DashLengthField = root.Q<FloatField>("inspector-dash-length");
             DashGapField = root.Q<FloatField>("inspector-dash-gap");
             TransformField = root.Q<TextField>("inspector-transform");
@@ -136,7 +142,9 @@ namespace UnitySvgEditor.Editor
             OpacityField = null;
             CornerRadiusField = null;
             LinecapPopup = null;
+            LinecapLegacyPopup = null;
             LinejoinPopup = null;
+            LinejoinLegacyPopup = null;
             DashLengthField = null;
             DashGapField = null;
             TransformField = null;

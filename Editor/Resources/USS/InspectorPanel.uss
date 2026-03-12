@@ -3,6 +3,8 @@
     min-width: var(--inspector-panel-width);
     max-width: var(--inspector-panel-width);
     border-radius: 0;
+    border-left-color: var(--border);
+    border-left-width: 1px;
 }
 
 .svg-editor__inspector-panel .unity-scroll-view__content-viewport{
@@ -118,18 +120,47 @@
     -unity-font-style: normal;
 }
 
-.svg-editor__inspector-section .unity-base-field__input,
-.svg-editor__inspector-section .unity-base-popup-field__input,
-.svg-editor__inspector-section .unity-text-field__input,
-.svg-editor__inspector-section .unity-color-field__input {
-    min-height: 28px;
-    padding-left: var(--space-1-5);
-    padding-right: var(--space-1-5);
-    border-radius: var(--radius-sm);
-    border-color: var(--editor-control-border);
-    border-width: 1px;
-    background-color: var(--editor-control-bg);
+
+.svg-editor__select-like-dropdown {
+    min-height: 0;
+    margin: 0;
+    
+}
+
+.svg-editor__select-like-dropdown > .unity-base-popup-field__input {
+    min-height: 36px;
+    padding-left: var(--space-3);
+    padding-right: var(--space-3);
+    margin: 0;
+    border-radius: var(--radius);
+    border-color: var(--input);
+    border-width: var(--border-width);
+    background-color: var(--input-30);
     color: var(--foreground);
+}
+
+.svg-editor__select-like-dropdown:hover:enabled > .unity-base-popup-field__input {
+    border-color: var(--border-hover);
+}
+
+.svg-editor__select-like-dropdown.unity-base-field__aligned--focus > .unity-base-popup-field__input {
+    border-color: var(--primary);
+}
+
+.svg-editor__select-like-dropdown .unity-base-popup-field__text {
+    font-size: var(--font-size-sm);
+    -unity-font-definition: var(--font-weight-regular);
+    margin: 0;
+    color: var(--foreground);
+}
+
+.svg-editor__select-like-dropdown .unity-base-popup-field__arrow {
+    width: 16px;
+    height: 16px;
+    margin-left: var(--space-2);
+    background-image: resource("Icons/lucide/chevron-down");
+    -unity-background-scale-mode: scale-to-fit;
+    -unity-background-image-tint-color: var(--muted-foreground);
 }
 
 .svg-editor__inspector-section .color-percent-field .unity-base-field__input,
