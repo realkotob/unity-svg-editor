@@ -6,8 +6,11 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using SvgEditor.Preview;
 using SvgEditor.Workspace.Canvas;
+using SvgEditor.Workspace.StructureInspector;
+using SvgEditor.DocumentModel;
+using SvgEditor.Document;
 
-namespace SvgEditor
+namespace SvgEditor.Workspace
 {
     internal sealed class EditorWorkspaceCoordinator : ICanvasWorkspaceHost, IStructureHierarchyHost
     {

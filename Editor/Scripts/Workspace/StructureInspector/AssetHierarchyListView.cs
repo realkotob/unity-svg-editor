@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using UnityEngine.UIElements;
 using Core.UI.Foundation;
+using SvgEditor.Document;
 
-namespace SvgEditor
+namespace SvgEditor.Workspace.StructureInspector
 {
     [UxmlElement]
     public partial class AssetHierarchyListView : VisualElement

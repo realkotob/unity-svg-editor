@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using SvgEditor.DocumentModel;
 
 using SvgEditor;
 

@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using UnityEngine.UIElements;
 using Core.UI.Foundation;
 using SvgEditor.Workspace.Canvas;
+using SvgEditor.Shared;
+using SvgEditor.Document;
 
-namespace SvgEditor
+namespace SvgEditor.Workspace.StructureInspector
 {
     internal sealed class AssetHierarchyTreeRow : VisualElement
     {

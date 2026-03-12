@@ -1,6 +1,7 @@
 using System;
 using Unity.VectorGraphics;
 using UnityEngine;
+using SvgEditor.Document;
 
 using SvgEditor;
 

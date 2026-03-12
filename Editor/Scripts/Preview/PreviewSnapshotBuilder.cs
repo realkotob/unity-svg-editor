@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.UIElements;
+using SvgEditor.DocumentModel;
 
 using SvgEditor;
 using SvgEditor.Renderer;

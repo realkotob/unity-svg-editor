@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Unity.VectorGraphics;
 using UnityEngine;
 
-namespace SvgEditor
+namespace SvgEditor.Document
 {
     internal static class SvgPathGeometryParser
     {

@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using SvgEditor.Preview;
+using SvgEditor.DocumentModel;
+using SvgEditor.Document;
 
-namespace SvgEditor
+namespace SvgEditor.Workspace.Document
 {
     internal sealed class DocumentPreviewService : IDisposable
     {

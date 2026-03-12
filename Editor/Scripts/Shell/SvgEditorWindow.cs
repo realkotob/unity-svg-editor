@@ -11,10 +11,16 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using Core.UI.Foundation;
 using SvgEditor.Preview;
+using SvgEditor.Workspace;
+using SvgEditor.Workspace.AssetLibrary;
 using SvgEditor.Workspace.Canvas;
+using SvgEditor.Workspace.Document;
 using SvgEditor.Workspace.InspectorPanel;
+using SvgEditor.DocumentModel;
+using SvgEditor.Shared;
+using SvgEditor.Document;
 
-namespace SvgEditor
+namespace SvgEditor.Shell
 {
     public sealed class SvgEditorWindow : EditorWindow, IEditorWorkspaceHost, IInspectorPanelHost
     {

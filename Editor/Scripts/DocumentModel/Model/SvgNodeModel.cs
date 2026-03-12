@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SvgEditor
+namespace SvgEditor.DocumentModel
 {
     internal sealed class SvgNodeModel
     {

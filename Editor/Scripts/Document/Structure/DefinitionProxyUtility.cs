@@ -1,7 +1,7 @@
 using System;
 using SvgEditor.Workspace.Canvas;
 
-namespace SvgEditor
+namespace SvgEditor.Document
 {
     internal static class DefinitionProxyUtility
     {

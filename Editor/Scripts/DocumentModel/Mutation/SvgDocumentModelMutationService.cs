@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
+using SvgEditor.Document;
 
-namespace SvgEditor
+namespace SvgEditor.DocumentModel
 {
     internal sealed class SvgDocumentModelMutationService
     {

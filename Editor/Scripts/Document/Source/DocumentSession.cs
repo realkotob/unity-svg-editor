@@ -1,8 +1,9 @@
 using System;
 using UnityEngine;
 using UnityEngine.UIElements;
+using SvgEditor.DocumentModel;
 
-namespace SvgEditor
+namespace SvgEditor.Document
 {
     internal sealed class DocumentSession
     {

@@ -1,6 +1,7 @@
 using System.IO;
 using UnityEngine;
 using UnityEngine.UIElements;
+using SvgEditor.Document;
 
 using SvgEditor;
 using SvgEditor.Preview;

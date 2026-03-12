@@ -3,7 +3,7 @@ using Core.UI.Foundation.Tooling;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace SvgEditor
+namespace SvgEditor.Workspace.Document
 {
     internal sealed class DocumentLifecycleView
     {

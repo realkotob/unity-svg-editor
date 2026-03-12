@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine.UIElements;
+using SvgEditor.Document;
 
-namespace SvgEditor
+namespace SvgEditor.Workspace.StructureInspector
 {
     internal interface IStructureHierarchyHost
     {

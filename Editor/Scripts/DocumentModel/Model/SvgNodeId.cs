@@ -1,6 +1,6 @@
 using System;
 
-namespace SvgEditor
+namespace SvgEditor.DocumentModel
 {
     internal readonly struct SvgNodeId : IEquatable<SvgNodeId>
     {

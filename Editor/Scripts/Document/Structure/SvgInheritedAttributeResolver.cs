@@ -1,8 +1,9 @@
 using System;
 using Unity.VectorGraphics;
 using UnityEngine;
+using SvgEditor.DocumentModel;
 
-namespace SvgEditor
+namespace SvgEditor.Document
 {
     internal static class SvgInheritedAttributeResolver
     {

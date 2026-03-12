@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Xml;
+using SvgEditor.Shared;
 
-namespace SvgEditor
+namespace SvgEditor.Document
 {
     internal static class SvgSafeMaskArtifactSanitizer
     {

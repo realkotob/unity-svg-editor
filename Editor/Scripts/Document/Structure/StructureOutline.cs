@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine.UIElements;
 
-namespace SvgEditor
+namespace SvgEditor.Document
 {
     internal sealed class StructureOutline
     {

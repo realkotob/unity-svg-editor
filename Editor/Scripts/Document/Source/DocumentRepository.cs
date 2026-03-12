@@ -7,7 +7,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace SvgEditor
+namespace SvgEditor.Document
 {
     internal sealed class DocumentRepository
     {

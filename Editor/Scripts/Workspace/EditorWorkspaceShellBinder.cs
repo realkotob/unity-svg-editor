@@ -1,7 +1,8 @@
 using System;
 using UnityEngine.UIElements;
+using SvgEditor.Workspace.StructureInspector;
 
-namespace SvgEditor
+namespace SvgEditor.Workspace
 {
     internal sealed class EditorWorkspaceShellBinder
     {

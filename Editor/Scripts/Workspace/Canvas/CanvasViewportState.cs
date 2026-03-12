@@ -1,5 +1,6 @@
 using Core.UI.Foundation.Tooling;
 using UnityEngine;
+using SvgEditor.Shared;
 
 using SvgEditor;
 using SvgEditor.Preview;
@@ -26,7 +27,7 @@ namespace SvgEditor.Workspace.Canvas
 
         public void ResizeFrame(CanvasHandle handle, UnityEngine.Vector2 viewportDelta, float minSize)
         {
-            SetFrameRect(SvgEditor.RectResizeUtility.ResizeRect(
+            SetFrameRect(SvgEditor.Shared.RectResizeUtility.ResizeRect(
                 FrameRect,
                 handle,
                 ViewportToCanvasDelta(viewportDelta),

@@ -4,8 +4,9 @@ using System.Linq;
 using Core.UI.Foundation.Components.Accordion;
 using Core.UI.Foundation.Tooling;
 using UnityEngine.UIElements;
+using SvgEditor.Document;
 
-namespace SvgEditor
+namespace SvgEditor.Workspace.AssetLibrary
 {
     internal sealed class AssetLibraryBrowser
     {

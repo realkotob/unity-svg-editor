@@ -1,6 +1,6 @@
 using UnityEngine.UIElements;
 
-namespace SvgEditor
+namespace SvgEditor.Workspace.StructureInspector
 {
     internal sealed class StructureDropIndicatorPresenter
     {

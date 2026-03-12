@@ -1,8 +1,10 @@
 using Unity.VectorGraphics;
 using UnityEngine;
 using SvgEditor.Workspace.Canvas;
+using SvgEditor.DocumentModel;
+using SvgEditor.Document;
 
-namespace SvgEditor
+namespace SvgEditor.Workspace
 {
     internal static class ElementRotationUtility
     {

@@ -1,4 +1,4 @@
-namespace SvgEditor
+namespace SvgEditor.Workspace.AssetLibrary
 {
     internal sealed class AssetLibraryEntry
     {

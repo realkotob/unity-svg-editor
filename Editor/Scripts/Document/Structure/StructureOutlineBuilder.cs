@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Xml;
 using UnityEngine.UIElements;
+using SvgEditor.Shared;
 
-namespace SvgEditor
+namespace SvgEditor.Document
 {
     internal static class StructureOutlineBuilder
     {

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using UnityEngine;
+using SvgEditor.Shared;
+using SvgEditor.Document;
 
 using SvgEditor;
 

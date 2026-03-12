@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Xml;
+using SvgEditor.Shared;
 
-namespace SvgEditor
+namespace SvgEditor.Document
 {
     internal static class SvgDocumentXmlUtility
     {

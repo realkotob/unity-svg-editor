@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Xml;
+using SvgEditor.Shared;
+using SvgEditor.Document;
 
 using SvgEditor;
 

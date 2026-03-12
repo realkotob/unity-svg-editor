@@ -2,6 +2,7 @@ using System;
 using Core.UI.Foundation;
 using UnityEngine;
 using UnityEngine.UIElements;
+using SvgEditor.Shared;
 
 using SvgEditor;
 using SvgEditor.Preview;

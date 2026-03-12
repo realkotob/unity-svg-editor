@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
+using SvgEditor.Document;
 
-namespace SvgEditor
+namespace SvgEditor.Workspace.StructureInspector
 {
     internal sealed class StructurePanelState
     {

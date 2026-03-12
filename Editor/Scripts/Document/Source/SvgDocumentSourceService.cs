@@ -1,6 +1,7 @@
 using System;
+using SvgEditor.DocumentModel;
 
-namespace SvgEditor
+namespace SvgEditor.Document
 {
     internal sealed class SvgDocumentSourceService
     {

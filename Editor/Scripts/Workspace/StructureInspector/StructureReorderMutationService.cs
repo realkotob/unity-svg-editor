@@ -1,6 +1,7 @@
 using System;
+using SvgEditor.DocumentModel;
 
-namespace SvgEditor
+namespace SvgEditor.Workspace.StructureInspector
 {
     internal sealed class StructureReorderMutationService
     {

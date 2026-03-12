@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace SvgEditor
+namespace SvgEditor.Document
 {
     internal static class RendererSupportDiagnostics
     {

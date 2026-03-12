@@ -1,4 +1,4 @@
-namespace SvgEditor
+namespace SvgEditor.Shared
 {
     internal static class SvgAttributeName
     {

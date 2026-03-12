@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using Core.UI.Foundation;
 using UnityEngine.UIElements;
+using SvgEditor.Document;
 
-namespace SvgEditor
+namespace SvgEditor.Workspace.StructureInspector
 {
     internal sealed class AssetHierarchyPreviewRenderer
     {

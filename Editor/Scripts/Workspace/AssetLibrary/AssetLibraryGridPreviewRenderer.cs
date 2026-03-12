@@ -3,8 +3,9 @@ using Core.UI.Foundation;
 using Core.UI.Foundation.Tooling;
 using UnityEngine;
 using UnityEngine.UIElements;
+using SvgEditor.Shared;
 
-namespace SvgEditor
+namespace SvgEditor.Workspace.AssetLibrary
 {
     internal sealed class AssetLibraryGridPreviewRenderer
     {

@@ -1,4 +1,4 @@
-namespace SvgEditor
+namespace SvgEditor.DocumentModel
 {
     internal sealed class SvgNodeReference
     {

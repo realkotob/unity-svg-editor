@@ -1,7 +1,7 @@
 using UnityEngine;
 using SvgEditor.Workspace.Canvas;
 
-namespace SvgEditor
+namespace SvgEditor.Shared
 {
     internal static class RectResizeUtility
     {

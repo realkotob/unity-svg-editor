@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
+using SvgEditor.Shared;
 
-namespace SvgEditor
+namespace SvgEditor.DocumentModel
 {
     internal sealed class SvgDocumentModel
     {

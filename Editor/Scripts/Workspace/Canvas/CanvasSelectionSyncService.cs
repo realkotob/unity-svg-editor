@@ -1,5 +1,6 @@
 using SvgEditor;
 using SvgEditor.Preview;
+using SvgEditor.Document;
 
 namespace SvgEditor.Workspace.Canvas
 {

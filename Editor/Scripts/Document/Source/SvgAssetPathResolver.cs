@@ -4,7 +4,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace SvgEditor
+namespace SvgEditor.Document
 {
     internal sealed class SvgAssetPathResolver
     {

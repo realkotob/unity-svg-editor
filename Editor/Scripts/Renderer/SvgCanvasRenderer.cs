@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
+using SvgEditor.DocumentModel;
 
 using SvgEditor;
 using SvgEditor.Preview;
+using SvgEditor.RenderModel;
 
 namespace SvgEditor.Renderer
 {

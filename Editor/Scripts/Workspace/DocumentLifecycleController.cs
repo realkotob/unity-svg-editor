@@ -2,9 +2,12 @@ using System;
 using UnityEditor;
 using UnityEngine.UIElements;
 using SvgEditor.Preview;
+using SvgEditor.Workspace.Document;
 using SvgEditor.Workspace.InspectorPanel;
+using SvgEditor.DocumentModel;
+using SvgEditor.Document;
 
-namespace SvgEditor
+namespace SvgEditor.Workspace
 {
     internal sealed class DocumentLifecycleController
     {

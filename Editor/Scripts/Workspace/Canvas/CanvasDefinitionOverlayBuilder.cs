@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using Unity.VectorGraphics;
 using UnityEngine;
+using SvgEditor.DocumentModel;
+using SvgEditor.Document;
 
 using SvgEditor;
 using SvgEditor.Preview;

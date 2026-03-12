@@ -2,8 +2,11 @@ using System;
 using System.Collections.Generic;
 using UnityEngine.UIElements;
 using SvgEditor.Workspace.Canvas;
+using SvgEditor.DocumentModel;
+using SvgEditor.Shared;
+using SvgEditor.Document;
 
-namespace SvgEditor
+namespace SvgEditor.Workspace.StructureInspector
 {
     internal static class StructureDocumentModelReader
     {

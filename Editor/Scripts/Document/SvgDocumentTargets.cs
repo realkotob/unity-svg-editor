@@ -1,4 +1,4 @@
-namespace SvgEditor
+namespace SvgEditor.Document
 {
     internal static class SvgDocumentTargets
     {

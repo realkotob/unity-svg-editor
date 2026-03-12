@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using Unity.VectorGraphics;
 using UnityEngine;
 using SvgEditor.Workspace.Canvas;
+using SvgEditor.DocumentModel;
+using SvgEditor.Shared;
+using SvgEditor.Document;
 
 using SvgEditor;
 using SvgEditor.Preview;

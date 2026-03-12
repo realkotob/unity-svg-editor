@@ -1,6 +1,6 @@
 using SvgEditor.Workspace.Canvas;
 
-namespace SvgEditor
+namespace SvgEditor.Document
 {
     internal sealed class StructureNode
     {

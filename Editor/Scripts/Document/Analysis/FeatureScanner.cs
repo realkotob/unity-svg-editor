@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
-namespace SvgEditor
+using SvgEditor.Shared;
+namespace SvgEditor.Document
 {
     internal static class FeatureScanner
     {
