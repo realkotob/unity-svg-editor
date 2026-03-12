@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using Unity.VectorGraphics;
 using UnityEngine;
 
@@ -111,22 +110,22 @@ namespace UnitySvgEditor.Editor
             TextStyleContext inheritedStyle,
             Matrix2D worldTransform)
         {
-            TextStyleContext style = inheritedStyle;
+            var style = inheritedStyle;
             style.WorldTransform = worldTransform;
 
-            if (TryGetFloat(node.RawAttributes, "font-size", out float fontSize))
+            if (SvgAttributeUtility.TryGetFloat(node.RawAttributes, "font-size", out var fontSize))
                 style.FontSize = Mathf.Max(1f, fontSize);
 
-            if (TryGetColor(node.RawAttributes, "fill", out Color color))
+            if (TryGetColor(node.RawAttributes, "fill", out var color))
                 style.Color = color;
 
-            if (TryGetAttribute(node.RawAttributes, "text-anchor", out string textAnchor))
+            if (SvgAttributeUtility.TryGetAttribute(node.RawAttributes, "text-anchor", out var textAnchor))
                 style.TextAnchor = textAnchor;
 
-            bool hasX = TryGetFloat(node.RawAttributes, "x", out float x);
-            bool hasY = TryGetFloat(node.RawAttributes, "y", out float y);
-            bool hasDx = TryGetFloat(node.RawAttributes, "dx", out float dx);
-            bool hasDy = TryGetFloat(node.RawAttributes, "dy", out float dy);
+            var hasX = SvgAttributeUtility.TryGetFloat(node.RawAttributes, "x", out var x);
+            var hasY = SvgAttributeUtility.TryGetFloat(node.RawAttributes, "y", out var y);
+            var hasDx = SvgAttributeUtility.TryGetFloat(node.RawAttributes, "dx", out var dx);
+            var hasDy = SvgAttributeUtility.TryGetFloat(node.RawAttributes, "dy", out var dy);
 
             Vector2 scenePosition = style.ScenePosition;
             bool hasPosition = style.HasPosition;
@@ -154,26 +153,11 @@ namespace UnitySvgEditor.Editor
             return style;
         }
 
-        private static bool TryGetAttribute(IReadOnlyDictionary<string, string> attributes, string name, out string value)
-        {
-            value = string.Empty;
-            return attributes != null &&
-                   attributes.TryGetValue(name, out value) &&
-                   !string.IsNullOrWhiteSpace(value);
-        }
-
-        private static bool TryGetFloat(IReadOnlyDictionary<string, string> attributes, string name, out float value)
-        {
-            value = 0f;
-            return TryGetAttribute(attributes, name, out string text) &&
-                   float.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value);
-        }
-
         private static bool TryGetColor(IReadOnlyDictionary<string, string> attributes, string name, out Color color)
         {
             color = Color.white;
-            return TryGetAttribute(attributes, name, out string text) &&
-                   ColorUtility.TryParseHtmlString(text.StartsWith("#", StringComparison.Ordinal) ? text : $"#{text}", out color);
+            return SvgAttributeUtility.TryGetAttribute(attributes, name, out var text) &&
+                   SvgAttributeUtility.TryParseColor(text, out color);
         }
 
         private static Rect EstimateTextBounds(PreviewTextOverlay overlay)
