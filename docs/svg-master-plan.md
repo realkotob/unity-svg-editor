@@ -38,6 +38,10 @@
 - text 계열 세부 편집 정책 정밀화 여부 판단
 - renderer invalidation / rebuild 비용 추가 최적화 여부 판단
 - inspector transform helper와 직접 입력 UX 충돌 정리
+- structure-first refactor final pass
+  - `Preview/Contracts` naming
+  - `Workspace/Coordination` naming
+  - `Document/Structure` 물리/namespace 정리
 
 ## 2. 제품 정의
 
@@ -255,6 +259,9 @@
 - rotate / snap은 canvas interaction과 inspector 입력이 같은 규칙을 공유해야 한다.
 - save는 history를 끊지 않고 유지한다.
 - toast는 save success처럼 사용자 가치가 높은 완료 피드백에만 쓴다.
+- 구조 리팩터링은 cluster-first 로 진행한다.
+- 물리 폴더 정리 후에만 suffix/prefix 축소를 검토한다.
+- top-level folder 이름은 cluster 책임이 실제보다 좁아지지 않을 때만 바꾼다.
 
 ## 10. 비목표
 

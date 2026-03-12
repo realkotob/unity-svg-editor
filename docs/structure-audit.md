@@ -21,7 +21,11 @@
   - `SvgEditor.Workspace.StructureInspector`
   - `SvgEditor.Workspace.AssetLibrary`
   - `SvgEditor.Shell`
-- 가장 큰 구조 문제는 이제 namespace 부재가 아니라, 일부 큰 파일과 일부 flat cluster 에 남아 있는 책임 과밀이다.
+- 가장 큰 구조 문제는 이제 namespace 부재가 아니라,
+  - 일부 큰 파일
+  - 일부 root-level helper의 잔여 배치
+  - 물리 폴더와 namespace granularity 불일치
+  로 옮겨갔다.
 - prefix 밀도는 여전히 높지만, 이제는 “무조건 축소”가 아니라 `semantic floor` 기준으로 다뤄야 한다.
 
 ## 2. 가장 큰 구조 hot spot
@@ -29,18 +33,18 @@
 파일 길이와 책임 기준으로 우선순위를 잡으면 아래가 먼저다.
 
 1. `Workspace`
-- `EditorWorkspaceCoordinator`
+- `Workspace/Coordination` 최종 naming
 - `CanvasViewportLayoutUtility`
 - `PanelView`
 - `TransformActionService`
 
 2. `Document / DocumentModel`
-- `SvgDocumentModelMutationService`
 - `SvgPathGeometryParser`
 - `SvgSafeMaskArtifactSanitizer`
 
 3. `Preview / Shell`
-- `PreviewSnapshotGeometryBuilder`
+- `Preview/Contracts` naming
+- `PreviewGeometryLookupService`
 - `SvgEditorWindow`
 
 ## 3. Workspace 구조 진단
@@ -110,8 +114,28 @@
 
 ### 3.3 StructureInspector
 
-- namespace spine 은 정리됐지만, 물리 폴더는 아직 flat 하다.
-- reorder / view / core cluster 는 여전히 분리 가치가 높다.
+### 3.3 HierarchyPanel
+
+- `Workspace/HierarchyPanel` 로 물리 폴더와 namespace를 정리했다.
+- 내부 타입도 `Hierarchy*`, `Reorder*` 축으로 정리됐다.
+- 남은 이슈는 top-level contract인 `HierarchyNode` / `HierarchyOutline` 의 namespace 세분화 여부다.
+
+### 3.4 AssetLibrary
+
+- `Workspace/AssetLibrary` 는 `Browser / Grid / Model / Presentation` 으로 재편됐다.
+- 현재 구조는 안정적이고 추가 축소 필요성이 크지 않다.
+
+### 3.5 Preview
+
+- `Preview` 는 `Build / Geometry / Text / Contracts / Research` 로 재편됐다.
+- `SnapshotBuilder`, `SnapshotGeometryBuilder`, `SnapshotTextBuilder` 축으로 읽기 경계가 생겼다.
+- 남은 이슈는 `Contracts` 라는 폴더명이 실제 역할에 비해 다소 generic 하다는 점이다.
+
+### 3.6 Workspace Root
+
+- `Workspace` 루트 파일은 `Coordination / Host / Document / Transforms` 로 물리 재배치했다.
+- 루트는 이제 folder marker 수준으로 비워진 상태다.
+- 남은 이슈는 `Coordination` cluster naming final pass다.
 
 ## 4. 네이밍 진단
 
@@ -137,39 +161,38 @@
 
 ## 6. 고정 리팩터링 순서
 
-### Batch 1. Top-Level Orchestrator Cleanup
+### Batch 1. Core Structure Realignment
 
 - 대상:
-  - `SvgEditorWindow`
-  - `EditorWorkspaceCoordinator`
-  - `DocumentLifecycleController`
+  - `HierarchyPanel`
+  - `AssetLibrary`
+  - `Preview`
+  - `Workspace`
 - 목표:
-  - host adapter
-  - selection/workspace sync
-  - editor shell binding
-  책임을 더 분리한다.
+  - 물리 폴더와 역할 경계를 먼저 고정한다.
 
-### Batch 2. Large File Reduction
+### Batch 2. Naming Final Pass
 
 - 대상:
-  - `SvgDocumentModelMutationService`
-  - `PreviewSnapshotGeometryBuilder`
-  - `CanvasViewportLayoutUtility`
-  - `PanelView`
-  - `TransformActionService`
+  - `Preview/Build`
+  - `Preview/Geometry`
+  - `Workspace/Coordination`
+  - 남은 `Hierarchy*` / `Structure*` contract
 - 원칙:
-  - `partial` 금지
-  - sibling type 또는 응집된 helper로만 분리
-  - 부모 파일 줄 수가 실제로 줄어야 한다
+  - semantic floor 유지
+  - folder context가 충분할 때만 축소
 
-### Batch 3. StructureInspector / AssetLibrary Physical Folder Realignment
+### Batch 3. Residual Large File Reduction
 
-- `StructureInspector`는 `View / Reorder / Core / State` 정도로 나눌 수 있다.
-- `AssetLibrary`는 `Browser / Grid / Preview / Model` 축으로 가볍게 나눌 수 있다.
+- `SvgPathGeometryParser`
+- `SvgSafeMaskArtifactSanitizer`
+- 필요 시 `PanelView`
+- 필요 시 `TransformActionService`
 
 ## 7. 다음 구현 배치
 
 다음 코드 배치는 아래 둘 중 하나로 잡는다.
 
-1. `PanelView` / `TransformActionService` large file reduction
-2. `SvgEditorWindow` / `EditorWorkspaceCoordinator` / `DocumentLifecycleController` top-level orchestration 정리
+1. `Preview/Contracts` naming and placement final pass
+2. `Workspace/Coordination` naming final pass
+3. `Document/Structure` namespace granularity 검토

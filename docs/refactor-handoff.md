@@ -107,21 +107,73 @@
   - `DocumentModelReader`
   - `FormControls`
   - `StateBinder`
+- Hierarchy panel 재편
+  - `Workspace/HierarchyPanel` 로 물리 폴더 / namespace 정리
+  - 내부 타입 축소:
+    - `HierarchyListView`
+    - `HierarchyInteractionController`
+    - `HierarchyDocumentModelReader`
+    - `HierarchyState`
+    - `HierarchyTreeUtility`
+    - `HierarchyTreeRow`
+    - `HierarchyPreviewRenderer`
+    - `ReorderSession`
+    - `ReorderMutationService`
+    - `IHierarchyHost`
+- Asset library 재편
+  - `Workspace/AssetLibrary` 를 `Browser / Grid / Model / Presentation` 으로 재편
+  - 내부 타입 축소:
+    - `AssetBrowser`
+    - `AssetGridView`
+    - `AssetGridPreviewRenderer`
+    - `AssetEntry`
+    - `VectorImagePresentationUtility`
+- Preview 재편
+  - `Preview` 를 `Build / Geometry / Text / Contracts / Research` 로 재편
+  - helper naming 축소:
+    - `SnapshotBuilder`
+    - `SceneImportService`
+    - `SnapshotDocumentPreparation`
+    - `PreparedSnapshotDocument`
+    - `BuildOptions`
+    - `SnapshotGeometryBuilder`
+    - `ElementHitTester`
+    - `SnapshotTextBuilder`
+    - `GeometryBoundsUtility`
+    - `GeometryWorldContext`
+    - `GeometryWorldContextBuilder`
+    - `TessellatedNodeGeometry`
+- Document / structure / workspace 재편
+  - `Document/Structure` 를 `Hierarchy / Lookup / Xml / Geometry` 로 재편
+  - `Workspace` 루트 파일을 `Coordination / Host / Document / Transforms` 로 재편
+  - 이동/정리:
+    - `WorkspaceSelectionCoordinator`
+    - `WorkspaceMutationCoordinator`
+    - `WorkspaceShellBinder`
+    - `IEditorWorkspaceHost`
+    - `DocumentLifecycleController`
+    - `DocumentEditHistoryService`
+    - `HistoryRecordingMode`
+    - `ElementRotationSession`
+    - `ElementRotationUtility`
+    - `SnapUtility`
+- Hierarchy contract naming 정리
+  - `HierarchyNode`
+  - `HierarchyOutline`
+  - `HierarchyOutlineBuilder`
 
 ## 3. 현재 파일 상태 핵심
 
 - `.cs` 파일 수는 `138` 기준이다.
 - namespace는 이제 role-based spine 으로 정리된 상태다.
-- `Canvas` 와 `InspectorPanel` 은 folder + namespace + naming 1차 정리가 끝난 상태다.
+- `Canvas`, `InspectorPanel`, `HierarchyPanel`, `AssetLibrary`, `Preview` 는 folder 기준 1차 재편이 끝난 상태다.
 - `SvgModelSceneBuilder.cs` 는 traversal coordinator 성격으로 수렴했고 `218`줄 수준이다.
 - 가장 큰 후속 분해 후보:
-  - `SvgDocumentModelMutationService.cs`
-  - `CanvasViewportLayoutUtility.cs`
-  - `PanelView.cs`
-  - `TransformActionService.cs`
-  - `PreviewSnapshotGeometryBuilder.cs`
-  - `SvgEditorWindow.cs`
-  - `EditorWorkspaceCoordinator.cs`
+  - `SvgSafeMaskArtifactSanitizer.cs`
+  - `SvgPathGeometryParser.cs`
+  - `PreviewSnapshot.cs` / `Preview/Contracts` folder naming 확정
+  - `Workspace/Coordination` naming final pass
+  - 필요 시 `Document/Structure` namespace 세분화 검토
 
 ## 4. 네이밍 / 상수 규칙
 
@@ -138,24 +190,27 @@
 
 ## 5. 다음 세션 첫 우선순위
 
-1. InspectorPanel final pass
-- `PanelView.cs` / `TransformActionService.cs` 중심으로 큰 파일 분해
-- `semantic floor` 기준 재점검
+1. `Preview/Contracts` 재평가
+- `Contracts` folder 이름을 유지할지, 더 구체적인 이름으로 바꿀지 검토
+- 필요 시 `SvgPreserveAspectRatioMode` 의 위치 재판단
 
-2. Top-level orchestrator 정리
-- `SvgEditorWindow.cs`
-- `EditorWorkspaceCoordinator.cs`
-- `DocumentLifecycleController.cs`
+2. `Workspace/Coordination` final pass
+- `EditorWorkspaceCoordinator`
+- `WorkspaceMutationCoordinator`
+- `WorkspaceSelectionCoordinator`
+- `WorkspaceShellBinder`
+  의미 축소 가능성 재검토
 
-3. Large file reduction
-- `SvgDocumentModelMutationService.cs`
-- `PreviewSnapshotGeometryBuilder.cs`
-- `CanvasViewportLayoutUtility.cs`
+3. `Document/Structure` namespace 세분화 여부 검토
+- 현재는 물리 폴더만 `Hierarchy / Lookup / Xml / Geometry`
+- namespace는 여전히 `SvgEditor.Document`
+- 실제 이득이 있을 때만 세분화
 
-4. 선택 후속
-- `StructureInspector` naming final pass
-- `AssetLibrary` naming final pass
-- 필요 시 `Document/Structure` 하위 재분류 검토
+4. 남은 large file 후보
+- `SvgSafeMaskArtifactSanitizer.cs`
+- `SvgPathGeometryParser.cs`
+- 필요 시 `PanelView.cs`
+- 필요 시 `TransformActionService.cs`
 
 5. 손대지 말 것
 - `Svg*` domain prefix 는 무리하게 전역 축소하지 않는다.
