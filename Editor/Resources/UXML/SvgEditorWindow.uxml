@@ -1,4 +1,4 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:toggle="Core.UI.Foundation.Components.Toggle" xmlns:togglegroup="Core.UI.Foundation.Components.ToggleGroup" xmlns:button="Core.UI.Foundation.Components.Button" xmlns:drag="Core.UI.Foundation.Components.DragNumberField" xmlns:colorpercent="Core.UI.Foundation.Components.ColorPercentField" xmlns:select="Core.UI.Foundation.Components.Select" xmlns:svg="UnitySvgEditor.Editor" editor-extension-mode="True">
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:toggle="Core.UI.Foundation.Components.Toggle" xmlns:togglegroup="Core.UI.Foundation.Components.ToggleGroup" xmlns:button="Core.UI.Foundation.Components.Button" xmlns:drag="Core.UI.Foundation.Components.DragNumberField" xmlns:colorpercent="Core.UI.Foundation.Components.ColorPercentField" xmlns:select="Core.UI.Foundation.Components.Select" xmlns:acc="Core.UI.Foundation.Components.Accordion" xmlns:svg="UnitySvgEditor.Editor" editor-extension-mode="True">
     <ui:VisualElement class="svg-editor">
         <ui:TwoPaneSplitView name="main-split" fixed-pane-index="0" fixed-pane-initial-dimension="240" orientation="Horizontal" class="svg-editor__main-split">
             <ui:VisualElement name="asset-panel" class="svg-editor__asset-panel">
@@ -16,7 +16,11 @@
                                 <button:Button name="asset-library-refresh-button" variant="Ghost" size="Icon" tooltip="Rescan local assets" icon="project://database/Packages/com.newmassmedia.unity-uitoolkit-foundation/Runtime/Resources/Icons/lucide/refresh-ccw.svg?fileID=7388822144124034973&amp;guid=7f9b62e9253a412fa97bb5b5ff804416&amp;type=3#refresh-ccw" class="svg-editor__asset-refresh-button"/>
                             </ui:VisualElement>
                         </ui:VisualElement>
-                        <ui:VisualElement name="asset-library-filter-host" class="svg-editor__asset-filter-host"/>
+                        <acc:Accordion name="asset-library-filter-accordion" is-bordered="false" class="svg-editor__asset-filter-accordion">
+                            <acc:AccordionItem name="asset-library-filter-accordion-item" title="Libraries" class="svg-editor__asset-filter-accordion-item">
+                                <ui:VisualElement name="asset-library-filter-host" class="svg-editor__asset-filter-host"/>
+                            </acc:AccordionItem>
+                        </acc:Accordion>
                         <svg:AssetLibraryGridView name="asset-grid-view" show-preview="true" class="svg-editor__asset-grid-view"/>
                     </ui:VisualElement>
                 </ui:TwoPaneSplitView>

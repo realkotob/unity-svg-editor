@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Core.UI.Foundation.Components.Accordion;
 using Core.UI.Foundation.Tooling;
 using UnityEngine.UIElements;
 
@@ -27,6 +28,8 @@ namespace UnitySvgEditor.Editor
         private readonly List<GridViewItem> _assetGridItems = new();
         private readonly HashSet<string> _filteredAssetPaths = new(StringComparer.Ordinal);
 
+        private Accordion _assetLibraryFilterAccordion;
+        private AccordionItem _assetLibraryFilterAccordionItem;
         private VisualElement _assetLibraryFilterHost;
         private FilterBadgeBar _assetLibraryCategoryBar;
         private Button _assetLibraryRefreshButton;
@@ -59,6 +62,8 @@ namespace UnitySvgEditor.Editor
             _getCurrentAssetPath = getCurrentAssetPath;
             _canSwitchDocument = canSwitchDocument;
             _assetLibraryRefreshButton = root.Q<Button>("asset-library-refresh-button");
+            _assetLibraryFilterAccordion = root.Q<Accordion>("asset-library-filter-accordion");
+            _assetLibraryFilterAccordionItem = root.Q<AccordionItem>("asset-library-filter-accordion-item");
             _assetLibraryFilterHost = root.Q<VisualElement>("asset-library-filter-host");
             _assetGridView = root.Q<AssetLibraryGridView>("asset-grid-view");
 
@@ -88,6 +93,8 @@ namespace UnitySvgEditor.Editor
                 _assetLibraryRefreshButton.clicked -= OnRefreshButtonClicked;
             }
 
+            _assetLibraryFilterAccordion = null;
+            _assetLibraryFilterAccordionItem = null;
             _assetLibraryFilterHost?.Clear();
             _assetGridView = null;
             _assetLibraryCategoryBar = null;
@@ -161,12 +168,7 @@ namespace UnitySvgEditor.Editor
 
         private void RebuildCategoryFilterBar()
         {
-            List<string> categories = _allAssetItems
-                .Select(static item => item.Library)
-                .Where(static category => !string.IsNullOrWhiteSpace(category))
-                .Distinct(AssetNameComparer)
-                .OrderBy(static category => category, AssetNameComparer)
-                .ToList();
+            List<string> categories = BuildCategoryList();
 
             if (!string.Equals(_selectedCategoryKey, AllCategoriesFilterKey, StringComparison.Ordinal) &&
                 !categories.Contains(_selectedCategoryKey, AssetNameComparer))
@@ -174,12 +176,14 @@ namespace UnitySvgEditor.Editor
                 _selectedCategoryKey = AllCategoriesFilterKey;
             }
 
-            if (_assetLibraryFilterHost != null)
+            if (_assetLibraryFilterAccordion != null)
             {
-                _assetLibraryFilterHost.style.display = categories.Count > 0
+                _assetLibraryFilterAccordion.style.display = categories.Count > 0
                     ? DisplayStyle.Flex
                     : DisplayStyle.None;
             }
+
+            UpdateCategoryFilterAccordionTitle(categories.Count);
 
             if (_assetLibraryCategoryBar == null)
             {
@@ -222,6 +226,7 @@ namespace UnitySvgEditor.Editor
             }
 
             _selectedCategoryKey = nextCategoryKey;
+            RebuildCategoryFilterBar();
             ApplyAssetFilter(selectFirst: false);
         }
 
@@ -290,6 +295,31 @@ namespace UnitySvgEditor.Editor
         private void OnRefreshButtonClicked()
         {
             RefreshAssetList(selectFirst: false);
+        }
+
+        private List<string> BuildCategoryList()
+        {
+            return _allAssetItems
+                .Select(static item => item.Library)
+                .Where(static category => !string.IsNullOrWhiteSpace(category))
+                .Distinct(AssetNameComparer)
+                .OrderBy(static category => category, AssetNameComparer)
+                .ToList();
+        }
+
+        private void UpdateCategoryFilterAccordionTitle(int categoryCount)
+        {
+            if (_assetLibraryFilterAccordionItem == null)
+            {
+                return;
+            }
+
+            string selectedLabel = string.Equals(_selectedCategoryKey, AllCategoriesFilterKey, StringComparison.Ordinal)
+                ? "All"
+                : _selectedCategoryKey;
+            _assetLibraryFilterAccordionItem.Title = categoryCount > 0
+                ? $"Libraries: {selectedLabel} ({categoryCount})"
+                : "Libraries";
         }
 
         private void OnAssetGridSelectionChanged(List<GridViewItem> selectedItems)
