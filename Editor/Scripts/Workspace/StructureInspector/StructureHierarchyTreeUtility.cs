@@ -127,18 +127,18 @@ namespace UnitySvgEditor.Editor
         {
             return tagName switch
             {
-                SvgTagName.Svg => IconKind.Square,
-                SvgTagName.Group => IconKind.Folder,
-                SvgTagName.Text => IconKind.FileText,
-                SvgTagName.Rect => IconKind.Square,
-                SvgTagName.Circle => IconKind.Circle,
-                SvgTagName.Ellipse => IconKind.Circle,
-                SvgTagName.Line => IconKind.Minus,
-                SvgTagName.ClipPath => IconKind.Mask,
-                SvgTagName.Mask => IconKind.Mask,
-                SvgTagName.Polyline => IconKind.Minus,
-                SvgTagName.Polygon => IconKind.Pen,
-                SvgTagName.Path => IconKind.Pen,
+                SvgTagName.SVG => IconKind.Square,
+                SvgTagName.GROUP => IconKind.Folder,
+                SvgTagName.TEXT => IconKind.FileText,
+                SvgTagName.RECT => IconKind.Square,
+                SvgTagName.CIRCLE => IconKind.Circle,
+                SvgTagName.ELLIPSE => IconKind.Circle,
+                SvgTagName.LINE => IconKind.Minus,
+                SvgTagName.CLIP_PATH => IconKind.Mask,
+                SvgTagName.MASK => IconKind.Mask,
+                SvgTagName.POLYLINE => IconKind.Minus,
+                SvgTagName.POLYGON => IconKind.Pen,
+                SvgTagName.PATH => IconKind.Pen,
                 _ => IconKind.File
             };
         }

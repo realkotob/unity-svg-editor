@@ -64,7 +64,7 @@ namespace UnitySvgEditor.Editor
             StructureNode currentNode = _host.FindStructureNode(elementKey);
             while (currentNode != null)
             {
-                if (string.Equals(currentNode.TagName, SvgTagName.Group, StringComparison.Ordinal))
+                if (string.Equals(currentNode.TagName, SvgTagName.GROUP, StringComparison.Ordinal))
                 {
                     return currentNode.Key;
                 }
@@ -103,7 +103,7 @@ namespace UnitySvgEditor.Editor
 
                 StructureNode candidateNode = _host.FindStructureNode(candidate.Key);
                 if (candidateNode == null ||
-                    !string.Equals(candidateNode.TagName, SvgTagName.Group, StringComparison.Ordinal))
+                    !string.Equals(candidateNode.TagName, SvgTagName.GROUP, StringComparison.Ordinal))
                 {
                     continue;
                 }

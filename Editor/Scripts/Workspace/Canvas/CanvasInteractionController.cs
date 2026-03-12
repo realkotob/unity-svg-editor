@@ -371,8 +371,8 @@ namespace UnitySvgEditor.Editor
         private bool IsResizeUnsupported(string elementKey)
         {
             string tagName = _host.FindStructureNode(elementKey)?.TagName;
-            return string.Equals(tagName, "tspan", System.StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(tagName, "textPath", System.StringComparison.OrdinalIgnoreCase);
+            return string.Equals(tagName, SvgTagName.TSPAN, System.StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(tagName, SvgTagName.TEXT_PATH, System.StringComparison.OrdinalIgnoreCase);
         }
 
         private void UpdateZoomHud()

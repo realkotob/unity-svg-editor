@@ -144,7 +144,7 @@ namespace UnitySvgEditor.Editor
                     attributes[attributeName] = resolvedValue;
             }
 
-            if (string.Equals(node.TagName, SvgTagName.Path, StringComparison.OrdinalIgnoreCase) &&
+            if (string.Equals(node.TagName, SvgTagName.PATH, StringComparison.OrdinalIgnoreCase) &&
                 !attributes.ContainsKey("fill"))
             {
                 attributes["fill"] = "#000000";

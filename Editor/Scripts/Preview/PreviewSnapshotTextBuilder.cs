@@ -113,19 +113,19 @@ namespace UnitySvgEditor.Editor
             var style = inheritedStyle;
             style.WorldTransform = worldTransform;
 
-            if (SvgAttributeUtility.TryGetFloat(node.RawAttributes, "font-size", out var fontSize))
+            if (SvgAttributeUtility.TryGetFloat(node.RawAttributes, SvgAttributeName.FONT_SIZE, out var fontSize))
                 style.FontSize = Mathf.Max(1f, fontSize);
 
-            if (TryGetColor(node.RawAttributes, "fill", out var color))
+            if (TryGetColor(node.RawAttributes, SvgAttributeName.FILL, out var color))
                 style.Color = color;
 
-            if (SvgAttributeUtility.TryGetAttribute(node.RawAttributes, "text-anchor", out var textAnchor))
+            if (SvgAttributeUtility.TryGetAttribute(node.RawAttributes, SvgAttributeName.TEXT_ANCHOR, out var textAnchor))
                 style.TextAnchor = textAnchor;
 
-            var hasX = SvgAttributeUtility.TryGetFloat(node.RawAttributes, "x", out var x);
-            var hasY = SvgAttributeUtility.TryGetFloat(node.RawAttributes, "y", out var y);
-            var hasDx = SvgAttributeUtility.TryGetFloat(node.RawAttributes, "dx", out var dx);
-            var hasDy = SvgAttributeUtility.TryGetFloat(node.RawAttributes, "dy", out var dy);
+            var hasX = SvgAttributeUtility.TryGetFloat(node.RawAttributes, SvgAttributeName.X, out var x);
+            var hasY = SvgAttributeUtility.TryGetFloat(node.RawAttributes, SvgAttributeName.Y, out var y);
+            var hasDx = SvgAttributeUtility.TryGetFloat(node.RawAttributes, SvgAttributeName.DX, out var dx);
+            var hasDy = SvgAttributeUtility.TryGetFloat(node.RawAttributes, SvgAttributeName.DY, out var dy);
 
             Vector2 scenePosition = style.ScenePosition;
             bool hasPosition = style.HasPosition;

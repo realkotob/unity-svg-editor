@@ -21,28 +21,28 @@ namespace UnitySvgEditor.Editor
 
             switch (node.TagName)
             {
-                case "g":
-                case "svg":
+                case SvgTagName.GROUP:
+                case SvgTagName.SVG:
                     return true;
-                case "rect":
+                case SvgTagName.RECT:
                     return _primitiveShapeBuilder.TryAddRectShape(documentModel, node, nodesByXmlId, sceneNode, out error);
-                case "circle":
+                case SvgTagName.CIRCLE:
                     return _primitiveShapeBuilder.TryAddCircleShape(documentModel, node, nodesByXmlId, sceneNode, out error);
-                case "ellipse":
+                case SvgTagName.ELLIPSE:
                     return _primitiveShapeBuilder.TryAddEllipseShape(documentModel, node, nodesByXmlId, sceneNode, out error);
-                case "line":
+                case SvgTagName.LINE:
                     return _primitiveShapeBuilder.TryAddLineShape(documentModel, node, nodesByXmlId, sceneNode, out error);
-                case "polyline":
+                case SvgTagName.POLYLINE:
                     return _primitiveShapeBuilder.TryAddPolylineShape(documentModel, node, nodesByXmlId, sceneNode, out error, closed: false);
-                case "polygon":
+                case SvgTagName.POLYGON:
                     return _primitiveShapeBuilder.TryAddPolylineShape(documentModel, node, nodesByXmlId, sceneNode, out error, closed: true);
-                case "path":
+                case SvgTagName.PATH:
                     return _primitiveShapeBuilder.TryAddPathShape(documentModel, node, nodesByXmlId, sceneNode, out error);
-                case "text":
-                case "tspan":
-                case "textPath":
+                case SvgTagName.TEXT:
+                case SvgTagName.TSPAN:
+                case SvgTagName.TEXT_PATH:
                     return true;
-                case "use":
+                case SvgTagName.USE:
                     return TryAddUseNode(documentModel, nodesByXmlId, node, sceneNode, out error);
                 default:
                     return true;
@@ -63,9 +63,9 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
-            if (!SvgAttributeUtility.TryGetFloat(useNode.RawAttributes, "x", out var x))
+            if (!SvgAttributeUtility.TryGetFloat(useNode.RawAttributes, SvgAttributeName.X, out var x))
                 x = 0f;
-            if (!SvgAttributeUtility.TryGetFloat(useNode.RawAttributes, "y", out var y))
+            if (!SvgAttributeUtility.TryGetFloat(useNode.RawAttributes, SvgAttributeName.Y, out var y))
                 y = 0f;
             if (!UnityEngine.Mathf.Approximately(x, 0f) || !UnityEngine.Mathf.Approximately(y, 0f))
                 sceneNode.Transform = Matrix2D.Translate(new UnityEngine.Vector2(x, y)) * sceneNode.Transform;
@@ -123,7 +123,7 @@ namespace UnitySvgEditor.Editor
 
         private static bool IsHidden(SvgNodeModel node)
         {
-            return SvgAttributeUtility.TryGetAttribute(node?.RawAttributes, "display", out var display) &&
+            return SvgAttributeUtility.TryGetAttribute(node?.RawAttributes, SvgAttributeName.DISPLAY, out var display) &&
                    string.Equals(display, "none", System.StringComparison.OrdinalIgnoreCase);
         }
     }

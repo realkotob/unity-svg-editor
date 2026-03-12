@@ -22,7 +22,7 @@ namespace UnitySvgEditor.Editor
 
             List<XmlElement> maskElements = SvgDocumentXmlUtility
                 .EnumerateElementsDepthFirst(root)
-                .Where(element => string.Equals(element.LocalName, SvgTagName.Mask, StringComparison.OrdinalIgnoreCase))
+                .Where(element => string.Equals(element.LocalName, SvgTagName.MASK, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             for (int index = 0; index < maskElements.Count; index++)
@@ -52,7 +52,7 @@ namespace UnitySvgEditor.Editor
                 return false;
 
             XmlElement maskRect = maskChildren[0];
-            if (!string.Equals(maskRect.LocalName, SvgTagName.Rect, StringComparison.OrdinalIgnoreCase) ||
+            if (!string.Equals(maskRect.LocalName, SvgTagName.RECT, StringComparison.OrdinalIgnoreCase) ||
                 !TryParseRect(maskRect, out RectShape maskShape))
             {
                 return false;
@@ -69,7 +69,7 @@ namespace UnitySvgEditor.Editor
                 return false;
 
             XmlElement strokeRect = references[0];
-            if (!string.Equals(strokeRect.LocalName, SvgTagName.Rect, StringComparison.OrdinalIgnoreCase) ||
+            if (!string.Equals(strokeRect.LocalName, SvgTagName.RECT, StringComparison.OrdinalIgnoreCase) ||
                 !TryParseRect(strokeRect, out RectShape strokeShape) ||
                 !maskShape.EqualsGeometry(strokeShape) ||
                 !TryGetRequiredAttribute(strokeRect, "stroke", out string strokeColor) ||

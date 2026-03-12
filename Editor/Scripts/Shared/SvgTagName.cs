@@ -2,18 +2,24 @@ namespace UnitySvgEditor.Editor
 {
     internal static class SvgTagName
     {
-        public const string Svg = "svg";
-        public const string Group = "g";
-        public const string Text = "text";
-        public const string Rect = "rect";
-        public const string Circle = "circle";
-        public const string Ellipse = "ellipse";
-        public const string Line = "line";
-        public const string Polyline = "polyline";
-        public const string Polygon = "polygon";
-        public const string Path = "path";
-        public const string ClipPath = "clippath";
-        public const string Mask = "mask";
-        public const string Defs = "defs";
+        public const string SVG = "svg";
+        public const string GROUP = "g";
+        public const string TEXT = "text";
+        public const string TSPAN = "tspan";
+        public const string TEXT_PATH = "textPath";
+        public const string USE = "use";
+        public const string RECT = "rect";
+        public const string CIRCLE = "circle";
+        public const string ELLIPSE = "ellipse";
+        public const string LINE = "line";
+        public const string POLYLINE = "polyline";
+        public const string POLYGON = "polygon";
+        public const string PATH = "path";
+        public const string CLIP_PATH = "clipPath";
+        public const string MASK = "mask";
+        public const string LINEAR_GRADIENT = "linearGradient";
+        public const string RADIAL_GRADIENT = "radialGradient";
+        public const string STOP = "stop";
+        public const string DEFS = "defs";
     }
 }

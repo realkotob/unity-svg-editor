@@ -42,8 +42,8 @@ namespace UnitySvgEditor.Editor
             }
 
             string tagName = _host.FindStructureNode(_host.SelectedElementKey)?.TagName;
-            if (string.Equals(tagName, "tspan", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(tagName, "textPath", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(tagName, SvgTagName.TSPAN, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(tagName, SvgTagName.TEXT_PATH, StringComparison.OrdinalIgnoreCase))
             {
                 _host.UpdateSourceStatus($"Resize is not supported for <{tagName}>. Move/select is still available.");
                 return false;

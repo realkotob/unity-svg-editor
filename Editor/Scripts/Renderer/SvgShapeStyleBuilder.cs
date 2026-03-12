@@ -28,7 +28,7 @@ namespace UnitySvgEditor.Editor
             IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
             bool allowDefaultFill)
         {
-            if (SvgInheritedAttributeResolver.TryGetInheritedAttribute(documentModel, node, "fill", out var fillValue))
+            if (SvgInheritedAttributeResolver.TryGetInheritedAttribute(documentModel, node, SvgAttributeName.FILL, out var fillValue))
             {
                 if (string.Equals(fillValue, "none", StringComparison.OrdinalIgnoreCase))
                 {
@@ -80,8 +80,8 @@ namespace UnitySvgEditor.Editor
             if (!SvgNodeLookupUtility.TryExtractFragmentId(fillValue, out var fragmentId) ||
                 nodesByXmlId == null ||
                 !nodesByXmlId.TryGetValue(fragmentId, out var gradientNode) ||
-                !(string.Equals(gradientNode.TagName, "linearGradient", StringComparison.OrdinalIgnoreCase) ||
-                  string.Equals(gradientNode.TagName, "radialGradient", StringComparison.OrdinalIgnoreCase)))
+                !(string.Equals(gradientNode.TagName, SvgTagName.LINEAR_GRADIENT, StringComparison.OrdinalIgnoreCase) ||
+                  string.Equals(gradientNode.TagName, SvgTagName.RADIAL_GRADIENT, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }
@@ -92,16 +92,16 @@ namespace UnitySvgEditor.Editor
                 var childId = gradientNode.Children[index];
                 if ((documentModel == null || !documentModel.TryGetNode(childId, out var stopNode)) ||
                     stopNode == null ||
-                    !string.Equals(stopNode.TagName, "stop", StringComparison.OrdinalIgnoreCase) ||
-                    !SvgAttributeUtility.TryGetAttribute(stopNode.RawAttributes, "offset", out var offsetText) ||
-                    !SvgAttributeUtility.TryGetAttribute(stopNode.RawAttributes, "stop-color", out var stopColorText) ||
+                    !string.Equals(stopNode.TagName, SvgTagName.STOP, StringComparison.OrdinalIgnoreCase) ||
+                    !SvgAttributeUtility.TryGetAttribute(stopNode.RawAttributes, SvgAttributeName.OFFSET, out var offsetText) ||
+                    !SvgAttributeUtility.TryGetAttribute(stopNode.RawAttributes, SvgAttributeName.STOP_COLOR, out var stopColorText) ||
                     !SvgAttributeUtility.TryParseColor(stopColorText, out var stopColor))
                 {
                     continue;
                 }
 
                 var stopOpacity = 1f;
-                if (SvgAttributeUtility.TryGetFloat(stopNode.RawAttributes, "stop-opacity", out var resolvedStopOpacity))
+                if (SvgAttributeUtility.TryGetFloat(stopNode.RawAttributes, SvgAttributeName.STOP_OPACITY, out var resolvedStopOpacity))
                 {
                     stopOpacity = Mathf.Clamp01(resolvedStopOpacity);
                 }
@@ -125,7 +125,7 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
-            var gradientType = string.Equals(gradientNode.TagName, "radialGradient", StringComparison.OrdinalIgnoreCase)
+            var gradientType = string.Equals(gradientNode.TagName, SvgTagName.RADIAL_GRADIENT, StringComparison.OrdinalIgnoreCase)
                 ? GradientFillType.Radial
                 : GradientFillType.Linear;
 
@@ -146,15 +146,15 @@ namespace UnitySvgEditor.Editor
             return new PathProperties
             {
                 Stroke = stroke,
-                Head = SvgInheritedAttributeResolver.ResolvePathEnding(documentModel, node, "stroke-linecap"),
-                Tail = SvgInheritedAttributeResolver.ResolvePathEnding(documentModel, node, "stroke-linecap"),
-                Corners = SvgInheritedAttributeResolver.ResolvePathCorner(documentModel, node, "stroke-linejoin")
+                Head = SvgInheritedAttributeResolver.ResolvePathEnding(documentModel, node, SvgAttributeName.STROKE_LINECAP),
+                Tail = SvgInheritedAttributeResolver.ResolvePathEnding(documentModel, node, SvgAttributeName.STROKE_LINECAP),
+                Corners = SvgInheritedAttributeResolver.ResolvePathCorner(documentModel, node, SvgAttributeName.STROKE_LINEJOIN)
             };
         }
 
         private static Stroke BuildStroke(SvgDocumentModel documentModel, SvgNodeModel node)
         {
-            if (!SvgInheritedAttributeResolver.TryGetInheritedAttribute(documentModel, node, "stroke", out var strokeValue) ||
+            if (!SvgInheritedAttributeResolver.TryGetInheritedAttribute(documentModel, node, SvgAttributeName.STROKE, out var strokeValue) ||
                 string.Equals(strokeValue, "none", StringComparison.OrdinalIgnoreCase) ||
                 strokeValue.Contains("url(", StringComparison.OrdinalIgnoreCase) ||
                 !SvgAttributeUtility.TryParseColor(strokeValue, out var strokeColor))
@@ -163,7 +163,7 @@ namespace UnitySvgEditor.Editor
             }
 
             var strokeWidth = 1f;
-            SvgInheritedAttributeResolver.TryGetInheritedFloat(documentModel, node, "stroke-width", out strokeWidth);
+            SvgInheritedAttributeResolver.TryGetInheritedFloat(documentModel, node, SvgAttributeName.STROKE_WIDTH, out strokeWidth);
             float[] pattern = TryParseDasharray(documentModel, node, out var dashPattern)
                 ? dashPattern
                 : null;
@@ -189,7 +189,7 @@ namespace UnitySvgEditor.Editor
             out float[] pattern)
         {
             pattern = null;
-            if (!SvgInheritedAttributeResolver.TryGetInheritedAttribute(documentModel, node, "stroke-dasharray", out var dasharray) ||
+            if (!SvgInheritedAttributeResolver.TryGetInheritedAttribute(documentModel, node, SvgAttributeName.STROKE_DASHARRAY, out var dasharray) ||
                 string.IsNullOrWhiteSpace(dasharray))
             {
                 return false;

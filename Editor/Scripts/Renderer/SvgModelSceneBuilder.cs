@@ -8,7 +8,13 @@ namespace UnitySvgEditor.Editor
 {
     internal sealed class SvgModelSceneBuilder
     {
-        private readonly SvgPrimitiveShapeBuilder _primitiveShapeBuilder = new();
+        private readonly SvgShapeBuilder _shapeBuilder = new();
+        private readonly SvgReferenceSceneBuilder _referenceSceneBuilder;
+
+        public SvgModelSceneBuilder()
+        {
+            _referenceSceneBuilder = new SvgReferenceSceneBuilder(_shapeBuilder);
+        }
 
         public bool TryBuildReferenceOverlayScenes(
             SvgDocumentModel documentModel,
@@ -28,12 +34,12 @@ namespace UnitySvgEditor.Editor
             var nodesByXmlId = SvgNodeLookupUtility.BuildNodeLookupByXmlId(documentModel);
             var resolved = new List<CanvasDefinitionOverlayScene>();
 
-            if (!TryBuildReferenceOverlayScene(documentModel, nodesByXmlId, node, CanvasDefinitionOverlayKind.Mask, out CanvasDefinitionOverlayScene maskOverlay, out error))
+            if (!_referenceSceneBuilder.TryBuildReferenceOverlayScene(documentModel, nodesByXmlId, node, CanvasDefinitionOverlayKind.Mask, out CanvasDefinitionOverlayScene maskOverlay, out error))
                 return false;
             if (maskOverlay != null)
                 resolved.Add(maskOverlay);
 
-            if (!TryBuildReferenceOverlayScene(documentModel, nodesByXmlId, node, CanvasDefinitionOverlayKind.ClipPath, out CanvasDefinitionOverlayScene clipOverlay, out error))
+            if (!_referenceSceneBuilder.TryBuildReferenceOverlayScene(documentModel, nodesByXmlId, node, CanvasDefinitionOverlayKind.ClipPath, out CanvasDefinitionOverlayScene clipOverlay, out error))
                 return false;
             if (clipOverlay != null)
                 resolved.Add(clipOverlay);
@@ -127,13 +133,13 @@ namespace UnitySvgEditor.Editor
                 Transform = SvgTransformParser.Parse(node.RawAttributes)
             };
 
-            if (!TryAttachMask(documentModel, nodesByXmlId, node, sceneNode, out error))
+            if (!_referenceSceneBuilder.TryAttachMask(documentModel, nodesByXmlId, node, sceneNode, out error))
                 return false;
 
-            if (!TryAttachClipper(documentModel, nodesByXmlId, node, sceneNode, out error))
+            if (!_referenceSceneBuilder.TryAttachClipper(documentModel, nodesByXmlId, node, sceneNode, out error))
                 return false;
 
-            if (!TryBuildShapes(documentModel, nodesByXmlId, node, sceneNode, out error))
+            if (!_shapeBuilder.TryBuildShapes(documentModel, nodesByXmlId, node, sceneNode, out error))
                 return false;
 
             if (!TryBuildChildren(documentModel, nodesByXmlId, node, sceneNode, result, out error))
@@ -146,315 +152,6 @@ namespace UnitySvgEditor.Editor
                 result.NodeMappings[sceneNode] = (node.LegacyElementKey, node.LegacyTargetKey);
 
             return true;
-        }
-
-        private bool TryAttachMask(
-            SvgDocumentModel documentModel,
-            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
-            SvgNodeModel node,
-            SceneNode sceneNode,
-            out string error)
-        {
-            error = string.Empty;
-            if (!SvgAttributeUtility.TryGetAttribute(node?.RawAttributes, "mask", out var maskValue))
-                return true;
-
-            if (!SvgNodeLookupUtility.TryExtractFragmentId(maskValue, out var fragmentId) ||
-                nodesByXmlId == null ||
-                !nodesByXmlId.TryGetValue(fragmentId, out var maskNode) ||
-                !string.Equals(maskNode.TagName, "mask", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            if (!TryBuildMaskClipNode(documentModel, nodesByXmlId, maskNode, out SceneNode maskClipNode, out error))
-                return false;
-
-            sceneNode.Clipper = maskClipNode;
-            return true;
-        }
-
-        private bool TryBuildReferenceOverlayScene(
-            SvgDocumentModel documentModel,
-            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
-            SvgNodeModel node,
-            CanvasDefinitionOverlayKind kind,
-            out CanvasDefinitionOverlayScene overlay,
-            out string error)
-        {
-            overlay = null;
-            error = string.Empty;
-            if (node == null || nodesByXmlId == null)
-                return true;
-
-            string attributeName = kind == CanvasDefinitionOverlayKind.Mask ? "mask" : "clip-path";
-            string expectedTag = kind == CanvasDefinitionOverlayKind.Mask ? "mask" : "clipPath";
-            if (!SvgAttributeUtility.TryGetAttribute(node.RawAttributes, attributeName, out var rawValue) ||
-                !SvgNodeLookupUtility.TryExtractFragmentId(rawValue, out var fragmentId) ||
-                !nodesByXmlId.TryGetValue(fragmentId, out var referenceNode) ||
-                !string.Equals(referenceNode.TagName, expectedTag, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            SceneNode sceneNode;
-            bool built = kind == CanvasDefinitionOverlayKind.Mask
-                ? TryBuildMaskClipNode(documentModel, nodesByXmlId, referenceNode, out sceneNode, out error)
-                : TryBuildClipNode(documentModel, nodesByXmlId, referenceNode, out sceneNode, out error);
-            if (!built)
-                return false;
-
-            if (sceneNode == null)
-                return true;
-
-            overlay = new CanvasDefinitionOverlayScene
-            {
-                Kind = kind,
-                ReferenceId = fragmentId,
-                DefinitionElementKey = referenceNode.LegacyElementKey,
-                RootNode = sceneNode
-            };
-            return true;
-        }
-
-        private bool TryBuildShapes(
-            SvgDocumentModel documentModel,
-            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
-            SvgNodeModel node,
-            SceneNode sceneNode,
-            out string error)
-        {
-            error = string.Empty;
-            if (node == null || sceneNode == null)
-                return true;
-
-            switch (node.TagName)
-            {
-                case "g":
-                case "svg":
-                    return true;
-                case "rect":
-                    return _primitiveShapeBuilder.TryAddRectShape(documentModel, node, nodesByXmlId, sceneNode, out error);
-                case "circle":
-                    return _primitiveShapeBuilder.TryAddCircleShape(documentModel, node, nodesByXmlId, sceneNode, out error);
-                case "ellipse":
-                    return _primitiveShapeBuilder.TryAddEllipseShape(documentModel, node, nodesByXmlId, sceneNode, out error);
-                case "line":
-                    return _primitiveShapeBuilder.TryAddLineShape(documentModel, node, nodesByXmlId, sceneNode, out error);
-                case "polyline":
-                    return _primitiveShapeBuilder.TryAddPolylineShape(documentModel, node, nodesByXmlId, sceneNode, out error, closed: false);
-                case "polygon":
-                    return _primitiveShapeBuilder.TryAddPolylineShape(documentModel, node, nodesByXmlId, sceneNode, out error, closed: true);
-                case "path":
-                    return _primitiveShapeBuilder.TryAddPathShape(documentModel, node, nodesByXmlId, sceneNode, out error);
-                case "text":
-                case "tspan":
-                case "textPath":
-                    return true;
-                case "use":
-                    return TryAddUseNode(documentModel, nodesByXmlId, node, sceneNode, out error);
-                default:
-                    return true;
-            }
-        }
-
-
-        private bool TryAddUseNode(
-            SvgDocumentModel documentModel,
-            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
-            SvgNodeModel useNode,
-            SceneNode sceneNode,
-            out string error)
-        {
-            error = string.Empty;
-            if (!SvgNodeLookupUtility.TryResolveUseReference(useNode, nodesByXmlId, out var referencedNode))
-            {
-                error = $"Direct renderer could not resolve <use> target for '{useNode.LegacyElementKey}'.";
-                return false;
-            }
-
-            if (!TryGetFloat(useNode.RawAttributes, "x", out float x))
-                x = 0f;
-            if (!TryGetFloat(useNode.RawAttributes, "y", out float y))
-                y = 0f;
-            if (!Mathf.Approximately(x, 0f) || !Mathf.Approximately(y, 0f))
-                sceneNode.Transform = Matrix2D.Translate(new Vector2(x, y)) * sceneNode.Transform;
-
-            if (!TryBuildReferencedNode(documentModel, nodesByXmlId, referencedNode, out SceneNode referencedSceneNode, out error))
-                return false;
-
-            if (referencedSceneNode != null)
-                sceneNode.Children.Add(referencedSceneNode);
-
-            return true;
-        }
-
-        private bool TryBuildReferencedNode(
-            SvgDocumentModel documentModel,
-            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
-            SvgNodeModel node,
-            out SceneNode sceneNode,
-            out string error)
-        {
-            sceneNode = null;
-            error = string.Empty;
-
-            if (node == null || IsHidden(node))
-                return true;
-
-            sceneNode = new SceneNode
-            {
-                Children = new List<SceneNode>(),
-                Shapes = new List<Shape>(),
-                Transform = SvgTransformParser.Parse(node.RawAttributes)
-            };
-
-            if (!TryAttachMask(documentModel, nodesByXmlId, node, sceneNode, out error))
-                return false;
-
-            if (!TryAttachClipper(documentModel, nodesByXmlId, node, sceneNode, out error))
-                return false;
-
-            if (!TryBuildShapes(documentModel, nodesByXmlId, node, sceneNode, out error))
-                return false;
-
-            if (node.Children != null)
-            {
-                for (int index = 0; index < node.Children.Count; index++)
-                {
-                    SvgNodeId childId = node.Children[index];
-                    if (!documentModel.TryGetNode(childId, out SvgNodeModel childNode) || childNode == null)
-                        continue;
-
-                    if (!TryBuildReferencedNode(documentModel, nodesByXmlId, childNode, out SceneNode childSceneNode, out error))
-                        return false;
-
-                    if (childSceneNode != null)
-                        sceneNode.Children.Add(childSceneNode);
-                }
-            }
-
-            return true;
-        }
-
-        private bool TryAttachClipper(
-            SvgDocumentModel documentModel,
-            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
-            SvgNodeModel node,
-            SceneNode sceneNode,
-            out string error)
-        {
-            error = string.Empty;
-            if (!SvgAttributeUtility.TryGetAttribute(node?.RawAttributes, "clip-path", out var clipPathValue))
-                return true;
-
-            if (!SvgNodeLookupUtility.TryExtractFragmentId(clipPathValue, out var fragmentId) ||
-                nodesByXmlId == null ||
-                !nodesByXmlId.TryGetValue(fragmentId, out var clipNode) ||
-                !string.Equals(clipNode.TagName, "clipPath", StringComparison.OrdinalIgnoreCase))
-            {
-                error = $"Direct renderer could not resolve clipPath for '{node?.LegacyElementKey}'.";
-                return false;
-            }
-
-            if (!TryBuildClipNode(documentModel, nodesByXmlId, clipNode, out SceneNode clipSceneNode, out error))
-                return false;
-
-            sceneNode.Clipper = clipSceneNode;
-            return true;
-        }
-
-        private bool TryBuildClipNode(
-            SvgDocumentModel documentModel,
-            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
-            SvgNodeModel clipNode,
-            out SceneNode sceneNode,
-            out string error)
-        {
-            sceneNode = new SceneNode
-            {
-                Children = new List<SceneNode>(),
-                Shapes = new List<Shape>(),
-                Transform = SvgTransformParser.Parse(clipNode?.RawAttributes)
-            };
-            error = string.Empty;
-
-            if (clipNode == null)
-            {
-                error = "Clip node was null.";
-                return false;
-            }
-
-            for (int index = 0; index < clipNode.Children.Count; index++)
-            {
-                SvgNodeId childId = clipNode.Children[index];
-                if (!documentModel.TryGetNode(childId, out SvgNodeModel childNode) || childNode == null || IsHidden(childNode))
-                    continue;
-
-                SceneNode clipChildNode = new()
-                {
-                    Children = new List<SceneNode>(),
-                    Shapes = new List<Shape>(),
-                    Transform = SvgTransformParser.Parse(childNode.RawAttributes)
-                };
-
-                if (!TryBuildShapes(documentModel, nodesByXmlId, childNode, clipChildNode, out error))
-                    return false;
-
-                if (clipChildNode.Shapes.Count > 0 || clipChildNode.Children.Count > 0)
-                    sceneNode.Children.Add(clipChildNode);
-            }
-
-            return true;
-        }
-
-        private bool TryBuildMaskClipNode(
-            SvgDocumentModel documentModel,
-            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
-            SvgNodeModel maskNode,
-            out SceneNode sceneNode,
-            out string error)
-        {
-            sceneNode = new SceneNode
-            {
-                Children = new List<SceneNode>(),
-                Shapes = new List<Shape>(),
-                Transform = SvgTransformParser.Parse(maskNode?.RawAttributes)
-            };
-            error = string.Empty;
-
-            if (maskNode == null)
-            {
-                error = "Mask node was null.";
-                return false;
-            }
-
-            for (int index = 0; index < maskNode.Children.Count; index++)
-            {
-                SvgNodeId childId = maskNode.Children[index];
-                if (!documentModel.TryGetNode(childId, out SvgNodeModel childNode) ||
-                    childNode == null ||
-                    IsHidden(childNode) ||
-                    !ShouldIncludeMaskNode(childNode))
-                {
-                    continue;
-                }
-
-                SceneNode maskChildNode = new()
-                {
-                    Children = new List<SceneNode>(),
-                    Shapes = new List<Shape>(),
-                    Transform = SvgTransformParser.Parse(childNode.RawAttributes)
-                };
-
-                if (!TryBuildShapes(documentModel, nodesByXmlId, childNode, maskChildNode, out error))
-                    return false;
-
-                if (maskChildNode.Shapes.Count > 0 || maskChildNode.Children.Count > 0)
-                    sceneNode.Children.Add(maskChildNode);
-            }
-
-            return sceneNode.Children.Count > 0;
         }
 
         private static Rect ResolveDocumentViewport(SvgDocumentModel documentModel)

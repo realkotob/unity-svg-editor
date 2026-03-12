@@ -125,8 +125,8 @@ namespace UnitySvgEditor.Editor
                 .EnableClass(UssClassName.EXPANDER_PLACEHOLDER, !hasChildren)
                 .EnableClass(UssClassName.EXPANDER_EXPANDED, hasChildren && isExpanded);
 
-            bool isGroup = string.Equals(tagName, SvgTagName.Group, StringComparison.Ordinal);
-            bool isText = string.Equals(tagName, SvgTagName.Text, StringComparison.Ordinal);
+            bool isGroup = string.Equals(tagName, SvgTagName.GROUP, StringComparison.Ordinal);
+            bool isText = string.Equals(tagName, SvgTagName.TEXT, StringComparison.Ordinal);
             this.EnableClass(UssClassName.ITEM_GROUP, isGroup)
                 .EnableClass(UssClassName.ITEM_TEXT, isText);
 

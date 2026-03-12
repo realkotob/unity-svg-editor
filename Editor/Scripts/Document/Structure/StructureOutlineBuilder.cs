@@ -54,7 +54,7 @@ namespace UnitySvgEditor.Editor
             {
                 var child = children[childIndex];
                 if (!context.ShowDefinitions &&
-                    string.Equals(child.LocalName, SvgTagName.Defs, StringComparison.OrdinalIgnoreCase))
+                    string.Equals(child.LocalName, SvgTagName.DEFS, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }

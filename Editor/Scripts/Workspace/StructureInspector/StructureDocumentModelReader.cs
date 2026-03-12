@@ -167,7 +167,7 @@ namespace UnitySvgEditor.Editor
             {
                 Key = DefinitionProxyUtility.BuildProxyKey(sourceNode.Key, kind, referenceId),
                 TargetKey = string.Empty,
-                TagName = kind == CanvasDefinitionOverlayKind.Mask ? SvgTagName.Mask : SvgTagName.ClipPath,
+                TagName = kind == CanvasDefinitionOverlayKind.Mask ? SvgTagName.MASK : SvgTagName.CLIP_PATH,
                 Depth = sourceNode.Depth + 1,
                 ParentKey = sourceNode.Key,
                 LayerKey = sourceNode.LayerKey,
@@ -191,7 +191,7 @@ namespace UnitySvgEditor.Editor
         {
             if (node == null || rootNode == null)
                 return false;
-            if (!string.Equals(node.TagName, SvgTagName.Group, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(node.TagName, SvgTagName.GROUP, StringComparison.OrdinalIgnoreCase))
                 return false;
             if (node.ParentId == rootNode.Id)
                 return true;
