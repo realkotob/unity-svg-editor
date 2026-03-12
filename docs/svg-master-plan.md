@@ -8,9 +8,11 @@
   - 완료 범위와 남은 우선순위 정리
   - 구현 원칙과 다음 세션 시작 규칙 고정
   - README / 지원 범위 문서와의 기준선 유지
+  - 전면 리팩토링용 contract inventory 진입점 제공
 - 통합 범위:
   - model-driven 전환 계획
   - inspector 레이아웃 후속 메모
+  - `docs/refactor-contract-inventory.md` 기준선 유지
 
 ## 1. 현재 상태
 

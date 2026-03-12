@@ -2,12 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using Core.UI.Foundation.Editor;
-using InspectorSection = Core.UI.Foundation.Tooling.InspectorSection;
 using InspectorSectionClasses = Core.UI.Foundation.Tooling.InspectorSectionClasses;
-using FoundationButton = Core.UI.Foundation.Components.Button.Button;
-using FoundationToggle = Core.UI.Foundation.Components.Toggle.Toggle;
 using Unity.VectorGraphics;
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -32,6 +28,14 @@ namespace UnitySvgEditor.Editor
         private const string THEME_RESOURCE_PATH = "Theme/SvgEditorTheme";
         private const string WINDOW_RESOURCE_PATH = "UXML/SvgEditorWindow";
         private const double ShortcutDedupSeconds = 0.05d;
+        private static readonly InspectorSectionClasses InspectorSectionChrome = new()
+        {
+            rootClass = UssClassName.INSPECTOR_CARD,
+            accentClass = UssClassName.INSPECTOR_CARD_ACCENT,
+            headerClass = string.Empty,
+            titleClass = UssClassName.SUBSECTION_TITLE,
+            actionsClass = string.Empty
+        };
 
         #region Variables
 
@@ -164,58 +168,12 @@ namespace UnitySvgEditor.Editor
 
         private void ReplaceInspectorSection(string panelName, string fallbackTitle, bool accent)
         {
-            var original = rootVisualElement.Q<VisualElement>(panelName);
-            if (original?.parent == null)
-                return;
-
-            var title = original.Q<Label>(className: UssClassName.SUBSECTION_TITLE);
-            var section = CreateInspectorSection(original, title?.text ?? fallbackTitle);
-            section.SetAccent(accent);
-
-            title?.RemoveFromHierarchy();
-            MoveChildren(original, section.Body);
-            ReplaceElement(original, section);
-        }
-
-        private static InspectorSection CreateInspectorSection(VisualElement original, string title)
-        {
-            var section = new InspectorSection(title, new InspectorSectionClasses
-            {
-                rootClass = UssClassName.INSPECTOR_CARD,
-                accentClass = UssClassName.INSPECTOR_CARD_ACCENT,
-                headerClass = string.Empty,
-                titleClass = UssClassName.SUBSECTION_TITLE,
-                actionsClass = string.Empty
-            });
-
-            section.name = original.name;
-            foreach (var className in original.GetClasses())
-            {
-                section.AddClass(className);
-            }
-
-            return section;
-        }
-
-        private static void MoveChildren(VisualElement source, VisualElement target)
-        {
-            while (source.childCount > 0)
-            {
-                var child = source[0];
-                child.RemoveFromHierarchy();
-                target.Add(child);
-            }
-        }
-
-        private static void ReplaceElement(VisualElement original, VisualElement replacement)
-        {
-            var parent = original.parent;
-            if (parent == null)
-                return;
-
-            var index = parent.IndexOf(original);
-            original.RemoveFromHierarchy();
-            parent.Insert(index, replacement);
+            EditorInspectorSectionUtility.TryUpgradeToInspectorSection(
+                rootVisualElement.Q<VisualElement>(panelName),
+                UssClassName.SUBSECTION_TITLE,
+                fallbackTitle,
+                InspectorSectionChrome,
+                accent);
         }
 
         private string ResolveSelectedPatchTargetKey()
@@ -387,34 +345,12 @@ namespace UnitySvgEditor.Editor
 
         private void ApplyThemeStyleSheet()
         {
-            var theme = Resources.Load<ThemeStyleSheet>(THEME_RESOURCE_PATH);
-            if (theme == null)
-            {
-                return;
-            }
-
-            if (theme is UnityEngine.Object unityObject &&
-                unityObject is StyleSheet styleSheet &&
-                !rootVisualElement.styleSheets.Contains(styleSheet))
-            {
-                rootVisualElement.styleSheets.Add(styleSheet);
-            }
-
-            PropertyInfo property = typeof(VisualElement).GetProperty(
-                "themeStyleSheet",
-                BindingFlags.Instance | BindingFlags.Public);
-
-            if (property == null || !property.CanWrite)
-            {
-                return;
-            }
-
-            property.SetValue(rootVisualElement, theme);
+            EditorThemeUtility.ApplyThemeStyleSheet(rootVisualElement, THEME_RESOURCE_PATH);
         }
 
         private void ApplyToolbarIcons()
         {
-            ApplyToggleIcon("tool-move", SvgEditorIconClass.RESOURCE_MOVE);
+            EditorFoundationIconUtility.ApplyToggleVectorImage(rootVisualElement, "tool-move", SvgEditorIconClass.RESOURCE_MOVE);
         }
 
         private void OnRootKeyDown(KeyDownEvent evt)
@@ -489,55 +425,23 @@ namespace UnitySvgEditor.Editor
 
         private void ApplyPositionIcons()
         {
-            ApplyButtonIcon("position-align-left", IconClass.ALIGN_HORIZONTAL_LEFT);
-            ApplyButtonIcon("position-align-center", IconClass.ALIGN_HORIZONTAL_CENTER);
-            ApplyButtonIcon("position-align-right", IconClass.ALIGN_HORIZONTAL_RIGHT);
-            ApplyButtonIcon("position-align-top", IconClass.ALIGN_VERTICAL_TOP);
-            ApplyButtonIcon("position-align-middle", IconClass.ALIGN_VERTICAL_CENTER);
-            ApplyButtonIcon("position-align-bottom", IconClass.ALIGN_VERTICAL_BOTTOM);
-            ApplyButtonIcon("position-rotate-clockwise-90", IconClass.ROTATE_90);
-            ApplyButtonIcon("position-flip-horizontal", IconClass.FLIP_HORIZONTAL);
-            ApplyButtonIcon("position-flip-vertical", IconClass.FLIP_VERTICAL);
+            EditorFoundationIconUtility.ApplyButtonIconClass(rootVisualElement, "position-align-left", IconClass.ALIGN_HORIZONTAL_LEFT);
+            EditorFoundationIconUtility.ApplyButtonIconClass(rootVisualElement, "position-align-center", IconClass.ALIGN_HORIZONTAL_CENTER);
+            EditorFoundationIconUtility.ApplyButtonIconClass(rootVisualElement, "position-align-right", IconClass.ALIGN_HORIZONTAL_RIGHT);
+            EditorFoundationIconUtility.ApplyButtonIconClass(rootVisualElement, "position-align-top", IconClass.ALIGN_VERTICAL_TOP);
+            EditorFoundationIconUtility.ApplyButtonIconClass(rootVisualElement, "position-align-middle", IconClass.ALIGN_VERTICAL_CENTER);
+            EditorFoundationIconUtility.ApplyButtonIconClass(rootVisualElement, "position-align-bottom", IconClass.ALIGN_VERTICAL_BOTTOM);
+            EditorFoundationIconUtility.ApplyButtonIconClass(rootVisualElement, "position-rotate-clockwise-90", IconClass.ROTATE_90);
+            EditorFoundationIconUtility.ApplyButtonIconClass(rootVisualElement, "position-flip-horizontal", IconClass.FLIP_HORIZONTAL);
+            EditorFoundationIconUtility.ApplyButtonIconClass(rootVisualElement, "position-flip-vertical", IconClass.FLIP_VERTICAL);
         }
 
         private void ApplyInspectorAttributeIcons()
         {
-            ApplyButtonIcon("fill-add-button", IconClass.PLUS);
-            ApplyButtonIcon("fill-remove-button", IconClass.MINUS);
-            ApplyButtonIcon("stroke-add-button", IconClass.PLUS);
-            ApplyButtonIcon("stroke-remove-button", IconClass.MINUS);
-        }
-
-        private void ApplyToggleIcon(string toggleName, string resourcePath)
-        {
-            var toggle = rootVisualElement.Q<FoundationToggle>(toggleName);
-            if (toggle == null)
-            {
-                return;
-            }
-
-            var icon = Resources.Load<VectorImage>(resourcePath);
-            toggle.CheckIcon = icon == null
-                ? default
-                : new Background { vectorImage = icon };
-        }
-
-        private void ApplyButtonIcon(string buttonName, string iconClass)
-        {
-            var button = rootVisualElement.Q<FoundationButton>(buttonName);
-            if (button == null || string.IsNullOrWhiteSpace(iconClass))
-            {
-                return;
-            }
-
-            var icon = button.Q(className: Core.UI.Foundation.Components.Button.Button.ClassName.ICON);
-            if (icon == null)
-            {
-                return;
-            }
-
-            icon.AddToClassList(iconClass);
-            icon.Show();
+            EditorFoundationIconUtility.ApplyButtonIconClass(rootVisualElement, "fill-add-button", IconClass.PLUS);
+            EditorFoundationIconUtility.ApplyButtonIconClass(rootVisualElement, "fill-remove-button", IconClass.MINUS);
+            EditorFoundationIconUtility.ApplyButtonIconClass(rootVisualElement, "stroke-add-button", IconClass.PLUS);
+            EditorFoundationIconUtility.ApplyButtonIconClass(rootVisualElement, "stroke-remove-button", IconClass.MINUS);
         }
 
         #endregion Help Methods

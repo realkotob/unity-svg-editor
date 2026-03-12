@@ -183,7 +183,7 @@ namespace UnitySvgEditor.Editor
                     : DisplayStyle.None;
             }
 
-            UpdateCategoryFilterAccordionTitle(categories.Count);
+            UpdateCategoryFilterAccordionTitle(GetSelectedCategoryAssetCount());
 
             if (_assetLibraryCategoryBar == null)
             {
@@ -245,6 +245,7 @@ namespace UnitySvgEditor.Editor
 
             RebuildFilteredAssetPathLookup();
             RebuildAssetGridItems();
+            UpdateCategoryFilterAccordionTitle(_assetGridItems.Count);
             _assetGridView?.SetItems(_assetGridItems);
 
             string currentAssetPath = _getCurrentAssetPath?.Invoke();
@@ -307,7 +308,26 @@ namespace UnitySvgEditor.Editor
                 .ToList();
         }
 
-        private void UpdateCategoryFilterAccordionTitle(int categoryCount)
+        private int GetSelectedCategoryAssetCount()
+        {
+            if (string.Equals(_selectedCategoryKey, AllCategoriesFilterKey, StringComparison.Ordinal))
+            {
+                return _allAssetItems.Count;
+            }
+
+            int count = 0;
+            foreach (AssetLibraryEntry item in _allAssetItems)
+            {
+                if (AssetNameComparer.Equals(item.Library, _selectedCategoryKey))
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private void UpdateCategoryFilterAccordionTitle(int assetCount)
         {
             if (_assetLibraryFilterAccordionItem == null)
             {
@@ -317,8 +337,8 @@ namespace UnitySvgEditor.Editor
             string selectedLabel = string.Equals(_selectedCategoryKey, AllCategoriesFilterKey, StringComparison.Ordinal)
                 ? "All"
                 : _selectedCategoryKey;
-            _assetLibraryFilterAccordionItem.Title = categoryCount > 0
-                ? $"Libraries: {selectedLabel} ({categoryCount})"
+            _assetLibraryFilterAccordionItem.Title = assetCount > 0
+                ? $"Libraries: {selectedLabel} ({assetCount})"
                 : "Libraries";
         }
 

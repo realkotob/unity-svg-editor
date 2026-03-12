@@ -307,6 +307,13 @@ namespace UnitySvgEditor.Editor
             if (selectedElement == null)
                 return false;
 
+            if (!_sceneProjector.TryHitTestPreviewElement(_host.PreviewSnapshot, localPosition, out PreviewElementGeometry hitElement) ||
+                hitElement == null ||
+                !string.Equals(hitElement.Key, _host.SelectedElementKey, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
             _elementGestureHandler.BeginMove(
                 _gestureState,
                 _host.SelectedElementKey,
