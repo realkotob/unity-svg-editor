@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using SvgEditor.Preview;
 using SvgEditor.Workspace;
-using SvgEditor.Workspace.AssetLibrary;
+using SvgEditor.Workspace.AssetLibrary.Browser;
 using SvgEditor.Workspace.Document;
 using SvgEditor.Workspace.InspectorPanel;
 using SvgEditor.DocumentModel;
@@ -24,7 +24,7 @@ namespace SvgEditor.Shell
         private DocumentRepository _documentRepository;
         private PreviewSnapshotBuilder _previewSnapshotBuilder;
         private AssetDatabaseVectorImageSourceProvider _vectorImageSourceProvider;
-        private AssetLibraryBrowser _assetLibraryBrowser;
+        private AssetBrowser _assetLibraryBrowser;
         private PanelController _inspectorPanelController;
         private DocumentLifecycleController _documentLifecycleController;
         private SvgEditorWindowLayoutBinder _layoutBinder;
@@ -124,7 +124,7 @@ namespace SvgEditor.Shell
             _documentRepository ??= new DocumentRepository();
             _previewSnapshotBuilder ??= new PreviewSnapshotBuilder();
             _vectorImageSourceProvider ??= new AssetDatabaseVectorImageSourceProvider();
-            _assetLibraryBrowser ??= new AssetLibraryBrowser(_documentRepository, _vectorImageSourceProvider);
+            _assetLibraryBrowser ??= new AssetBrowser(_documentRepository, _vectorImageSourceProvider);
             _inspectorPanelController ??= new PanelController(new PanelState());
             _documentLifecycleController ??= new DocumentLifecycleController(
                 _documentRepository,

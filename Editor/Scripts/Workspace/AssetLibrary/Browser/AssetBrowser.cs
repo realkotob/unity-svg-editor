@@ -5,15 +5,18 @@ using Core.UI.Foundation.Components.Accordion;
 using Core.UI.Foundation.Tooling;
 using UnityEngine.UIElements;
 using SvgEditor.Document;
+using SvgEditor.Workspace.AssetLibrary.Grid;
+using SvgEditor.Workspace.AssetLibrary.Model;
+using SvgEditor.Workspace.AssetLibrary.Presentation;
 
-namespace SvgEditor.Workspace.AssetLibrary
+namespace SvgEditor.Workspace.AssetLibrary.Browser
 {
-    internal sealed class AssetLibraryBrowser
+    internal sealed class AssetBrowser
     {
         private const string AllCategoriesFilterKey = "__all__";
 
         private static readonly StringComparer AssetNameComparer = StringComparer.OrdinalIgnoreCase;
-        private static readonly Comparison<AssetLibraryEntry> AssetEntryComparison =
+        private static readonly Comparison<AssetEntry> AssetEntryComparison =
             static (left, right) =>
             {
                 int groupComparison = AssetNameComparer.Compare(left?.GroupKey, right?.GroupKey);
@@ -24,8 +27,8 @@ namespace SvgEditor.Workspace.AssetLibrary
 
         private readonly DocumentRepository _documentRepository;
         private readonly IVectorImageSourceProvider _vectorImageSourceProvider;
-        private readonly List<AssetLibraryEntry> _allAssetItems = new();
-        private readonly List<AssetLibraryEntry> _filteredAssetItems = new();
+        private readonly List<AssetEntry> _allAssetItems = new();
+        private readonly List<AssetEntry> _filteredAssetItems = new();
         private readonly List<GridViewItem> _assetGridItems = new();
         private readonly HashSet<string> _filteredAssetPaths = new(StringComparer.Ordinal);
 
@@ -34,14 +37,14 @@ namespace SvgEditor.Workspace.AssetLibrary
         private VisualElement _assetLibraryFilterHost;
         private FilterBadgeBar _assetLibraryCategoryBar;
         private Button _assetLibraryRefreshButton;
-        private AssetLibraryGridView _assetGridView;
+        private AssetGridView _assetGridView;
         private bool _isProgrammaticSelection;
         private string _selectedCategoryKey = AllCategoriesFilterKey;
         private Action<string> _loadAsset;
         private Func<string> _getCurrentAssetPath;
         private Func<bool> _canSwitchDocument;
 
-        public AssetLibraryBrowser(DocumentRepository documentRepository, IVectorImageSourceProvider vectorImageSourceProvider)
+        public AssetBrowser(DocumentRepository documentRepository, IVectorImageSourceProvider vectorImageSourceProvider)
         {
             _documentRepository = documentRepository ?? throw new ArgumentNullException(nameof(documentRepository));
             _vectorImageSourceProvider = vectorImageSourceProvider ?? throw new ArgumentNullException(nameof(vectorImageSourceProvider));
@@ -66,7 +69,7 @@ namespace SvgEditor.Workspace.AssetLibrary
             _assetLibraryFilterAccordion = root.Q<Accordion>("asset-library-filter-accordion");
             _assetLibraryFilterAccordionItem = root.Q<AccordionItem>("asset-library-filter-accordion-item");
             _assetLibraryFilterHost = root.Q<VisualElement>("asset-library-filter-host");
-            _assetGridView = root.Q<AssetLibraryGridView>("asset-grid-view");
+            _assetGridView = root.Q<AssetGridView>("asset-grid-view");
 
             if (_assetGridView == null)
             {
@@ -114,14 +117,14 @@ namespace SvgEditor.Workspace.AssetLibrary
             IReadOnlyList<string> assetPaths = _documentRepository.FindVectorImageAssetPaths();
             foreach (var assetPath in assetPaths)
             {
-                string displayName = VectorImageAssetPresentationUtility.BuildDisplayName(assetPath);
-                _allAssetItems.Add(new AssetLibraryEntry
+                string displayName = VectorImagePresentationUtility.BuildDisplayName(assetPath);
+                _allAssetItems.Add(new AssetEntry
                 {
                     DisplayName = displayName,
                     AssetPath = assetPath,
-                    Library = VectorImageAssetPresentationUtility.BuildLibraryName(assetPath),
-                    GroupKey = VectorImageAssetPresentationUtility.ResolveGroupKey(displayName),
-                    IsDeveloperFixture = VectorImageAssetPresentationUtility.IsDeveloperFixtureAsset(assetPath)
+                    Library = VectorImagePresentationUtility.BuildLibraryName(assetPath),
+                    GroupKey = VectorImagePresentationUtility.ResolveGroupKey(displayName),
+                    IsDeveloperFixture = VectorImagePresentationUtility.IsDeveloperFixtureAsset(assetPath)
                 });
             }
 
@@ -236,7 +239,7 @@ namespace SvgEditor.Workspace.AssetLibrary
             _filteredAssetItems.Clear();
 
             bool showAllCategories = string.Equals(_selectedCategoryKey, AllCategoriesFilterKey, StringComparison.Ordinal);
-            foreach (AssetLibraryEntry item in _allAssetItems)
+            foreach (AssetEntry item in _allAssetItems)
             {
                 if (showAllCategories || AssetNameComparer.Equals(item.Library, _selectedCategoryKey))
                 {
@@ -280,7 +283,7 @@ namespace SvgEditor.Workspace.AssetLibrary
         {
             _assetGridItems.Clear();
 
-            foreach (AssetLibraryEntry item in _filteredAssetItems)
+            foreach (AssetEntry item in _filteredAssetItems)
             {
                 _assetGridItems.Add(new GridViewItem
                 {
@@ -317,7 +320,7 @@ namespace SvgEditor.Workspace.AssetLibrary
             }
 
             int count = 0;
-            foreach (AssetLibraryEntry item in _allAssetItems)
+            foreach (AssetEntry item in _allAssetItems)
             {
                 if (AssetNameComparer.Equals(item.Library, _selectedCategoryKey))
                 {
@@ -390,7 +393,7 @@ namespace SvgEditor.Workspace.AssetLibrary
         private void RebuildFilteredAssetPathLookup()
         {
             _filteredAssetPaths.Clear();
-            foreach (AssetLibraryEntry item in _filteredAssetItems)
+            foreach (AssetEntry item in _filteredAssetItems)
             {
                 _filteredAssetPaths.Add(item.AssetPath);
             }

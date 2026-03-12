@@ -2,9 +2,9 @@ using System;
 using System.IO;
 using System.Linq;
 
-namespace SvgEditor.Workspace.AssetLibrary
+namespace SvgEditor.Workspace.AssetLibrary.Presentation
 {
-    internal static class VectorImageAssetPresentationUtility
+    internal static class VectorImagePresentationUtility
     {
         private const string DeveloperFixtureMarker = "/Resources/TestSvg/";
 

@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using SvgEditor.Shared;
 using SvgEditor.Workspace;
-using SvgEditor.Workspace.AssetLibrary;
+using SvgEditor.Workspace.AssetLibrary.Browser;
 using SvgEditor.Workspace.Canvas;
 using SvgEditor.Workspace.Document;
 using SvgEditor.Workspace.InspectorPanel;
@@ -37,7 +37,7 @@ namespace SvgEditor.Shell
         };
 
         private readonly VisualElement _root;
-        private readonly AssetLibraryBrowser _assetLibraryBrowser;
+        private readonly AssetBrowser _assetLibraryBrowser;
         private readonly DocumentLifecycleController _documentLifecycleController;
         private readonly PanelController _inspectorPanelController;
         private readonly Func<EditorWorkspaceCoordinator> _workspaceCoordinatorAccessor;
@@ -46,7 +46,7 @@ namespace SvgEditor.Shell
 
         public SvgEditorWindowLayoutBinder(
             VisualElement root,
-            AssetLibraryBrowser assetLibraryBrowser,
+            AssetBrowser assetLibraryBrowser,
             DocumentLifecycleController documentLifecycleController,
             PanelController inspectorPanelController,
             Func<EditorWorkspaceCoordinator> workspaceCoordinatorAccessor,

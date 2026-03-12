@@ -4,10 +4,10 @@ using Core.UI.Foundation;
 using Core.UI.Foundation.Tooling;
 using UnityEngine.UIElements;
 
-namespace SvgEditor.Workspace.AssetLibrary
+namespace SvgEditor.Workspace.AssetLibrary.Grid
 {
     [UxmlElement]
-    public partial class AssetLibraryGridView : VisualElement
+    public partial class AssetGridView : VisualElement
     {
         #region Constants
         public static readonly GridLayoutMetrics DefaultGridMetrics = new(51f, 58f, 19f);
@@ -30,7 +30,7 @@ namespace SvgEditor.Workspace.AssetLibrary
 
         #region Variables
         private VirtualizedGridView _gridView;
-        private readonly AssetLibraryGridPreviewRenderer _previewRenderer = new();
+        private readonly AssetGridPreviewRenderer _previewRenderer = new();
         private readonly List<GridViewItem> _gridItems = new();
 
         private Action<GridViewItem> _itemSelectedHandler;
@@ -61,7 +61,7 @@ namespace SvgEditor.Workspace.AssetLibrary
         #endregion Properties
 
         #region Constructor
-        public AssetLibraryGridView()
+        public AssetGridView()
         {
             RebuildGridView();
         }

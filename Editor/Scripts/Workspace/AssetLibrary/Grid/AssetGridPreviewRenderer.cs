@@ -4,10 +4,11 @@ using Core.UI.Foundation.Tooling;
 using UnityEngine;
 using UnityEngine.UIElements;
 using SvgEditor.Shared;
+using SvgEditor.Workspace.AssetLibrary.Presentation;
 
-namespace SvgEditor.Workspace.AssetLibrary
+namespace SvgEditor.Workspace.AssetLibrary.Grid
 {
-    internal sealed class AssetLibraryGridPreviewRenderer
+    internal sealed class AssetGridPreviewRenderer
     {
         private static readonly string[] PREVIEW_RESOURCE_PATHS =
         {
@@ -78,7 +79,7 @@ namespace SvgEditor.Workspace.AssetLibrary
                 Id = resourcePath,
                 Label = displayName,
                 SortKey = displayName,
-                GroupKey = VectorImageAssetPresentationUtility.ResolveGroupKey(displayName),
+                GroupKey = VectorImagePresentationUtility.ResolveGroupKey(displayName),
                 PreviewSource = PreviewImageSource.FromVectorImage(Resources.Load<VectorImage>(resourcePath)),
                 UserData = resourcePath
             };

@@ -1,6 +1,6 @@
-namespace SvgEditor.Workspace.AssetLibrary
+namespace SvgEditor.Workspace.AssetLibrary.Model
 {
-    internal sealed class AssetLibraryEntry
+    internal sealed class AssetEntry
     {
         public string DisplayName { get; set; } = string.Empty;
         public string AssetPath { get; set; } = string.Empty;
