@@ -7,8 +7,9 @@ using SvgEditor.Shared;
 using SvgEditor.Document;
 
 using SvgEditor;
+using SvgEditor.Preview;
 
-namespace SvgEditor.Preview
+namespace SvgEditor.Preview.Text
 {
     internal static class PreviewSnapshotTextBuilder
     {

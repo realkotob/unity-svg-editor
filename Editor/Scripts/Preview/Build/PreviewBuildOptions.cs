@@ -2,7 +2,7 @@ using Unity.VectorGraphics;
 
 using SvgEditor;
 
-namespace SvgEditor.Preview
+namespace SvgEditor.Preview.Build
 {
     internal static class PreviewBuildOptions
     {

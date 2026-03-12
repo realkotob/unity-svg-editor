@@ -2,8 +2,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using SvgEditor;
+using SvgEditor.Preview;
 
-namespace SvgEditor.Preview
+namespace SvgEditor.Preview.Geometry
 {
     internal sealed class PreviewElementHitTester
     {

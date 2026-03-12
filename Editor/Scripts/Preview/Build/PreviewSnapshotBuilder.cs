@@ -4,11 +4,14 @@ using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.UIElements;
 using SvgEditor.DocumentModel;
+using SvgEditor.Preview;
+using SvgEditor.Preview.Geometry;
+using SvgEditor.Preview.Text;
 
 using SvgEditor;
 using SvgEditor.Renderer;
 
-namespace SvgEditor.Preview
+namespace SvgEditor.Preview.Build
 {
     internal sealed class PreviewSnapshotBuilder
     {

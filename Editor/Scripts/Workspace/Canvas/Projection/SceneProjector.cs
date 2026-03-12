@@ -5,6 +5,7 @@ using SvgEditor.Document;
 
 using SvgEditor;
 using SvgEditor.Preview;
+using SvgEditor.Preview.Geometry;
 
 namespace SvgEditor.Workspace.Canvas
 {

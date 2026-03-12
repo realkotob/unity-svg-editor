@@ -6,6 +6,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 using SvgEditor.Preview;
+using SvgEditor.Preview.Build;
 using SvgEditor.Workspace;
 using SvgEditor.Workspace.AssetLibrary.Browser;
 using SvgEditor.Workspace.Document;

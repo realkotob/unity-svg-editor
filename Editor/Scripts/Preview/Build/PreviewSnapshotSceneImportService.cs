@@ -7,8 +7,9 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 using SvgEditor;
+using SvgEditor.Preview;
 
-namespace SvgEditor.Preview
+namespace SvgEditor.Preview.Build
 {
     internal static class PreviewSnapshotSceneImportService
     {

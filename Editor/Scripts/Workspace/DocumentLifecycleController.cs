@@ -1,6 +1,7 @@
 using System;
 using UnityEngine.UIElements;
 using SvgEditor.Preview;
+using SvgEditor.Preview.Build;
 using SvgEditor.Workspace.Document;
 using SvgEditor.Workspace.InspectorPanel;
 using SvgEditor.DocumentModel;

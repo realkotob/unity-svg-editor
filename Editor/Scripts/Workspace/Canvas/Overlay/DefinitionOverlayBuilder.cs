@@ -7,6 +7,7 @@ using SvgEditor.Document;
 
 using SvgEditor;
 using SvgEditor.Preview;
+using SvgEditor.Preview.Geometry;
 using SvgEditor.Renderer;
 
 namespace SvgEditor.Workspace.Canvas

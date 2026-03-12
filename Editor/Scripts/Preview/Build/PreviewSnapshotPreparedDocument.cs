@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Xml;
 
 using SvgEditor;
+using SvgEditor.Preview;
 
-namespace SvgEditor.Preview
+namespace SvgEditor.Preview.Build
 {
     internal sealed class PreviewSnapshotPreparedDocument
     {

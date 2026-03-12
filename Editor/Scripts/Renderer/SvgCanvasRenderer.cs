@@ -4,6 +4,7 @@ using SvgEditor.DocumentModel;
 
 using SvgEditor;
 using SvgEditor.Preview;
+using SvgEditor.Preview.Build;
 using SvgEditor.RenderModel;
 
 namespace SvgEditor.Renderer

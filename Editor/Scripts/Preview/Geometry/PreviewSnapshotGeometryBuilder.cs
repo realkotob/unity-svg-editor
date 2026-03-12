@@ -4,8 +4,10 @@ using Unity.VectorGraphics;
 using UnityEngine;
 
 using SvgEditor;
+using SvgEditor.Preview;
+using SvgEditor.Preview.Build;
 
-namespace SvgEditor.Preview
+namespace SvgEditor.Preview.Geometry
 {
     internal static class PreviewSnapshotGeometryBuilder
     {
