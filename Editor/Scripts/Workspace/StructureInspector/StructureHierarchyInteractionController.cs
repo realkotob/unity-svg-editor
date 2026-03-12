@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Core.UI.Foundation;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -8,26 +7,12 @@ namespace UnitySvgEditor.Editor
 {
     internal sealed class StructureHierarchyInteractionController
     {
-        private static class UssClassName
-        {
-            public const string INSERT_INDICATOR = "svg-editor__hierarchy-insert-indicator";
-        }
-
-        private readonly SvgDocumentModelMutationService _documentModelMutationService = new();
-
+        private const float DragThreshold = 5f;
         private TreeView _treeView;
         private IStructureHierarchyHost _host;
-        private VisualElement _insertionIndicator;
-        private readonly PointerDragSession _dragSession = new();
-        private bool _isHierarchyDragging;
-        private bool _shouldSuppressHierarchyRowClick;
-        private int _pendingHierarchyDropChildIndex = -1;
-        private string _pendingHierarchyDropParentKey;
-        private string _pressedHierarchyElementKey;
-
-        public StructureHierarchyInteractionController()
-        {
-        }
+        private readonly StructureReorderSession _reorderSession = new();
+        private readonly StructureDropIndicatorPresenter _dropIndicatorPresenter = new();
+        private readonly StructureReorderMutationService _mutationService = new();
 
         public void Bind(TreeView treeView, IStructureHierarchyHost host)
         {
@@ -40,12 +25,7 @@ namespace UnitySvgEditor.Editor
             _treeView.RegisterCallback<PointerMoveEvent>(OnHierarchyPointerMove);
             _treeView.RegisterCallback<PointerUpEvent>(OnHierarchyPointerUp);
             _treeView.RegisterCallback<PointerCancelEvent>(OnHierarchyPointerCancel);
-
-            _insertionIndicator = new VisualElement();
-            _insertionIndicator.AddClass(UssClassName.INSERT_INDICATOR);
-            _insertionIndicator.style.display = DisplayStyle.None;
-            _insertionIndicator.pickingMode = PickingMode.Ignore;
-            _treeView.hierarchy.Add(_insertionIndicator);
+            _dropIndicatorPresenter.Bind(_treeView);
         }
 
         public void Unbind()
@@ -57,28 +37,21 @@ namespace UnitySvgEditor.Editor
                 _treeView.UnregisterCallback<PointerMoveEvent>(OnHierarchyPointerMove);
                 _treeView.UnregisterCallback<PointerUpEvent>(OnHierarchyPointerUp);
                 _treeView.UnregisterCallback<PointerCancelEvent>(OnHierarchyPointerCancel);
-                if (_insertionIndicator != null && _insertionIndicator.parent == _treeView)
-                    _treeView.hierarchy.Remove(_insertionIndicator);
             }
 
+            _dropIndicatorPresenter.Unbind(_treeView);
             _host = null;
             _treeView = null;
-            _insertionIndicator = null;
         }
 
         public void CancelPendingPress()
         {
-            _pressedHierarchyElementKey = null;
-            _dragSession.Reset();
+            _reorderSession.CancelPendingPress();
         }
 
         public bool TryConsumeSuppressedRowClick()
         {
-            if (!_shouldSuppressHierarchyRowClick)
-                return false;
-
-            _shouldSuppressHierarchyRowClick = false;
-            return true;
+            return _reorderSession.TryConsumeSuppressedRowClick();
         }
 
         public void OnHierarchyRowPointerDown(PointerDownEvent evt)
@@ -86,91 +59,57 @@ namespace UnitySvgEditor.Editor
             if (evt.button != 0 || evt.currentTarget is not VisualElement row)
                 return;
 
-            _pressedHierarchyElementKey = row.userData as string;
-            _dragSession.Reset();
-            _isHierarchyDragging = false;
-            _pendingHierarchyDropChildIndex = -1;
-            _pendingHierarchyDropParentKey = null;
-            _shouldSuppressHierarchyRowClick = false;
+            string pressedHierarchyElementKey = row.userData as string;
 
             if (_treeView == null ||
                 _host == null ||
-                !StructureHierarchyTreeUtility.TryFindHierarchyItemId(_pressedHierarchyElementKey, _host.HierarchyItems, out int treeItemId))
+                !StructureHierarchyTreeUtility.TryFindHierarchyItemId(pressedHierarchyElementKey, _host.HierarchyItems, out int treeItemId))
             {
                 return;
             }
 
             _treeView.SetSelectionById(treeItemId);
-            _dragSession.Begin(_treeView, evt.pointerId, evt.position);
+            _reorderSession.BeginPress(_treeView, pressedHierarchyElementKey, evt.pointerId, evt.position);
         }
 
         private void OnHierarchyPointerMove(PointerMoveEvent evt)
         {
             if (_treeView == null ||
                 _host == null ||
-                !_dragSession.Matches(evt.pointerId) ||
-                string.IsNullOrWhiteSpace(_pressedHierarchyElementKey))
+                !_reorderSession.Matches(evt.pointerId) ||
+                string.IsNullOrWhiteSpace(_reorderSession.PressedHierarchyElementKey))
             {
                 return;
             }
 
-            StructureNode draggedItem = _host.FindStructureNode(_pressedHierarchyElementKey);
+            StructureNode draggedItem = _host.FindStructureNode(_reorderSession.PressedHierarchyElementKey);
             if (draggedItem == null || string.IsNullOrWhiteSpace(draggedItem.ParentKey))
             {
                 ResetDragState();
                 return;
             }
 
-            if (!_isHierarchyDragging)
+            if (!_reorderSession.TryBeginDrag(evt.position, DragThreshold))
             {
-                float delta = (((Vector2)evt.position) - _dragSession.StartPosition).magnitude;
-                if (delta < 5f)
-                    return;
-
-                _isHierarchyDragging = true;
-                _shouldSuppressHierarchyRowClick = true;
+                return;
             }
 
-            UpdateHierarchyInsertionIndicator((Vector2)evt.position, ResolveHoveredHierarchyElement((Vector2)evt.position), draggedItem);
+            UpdateHierarchyInsertionIndicator(evt.position, ResolveHoveredHierarchyElement(evt.position), draggedItem);
             evt.StopPropagation();
         }
 
         private void OnHierarchyPointerUp(PointerUpEvent evt)
         {
-            if (_treeView == null || _host == null || !_dragSession.Matches(evt.pointerId))
+            if (_treeView == null || _host == null || !_reorderSession.Matches(evt.pointerId))
                 return;
 
-            if (_isHierarchyDragging &&
-                _host.CurrentDocument != null &&
-                !string.IsNullOrWhiteSpace(_pressedHierarchyElementKey) &&
-                !string.IsNullOrWhiteSpace(_pendingHierarchyDropParentKey) &&
-                _pendingHierarchyDropChildIndex >= 0)
+            if (_reorderSession.IsHierarchyDragging)
             {
-                if (_host.CurrentDocument.DocumentModel == null ||
-                    !string.IsNullOrWhiteSpace(_host.CurrentDocument.DocumentModelLoadError) ||
-                    !string.Equals(_host.CurrentDocument.DocumentModel.SourceText, _host.CurrentDocument.WorkingSourceText, StringComparison.Ordinal))
-                {
-                    _host.UpdateSourceStatus("Reorder failed: document model is unavailable.");
-                    ResetDragState();
-                    return;
-                }
-
-                if (_documentModelMutationService.TryMoveElement(
-                        _host.CurrentDocument.DocumentModel,
-                        _pressedHierarchyElementKey,
-                        _pendingHierarchyDropParentKey,
-                        _pendingHierarchyDropChildIndex,
-                        out SvgDocumentModel _,
-                        out string reorderedSource,
-                        out string error))
-                {
-                    if (!string.Equals(reorderedSource, _host.CurrentDocument.WorkingSourceText, StringComparison.Ordinal))
-                        _host.ApplyUpdatedSource(reorderedSource, $"Moved #{_pressedHierarchyElementKey}.");
-                }
-                else if (!string.IsNullOrWhiteSpace(error))
-                {
-                    _host.UpdateSourceStatus($"Move failed: {error}");
-                }
+                _mutationService.ApplyMove(
+                    _host,
+                    _reorderSession.PressedHierarchyElementKey,
+                    _reorderSession.PendingHierarchyDropParentKey,
+                    _reorderSession.PendingHierarchyDropChildIndex);
             }
 
             ResetDragState();
@@ -178,7 +117,7 @@ namespace UnitySvgEditor.Editor
 
         private void OnHierarchyPointerCancel(PointerCancelEvent evt)
         {
-            if (_dragSession.Matches(evt.pointerId))
+            if (_reorderSession.Matches(evt.pointerId))
                 ResetDragState();
         }
 
@@ -186,20 +125,20 @@ namespace UnitySvgEditor.Editor
         {
             if (_treeView == null || _host == null)
             {
-                HideInsertionIndicator();
+                ClearPendingDropIndicator();
                 return;
             }
 
             if (draggedItem == null || string.IsNullOrWhiteSpace(draggedItem.ParentKey))
             {
-                HideInsertionIndicator();
+                ClearPendingDropIndicator();
                 return;
             }
 
             VisualElement hoveredRow = FindHoveredHierarchyRow(hoveredElement);
             if (hoveredRow?.userData is not string hoveredKey)
             {
-                HideInsertionIndicator();
+                ClearPendingDropIndicator();
                 return;
             }
 
@@ -208,7 +147,7 @@ namespace UnitySvgEditor.Editor
                 string.Equals(hoveredItem.Key, draggedItem.Key, StringComparison.Ordinal) ||
                 IsSameOrDescendantOf(hoveredItem.Key, draggedItem.Key))
             {
-                HideInsertionIndicator();
+                ClearPendingDropIndicator();
                 return;
             }
 
@@ -225,43 +164,36 @@ namespace UnitySvgEditor.Editor
                 int hoveredChildCount = CountChildren(hoveredTreeItem.children);
                 bool insertAsFirstChild = hoveredChildCount > 0 && pointerOffsetY < rowHeight * 0.5f;
 
-                _pendingHierarchyDropParentKey = hoveredKey;
-                _pendingHierarchyDropChildIndex = insertAsFirstChild ? 0 : hoveredChildCount;
-
-                _insertionIndicator.style.display = DisplayStyle.Flex;
-                _insertionIndicator.style.left = hoveredRow.resolvedStyle.paddingLeft + AssetHierarchyListView.Layout.ROW_DEPTH_OFFSET + 22f;
-                _insertionIndicator.style.right = 8f;
-                _insertionIndicator.style.top = rowTopLeft.y + rowHeight - 1f;
+                _reorderSession.SetPendingDrop(hoveredKey, insertAsFirstChild ? 0 : hoveredChildCount);
+                _dropIndicatorPresenter.Show(
+                    hoveredRow.resolvedStyle.paddingLeft + AssetHierarchyListView.Layout.ROW_DEPTH_OFFSET + 22f,
+                    rowTopLeft.y + rowHeight - 1f);
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(hoveredItem.ParentKey) ||
                 !StructureHierarchyTreeUtility.TryFindHierarchyItem(hoveredItem.ParentKey, _host.HierarchyItems, out TreeViewItemData<StructureNode> parentItem))
             {
-                HideInsertionIndicator();
+                ClearPendingDropIndicator();
                 return;
             }
 
             int hoveredIndex = FindChildIndex(parentItem.children, hoveredKey);
             if (hoveredIndex < 0)
             {
-                HideInsertionIndicator();
+                ClearPendingDropIndicator();
                 return;
             }
 
             bool insertBefore = pointerPosition.y < hoveredRow.worldBound.center.y;
-            _pendingHierarchyDropParentKey = hoveredItem.ParentKey;
-            _pendingHierarchyDropChildIndex = insertBefore ? hoveredIndex : hoveredIndex + 1;
+            _reorderSession.SetPendingDrop(hoveredItem.ParentKey, insertBefore ? hoveredIndex : hoveredIndex + 1);
 
             float indicatorTop = insertBefore
                 ? rowTopLeft.y
                 : rowTopLeft.y + rowHeight - 1f;
             float indicatorLeft = hoveredRow.resolvedStyle.paddingLeft + 22f;
 
-            _insertionIndicator.style.display = DisplayStyle.Flex;
-            _insertionIndicator.style.left = indicatorLeft;
-            _insertionIndicator.style.right = 8f;
-            _insertionIndicator.style.top = indicatorTop;
+            _dropIndicatorPresenter.Show(indicatorLeft, indicatorTop);
         }
 
         private VisualElement FindHoveredHierarchyRow(VisualElement hoveredElement)
@@ -345,21 +277,16 @@ namespace UnitySvgEditor.Editor
             return count;
         }
 
-        private void HideInsertionIndicator()
+        private void ClearPendingDropIndicator()
         {
-            _pendingHierarchyDropParentKey = null;
-            _pendingHierarchyDropChildIndex = -1;
-            if (_insertionIndicator != null)
-                _insertionIndicator.style.display = DisplayStyle.None;
+            _reorderSession.ClearPendingDrop();
+            _dropIndicatorPresenter.Hide();
         }
 
         private void ResetDragState()
         {
-            HideInsertionIndicator();
-            _dragSession.End(_treeView);
-
-            _isHierarchyDragging = false;
-            _pressedHierarchyElementKey = null;
+            ClearPendingDropIndicator();
+            _reorderSession.Reset(_treeView);
         }
     }
 }
