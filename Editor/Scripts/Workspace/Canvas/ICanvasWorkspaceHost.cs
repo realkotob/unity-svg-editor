@@ -8,6 +8,7 @@ namespace UnitySvgEditor.Editor
         PreviewSnapshot PreviewSnapshot { get; }
         Image PreviewImage { get; }
         string SelectedElementKey { get; }
+        StructureNode SelectedStructureNode { get; }
 
         string FormatNumber(float value);
         StructureNode FindStructureNode(string elementKey);

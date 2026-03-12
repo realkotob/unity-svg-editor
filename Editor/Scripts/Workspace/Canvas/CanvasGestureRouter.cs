@@ -119,7 +119,9 @@ namespace UnitySvgEditor.Editor
                 bool uniformScale = _gestureState.Mode == CanvasDragMode.ResizeElement && shiftPressed;
                 bool axisLock = _gestureState.Mode == CanvasDragMode.MoveElement && shiftPressed;
                 bool centerAnchor = (evt.modifiers & EventModifiers.Alt) != 0;
-                bool snapEnabled = (evt.modifiers & (EventModifiers.Command | EventModifiers.Control)) != 0;
+                bool snapEnabled = _gestureState.Mode == CanvasDragMode.RotateElement
+                    ? shiftPressed
+                    : (evt.modifiers & (EventModifiers.Command | EventModifiers.Control)) != 0;
                 _elementGestureHandler.ApplyElementDelta(_gestureState, localPosition, viewportDelta, uniformScale, centerAnchor, axisLock, snapEnabled);
             }
 
@@ -239,8 +241,24 @@ namespace UnitySvgEditor.Editor
         {
             if (_overlayController.IsFrameLabelTarget(evt.target))
             {
+                _host.ClearDefinitionProxySelection();
                 _selectionSyncService.SelectCanvasFrame();
                 _viewportGestureHandler.BeginFrameMove(_gestureState, localPosition, evt.pointerId);
+                evt.StopPropagation();
+                return;
+            }
+
+            if (_host.TryGetSelectedDefinitionProxy(out CanvasDefinitionOverlayVisual selectedProxy) &&
+                selectedProxy != null &&
+                selectedProxy.ViewportBounds.Contains(localPosition))
+            {
+                _elementGestureHandler.BeginMove(
+                    _gestureState,
+                    selectedProxy.DefinitionElementKey,
+                    localPosition,
+                    evt.pointerId,
+                    selectedProxy.SceneBounds,
+                    selectedProxy.ParentWorldTransform);
                 evt.StopPropagation();
                 return;
             }
@@ -254,11 +272,13 @@ namespace UnitySvgEditor.Editor
 
             if (!TryResolveInteractionElement(localPosition, evt.modifiers, out interactionElement, out interactionElementKey))
             {
+                _host.ClearDefinitionProxySelection();
                 _selectionSyncService.ClearCanvasSelection();
                 evt.StopPropagation();
                 return;
             }
 
+            _host.ClearDefinitionProxySelection();
             StructureNode selectedNode = _host.FindStructureNode(interactionElementKey);
             _selectionSyncService.SelectCanvasElement(interactionElementKey, syncPatchTarget: selectedNode?.CanUseAsTarget == true);
             _elementGestureHandler.BeginMove(
@@ -273,7 +293,8 @@ namespace UnitySvgEditor.Editor
 
         private bool TryBeginMoveSelectedElement(Vector2 localPosition, int pointerId, string interactionElementKey)
         {
-            if (_host.SelectionKind != CanvasSelectionKind.Element ||
+            if (_host.HasDefinitionProxySelection ||
+                _host.SelectionKind != CanvasSelectionKind.Element ||
                 string.IsNullOrWhiteSpace(_host.SelectedElementKey) ||
                 !string.Equals(_host.SelectedElementKey, interactionElementKey, StringComparison.Ordinal) ||
                 !_sceneProjector.TryResolveSelectedElementSceneRect(_host.PreviewSnapshot, _host.SelectedElementKey, out Rect selectedElementSceneRect) ||

@@ -6,7 +6,11 @@ namespace UnitySvgEditor.Editor
 {
     internal static class StructureDocumentModelReader
     {
-        public static bool TryBuildSnapshot(SvgDocumentModel documentModel, out StructureOutline snapshot, out string error)
+        public static bool TryBuildSnapshot(
+            SvgDocumentModel documentModel,
+            out StructureOutline snapshot,
+            out string error,
+            bool showDefinitions = false)
         {
             snapshot = new StructureOutline();
             error = string.Empty;
@@ -17,7 +21,7 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
-            BuildContext context = new();
+            BuildContext context = new(showDefinitions);
             StructureNode rootNode = CreateStructureNode(documentModel.Root, parentKey: string.Empty, activeLayerKey: string.Empty);
             context.Elements.Add(rootNode);
             context.HierarchyItems.Add(new TreeViewItemData<StructureNode>(
@@ -49,16 +53,21 @@ namespace UnitySvgEditor.Editor
                 if (!documentModel.TryGetNode(childId, out SvgNodeModel childNode) || childNode == null)
                     continue;
 
+                if (!context.ShowDefinitions && childNode.Kind == SvgNodeKind.Definitions)
+                    continue;
+
                 string childActiveLayerKey = RegisterLayer(context, documentModel.Root, childNode, activeLayerKey);
                 StructureNode structureNode = CreateStructureNode(childNode, parentNode.LegacyElementKey, childActiveLayerKey);
 
                 context.Elements.Add(structureNode);
                 IncrementLayerElementCount(context, childActiveLayerKey, structureNode);
+                List<TreeViewItemData<StructureNode>> childItems = BuildVisibleChildren(documentModel, context, childNode, childActiveLayerKey);
+                AppendDefinitionProxyItems(documentModel, context, structureNode, childItems);
 
                 items.Add(new TreeViewItemData<StructureNode>(
                     CreateTreeId(structureNode.Key, context.UsedTreeIds),
                     structureNode,
-                    BuildVisibleChildren(documentModel, context, childNode, childActiveLayerKey)));
+                    childItems));
             }
 
             return items;
@@ -119,15 +128,70 @@ namespace UnitySvgEditor.Editor
                 ParentKey = parentKey,
                 LayerKey = activeLayerKey,
                 DisplayName = BuildElementDisplayName(node.XmlId, node.TagName, node.Depth, node.SiblingIndex),
-                TreeLabel = BuildTreeLabel(node.XmlId, node.TagName, node.SiblingIndex)
+                TreeLabel = BuildTreeLabel(node.XmlId, node.TagName, node.SiblingIndex),
+                MaskReferenceId = ResolveReferencedFragmentId(node, "mask"),
+                ClipPathReferenceId = ResolveReferencedFragmentId(node, "clip-path")
             };
+        }
+
+        private static void AppendDefinitionProxyItems(
+            SvgDocumentModel documentModel,
+            BuildContext context,
+            StructureNode sourceNode,
+            List<TreeViewItemData<StructureNode>> childItems)
+        {
+            if (documentModel == null || context == null || sourceNode == null || childItems == null)
+                return;
+
+            AppendDefinitionProxyItem(documentModel, context, sourceNode, childItems, CanvasDefinitionOverlayKind.Mask, sourceNode.MaskReferenceId);
+            AppendDefinitionProxyItem(documentModel, context, sourceNode, childItems, CanvasDefinitionOverlayKind.ClipPath, sourceNode.ClipPathReferenceId);
+        }
+
+        private static void AppendDefinitionProxyItem(
+            SvgDocumentModel documentModel,
+            BuildContext context,
+            StructureNode sourceNode,
+            List<TreeViewItemData<StructureNode>> childItems,
+            CanvasDefinitionOverlayKind kind,
+            string referenceId)
+        {
+            if (string.IsNullOrWhiteSpace(referenceId))
+                return;
+
+            string definitionElementKey = string.Empty;
+            if (documentModel.TryGetNodeByXmlId(referenceId, out SvgNodeModel definitionNode) && definitionNode != null)
+                definitionElementKey = definitionNode.LegacyElementKey;
+
+            string label = DefinitionProxyUtility.BuildProxyLabel(kind, referenceId);
+            StructureNode proxyNode = new()
+            {
+                Key = DefinitionProxyUtility.BuildProxyKey(sourceNode.Key, kind, referenceId),
+                TargetKey = string.Empty,
+                TagName = kind == CanvasDefinitionOverlayKind.Mask ? SvgTagName.Mask : SvgTagName.ClipPath,
+                Depth = sourceNode.Depth + 1,
+                ParentKey = sourceNode.Key,
+                LayerKey = sourceNode.LayerKey,
+                DisplayName = label,
+                TreeLabel = label,
+                IsDefinitionProxy = true,
+                SourceElementKey = sourceNode.Key,
+                DefinitionElementKey = definitionElementKey,
+                DefinitionReferenceId = referenceId,
+                DefinitionProxyKind = kind
+            };
+
+            context.Elements.Add(proxyNode);
+            childItems.Add(new TreeViewItemData<StructureNode>(
+                CreateTreeId(proxyNode.Key, context.UsedTreeIds),
+                proxyNode,
+                new List<TreeViewItemData<StructureNode>>()));
         }
 
         private static bool IsLayerCandidate(SvgNodeModel node, SvgNodeModel rootNode)
         {
             if (node == null || rootNode == null)
                 return false;
-            if (!string.Equals(node.TagName, "g", StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(node.TagName, SvgTagName.Group, StringComparison.OrdinalIgnoreCase))
                 return false;
             if (node.ParentId == rootNode.Id)
                 return true;
@@ -164,6 +228,26 @@ namespace UnitySvgEditor.Editor
             return node?.RawAttributes != null &&
                    node.RawAttributes.TryGetValue(attributeName, out value) &&
                    !string.IsNullOrWhiteSpace(value);
+        }
+
+        private static string ResolveReferencedFragmentId(SvgNodeModel node, string attributeName)
+        {
+            if (!TryGetRawAttribute(node, attributeName, out string rawValue))
+                return string.Empty;
+
+            string value = rawValue.Trim();
+            if (string.Equals(value, "none", StringComparison.OrdinalIgnoreCase))
+                return string.Empty;
+
+            const string urlPrefix = "url(";
+            if (value.StartsWith(urlPrefix, StringComparison.OrdinalIgnoreCase) && value.EndsWith(")", StringComparison.Ordinal))
+                value = value.Substring(urlPrefix.Length, value.Length - urlPrefix.Length - 1).Trim();
+
+            value = value.Trim(' ', '\t', '"', '\'');
+            if (value.StartsWith("#", StringComparison.Ordinal))
+                value = value.Substring(1);
+
+            return value;
         }
 
         private static int CreateTreeId(string key, ISet<int> usedTreeIds)
@@ -205,6 +289,12 @@ namespace UnitySvgEditor.Editor
 
         private sealed class BuildContext
         {
+            public BuildContext(bool showDefinitions)
+            {
+                ShowDefinitions = showDefinitions;
+            }
+
+            public bool ShowDefinitions { get; }
             public List<StructureNode> Elements { get; } = new();
             public List<LayerSummary> Layers { get; } = new();
             public List<TreeViewItemData<StructureNode>> HierarchyItems { get; } = new();

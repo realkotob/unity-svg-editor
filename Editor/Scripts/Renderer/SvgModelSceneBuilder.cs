@@ -8,6 +8,38 @@ namespace UnitySvgEditor.Editor
 {
     internal sealed class SvgModelSceneBuilder
     {
+        public bool TryBuildReferenceOverlayScenes(
+            SvgDocumentModel documentModel,
+            string elementKey,
+            out IReadOnlyList<CanvasDefinitionOverlayScene> overlays,
+            out string error)
+        {
+            overlays = Array.Empty<CanvasDefinitionOverlayScene>();
+            error = string.Empty;
+
+            if (documentModel?.Root == null || string.IsNullOrWhiteSpace(elementKey))
+                return true;
+
+            if (!TryFindNodeByLegacyElementKey(documentModel, elementKey, out SvgNodeModel node) || node == null)
+                return true;
+
+            Dictionary<string, SvgNodeModel> nodesByXmlId = BuildNodeLookupByXmlId(documentModel);
+            List<CanvasDefinitionOverlayScene> resolved = new();
+
+            if (!TryBuildReferenceOverlayScene(documentModel, nodesByXmlId, node, CanvasDefinitionOverlayKind.Mask, out CanvasDefinitionOverlayScene maskOverlay, out error))
+                return false;
+            if (maskOverlay != null)
+                resolved.Add(maskOverlay);
+
+            if (!TryBuildReferenceOverlayScene(documentModel, nodesByXmlId, node, CanvasDefinitionOverlayKind.ClipPath, out CanvasDefinitionOverlayScene clipOverlay, out error))
+                return false;
+            if (clipOverlay != null)
+                resolved.Add(clipOverlay);
+
+            overlays = resolved;
+            return true;
+        }
+
         public bool TryBuild(
             SvgDocumentModel documentModel,
             out SvgModelSceneBuildResult result,
@@ -137,6 +169,49 @@ namespace UnitySvgEditor.Editor
                 return false;
 
             sceneNode.Clipper = maskClipNode;
+            return true;
+        }
+
+        private bool TryBuildReferenceOverlayScene(
+            SvgDocumentModel documentModel,
+            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
+            SvgNodeModel node,
+            CanvasDefinitionOverlayKind kind,
+            out CanvasDefinitionOverlayScene overlay,
+            out string error)
+        {
+            overlay = null;
+            error = string.Empty;
+            if (node == null || nodesByXmlId == null)
+                return true;
+
+            string attributeName = kind == CanvasDefinitionOverlayKind.Mask ? "mask" : "clip-path";
+            string expectedTag = kind == CanvasDefinitionOverlayKind.Mask ? "mask" : "clipPath";
+            if (!TryGetAttribute(node.RawAttributes, attributeName, out string rawValue) ||
+                !TryExtractFragmentId(rawValue, out string fragmentId) ||
+                !nodesByXmlId.TryGetValue(fragmentId, out SvgNodeModel referenceNode) ||
+                !string.Equals(referenceNode.TagName, expectedTag, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            SceneNode sceneNode;
+            bool built = kind == CanvasDefinitionOverlayKind.Mask
+                ? TryBuildMaskClipNode(documentModel, nodesByXmlId, referenceNode, out sceneNode, out error)
+                : TryBuildClipNode(documentModel, nodesByXmlId, referenceNode, out sceneNode, out error);
+            if (!built)
+                return false;
+
+            if (sceneNode == null)
+                return true;
+
+            overlay = new CanvasDefinitionOverlayScene
+            {
+                Kind = kind,
+                ReferenceId = fragmentId,
+                DefinitionElementKey = referenceNode.LegacyElementKey,
+                RootNode = sceneNode
+            };
             return true;
         }
 
@@ -1432,6 +1507,28 @@ namespace UnitySvgEditor.Editor
             }
 
             return lookup;
+        }
+
+        private static bool TryFindNodeByLegacyElementKey(SvgDocumentModel documentModel, string elementKey, out SvgNodeModel node)
+        {
+            node = null;
+            if (documentModel?.NodeOrder == null || string.IsNullOrWhiteSpace(elementKey))
+                return false;
+
+            for (int index = 0; index < documentModel.NodeOrder.Count; index++)
+            {
+                SvgNodeId nodeId = documentModel.NodeOrder[index];
+                if (!documentModel.TryGetNode(nodeId, out SvgNodeModel candidate) || candidate == null)
+                    continue;
+
+                if (string.Equals(candidate.LegacyElementKey, elementKey, StringComparison.Ordinal))
+                {
+                    node = candidate;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static bool TryExtractFragmentId(string fillValue, out string fragmentId)

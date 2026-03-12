@@ -5,6 +5,7 @@
     border-radius: 0;
     border-left-color: var(--border);
     border-left-width: 1px;
+    background-color: var(--editor-panel-bg);
 }
 
 .svg-editor__inspector-panel .unity-scroll-view__content-viewport{

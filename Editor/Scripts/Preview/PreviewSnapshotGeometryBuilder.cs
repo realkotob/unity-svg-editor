@@ -164,6 +164,32 @@ namespace UnitySvgEditor.Editor
             return elements;
         }
 
+        public static bool TryBuildOverlayGeometry(
+            SceneNode overlayRoot,
+            Dictionary<SceneNode, float> nodeOpacity,
+            out Rect visualBounds,
+            out IReadOnlyList<Vector2[]> hitGeometry)
+        {
+            visualBounds = default;
+            hitGeometry = Array.Empty<Vector2[]>();
+            if (overlayRoot == null)
+                return false;
+
+            Scene scene = new()
+            {
+                Root = overlayRoot
+            };
+
+            nodeOpacity ??= new Dictionary<SceneNode, float>();
+            Dictionary<SceneNode, Matrix2D> worldTransformByNode = BuildWorldTransformLookup(scene, nodeOpacity);
+            Dictionary<SceneNode, TessellatedNodeGeometry> worldGeometryByNode = BuildWorldGeometryLookup(scene.Root, worldTransformByNode);
+            hitGeometry = BuildHitTriangles(overlayRoot, worldGeometryByNode, out visualBounds, out bool hasBounds);
+            if (!hasBounds)
+                hasBounds = TryBuildFallbackBounds(overlayRoot, worldTransformByNode, out visualBounds);
+
+            return hasBounds || hitGeometry.Count > 0;
+        }
+
         public static bool TryBuildSceneRootBounds(SVGParser.SceneInfo sceneInfo, out Rect worldBounds)
         {
             worldBounds = default;

@@ -33,7 +33,8 @@ namespace UnitySvgEditor.Editor
 
         public bool TryBeginResizeFromHandle(CanvasGestureState state, CanvasHandle handle, Vector2 localPosition, int pointerId)
         {
-            if (_host.SelectionKind != CanvasSelectionKind.Element ||
+            if (_host.HasDefinitionProxySelection ||
+                _host.SelectionKind != CanvasSelectionKind.Element ||
                 !_sceneProjector.TryResolveSelectedElementSceneRect(_host.PreviewSnapshot, _host.SelectedElementKey, out Rect selectedElementSceneRect) ||
                 !_sceneProjector.TryBuildCurrentSelectionViewportRect(_host.PreviewSnapshot, _host.SelectionKind, _host.SelectedElementKey, out Rect selectionViewportRect))
             {
@@ -67,7 +68,8 @@ namespace UnitySvgEditor.Editor
 
         public bool TryBeginRotateFromHandle(CanvasGestureState state, Vector2 localPosition, int pointerId)
         {
-            if (_host.SelectionKind != CanvasSelectionKind.Element ||
+            if (_host.HasDefinitionProxySelection ||
+                _host.SelectionKind != CanvasSelectionKind.Element ||
                 !_sceneProjector.TryResolveSelectedElementSceneRect(_host.PreviewSnapshot, _host.SelectedElementKey, out Rect selectedElementSceneRect))
             {
                 return false;
@@ -133,6 +135,12 @@ namespace UnitySvgEditor.Editor
         {
             if (_elementDragController.TryCommitDrag(_host, dragMode, activeHandle, canvasDelta))
             {
+                if (_host.HasDefinitionProxySelection)
+                {
+                    _host.UpdateSelectionVisual();
+                    return;
+                }
+
                 _selectionSyncService.SelectCanvasElement(_elementDragController.DragElementKey, syncPatchTarget: false);
                 return;
             }

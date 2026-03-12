@@ -1,5 +1,9 @@
 * {
     --editor-overlay-bg: rgba(42, 42, 46, 0.96);
+    --editor-panel-bg: rgb(30, 30, 30);
+    --editor-layer-group-color: rgb(184, 154, 96);
+    --editor-proxy-mask-color: rgb(198, 132, 152);
+    --editor-proxy-clip-color: rgb(120, 184, 168);
     --editor-surface-subtle: rgba(255, 255, 255, 0.02);
     --editor-surface-soft: rgba(255, 255, 255, 0.04);
     --editor-surface-soft-strong: rgba(255, 255, 255, 0.06);
@@ -16,8 +20,8 @@
     --editor-accent-solid: rgba(98, 176, 255, 0.82);
     --editor-accent-solid-strong: rgba(98, 176, 255, 0.85);
 
-    --editor-canvas-stage-bg: rgb(36, 36, 39);
-    --editor-preview-panel-bg: var(--secondary);
+    --editor-canvas-stage-bg: var(--editor-panel-bg);
+    --editor-preview-panel-bg: var(--editor-panel-bg);
     --editor-frame-border: rgba(255, 255, 255, 0.14);
     --editor-frame-label-bg: rgba(17, 18, 21, 0.86);
     --editor-selection-fill: rgba(24, 160, 251, 0.1);

@@ -309,8 +309,8 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
-            return string.Equals(item.TagName, "svg", StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(item.TagName, "g", StringComparison.OrdinalIgnoreCase);
+            return string.Equals(item.TagName, SvgTagName.Svg, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(item.TagName, SvgTagName.Group, StringComparison.OrdinalIgnoreCase);
         }
 
         private static int FindChildIndex(IEnumerable<TreeViewItemData<StructureNode>> items, string targetKey)

@@ -9,6 +9,7 @@ namespace UnitySvgEditor.Editor
         FileText,
         Minus,
         Pen,
+        Mask,
         Folder,
         File
     }
@@ -21,6 +22,7 @@ namespace UnitySvgEditor.Editor
         public const string HIERARCHY_FILE_TEXT = IconClass.FILE_TEXT;
         public const string HIERARCHY_MINUS = IconClass.MINUS;
         public const string HIERARCHY_PEN = IconClass.PEN;
+        public const string HIERARCHY_MASK = "icon-mask";
         public const string HIERARCHY_FOLDER = IconClass.FOLDER;
         public const string HIERARCHY_FILE = IconClass.FILE;
         public const string POSITION_ALIGN_LEFT = IconClass.ALIGN_HORIZONTAL_LEFT;
@@ -42,6 +44,7 @@ namespace UnitySvgEditor.Editor
                 IconKind.FileText => HIERARCHY_FILE_TEXT,
                 IconKind.Minus => HIERARCHY_MINUS,
                 IconKind.Pen => HIERARCHY_PEN,
+                IconKind.Mask => HIERARCHY_MASK,
                 IconKind.Folder => HIERARCHY_FOLDER,
                 _ => HIERARCHY_FILE
             };

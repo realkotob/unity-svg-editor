@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -12,9 +13,12 @@ namespace UnitySvgEditor.Editor
         private readonly CanvasSceneProjector _sceneProjector;
         private readonly CanvasOverlayController _overlayController;
         private readonly CanvasPointerDragController _pointerDragController;
+        private readonly CanvasDefinitionOverlayBuilder _definitionOverlayBuilder = new();
         private CanvasSelectionKind _selectionKind = CanvasSelectionKind.None;
         private string _hoveredElementKey = string.Empty;
         private CanvasStageView _canvasStageView;
+        private IReadOnlyList<CanvasDefinitionOverlayVisual> _definitionOverlays = System.Array.Empty<CanvasDefinitionOverlayVisual>();
+        private CanvasDefinitionProxySelection _selectedDefinitionProxy;
 
         public CanvasInteractionController(
             ICanvasWorkspaceHost host,
@@ -34,6 +38,7 @@ namespace UnitySvgEditor.Editor
         }
 
         public CanvasSelectionKind SelectionKind => _selectionKind;
+        public bool HasDefinitionProxySelection => _selectedDefinitionProxy != null;
 
         private PreviewSnapshot PreviewSnapshot => _host.PreviewSnapshot;
         private Image PreviewImage => _host.PreviewImage;
@@ -54,6 +59,8 @@ namespace UnitySvgEditor.Editor
         public void SetSelectionKind(CanvasSelectionKind selectionKind)
         {
             _selectionKind = selectionKind;
+            if (selectionKind != CanvasSelectionKind.Element)
+                ClearDefinitionProxySelection();
         }
 
         public void ResetCanvasView(bool clearSelection = false)
@@ -98,7 +105,9 @@ namespace UnitySvgEditor.Editor
         public void ResetSelection()
         {
             _selectionKind = CanvasSelectionKind.None;
+            ClearDefinitionProxySelection();
             _overlayController.ClearSelection();
+            _overlayController.ClearDefinitionOverlays();
             UpdateHoverVisual();
         }
 
@@ -114,12 +123,26 @@ namespace UnitySvgEditor.Editor
         {
             if (PreviewSnapshot == null || SelectionKind == CanvasSelectionKind.None)
             {
+                ClearDefinitionProxySelection();
                 _overlayController.ClearSelection();
+                _overlayController.ClearDefinitionOverlays();
                 return;
             }
 
             if (_pointerDragController.IsDraggingSelectionPreview)
             {
+                if (HasDefinitionProxySelection)
+                {
+                    _overlayController.SetSelection(_sceneProjector.BuildSelectionVisual(
+                        PreviewSnapshot,
+                        CanvasSelectionKind.Element,
+                        _pointerDragController.DragCurrentSelectionViewportRect,
+                        _pointerDragController.DragStartElementSceneRect.size,
+                        false));
+                    _overlayController.SetDefinitionOverlays(BuildDraggedDefinitionOverlays());
+                    return;
+                }
+
                 if (_pointerDragController.DragMode == CanvasDragMode.RotateElement &&
                     _sceneProjector.TryResolveSelectedElementSceneRect(PreviewSnapshot, _host.SelectedElementKey, out Rect rotatedElementSceneRect) &&
                     _sceneProjector.TrySceneRectToViewportRect(PreviewSnapshot, rotatedElementSceneRect, out Rect rotatedElementViewportRect))
@@ -160,8 +183,11 @@ namespace UnitySvgEditor.Editor
                     _pointerDragController.DragCurrentSelectionViewportRect,
                     sourceRect.size,
                     _pointerDragController.DragMode != CanvasDragMode.RotateElement));
+                _overlayController.SetDefinitionOverlays(BuildDraggedDefinitionOverlays());
                 return;
             }
+
+            UpdateDefinitionOverlayVisual();
 
             if (SelectionKind == CanvasSelectionKind.Frame &&
                 _sceneProjector.TryGetFrameViewportRect(out Rect frameViewportRect))
@@ -172,6 +198,19 @@ namespace UnitySvgEditor.Editor
                     CanvasSelectionKind.Frame,
                     frameViewportRect,
                     frameSourceSize,
+                    false));
+                _overlayController.ClearDefinitionOverlays();
+                return;
+            }
+
+            if (TryGetSelectedDefinitionProxy(out CanvasDefinitionOverlayVisual selectedProxy) &&
+                selectedProxy != null)
+            {
+                _overlayController.SetSelection(_sceneProjector.BuildSelectionVisual(
+                    PreviewSnapshot,
+                    CanvasSelectionKind.Element,
+                    selectedProxy.ViewportBounds,
+                    selectedProxy.SceneBounds.size,
                     false));
                 return;
             }
@@ -196,10 +235,12 @@ namespace UnitySvgEditor.Editor
                 }
 
                 _overlayController.SetSelection(selectionVisual);
+                UpdateDefinitionOverlayVisual();
                 return;
             }
 
             _overlayController.ClearSelection();
+            _overlayController.ClearDefinitionOverlays();
         }
 
         public void SetHoveredElement(string elementKey)
@@ -261,6 +302,44 @@ namespace UnitySvgEditor.Editor
         bool ICanvasPointerDragHost.TryRefreshTransientPreview(SvgDocumentModel documentModel) => _host.TryRefreshTransientPreview(documentModel);
         void ICanvasPointerDragHost.RefreshInspector() => _host.RefreshInspector();
         void ICanvasPointerDragHost.RefreshInspector(SvgDocumentModel documentModel) => _host.RefreshInspector(documentModel);
+
+        private void UpdateDefinitionOverlayVisual()
+        {
+            DocumentSession currentDocument = _host.CurrentDocument;
+            if (SelectionKind != CanvasSelectionKind.Element ||
+                PreviewSnapshot == null ||
+                currentDocument?.DocumentModel == null ||
+                !string.IsNullOrWhiteSpace(currentDocument.DocumentModelLoadError) ||
+                !string.Equals(currentDocument.DocumentModel.SourceText, currentDocument.WorkingSourceText, System.StringComparison.Ordinal))
+            {
+                _definitionOverlays = System.Array.Empty<CanvasDefinitionOverlayVisual>();
+                ClearDefinitionProxySelection();
+                _overlayController.ClearDefinitionOverlays();
+                return;
+            }
+
+            if (!_definitionOverlayBuilder.TryBuild(
+                    currentDocument.DocumentModel,
+                    _host.SelectedElementKey,
+                    PreviewSnapshot,
+                    _sceneProjector,
+                    out IReadOnlyList<CanvasDefinitionOverlayVisual> overlays,
+                    out _))
+            {
+                _definitionOverlays = System.Array.Empty<CanvasDefinitionOverlayVisual>();
+                ClearDefinitionProxySelection();
+                _overlayController.ClearDefinitionOverlays();
+                return;
+            }
+
+            _definitionOverlays = overlays ?? System.Array.Empty<CanvasDefinitionOverlayVisual>();
+            _overlayController.SetDefinitionOverlays(overlays);
+            SyncDefinitionProxySelectionFromStructure();
+            if (HasDefinitionProxySelection && !TryResolveSelectedDefinitionProxyVisual(out _))
+            {
+                ClearDefinitionProxySelection();
+            }
+        }
         void ICanvasPointerDragHost.ApplyUpdatedSource(string updatedSource, string successStatus) => _host.ApplyUpdatedSource(updatedSource, successStatus);
         void ICanvasPointerDragHost.UpdateSourceStatus(string status) => _host.UpdateSourceStatus(status);
         StructureNode ICanvasPointerDragHost.FindStructureNode(string elementKey) => _host.FindStructureNode(elementKey);
@@ -273,15 +352,36 @@ namespace UnitySvgEditor.Editor
         void ICanvasPointerDragHost.SetHoveredElement(string elementKey) => SetHoveredElement(elementKey);
         void ICanvasPointerDragHost.ClearHover() => ClearHover();
         void ICanvasPointerDragHost.UpdateHoverVisual() => UpdateHoverVisual();
+        bool ICanvasPointerDragHost.HasDefinitionProxySelection => HasDefinitionProxySelection;
+        bool ICanvasPointerDragHost.TryHitTestDefinitionOverlay(Vector2 localPoint, out CanvasDefinitionOverlayVisual overlay) =>
+            _overlayController.TryHitTestDefinitionOverlay(localPoint, out overlay);
+        bool ICanvasPointerDragHost.TryGetSelectedDefinitionProxy(out CanvasDefinitionOverlayVisual overlay) =>
+            TryGetSelectedDefinitionProxy(out overlay);
+        void ICanvasPointerDragHost.SelectDefinitionProxy(CanvasDefinitionOverlayVisual overlay) => SelectDefinitionProxy(overlay);
+        void ICanvasPointerDragHost.ClearDefinitionProxySelection() => ClearDefinitionProxySelection();
 
         internal bool TryNudgeSelectedElement(Vector2 sceneDelta)
         {
-            if (PreviewSnapshot == null ||
-                _selectionKind != CanvasSelectionKind.Element ||
-                string.IsNullOrWhiteSpace(_host.SelectedElementKey))
+            if (PreviewSnapshot == null || _selectionKind != CanvasSelectionKind.Element)
             {
                 return false;
             }
+
+            if (TryGetSelectedDefinitionProxy(out CanvasDefinitionOverlayVisual selectedProxy) &&
+                selectedProxy != null &&
+                _pointerDragController.TryBuildNudgedSource(
+                    _host.CurrentDocument,
+                    selectedProxy.DefinitionElementKey,
+                    sceneDelta,
+                    selectedProxy.ParentWorldTransform,
+                    out string proxyUpdatedSource))
+            {
+                _host.ApplyUpdatedSource(proxyUpdatedSource, $"Moved <{_host.FindStructureNode(selectedProxy.DefinitionElementKey)?.TagName ?? "definition"}>.");
+                return true;
+            }
+
+            if (string.IsNullOrWhiteSpace(_host.SelectedElementKey))
+                return false;
 
             PreviewElementGeometry selectedGeometry = _sceneProjector.FindPreviewElement(PreviewSnapshot, _host.SelectedElementKey);
             if (selectedGeometry == null ||
@@ -297,6 +397,134 @@ namespace UnitySvgEditor.Editor
 
             _host.ApplyUpdatedSource(updatedSource, $"Moved <{_host.FindStructureNode(_host.SelectedElementKey)?.TagName ?? "element"}>.");
             return true;
+        }
+
+        private void SelectDefinitionProxy(CanvasDefinitionOverlayVisual overlay)
+        {
+            if (overlay == null || string.IsNullOrWhiteSpace(overlay.ProxyElementKey))
+                return;
+
+            _selectedDefinitionProxy = new CanvasDefinitionProxySelection
+            {
+                SourceElementKey = _host.SelectedElementKey,
+                ProxyElementKey = overlay.ProxyElementKey,
+                DefinitionElementKey = overlay.DefinitionElementKey,
+                Kind = overlay.Kind,
+                ReferenceId = overlay.ReferenceId
+            };
+            _host.SelectStructureElementFromCanvas(overlay.ProxyElementKey, syncPatchTarget: false);
+            _selectionKind = CanvasSelectionKind.Element;
+            UpdateSelectionVisual();
+        }
+
+        private void ClearDefinitionProxySelection()
+        {
+            _selectedDefinitionProxy = null;
+        }
+
+        private bool TryGetSelectedDefinitionProxy(out CanvasDefinitionOverlayVisual overlay)
+        {
+            return TryResolveSelectedDefinitionProxyVisual(out overlay);
+        }
+
+        private bool TryResolveSelectedDefinitionProxyVisual(out CanvasDefinitionOverlayVisual overlay)
+        {
+            overlay = null;
+            if (_selectedDefinitionProxy == null ||
+                string.IsNullOrWhiteSpace(_selectedDefinitionProxy.SourceElementKey) ||
+                !string.Equals(_selectedDefinitionProxy.SourceElementKey, _host.SelectedElementKey, System.StringComparison.Ordinal) ||
+                _definitionOverlays == null)
+            {
+                return false;
+            }
+
+            for (int index = 0; index < _definitionOverlays.Count; index++)
+            {
+                CanvasDefinitionOverlayVisual candidate = _definitionOverlays[index];
+                if (candidate == null)
+                    continue;
+
+                if (candidate.Kind != _selectedDefinitionProxy.Kind ||
+                    !string.Equals(candidate.ReferenceId, _selectedDefinitionProxy.ReferenceId, System.StringComparison.Ordinal) ||
+                    !string.Equals(candidate.DefinitionElementKey, _selectedDefinitionProxy.DefinitionElementKey, System.StringComparison.Ordinal) ||
+                    !string.Equals(candidate.ProxyElementKey, _selectedDefinitionProxy.ProxyElementKey, System.StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                overlay = candidate;
+                return true;
+            }
+
+            return false;
+        }
+
+        private void SyncDefinitionProxySelectionFromStructure()
+        {
+            StructureNode selectedNode = _host.SelectedStructureNode;
+            if (selectedNode?.IsDefinitionProxy != true)
+            {
+                _selectedDefinitionProxy = null;
+                return;
+            }
+
+            _selectedDefinitionProxy = new CanvasDefinitionProxySelection
+            {
+                SourceElementKey = selectedNode.SourceElementKey,
+                ProxyElementKey = selectedNode.Key,
+                DefinitionElementKey = selectedNode.DefinitionElementKey,
+                Kind = selectedNode.DefinitionProxyKind,
+                ReferenceId = selectedNode.DefinitionReferenceId
+            };
+        }
+
+        private IReadOnlyList<CanvasDefinitionOverlayVisual> BuildDraggedDefinitionOverlays()
+        {
+            Vector2 viewportDelta =
+                _pointerDragController.DragCurrentSelectionViewportRect.position -
+                _pointerDragController.DragStartSelectionViewportRect.position;
+
+            if (viewportDelta.sqrMagnitude <= Mathf.Epsilon)
+                return _definitionOverlays;
+
+            List<CanvasDefinitionOverlayVisual> shifted = new(_definitionOverlays.Count);
+            for (int index = 0; index < _definitionOverlays.Count; index++)
+            {
+                CanvasDefinitionOverlayVisual overlay = _definitionOverlays[index];
+                if (overlay == null)
+                    continue;
+                shifted.Add(OffsetDefinitionOverlay(overlay, viewportDelta));
+            }
+
+            return shifted;
+        }
+
+        private static CanvasDefinitionOverlayVisual OffsetDefinitionOverlay(CanvasDefinitionOverlayVisual overlay, Vector2 viewportDelta)
+        {
+            List<CanvasLineSegment> shiftedSegments = new();
+            if (overlay.OutlineSegments != null)
+            {
+                for (int index = 0; index < overlay.OutlineSegments.Count; index++)
+                {
+                    CanvasLineSegment segment = overlay.OutlineSegments[index];
+                    shiftedSegments.Add(new CanvasLineSegment(segment.Start + viewportDelta, segment.End + viewportDelta));
+                }
+            }
+
+            Rect viewportBounds = overlay.ViewportBounds;
+            viewportBounds.position += viewportDelta;
+
+            return new CanvasDefinitionOverlayVisual
+            {
+                Kind = overlay.Kind,
+                ReferenceId = overlay.ReferenceId,
+                ProxyElementKey = overlay.ProxyElementKey,
+                DefinitionElementKey = overlay.DefinitionElementKey,
+                SceneBounds = overlay.SceneBounds,
+                ParentWorldTransform = overlay.ParentWorldTransform,
+                ViewportBounds = viewportBounds,
+                OutlineSegments = shiftedSegments
+            };
         }
 
         private bool IsResizeUnsupported(string elementKey)

@@ -8,6 +8,7 @@ namespace UnitySvgEditor.Editor
         PreviewSnapshot PreviewSnapshot { get; }
         string SelectedElementKey { get; }
         CanvasSelectionKind SelectionKind { get; set; }
+        bool HasDefinitionProxySelection { get; }
 
         void RefreshLivePreview(bool keepExistingPreviewOnFailure);
         bool TryRefreshTransientPreview(SvgDocumentModel documentModel);
@@ -25,5 +26,9 @@ namespace UnitySvgEditor.Editor
         void SetHoveredElement(string elementKey);
         void ClearHover();
         void UpdateHoverVisual();
+        bool TryHitTestDefinitionOverlay(Vector2 localPoint, out CanvasDefinitionOverlayVisual overlay);
+        bool TryGetSelectedDefinitionProxy(out CanvasDefinitionOverlayVisual overlay);
+        void SelectDefinitionProxy(CanvasDefinitionOverlayVisual overlay);
+        void ClearDefinitionProxySelection();
     }
 }

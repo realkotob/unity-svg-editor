@@ -293,6 +293,15 @@ namespace UnitySvgEditor.Editor
                 string.Equals(item.TargetKey, targetKey, StringComparison.Ordinal));
         }
 
+        private string ResolveCanvasSelectedElementKey()
+        {
+            StructureNode selectedNode = FindStructureNode(_structurePanelState.SelectedElementKey);
+            if (selectedNode?.IsDefinitionProxy == true && !string.IsNullOrWhiteSpace(selectedNode.SourceElementKey))
+                return selectedNode.SourceElementKey;
+
+            return _structurePanelState.SelectedElementKey;
+        }
+
         private void ApplySelectionState(StructureNode selectedItem, CanvasSelectionKind selectionKind, bool syncPatchTarget)
         {
             _structurePanelState.SelectElement(selectedItem?.Key);
@@ -343,7 +352,8 @@ namespace UnitySvgEditor.Editor
         DocumentSession ICanvasWorkspaceHost.CurrentDocument => CurrentDocument;
         PreviewSnapshot ICanvasWorkspaceHost.PreviewSnapshot => _host.PreviewSnapshot;
         Image ICanvasWorkspaceHost.PreviewImage => _host.PreviewImage;
-        string ICanvasWorkspaceHost.SelectedElementKey => _structurePanelState.SelectedElementKey;
+        string ICanvasWorkspaceHost.SelectedElementKey => ResolveCanvasSelectedElementKey();
+        StructureNode ICanvasWorkspaceHost.SelectedStructureNode => FindStructureNode(_structurePanelState.SelectedElementKey);
         string ICanvasWorkspaceHost.FormatNumber(float value) => _host.FormatNumber(value);
         StructureNode ICanvasWorkspaceHost.FindStructureNode(string elementKey) => FindStructureNode(elementKey);
         void ICanvasWorkspaceHost.UpdateStructureInteractivity(bool hasDocument) => UpdateStructureInteractivity(hasDocument);

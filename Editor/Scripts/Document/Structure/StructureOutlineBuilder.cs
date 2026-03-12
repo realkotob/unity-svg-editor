@@ -7,7 +7,11 @@ namespace UnitySvgEditor.Editor
 {
     internal static class StructureOutlineBuilder
     {
-        public static bool TryBuildSnapshot(string sourceText, out StructureOutline snapshot, out string error)
+        public static bool TryBuildSnapshot(
+            string sourceText,
+            out StructureOutline snapshot,
+            out string error,
+            bool showDefinitions = false)
         {
             snapshot = new StructureOutline();
             error = string.Empty;
@@ -21,7 +25,7 @@ namespace UnitySvgEditor.Editor
             if (!SvgDocumentXmlUtility.TryGetRootElement(sourceText, out XmlDocument document, out var root, out error))
                 return false;
 
-            var context = new BuildContext(root);
+            var context = new BuildContext(root, showDefinitions);
             context.Elements.Add(CreateElementItem(root, root, 0, string.Empty, string.Empty, 0));
             context.HierarchyItems.Add(new TreeViewItemData<StructureNode>(
                 CreateTreeId(context.Elements[0].Key, context.UsedTreeIds),
@@ -49,6 +53,12 @@ namespace UnitySvgEditor.Editor
             for (var childIndex = 0; childIndex < children.Count; childIndex++)
             {
                 var child = children[childIndex];
+                if (!context.ShowDefinitions &&
+                    string.Equals(child.LocalName, SvgTagName.Defs, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
                 var childActiveLayerKey = RegisterLayer(context, child, activeLayerKey);
                 var elementItem = CreateElementItem(
                     child,
@@ -131,8 +141,34 @@ namespace UnitySvgEditor.Editor
                 ParentKey = parentKey,
                 LayerKey = activeLayerKey,
                 DisplayName = BuildElementDisplayName(hasStableId ? stableId : string.Empty, element.LocalName, depth, siblingIndex),
-                TreeLabel = BuildTreeLabel(hasStableId ? stableId : string.Empty, element.LocalName, siblingIndex)
+                TreeLabel = BuildTreeLabel(hasStableId ? stableId : string.Empty, element.LocalName, siblingIndex),
+                MaskReferenceId = ResolveReferencedFragmentId(element, "mask"),
+                ClipPathReferenceId = ResolveReferencedFragmentId(element, "clip-path")
             };
+        }
+
+        private static string ResolveReferencedFragmentId(XmlElement element, string attributeName)
+        {
+            if (element == null)
+                return string.Empty;
+
+            string rawValue = element.GetAttribute(attributeName);
+            if (string.IsNullOrWhiteSpace(rawValue))
+                return string.Empty;
+
+            string value = rawValue.Trim();
+            if (string.Equals(value, "none", StringComparison.OrdinalIgnoreCase))
+                return string.Empty;
+
+            const string urlPrefix = "url(";
+            if (value.StartsWith(urlPrefix, StringComparison.OrdinalIgnoreCase) && value.EndsWith(")", StringComparison.Ordinal))
+                value = value.Substring(urlPrefix.Length, value.Length - urlPrefix.Length - 1).Trim();
+
+            value = value.Trim(' ', '\t', '"', '\'');
+            if (value.StartsWith("#", StringComparison.Ordinal))
+                value = value.Substring(1);
+
+            return value;
         }
 
         private static int CreateTreeId(string key, ISet<int> usedTreeIds)
@@ -174,12 +210,14 @@ namespace UnitySvgEditor.Editor
 
         private sealed class BuildContext
         {
-            public BuildContext(XmlElement root)
+            public BuildContext(XmlElement root, bool showDefinitions)
             {
                 Root = root;
+                ShowDefinitions = showDefinitions;
             }
 
             public XmlElement Root { get; }
+            public bool ShowDefinitions { get; }
             public List<StructureNode> Elements { get; } = new();
             public List<LayerSummary> Layers { get; } = new();
             public List<TreeViewItemData<StructureNode>> HierarchyItems { get; } = new();

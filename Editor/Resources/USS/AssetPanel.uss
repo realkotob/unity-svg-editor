@@ -1,7 +1,7 @@
 .svg-editor__asset-panel {
     flex-grow: 1;
     min-width: 240px;
-    background-color: var(--secondary);
+    background-color: var(--editor-panel-bg);
 }
 .svg-editor__asset-panel .unity-scroll-view__content-viewport{
     margin:0;
@@ -17,7 +17,7 @@
 .svg-editor__asset-panel-top,
 .svg-editor__asset-panel-bottom {
     flex-grow: 1;
-    background-color: var(--secondary);
+    background-color: var(--editor-panel-bg);
     min-height: 200px;
 }
 
@@ -211,6 +211,35 @@
     -unity-text-align: middle-left;
 }
 
+.svg-editor__asset-hierarchy__badge-container {
+    flex-direction: row;
+    align-items: center;
+    margin-left: auto;
+    padding-left: 6px;
+}
+
+.svg-editor__asset-hierarchy__badge {
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 999px;
+    border-width: 1px;
+    border-color: var(--editor-surface-soft-strong);
+    background-color: var(--input-30);
+    color: var(--muted-foreground);
+    font-size: 9px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.svg-editor__asset-hierarchy__badge--mask {
+    color: var(--editor-proxy-mask-color);
+}
+
+.svg-editor__asset-hierarchy__badge--clip {
+    color: var(--editor-proxy-clip-color);
+}
+
 .svg-editor__asset-hierarchy__expander {
     display: none;
     width: 16px;
@@ -233,14 +262,32 @@
 .svg-editor__asset-hierarchy__item--group .svg-editor__asset-hierarchy__text,
 .svg-editor__asset-hierarchy__item--text .svg-editor__asset-hierarchy__icon,
 .svg-editor__asset-hierarchy__item--text .svg-editor__asset-hierarchy__text {
-    color: var(--info);
+    color: var(--editor-layer-group-color);
 }
 
 .svg-editor__asset-hierarchy__item--group .svg-editor__asset-hierarchy__icon,
 .svg-editor__asset-hierarchy__item--text .svg-editor__asset-hierarchy__icon,
 .svg-editor__asset-hierarchy__item--group .svg-editor__asset-hierarchy__expander,
 .svg-editor__asset-hierarchy__item--text .svg-editor__asset-hierarchy__expander {
-    -unity-background-image-tint-color: var(--info);
+    -unity-background-image-tint-color: var(--editor-layer-group-color);
+}
+
+.svg-editor__asset-hierarchy__item--proxy-mask .svg-editor__asset-hierarchy__icon,
+.svg-editor__asset-hierarchy__item--proxy-mask .svg-editor__asset-hierarchy__text {
+    color: var(--editor-proxy-mask-color);
+}
+
+.svg-editor__asset-hierarchy__item--proxy-mask .svg-editor__asset-hierarchy__icon {
+    -unity-background-image-tint-color: var(--editor-proxy-mask-color);
+}
+
+.svg-editor__asset-hierarchy__item--proxy-clip .svg-editor__asset-hierarchy__icon,
+.svg-editor__asset-hierarchy__item--proxy-clip .svg-editor__asset-hierarchy__text {
+    color: var(--editor-proxy-clip-color);
+}
+
+.svg-editor__asset-hierarchy__item--proxy-clip .svg-editor__asset-hierarchy__icon {
+    -unity-background-image-tint-color: var(--editor-proxy-clip-color);
 }
 
 .svg-editor__asset-hierarchy-list .unity-collection-view__item--selected .svg-editor__asset-hierarchy__text,

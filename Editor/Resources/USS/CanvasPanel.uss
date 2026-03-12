@@ -99,6 +99,20 @@
     bottom: 0;
 }
 
+.svg-editor__definition-overlay-bounds {
+    border-radius: 6px;
+    border-color: rgba(255, 255, 255, 0.65);
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.svg-editor__definition-overlay-bounds--mask {
+    border-color: rgba(220, 184, 115, 0.92);
+}
+
+.svg-editor__definition-overlay-bounds--clip {
+    border-color: rgba(141, 212, 158, 0.92);
+}
+
 .svg-editor__canvas-overlay--readonly {
     opacity: 0.9;
 }

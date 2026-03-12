@@ -25,6 +25,7 @@ namespace UnitySvgEditor.Editor
             SvgEditorIconClass.HIERARCHY_FILE_TEXT,
             SvgEditorIconClass.HIERARCHY_MINUS,
             SvgEditorIconClass.HIERARCHY_PEN,
+            SvgEditorIconClass.HIERARCHY_MASK,
             SvgEditorIconClass.HIERARCHY_FOLDER,
             SvgEditorIconClass.HIERARCHY_FILE
         };
@@ -126,16 +127,18 @@ namespace UnitySvgEditor.Editor
         {
             return tagName switch
             {
-                "svg" => IconKind.Square,
-                "g" => IconKind.Folder,
-                "text" => IconKind.FileText,
-                "rect" => IconKind.Square,
-                "circle" => IconKind.Circle,
-                "ellipse" => IconKind.Circle,
-                "line" => IconKind.Minus,
-                "polyline" => IconKind.Minus,
-                "polygon" => IconKind.Pen,
-                "path" => IconKind.Pen,
+                SvgTagName.Svg => IconKind.Square,
+                SvgTagName.Group => IconKind.Folder,
+                SvgTagName.Text => IconKind.FileText,
+                SvgTagName.Rect => IconKind.Square,
+                SvgTagName.Circle => IconKind.Circle,
+                SvgTagName.Ellipse => IconKind.Circle,
+                SvgTagName.Line => IconKind.Minus,
+                SvgTagName.ClipPath => IconKind.Mask,
+                SvgTagName.Mask => IconKind.Mask,
+                SvgTagName.Polyline => IconKind.Minus,
+                SvgTagName.Polygon => IconKind.Pen,
+                SvgTagName.Path => IconKind.Pen,
                 _ => IconKind.File
             };
         }
@@ -164,6 +167,7 @@ namespace UnitySvgEditor.Editor
                 IconKind.FileText => AssetHierarchyTreeRow.UssClassName.ICON_FILE_TEXT,
                 IconKind.Minus => AssetHierarchyTreeRow.UssClassName.ICON_MINUS,
                 IconKind.Pen => AssetHierarchyTreeRow.UssClassName.ICON_PEN,
+                IconKind.Mask => AssetHierarchyTreeRow.UssClassName.ICON_FILE,
                 IconKind.Folder => AssetHierarchyTreeRow.UssClassName.ICON_FOLDER,
                 _ => AssetHierarchyTreeRow.UssClassName.ICON_FILE
             };
