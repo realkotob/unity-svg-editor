@@ -1,5 +1,4 @@
 using System;
-using UnityEditor;
 using UnityEngine.UIElements;
 using SvgEditor.Preview;
 using SvgEditor.Workspace.Document;
@@ -11,11 +10,11 @@ namespace SvgEditor.Workspace
 {
     internal sealed class DocumentLifecycleController
     {
-        private readonly DocumentRepository _documentRepository;
         private readonly DocumentLifecycleView _view;
         private readonly DocumentPreviewService _previewService;
         private readonly DocumentWorkspaceSyncService _workspaceSyncService;
         private readonly DocumentEditHistoryService _editHistory = new();
+        private readonly DocumentLifecycleCommandService _commandService;
 
         public DocumentLifecycleController(
             DocumentRepository documentRepository,
@@ -24,7 +23,6 @@ namespace SvgEditor.Workspace
             Func<EditorWorkspaceCoordinator> workspaceCoordinatorAccessor,
             Action updateEditorInteractivity)
         {
-            _documentRepository = documentRepository;
             _view = new DocumentLifecycleView();
             _previewService = new DocumentPreviewService(
                 previewSnapshotBuilder,
@@ -38,6 +36,14 @@ namespace SvgEditor.Workspace
                 () => CurrentDocument,
                 workspaceCoordinatorAccessor,
                 updateEditorInteractivity);
+            _commandService = new DocumentLifecycleCommandService(
+                documentRepository,
+                _previewService,
+                _workspaceSyncService,
+                _editHistory,
+                () => CurrentDocument,
+                document => CurrentDocument = document,
+                status => _view.SetStatus(status));
         }
 
         public DocumentSession CurrentDocument { get; private set; }
@@ -66,112 +72,23 @@ namespace SvgEditor.Workspace
             _previewService.Dispose();
         }
 
-        public bool CanSwitchDocument()
-        {
-            if (CurrentDocument == null || !CurrentDocument.IsDirty)
-            {
-                return true;
-            }
+        public bool CanSwitchDocument() => _commandService.CanSwitchDocument();
 
-            return EditorUtility.DisplayDialog(
-                "Discard SVG changes?",
-                "The current SVG has unsaved edits. Discard changes and switch?",
-                "Discard",
-                "Cancel");
-        }
+        public void LoadAsset(string assetPath) => _commandService.LoadAsset(assetPath);
 
-        public void LoadAsset(string assetPath)
-        {
-            if (!_documentRepository.TryLoad(assetPath, out DocumentSession document, out string error))
-            {
-                CurrentDocument = null;
-                _previewService.ClearPreview();
-                _workspaceSyncService.SelectionHandleLoadFailure(error);
-                return;
-            }
+        public void ApplyUpdatedSource(string updatedSource, string successStatus) =>
+            _commandService.ApplyUpdatedSource(updatedSource, successStatus);
 
-            CurrentDocument = document;
-            _editHistory.Reset(document);
-            _previewService.ResetPreviewState();
-            _workspaceSyncService.ResetSelection();
-            _workspaceSyncService.SelectionHandleDocumentLoaded();
-        }
+        public void ApplyUpdatedSource(string updatedSource, string successStatus, HistoryRecordingMode recordingMode) =>
+            _commandService.ApplyUpdatedSource(updatedSource, successStatus, recordingMode);
 
-        public void ApplyUpdatedSource(string updatedSource, string successStatus)
-        {
-            ApplyUpdatedSource(updatedSource, successStatus, HistoryRecordingMode.Immediate);
-        }
+        public bool TryUndo() => _commandService.TryUndo();
 
-        public void ApplyUpdatedSource(string updatedSource, string successStatus, HistoryRecordingMode recordingMode)
-        {
-            ApplyUpdatedSource(updatedSource, successStatus, recordHistory: true, recordingMode);
-        }
+        public bool TryRedo() => _commandService.TryRedo();
 
-        public bool TryUndo()
-        {
-            if (CurrentDocument == null ||
-                !_editHistory.TryUndo(CurrentDocument.WorkingSourceText, out string restoredSource))
-            {
-                return false;
-            }
+        public void ReloadCurrentDocument() => _commandService.ReloadCurrentDocument();
 
-            ApplyUpdatedSource(restoredSource, "Undo.", recordHistory: false, HistoryRecordingMode.Immediate);
-            return true;
-        }
-
-        public bool TryRedo()
-        {
-            if (CurrentDocument == null ||
-                !_editHistory.TryRedo(CurrentDocument.WorkingSourceText, out string restoredSource))
-            {
-                return false;
-            }
-
-            ApplyUpdatedSource(restoredSource, "Redo.", recordHistory: false, HistoryRecordingMode.Immediate);
-            return true;
-        }
-
-        public void ReloadCurrentDocument()
-        {
-            if (CurrentDocument == null || string.IsNullOrWhiteSpace(CurrentDocument.AssetPath))
-            {
-                return;
-            }
-
-            LoadAsset(CurrentDocument.AssetPath);
-        }
-
-        public void SaveCurrentDocument()
-        {
-            OnSaveClicked();
-        }
-
-        private void ApplyUpdatedSource(
-            string updatedSource,
-            string successStatus,
-            bool recordHistory,
-            HistoryRecordingMode recordingMode)
-        {
-            if (CurrentDocument == null)
-            {
-                return;
-            }
-
-            string previousSource = CurrentDocument.WorkingSourceText ?? string.Empty;
-            string nextSource = updatedSource ?? string.Empty;
-            if (recordHistory)
-            {
-                _editHistory.RecordChange(previousSource, nextSource, recordingMode);
-            }
-            else
-            {
-                _editHistory.SyncCurrent(nextSource);
-            }
-
-            CurrentDocument.WorkingSourceText = nextSource;
-            _documentRepository.RefreshDocumentModel(CurrentDocument);
-            _workspaceSyncService.RefreshDocumentState(successStatus, keepExistingPreviewOnFailure: true);
-        }
+        public void SaveCurrentDocument() => _commandService.SaveCurrentDocument();
 
         public void RefreshLivePreview(bool keepExistingPreviewOnFailure) => _previewService.RefreshLivePreview(keepExistingPreviewOnFailure);
 
@@ -184,22 +101,5 @@ namespace SvgEditor.Workspace
         }
 
         public void UpdateSourceStatus(string status) => _view.SetStatus(status);
-
-        private void OnSaveClicked()
-        {
-            if (CurrentDocument == null)
-            {
-                return;
-            }
-
-            if (!_documentRepository.Save(CurrentDocument, out string error))
-            {
-                _view.SetStatus($"Save failed: {error}");
-                return;
-            }
-
-            _editHistory.SyncCurrent(CurrentDocument.WorkingSourceText);
-            _workspaceSyncService.SelectionHandleSaveSucceeded();
-        }
     }
 }

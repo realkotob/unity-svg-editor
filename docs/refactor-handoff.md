@@ -50,13 +50,78 @@
   - `SvgPrimitiveShapeBuilder`
   - `SvgShapeBuilder`
   - `SvgReferenceSceneBuilder`
+- Namespace spine 정리
+  - `SvgEditor.Document`
+  - `SvgEditor.DocumentModel`
+  - `SvgEditor.Shared`
+  - `SvgEditor.Preview`
+  - `SvgEditor.Renderer`
+  - `SvgEditor.RenderModel`
+  - `SvgEditor.Workspace`
+  - `SvgEditor.Workspace.Document`
+  - `SvgEditor.Workspace.Canvas`
+  - `SvgEditor.Workspace.InspectorPanel`
+  - `SvgEditor.Workspace.StructureInspector`
+  - `SvgEditor.Workspace.AssetLibrary`
+  - `SvgEditor.Shell`
+- UXML namespace 정리
+  - `SvgEditorWindow.uxml` 에서 `svg`, `canvas`, `asset`, `structure` alias 기준선 정리
+- Canvas 구조 재편
+  - `Workspace/Canvas` 를 `Controllers / Gestures / Host / Overlay / Projection / Selection / State / View` 로 재편
+- Canvas naming 1차/2차 축소
+  - 유지한 semantic floor:
+    - `SelectionKind`
+    - `ViewportState`
+    - `SceneProjector`
+    - `ToolKind`
+    - `SelectionHandle`
+    - `SelectionVisualBuilder`
+    - `InteractionController`
+    - `OverlayController`
+    - `WorkspaceController`
+    - `DefinitionProxyCoordinator`
+    - `ElementDragController`
+    - `GestureRouter`
+    - `PointerDragController`
+    - `ElementGestureHandler`
+    - `ViewportGestureHandler`
+    - `DefinitionOverlayBuilder`
+    - `DefinitionOverlayPresenter`
+    - `SelectionSyncService`
+    - `SelectionChromePresenter`
+    - `PolylineOverlayElement`
+- InspectorPanel 구조 재편
+  - `Workspace/InspectorPanel` 을 `Controllers / Host / View / State / Sync / Apply / Actions` 로 재편
+- InspectorPanel naming 1차 축소
+  - `PanelController`
+  - `IPanelHost`
+  - `PanelState`
+  - `PanelStateValueCodec`
+  - `PanelView`
+  - `PatchApplyService`
+  - `TransformActionService`
+  - `TargetCatalogService`
+  - `TargetSyncService`
+  - `TargetOption`
+  - `TargetSelectionState`
+  - `DocumentModelReader`
+  - `FormControls`
+  - `StateBinder`
 
 ## 3. 현재 파일 상태 핵심
 
-- `SvgModelSceneBuilder.cs` 는 큰 폭으로 줄었고, traversal coordinator 쪽으로 수렴 중이다.
-- `CanvasOverlayController.cs` 는 selection/hover chrome presenter 분리 후 orchestration 위주로 남았다.
-- `CanvasInteractionController.cs` 는 definition proxy / live preview policy 분리 후 fan-out 이 줄었다.
-- `InspectorTargetSyncService.cs` 는 catalog / transform / patch apply 분리 후 얇아졌다.
+- `.cs` 파일 수는 `138` 기준이다.
+- namespace는 이제 role-based spine 으로 정리된 상태다.
+- `Canvas` 와 `InspectorPanel` 은 folder + namespace + naming 1차 정리가 끝난 상태다.
+- `SvgModelSceneBuilder.cs` 는 traversal coordinator 성격으로 수렴했고 `218`줄 수준이다.
+- 가장 큰 후속 분해 후보:
+  - `SvgDocumentModelMutationService.cs`
+  - `CanvasViewportLayoutUtility.cs`
+  - `PanelView.cs`
+  - `TransformActionService.cs`
+  - `PreviewSnapshotGeometryBuilder.cs`
+  - `SvgEditorWindow.cs`
+  - `EditorWorkspaceCoordinator.cs`
 
 ## 4. 네이밍 / 상수 규칙
 
@@ -64,26 +129,37 @@
 - `SvgTagName` 과 `SvgAttributeName` 는 이 규칙으로 맞춘다.
 - local variable 은 타입이 명확하면 `var` 우선이다.
 - one-off 문자열은 무리하게 상수화하지 않고, cross-file contract string 만 상수화한다.
+- prefix 축소는 `semantic floor` 를 둔다.
+  - 줄였을 때 처음 보는 사람이 역할을 바로 추정할 수 있어야 한다.
+  - 예: `Tool`, `Handle` 은 과도하게 짧으므로 `ToolKind`, `SelectionHandle` 쪽에서 멈춘다.
+- substring 기반 대량 치환은 금지에 가깝게 본다.
+  - `Tooling`, `Toolbar`, `Tooltip`, `Handler`, `TestTools` 같은 unrelated token 을 오염시키기 쉽다.
+  - symbol rename 또는 단어 경계 기반 치환만 허용한다.
 
 ## 5. 다음 세션 첫 우선순위
 
-1. `SvgTagName` / `SvgAttributeName` 상수화 패스 마무리
-- renderer / preview / canvas / structure 에 남은 literal tag / attribute string 치환
-- `UPPER_SNAKE_CASE` 기준 유지
+1. InspectorPanel final pass
+- `PanelView.cs` / `TransformActionService.cs` 중심으로 큰 파일 분해
+- `semantic floor` 기준 재점검
 
-2. `SvgModelSceneBuilder` 잔여 책임 더 축소
-- `document viewport / length parse`
-- 남아 있는 thin wrapper 제거
-- 가능하면 `500`줄 이하 근접
+2. Top-level orchestrator 정리
+- `SvgEditorWindow.cs`
+- `EditorWorkspaceCoordinator.cs`
+- `DocumentLifecycleController.cs`
 
-3. Renderer snapshot assemble 중복 재점검
-- `PreviewSnapshotBuilder`
-- `PreviewSnapshotSceneImportService`
-- `PreviewSnapshotGeometryBuilder`
+3. Large file reduction
+- `SvgDocumentModelMutationService.cs`
+- `PreviewSnapshotGeometryBuilder.cs`
+- `CanvasViewportLayoutUtility.cs`
 
-4. Canvas 후속
-- `CanvasGestureRouter` 추가 축소 여부
-- `CanvasInteractionController` 남은 selection/update fan-out 정리
+4. 선택 후속
+- `StructureInspector` naming final pass
+- `AssetLibrary` naming final pass
+- 필요 시 `Document/Structure` 하위 재분류 검토
+
+5. 손대지 말 것
+- `Svg*` domain prefix 는 무리하게 전역 축소하지 않는다.
+- `CanvasStageView` 같은 `[UxmlElement]` 타입은 rename/move와 UXML alias 변경을 같은 배치로만 처리한다.
 
 ## 6. 검증 규칙
 
@@ -98,7 +174,14 @@
 
 ## 7. 주의사항
 
-- 현재 세션 기준으로 const 이름 변경 중이라, old `SvgTagName` PascalCase 참조가 남아 있으면 우선 그 compile error 를 먼저 정리한다.
+- generated `.csproj` 와 asset database 는 file move/rename 을 즉시 따라오지 않을 수 있다.
+  - file move/rename 뒤에는 `refresh_unity compile=request` 또는 동등한 Unity refresh 를 먼저 태우고 나서 `dotnet build` 를 다시 본다.
+- `InternalsVisibleTo` 는 namespace가 아니라 assembly 이름 기준이다.
+  - namespace rename 때 기계적으로 같이 바꾸지 않는다.
 - `SvgTagName.CLIP_PATH` 는 XML local-name 기준이 아니라 SVG tag literal (`clipPath`) 용도다.
 - `SvgAttributeName.CLIP_PATH` 는 attribute literal (`clip-path`) 용도다.
 - `PreviewSnapshotGeometryBuilder.cs` 쪽 사용자가 건드린 회전 pivot 변경은 존중 상태로 유지한다.
+- backlog:
+  - inspector `FlipHorizontal` / `FlipVertical` 는 회전이 없는 경우는 동작하지만, 회전 후 flip 에서 여전히 절대축 기준으로 뒤집히는 증상이 남아 있다.
+  - 이번 세션의 회전축 보정 시도는 원인 해결에 실패해서 코드 반영 없이 되돌렸다.
+  - 다음 착수 때는 ad-hoc transform prepend 수정부터 하지 말고, fixture + EditMode test 로 `rotate + flip` 기대 계약을 먼저 고정할 것.

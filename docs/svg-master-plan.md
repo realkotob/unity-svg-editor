@@ -170,11 +170,14 @@
 1. fallback / unsupported feature 진단 문구와 노출 위치 정리
 2. rotate / snap UX polish
 3. inspector transform helper와 직접 입력 규칙 정리
-4. `tspan` / `text-anchor` 세부 정밀도 개선 여부 판단
-5. `text`를 overlay 유지 대상으로 둘지, 범위를 더 축소할지 판단
-6. renderer invalidation / rebuild 비용 계측 및 최적화 판단
-7. Unity Vector Image 범위 안에서 필요한 추가 fixture 기반 coverage 확장
-8. `Path editing`
+4. rotate 후 `FlipHorizontal` / `FlipVertical` 가 절대축 기준으로 뒤집히는 backlog 정리
+   - 현재는 회전 없는 경우만 기대대로 보인다
+   - 임시 보정보다 fixture + EditMode test 로 기대 transform contract 를 먼저 고정해야 한다
+5. `tspan` / `text-anchor` 세부 정밀도 개선 여부 판단
+6. `text`를 overlay 유지 대상으로 둘지, 범위를 더 축소할지 판단
+7. renderer invalidation / rebuild 비용 계측 및 최적화 판단
+8. Unity Vector Image 범위 안에서 필요한 추가 fixture 기반 coverage 확장
+9. `Path editing`
    - direct `d` / anchor / control point editing은 planned scope로만 유지
    - 착수 전 `path` AST / serializer / mutation / overlay hit-test 계층부터 정리
 
