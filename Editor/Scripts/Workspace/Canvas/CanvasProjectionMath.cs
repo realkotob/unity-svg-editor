@@ -6,6 +6,45 @@ namespace UnitySvgEditor.Editor
 {
     internal static class CanvasProjectionMath
     {
+        public static Rect GetPreviewSceneRect(PreviewSnapshot previewSnapshot)
+        {
+            return CanvasViewportLayoutUtility.GetPreviewSceneRect(previewSnapshot);
+        }
+
+        public static bool TryGetFrameContentViewportRect(
+            CanvasViewportState viewportState,
+            Rect projectionSceneRect,
+            SvgPreserveAspectRatioMode preserveAspectRatioMode,
+            float framePadding,
+            float frameHeaderHeight,
+            out Rect contentViewportRect)
+        {
+            return CanvasViewportLayoutUtility.TryGetFrameContentViewportRect(
+                viewportState,
+                projectionSceneRect,
+                preserveAspectRatioMode,
+                framePadding,
+                frameHeaderHeight,
+                out contentViewportRect);
+        }
+
+        public static bool TryGetFrameVisibleViewportRect(
+            CanvasViewportState viewportState,
+            Rect projectionSceneRect,
+            SvgPreserveAspectRatioMode preserveAspectRatioMode,
+            float framePadding,
+            float frameHeaderHeight,
+            out Rect visibleViewportRect)
+        {
+            return CanvasViewportLayoutUtility.TryGetFrameVisibleViewportRect(
+                viewportState,
+                projectionSceneRect,
+                preserveAspectRatioMode,
+                framePadding,
+                frameHeaderHeight,
+                out visibleViewportRect);
+        }
+
         public static CanvasSelectionVisual BuildSelectionVisual(
             CanvasViewportState viewportState,
             PreviewSnapshot previewSnapshot,
