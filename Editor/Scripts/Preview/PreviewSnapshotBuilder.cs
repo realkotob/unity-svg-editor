@@ -8,7 +8,8 @@ namespace UnitySvgEditor.Editor
 {
     internal sealed class PreviewSnapshotBuilder
     {
-        private readonly SvgCanvasRenderer _canvasRenderer = new();
+        private readonly SvgDocumentModelSerializer _serializer = new();
+        private readonly SvgModelSceneBuilder _sceneBuilder = new();
 
         public bool TryBuildSnapshot(
             string sourceText,
@@ -25,8 +26,27 @@ namespace UnitySvgEditor.Editor
             out PreviewSnapshot snapshot,
             out string error)
         {
-            if (!_canvasRenderer.TryBuildPreviewSnapshot(documentModel, preferredViewportRect, out snapshot, out error))
+            snapshot = new PreviewSnapshot();
+            error = string.Empty;
+
+            if (documentModel?.Root == null)
+            {
+                error = "Document model root is unavailable.";
                 return false;
+            }
+
+            if (!_sceneBuilder.TryBuild(documentModel, out SvgModelSceneBuildResult sceneBuildResult, out error))
+            {
+                if (!_serializer.TrySerialize(documentModel, out string sourceText, out error))
+                    return false;
+
+                if (!TryBuildImportedSnapshot(sourceText, preferredViewportRect, out snapshot, out error))
+                    return false;
+            }
+            else if (!TryBuildSceneSnapshot(sceneBuildResult, preferredViewportRect, out snapshot, out error))
+            {
+                return false;
+            }
 
             IReadOnlyList<PreviewTextOverlay> textOverlays = PreviewSnapshotTextBuilder.BuildTextOverlays(documentModel);
             IReadOnlyList<PreviewElementGeometry> textElements = PreviewSnapshotTextBuilder.BuildTextElements(
@@ -54,6 +74,61 @@ namespace UnitySvgEditor.Editor
 
             snapshot.TextOverlays = textOverlays;
             return true;
+        }
+
+        private static bool TryBuildSceneSnapshot(
+            SvgModelSceneBuildResult sceneBuildResult,
+            Rect preferredViewportRect,
+            out PreviewSnapshot snapshot,
+            out string error)
+        {
+            snapshot = new PreviewSnapshot();
+            error = string.Empty;
+
+            VectorImage previewVectorImage = null;
+            try
+            {
+                IReadOnlyList<PreviewElementGeometry> elements = PreviewSnapshotGeometryBuilder.BuildElementBounds(
+                    sceneBuildResult.Scene,
+                    sceneBuildResult.NodeMappings,
+                    sceneBuildResult.NodeOpacities);
+                Rect fallbackVisualContentBounds = PreviewSnapshotGeometryBuilder.TryBuildSceneRootBounds(
+                    sceneBuildResult.Scene,
+                    sceneBuildResult.NodeOpacities,
+                    out Rect sceneRootBounds)
+                    ? sceneRootBounds
+                    : default;
+                Rect visualContentBounds = PreviewSnapshotGeometryBuilder.TryBuildVisualContentBounds(elements, out Rect resolvedVisualContentBounds)
+                    ? resolvedVisualContentBounds
+                    : fallbackVisualContentBounds;
+                Rect projectionRect = PreviewSnapshotSceneImportService.ResolveProjectionRect(
+                    sceneBuildResult.DocumentViewportRect,
+                    visualContentBounds,
+                    preferredViewportRect);
+
+                previewVectorImage = PreviewSnapshotSceneImportService.BuildPreviewVectorImage(
+                    sceneBuildResult.Scene,
+                    sceneBuildResult.NodeOpacities,
+                    projectionRect);
+                snapshot = new PreviewSnapshot
+                {
+                    PreviewVectorImage = previewVectorImage,
+                    DocumentViewportRect = sceneBuildResult.DocumentViewportRect,
+                    ProjectionRect = projectionRect,
+                    VisualContentBounds = visualContentBounds,
+                    PreserveAspectRatioMode = sceneBuildResult.PreserveAspectRatioMode,
+                    Elements = elements
+                };
+                return previewVectorImage != null;
+            }
+            catch (Exception ex)
+            {
+                if (previewVectorImage != null)
+                    UnityEngine.Object.Destroy(previewVectorImage);
+
+                error = $"Preview build failed: {ex.Message}";
+                return false;
+            }
         }
 
         internal static bool TryBuildImportedSnapshot(

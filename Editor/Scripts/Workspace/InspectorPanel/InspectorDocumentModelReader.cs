@@ -125,14 +125,14 @@ namespace UnitySvgEditor.Editor
 
             string[] presentationAttributes =
             {
-                "fill",
-                "fill-opacity",
-                "stroke",
-                "stroke-opacity",
-                "stroke-width",
-                "stroke-linecap",
-                "stroke-linejoin",
-                "stroke-dasharray"
+                SvgAttributeName.FILL,
+                SvgAttributeName.FILL_OPACITY,
+                SvgAttributeName.STROKE,
+                SvgAttributeName.STROKE_OPACITY,
+                SvgAttributeName.STROKE_WIDTH,
+                SvgAttributeName.STROKE_LINECAP,
+                SvgAttributeName.STROKE_LINEJOIN,
+                SvgAttributeName.STROKE_DASHARRAY
             };
 
             foreach (string attributeName in presentationAttributes)
@@ -145,9 +145,9 @@ namespace UnitySvgEditor.Editor
             }
 
             if (string.Equals(node.TagName, SvgTagName.PATH, StringComparison.OrdinalIgnoreCase) &&
-                !attributes.ContainsKey("fill"))
+                !attributes.ContainsKey(SvgAttributeName.FILL))
             {
-                attributes["fill"] = "#000000";
+                attributes[SvgAttributeName.FILL] = "#000000";
             }
         }
 

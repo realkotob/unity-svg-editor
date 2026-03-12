@@ -142,8 +142,8 @@ namespace UnitySvgEditor.Editor
                 LayerKey = activeLayerKey,
                 DisplayName = BuildElementDisplayName(hasStableId ? stableId : string.Empty, element.LocalName, depth, siblingIndex),
                 TreeLabel = BuildTreeLabel(hasStableId ? stableId : string.Empty, element.LocalName, siblingIndex),
-                MaskReferenceId = ResolveReferencedFragmentId(element, "mask"),
-                ClipPathReferenceId = ResolveReferencedFragmentId(element, "clip-path")
+                MaskReferenceId = ResolveReferencedFragmentId(element, SvgAttributeName.MASK),
+                ClipPathReferenceId = ResolveReferencedFragmentId(element, SvgAttributeName.CLIP_PATH)
             };
         }
 

@@ -151,7 +151,7 @@ namespace UnitySvgEditor.Editor
             if (element == null)
                 return false;
 
-            var value = element.GetAttribute("id")?.Trim();
+            var value = element.GetAttribute(SvgAttributeName.ID)?.Trim();
             if (string.IsNullOrWhiteSpace(value))
                 return false;
 
@@ -202,11 +202,11 @@ namespace UnitySvgEditor.Editor
             if (element == null)
                 return true;
 
-            var display = element.GetAttribute("display");
+            var display = element.GetAttribute(SvgAttributeName.DISPLAY);
             if (string.Equals(display, "none", StringComparison.OrdinalIgnoreCase))
                 return false;
 
-            var visibility = element.GetAttribute("visibility");
+            var visibility = element.GetAttribute(SvgAttributeName.VISIBILITY);
             return !string.Equals(visibility, "hidden", StringComparison.OrdinalIgnoreCase) &&
                    !string.Equals(visibility, "collapse", StringComparison.OrdinalIgnoreCase);
         }
@@ -215,16 +215,16 @@ namespace UnitySvgEditor.Editor
         {
             if (element == null || root == null)
                 return false;
-            if (!string.Equals(element.LocalName, "g", StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(element.LocalName, SvgTagName.GROUP, StringComparison.OrdinalIgnoreCase))
                 return false;
             if (ReferenceEquals(element.ParentNode, root))
                 return true;
 
-            var groupMode = element.GetAttribute("inkscape:groupmode");
+            var groupMode = element.GetAttribute(SvgAttributeName.INKSCAPE_GROUPMODE);
             if (string.Equals(groupMode, "layer", StringComparison.OrdinalIgnoreCase))
                 return true;
 
-            var namespaceMode = element.GetAttribute("groupmode", "http://www.inkscape.org/namespaces/inkscape");
+            var namespaceMode = element.GetAttribute(SvgAttributeName.GROUPMODE, "http://www.inkscape.org/namespaces/inkscape");
             return string.Equals(namespaceMode, "layer", StringComparison.OrdinalIgnoreCase);
         }
     }

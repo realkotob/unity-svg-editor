@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnitySvgEditor.Editor.Workspace.Canvas;
 
 namespace UnitySvgEditor.Editor
 {

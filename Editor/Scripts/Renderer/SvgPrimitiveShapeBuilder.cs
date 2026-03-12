@@ -16,12 +16,12 @@ namespace UnitySvgEditor.Editor
             out string error)
         {
             error = string.Empty;
-            if (!SvgAttributeUtility.TryGetFloat(node.RawAttributes, "x", out var x))
+            if (!SvgAttributeUtility.TryGetFloat(node.RawAttributes, SvgAttributeName.X, out var x))
                 x = 0f;
-            if (!SvgAttributeUtility.TryGetFloat(node.RawAttributes, "y", out var y))
+            if (!SvgAttributeUtility.TryGetFloat(node.RawAttributes, SvgAttributeName.Y, out var y))
                 y = 0f;
-            if (!SvgAttributeUtility.TryGetFloat(node.RawAttributes, "width", out var width) ||
-                !SvgAttributeUtility.TryGetFloat(node.RawAttributes, "height", out var height))
+            if (!SvgAttributeUtility.TryGetFloat(node.RawAttributes, SvgAttributeName.WIDTH, out var width) ||
+                !SvgAttributeUtility.TryGetFloat(node.RawAttributes, SvgAttributeName.HEIGHT, out var height))
             {
                 error = $"Rect '{node.LegacyElementKey}' is missing width/height.";
                 return false;
@@ -30,8 +30,8 @@ namespace UnitySvgEditor.Editor
             var shape = _shapeStyleBuilder.CreateStyledShape(documentModel, node, nodesByXmlId);
             var rx = 0f;
             var ry = 0f;
-            SvgAttributeUtility.TryGetFloat(node.RawAttributes, "rx", out rx);
-            SvgAttributeUtility.TryGetFloat(node.RawAttributes, "ry", out ry);
+            SvgAttributeUtility.TryGetFloat(node.RawAttributes, SvgAttributeName.RX, out rx);
+            SvgAttributeUtility.TryGetFloat(node.RawAttributes, SvgAttributeName.RY, out ry);
             if (Mathf.Approximately(rx, 0f) && !Mathf.Approximately(ry, 0f))
                 rx = ry;
             if (Mathf.Approximately(ry, 0f) && !Mathf.Approximately(rx, 0f))
@@ -56,11 +56,11 @@ namespace UnitySvgEditor.Editor
             out string error)
         {
             error = string.Empty;
-            if (!SvgAttributeUtility.TryGetFloat(node.RawAttributes, "cx", out var cx))
+            if (!SvgAttributeUtility.TryGetFloat(node.RawAttributes, SvgAttributeName.CX, out var cx))
                 cx = 0f;
-            if (!SvgAttributeUtility.TryGetFloat(node.RawAttributes, "cy", out var cy))
+            if (!SvgAttributeUtility.TryGetFloat(node.RawAttributes, SvgAttributeName.CY, out var cy))
                 cy = 0f;
-            if (!SvgAttributeUtility.TryGetFloat(node.RawAttributes, "r", out var radius))
+            if (!SvgAttributeUtility.TryGetFloat(node.RawAttributes, SvgAttributeName.R, out var radius))
             {
                 error = $"Circle '{node.LegacyElementKey}' is missing radius.";
                 return false;
@@ -80,12 +80,12 @@ namespace UnitySvgEditor.Editor
             out string error)
         {
             error = string.Empty;
-            if (!SvgAttributeUtility.TryGetFloat(node.RawAttributes, "cx", out var cx))
+            if (!SvgAttributeUtility.TryGetFloat(node.RawAttributes, SvgAttributeName.CX, out var cx))
                 cx = 0f;
-            if (!SvgAttributeUtility.TryGetFloat(node.RawAttributes, "cy", out var cy))
+            if (!SvgAttributeUtility.TryGetFloat(node.RawAttributes, SvgAttributeName.CY, out var cy))
                 cy = 0f;
-            if (!SvgAttributeUtility.TryGetFloat(node.RawAttributes, "rx", out var rx) ||
-                !SvgAttributeUtility.TryGetFloat(node.RawAttributes, "ry", out var ry))
+            if (!SvgAttributeUtility.TryGetFloat(node.RawAttributes, SvgAttributeName.RX, out var rx) ||
+                !SvgAttributeUtility.TryGetFloat(node.RawAttributes, SvgAttributeName.RY, out var ry))
             {
                 error = $"Ellipse '{node.LegacyElementKey}' is missing radius.";
                 return false;
@@ -105,13 +105,13 @@ namespace UnitySvgEditor.Editor
             out string error)
         {
             error = string.Empty;
-            if (!SvgAttributeUtility.TryGetFloat(node.RawAttributes, "x1", out var x1))
+            if (!SvgAttributeUtility.TryGetFloat(node.RawAttributes, SvgAttributeName.X1, out var x1))
                 x1 = 0f;
-            if (!SvgAttributeUtility.TryGetFloat(node.RawAttributes, "y1", out var y1))
+            if (!SvgAttributeUtility.TryGetFloat(node.RawAttributes, SvgAttributeName.Y1, out var y1))
                 y1 = 0f;
-            if (!SvgAttributeUtility.TryGetFloat(node.RawAttributes, "x2", out var x2))
+            if (!SvgAttributeUtility.TryGetFloat(node.RawAttributes, SvgAttributeName.X2, out var x2))
                 x2 = 0f;
-            if (!SvgAttributeUtility.TryGetFloat(node.RawAttributes, "y2", out var y2))
+            if (!SvgAttributeUtility.TryGetFloat(node.RawAttributes, SvgAttributeName.Y2, out var y2))
                 y2 = 0f;
 
             var shape = _shapeStyleBuilder.CreateStyledShape(documentModel, node, nodesByXmlId, allowDefaultFill: false);
@@ -136,7 +136,7 @@ namespace UnitySvgEditor.Editor
             out string error)
         {
             error = string.Empty;
-            if (!SvgAttributeUtility.TryGetAttribute(node.RawAttributes, "d", out var pathData))
+            if (!SvgAttributeUtility.TryGetAttribute(node.RawAttributes, SvgAttributeName.D, out var pathData))
             {
                 error = $"Path '{node.LegacyElementKey}' is missing geometry.";
                 return false;
@@ -164,7 +164,7 @@ namespace UnitySvgEditor.Editor
             bool closed)
         {
             error = string.Empty;
-            if (!SvgAttributeUtility.TryGetAttribute(node.RawAttributes, "points", out var pointsText) ||
+            if (!SvgAttributeUtility.TryGetAttribute(node.RawAttributes, SvgAttributeName.POINTS, out var pointsText) ||
                 !SvgPathGeometryParser.TryParsePoints(pointsText, out var points) ||
                 points.Count < 2)
             {

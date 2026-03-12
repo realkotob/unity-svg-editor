@@ -46,7 +46,7 @@ namespace UnitySvgEditor.Editor
             int siblingIndex)
         {
             bool isRoot = ReferenceEquals(element, context.Root);
-            bool isDefinitionsContainer = string.Equals(element.LocalName, "defs", StringComparison.OrdinalIgnoreCase);
+            bool isDefinitionsContainer = string.Equals(element.LocalName, SvgTagName.DEFS, StringComparison.OrdinalIgnoreCase);
             bool isDefinitionNode = isDefinitionContext || isDefinitionsContainer;
             SvgDocumentXmlUtility.TryGetId(element, out string xmlId);
 
@@ -199,13 +199,13 @@ namespace UnitySvgEditor.Editor
                 return SvgNodeKind.Other;
 
             string localName = element.LocalName;
-            if (string.Equals(localName, "svg", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(localName, SvgTagName.SVG, StringComparison.OrdinalIgnoreCase))
                 return SvgNodeKind.Root;
-            if (string.Equals(localName, "defs", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(localName, SvgTagName.DEFS, StringComparison.OrdinalIgnoreCase))
                 return SvgNodeKind.Definitions;
-            if (string.Equals(localName, "g", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(localName, SvgTagName.GROUP, StringComparison.OrdinalIgnoreCase))
                 return SvgNodeKind.Group;
-            if (string.Equals(localName, "use", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(localName, SvgTagName.USE, StringComparison.OrdinalIgnoreCase))
                 return SvgNodeKind.Use;
             if (IsTextTag(localName))
                 return SvgNodeKind.Text;
@@ -217,9 +217,9 @@ namespace UnitySvgEditor.Editor
 
         private static bool IsTextTag(string localName)
         {
-            return string.Equals(localName, "text", StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(localName, "tspan", StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(localName, "textPath", StringComparison.OrdinalIgnoreCase);
+            return string.Equals(localName, SvgTagName.TEXT, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(localName, SvgTagName.TSPAN, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(localName, SvgTagName.TEXT_PATH, StringComparison.OrdinalIgnoreCase);
         }
 
         private static string BuildDirectTextContent(XmlElement element)
@@ -241,13 +241,13 @@ namespace UnitySvgEditor.Editor
 
         private static bool IsShapeTag(string localName)
         {
-            return string.Equals(localName, "rect", StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(localName, "circle", StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(localName, "ellipse", StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(localName, "line", StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(localName, "polyline", StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(localName, "polygon", StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(localName, "path", StringComparison.OrdinalIgnoreCase);
+            return string.Equals(localName, SvgTagName.RECT, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(localName, SvgTagName.CIRCLE, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(localName, SvgTagName.ELLIPSE, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(localName, SvgTagName.LINE, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(localName, SvgTagName.POLYLINE, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(localName, SvgTagName.POLYGON, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(localName, SvgTagName.PATH, StringComparison.OrdinalIgnoreCase);
         }
 
         private static void CollectNamespaces(XmlElement root, IDictionary<string, string> namespaces)

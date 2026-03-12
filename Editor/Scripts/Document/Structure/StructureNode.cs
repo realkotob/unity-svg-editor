@@ -1,3 +1,5 @@
+using UnitySvgEditor.Editor.Workspace.Canvas;
+
 namespace UnitySvgEditor.Editor
 {
     internal sealed class StructureNode

@@ -77,8 +77,8 @@
 - 가능하면 `500`줄 이하 근접
 
 3. Renderer snapshot assemble 중복 재점검
-- `SvgCanvasRenderer`
 - `PreviewSnapshotBuilder`
+- `PreviewSnapshotSceneImportService`
 - `PreviewSnapshotGeometryBuilder`
 
 4. Canvas 후속

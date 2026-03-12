@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Unity.VectorGraphics;
 using UnityEngine;
 
-namespace UnitySvgEditor.Editor
+namespace UnitySvgEditor.Editor.Workspace.Canvas
 {
     internal sealed class CanvasDefinitionOverlayBuilder
     {

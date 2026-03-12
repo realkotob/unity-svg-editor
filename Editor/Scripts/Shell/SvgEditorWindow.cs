@@ -10,6 +10,7 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Core.UI.Foundation;
+using UnitySvgEditor.Editor.Workspace.Canvas;
 
 namespace UnitySvgEditor.Editor
 {

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace UnitySvgEditor.Editor
+namespace UnitySvgEditor.Editor.Workspace.Canvas
 {
     internal sealed class CanvasTransientDocumentModelSession
     {
@@ -32,7 +32,7 @@ namespace UnitySvgEditor.Editor
             _workingDocumentModel = CloneDocumentModel(document.DocumentModel);
             _activeNodeId = sourceNode.Id;
             _baseTransform = sourceNode.RawAttributes != null &&
-                             sourceNode.RawAttributes.TryGetValue("transform", out string transform)
+                             sourceNode.RawAttributes.TryGetValue(SvgAttributeName.TRANSFORM, out string transform)
                 ? transform ?? string.Empty
                 : string.Empty;
             _hasPendingMutation = false;
@@ -132,7 +132,7 @@ namespace UnitySvgEditor.Editor
             if (_workingDocumentModel == null ||
                 !_workingDocumentModel.TryGetNode(_activeNodeId, out SvgNodeModel node) ||
                 node?.RawAttributes == null ||
-                !node.RawAttributes.TryGetValue("transform", out string currentTransform))
+                !node.RawAttributes.TryGetValue(SvgAttributeName.TRANSFORM, out string currentTransform))
             {
                 return false;
             }
@@ -160,9 +160,9 @@ namespace UnitySvgEditor.Editor
 
             Dictionary<string, string> attributes = CloneAttributes(node.RawAttributes);
             if (string.IsNullOrWhiteSpace(transformValue))
-                attributes.Remove("transform");
+                attributes.Remove(SvgAttributeName.TRANSFORM);
             else
-                attributes["transform"] = transformValue;
+                attributes[SvgAttributeName.TRANSFORM] = transformValue;
 
             node.RawAttributes = attributes;
         }

@@ -8,6 +8,8 @@ namespace UnitySvgEditor.Editor
         public const string TSPAN = "tspan";
         public const string TEXT_PATH = "textPath";
         public const string USE = "use";
+        public const string FILTER = "filter";
+        public const string IMAGE = "image";
         public const string RECT = "rect";
         public const string CIRCLE = "circle";
         public const string ELLIPSE = "ellipse";
@@ -19,6 +21,7 @@ namespace UnitySvgEditor.Editor
         public const string MASK = "mask";
         public const string LINEAR_GRADIENT = "linearGradient";
         public const string RADIAL_GRADIENT = "radialGradient";
+        public const string STYLE = "style";
         public const string STOP = "stop";
         public const string DEFS = "defs";
     }

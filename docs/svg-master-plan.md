@@ -86,7 +86,7 @@
 - 제품 feature는 Unity Vector Image가 처리 가능한 SVG feature 범위를 넘어서지 않는다.
 - direct renderer coverage 확대도 Unity Vector Image 상한 안에서만 진행한다.
 - Unity Vector Image 바깥의 SVG spec feature는 새 제품 범위로 채택하지 않는다.
-- coverage가 부족한 feature는 `SvgCanvasRenderer` 내부 fallback으로만 유지한다.
+- coverage가 부족한 feature는 preview snapshot fallback 경로 안에서만 유지한다.
 
 ## 5. 현재 완료 범위
 

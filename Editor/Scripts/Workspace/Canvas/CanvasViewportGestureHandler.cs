@@ -3,7 +3,7 @@ using Core.UI.Foundation;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace UnitySvgEditor.Editor
+namespace UnitySvgEditor.Editor.Workspace.Canvas
 {
     internal sealed class CanvasViewportGestureHandler
     {

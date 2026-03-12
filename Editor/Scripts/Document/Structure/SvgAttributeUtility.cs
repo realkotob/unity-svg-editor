@@ -48,7 +48,7 @@ namespace UnitySvgEditor.Editor
         public static bool TryGetOpacity(IReadOnlyDictionary<string, string> attributes, out float opacity)
         {
             opacity = 1f;
-            return TryGetFloat(attributes, "opacity", out opacity);
+            return TryGetFloat(attributes, SvgAttributeName.OPACITY, out opacity);
         }
     }
 }

@@ -18,13 +18,13 @@ namespace UnitySvgEditor.Editor
 
         public SvgNodeModel Root => TryGetNode(RootId, out var root) ? root : null;
 
-        public string Width => GetRootAttribute("width");
+        public string Width => GetRootAttribute(SvgAttributeName.WIDTH);
 
-        public string Height => GetRootAttribute("height");
+        public string Height => GetRootAttribute(SvgAttributeName.HEIGHT);
 
-        public string ViewBox => GetRootAttribute("viewBox");
+        public string ViewBox => GetRootAttribute(SvgAttributeName.VIEW_BOX);
 
-        public string PreserveAspectRatio => GetRootAttribute("preserveAspectRatio");
+        public string PreserveAspectRatio => GetRootAttribute(SvgAttributeName.PRESERVE_ASPECT_RATIO);
 
         public bool TryGetNode(SvgNodeId nodeId, out SvgNodeModel node)
         {

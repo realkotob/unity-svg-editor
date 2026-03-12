@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace UnitySvgEditor.Editor
+namespace UnitySvgEditor.Editor.Workspace.Canvas
 {
     internal sealed class CanvasInteractionSelectionResolver
     {

@@ -4,6 +4,7 @@ using System.Linq;
 using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnitySvgEditor.Editor.Workspace.Canvas;
 
 namespace UnitySvgEditor.Editor
 {

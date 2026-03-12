@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Unity.VectorGraphics;
 using UnityEngine;
+using UnitySvgEditor.Editor.Workspace.Canvas;
 
 namespace UnitySvgEditor.Editor
 {

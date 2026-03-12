@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine.UIElements;
+using UnitySvgEditor.Editor.Workspace.Canvas;
 
 namespace UnitySvgEditor.Editor
 {
@@ -129,8 +130,8 @@ namespace UnitySvgEditor.Editor
                 LayerKey = activeLayerKey,
                 DisplayName = BuildElementDisplayName(node.XmlId, node.TagName, node.Depth, node.SiblingIndex),
                 TreeLabel = BuildTreeLabel(node.XmlId, node.TagName, node.SiblingIndex),
-                MaskReferenceId = ResolveReferencedFragmentId(node, "mask"),
-                ClipPathReferenceId = ResolveReferencedFragmentId(node, "clip-path")
+                MaskReferenceId = ResolveReferencedFragmentId(node, SvgAttributeName.MASK),
+                ClipPathReferenceId = ResolveReferencedFragmentId(node, SvgAttributeName.CLIP_PATH)
             };
         }
 
@@ -196,13 +197,13 @@ namespace UnitySvgEditor.Editor
             if (node.ParentId == rootNode.Id)
                 return true;
 
-            if (TryGetRawAttribute(node, "inkscape:groupmode", out string prefixedMode) &&
+            if (TryGetRawAttribute(node, SvgAttributeName.INKSCAPE_GROUPMODE, out string prefixedMode) &&
                 string.Equals(prefixedMode, "layer", StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
 
-            return TryGetRawAttribute(node, "groupmode", out string rawMode) &&
+            return TryGetRawAttribute(node, SvgAttributeName.GROUPMODE, out string rawMode) &&
                    string.Equals(rawMode, "layer", StringComparison.OrdinalIgnoreCase);
         }
 
@@ -211,13 +212,13 @@ namespace UnitySvgEditor.Editor
             if (node == null)
                 return true;
 
-            if (TryGetRawAttribute(node, "display", out string display) &&
+            if (TryGetRawAttribute(node, SvgAttributeName.DISPLAY, out string display) &&
                 string.Equals(display, "none", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
 
-            return !TryGetRawAttribute(node, "visibility", out string visibility) ||
+            return !TryGetRawAttribute(node, SvgAttributeName.VISIBILITY, out string visibility) ||
                    (!string.Equals(visibility, "hidden", StringComparison.OrdinalIgnoreCase) &&
                     !string.Equals(visibility, "collapse", StringComparison.OrdinalIgnoreCase));
         }

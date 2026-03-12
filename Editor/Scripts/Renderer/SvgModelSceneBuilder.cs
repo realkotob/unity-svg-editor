@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using Unity.VectorGraphics;
 using UnityEngine;
+using UnitySvgEditor.Editor.Workspace.Canvas;
 
 namespace UnitySvgEditor.Editor
 {
@@ -73,7 +73,7 @@ namespace UnitySvgEditor.Editor
             {
                 Root = rootSceneNode
             };
-            result.DocumentViewportRect = ResolveDocumentViewport(documentModel);
+            result.DocumentViewportRect = SvgDocumentViewportResolver.Resolve(documentModel);
             result.PreserveAspectRatioMode = SvgPreserveAspectRatioMode.Parse(documentModel.PreserveAspectRatio);
 
             var nodesByXmlId = SvgNodeLookupUtility.BuildNodeLookupByXmlId(documentModel);
@@ -154,13 +154,22 @@ namespace UnitySvgEditor.Editor
             return true;
         }
 
-        private static Rect ResolveDocumentViewport(SvgDocumentModel documentModel)
+        private static bool IsHidden(SvgNodeModel node)
         {
-            if (TryParseViewBox(documentModel?.ViewBox, out Rect viewBox))
+            return SvgAttributeUtility.TryGetAttribute(node?.RawAttributes, SvgAttributeName.DISPLAY, out var display) &&
+                   string.Equals(display, "none", StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    internal static class SvgDocumentViewportResolver
+    {
+        public static Rect Resolve(SvgDocumentModel documentModel)
+        {
+            if (TryParseViewBox(documentModel?.ViewBox, out var viewBox))
                 return viewBox;
 
-            float width = ParseLength(documentModel?.Width);
-            float height = ParseLength(documentModel?.Height);
+            var width = ParseLength(documentModel?.Width);
+            var height = ParseLength(documentModel?.Height);
             return width > Mathf.Epsilon && height > Mathf.Epsilon
                 ? new Rect(0f, 0f, width, height)
                 : default;
@@ -172,7 +181,7 @@ namespace UnitySvgEditor.Editor
             if (string.IsNullOrWhiteSpace(viewBoxText))
                 return false;
 
-            string[] tokens = viewBoxText.Split(new[] { ' ', ',', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            var tokens = viewBoxText.Split(new[] { ' ', ',', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
             if (tokens.Length != 4 ||
                 !SvgAttributeUtility.TryParseFloat(tokens[0], out var minX) ||
                 !SvgAttributeUtility.TryParseFloat(tokens[1], out var minY) ||
@@ -191,7 +200,7 @@ namespace UnitySvgEditor.Editor
             if (string.IsNullOrWhiteSpace(value))
                 return 0f;
 
-            int length = 0;
+            var length = 0;
             while (length < value.Length && ("+-0123456789.eE".IndexOf(value[length]) >= 0))
                 length++;
 
@@ -199,92 +208,5 @@ namespace UnitySvgEditor.Editor
                 ? parsed
                 : 0f;
         }
-
-
-        private static bool TryParseDasharray(
-            SvgDocumentModel documentModel,
-            SvgNodeModel node,
-            out float[] pattern)
-        {
-            pattern = null;
-            if (!SvgInheritedAttributeResolver.TryGetInheritedAttribute(documentModel, node, "stroke-dasharray", out var dasharray) ||
-                string.IsNullOrWhiteSpace(dasharray))
-            {
-                return false;
-            }
-
-            var tokens = dasharray.Split(new[] { ' ', ',', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            var values = new List<float>(tokens.Length);
-            for (var index = 0; index < tokens.Length; index++)
-            {
-                if (!SvgAttributeUtility.TryParseFloat(tokens[index], out var value))
-                    return false;
-
-                values.Add(Mathf.Max(0f, value));
-            }
-
-            pattern = values.Count > 0 ? values.ToArray() : null;
-            return pattern != null;
-        }
-
-        private static bool TryParseOffset(string offsetText, out float offset)
-        {
-            offset = 0f;
-            if (string.IsNullOrWhiteSpace(offsetText))
-                return false;
-
-            var normalized = offsetText.Trim();
-            if (normalized.EndsWith("%", StringComparison.Ordinal))
-            {
-                return SvgAttributeUtility.TryParseFloat(normalized[..^1], out var percent) &&
-                       TryNormalizeStop(percent / 100f, out offset);
-            }
-
-            return SvgAttributeUtility.TryParseFloat(normalized, out var raw) &&
-                   TryNormalizeStop(raw, out offset);
-        }
-
-        private static bool TryNormalizeStop(float value, out float offset)
-        {
-            offset = Mathf.Clamp01(value);
-            return !float.IsNaN(value) && !float.IsInfinity(value);
-        }
-
-        private static bool IsHidden(SvgNodeModel node)
-        {
-            return SvgAttributeUtility.TryGetAttribute(node?.RawAttributes, "display", out var display) &&
-                   string.Equals(display, "none", StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static bool ShouldIncludeMaskNode(SvgNodeModel node)
-        {
-            if (!SvgAttributeUtility.TryGetAttribute(node?.RawAttributes, "fill", out var fillValue))
-                return false;
-
-            if (!SvgAttributeUtility.TryParseColor(fillValue, out var color))
-                return false;
-
-            var opacity = 1f;
-            if (SvgAttributeUtility.TryGetFloat(node?.RawAttributes, "fill-opacity", out var resolvedOpacity))
-                opacity = Mathf.Clamp01(resolvedOpacity);
-            var luminance = (color.r * 0.2126f) + (color.g * 0.7152f) + (color.b * 0.0722f);
-            return opacity > 0.5f && luminance > 0.5f;
-        }
-
-        private static FillMode ResolveFillMode(SvgDocumentModel documentModel, SvgNodeModel node)
-        {
-            return SvgInheritedAttributeResolver.ResolveFillMode(documentModel, node);
-        }
-
-        private static bool TryGetFloat(IReadOnlyDictionary<string, string> attributes, string name, out float value)
-        {
-            return SvgAttributeUtility.TryGetFloat(attributes, name, out value);
-        }
-
-        private static bool TryParseFloat(string text, out float value)
-        {
-            return SvgAttributeUtility.TryParseFloat(text, out value);
-        }
-
     }
 }

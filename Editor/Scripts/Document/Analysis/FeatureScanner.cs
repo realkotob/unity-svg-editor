@@ -30,44 +30,44 @@ namespace UnitySvgEditor.Editor
             {
                 result.ElementCount++;
                 var localName = node.LocalName;
-                if (string.Equals(localName, "path", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(localName, SvgTagName.PATH, StringComparison.OrdinalIgnoreCase))
                 {
                     result.PathElementCount++;
                 }
 
                 switch (localName)
                 {
-                    case "linearGradient":
+                    case SvgTagName.LINEAR_GRADIENT:
                         result.HasLinearGradient = true;
                         break;
-                    case "radialGradient":
+                    case SvgTagName.RADIAL_GRADIENT:
                         result.HasRadialGradient = true;
                         break;
-                    case "clipPath":
+                    case SvgTagName.CLIP_PATH:
                         result.HasClipPath = true;
                         break;
-                    case "mask":
+                    case SvgTagName.MASK:
                         result.HasMask = true;
                         break;
-                    case "filter":
+                    case SvgTagName.FILTER:
                         result.HasFilter = true;
                         break;
-                    case "text":
+                    case SvgTagName.TEXT:
                         result.HasText = true;
                         break;
-                    case "tspan":
+                    case SvgTagName.TSPAN:
                         result.HasTspan = true;
                         break;
-                    case "textPath":
+                    case SvgTagName.TEXT_PATH:
                         result.HasTextPath = true;
                         break;
-                    case "image":
+                    case SvgTagName.IMAGE:
                         result.HasImage = true;
                         break;
-                    case "use":
+                    case SvgTagName.USE:
                         result.HasUse = true;
                         break;
-                    case "style":
+                    case SvgTagName.STYLE:
                         result.HasStyleTag = true;
                         break;
                 }
@@ -82,7 +82,7 @@ namespace UnitySvgEditor.Editor
                             continue;
                         }
 
-                        if (string.Equals(attribute.LocalName, "transform", StringComparison.OrdinalIgnoreCase))
+                        if (string.Equals(attribute.LocalName, SvgAttributeName.TRANSFORM, StringComparison.OrdinalIgnoreCase))
                         {
                             result.HasTransformAttribute = true;
                             break;

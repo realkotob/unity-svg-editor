@@ -123,7 +123,7 @@ namespace UnitySvgEditor.Editor
             state.StrokeWidthEnabled = false;
             state.OpacityEnabled = false;
             state.Opacity = 1f;
-            state.CornerRadiusEnabled = string.Equals(tagName, "rect", System.StringComparison.OrdinalIgnoreCase);
+            state.CornerRadiusEnabled = string.Equals(tagName, SvgTagName.RECT, System.StringComparison.OrdinalIgnoreCase);
             state.CornerRadius = 0f;
             state.DashLength = MissingDashLength;
             state.DashGap = MissingDashGap;
@@ -138,37 +138,37 @@ namespace UnitySvgEditor.Editor
             state.StrokeLinecap = string.Empty;
             state.StrokeLinejoin = string.Empty;
 
-            state.FillEnabled = TryGetNonEmpty(attributes, "fill", out var fillRaw) && !IsDisabledPaintValue(fillRaw);
+            state.FillEnabled = TryGetNonEmpty(attributes, SvgAttributeName.FILL, out var fillRaw) && !IsDisabledPaintValue(fillRaw);
             if (state.FillEnabled && ColorUtility.TryParseHtmlString(fillRaw.Trim(), out var fillColor))
                 state.FillColor = fillColor;
-            if (TryGetFloat(attributes, "fill-opacity", out var fillOpacity))
+            if (TryGetFloat(attributes, SvgAttributeName.FILL_OPACITY, out var fillOpacity))
                 state.FillColor = WithCombinedAlpha(state.FillColor, fillOpacity);
 
-            state.StrokeEnabled = TryGetNonEmpty(attributes, "stroke", out var strokeRaw) && !IsDisabledPaintValue(strokeRaw);
+            state.StrokeEnabled = TryGetNonEmpty(attributes, SvgAttributeName.STROKE, out var strokeRaw) && !IsDisabledPaintValue(strokeRaw);
             if (state.StrokeEnabled && ColorUtility.TryParseHtmlString(strokeRaw.Trim(), out var strokeColor))
                 state.StrokeColor = strokeColor;
-            if (TryGetFloat(attributes, "stroke-opacity", out var strokeOpacity))
+            if (TryGetFloat(attributes, SvgAttributeName.STROKE_OPACITY, out var strokeOpacity))
                 state.StrokeColor = WithCombinedAlpha(state.StrokeColor, strokeOpacity);
 
-            state.StrokeWidthEnabled = TryGetFloat(attributes, "stroke-width", out var strokeWidth);
+            state.StrokeWidthEnabled = TryGetFloat(attributes, SvgAttributeName.STROKE_WIDTH, out var strokeWidth);
             if (state.StrokeWidthEnabled)
                 state.StrokeWidth = Mathf.Max(0f, strokeWidth);
             else if (state.StrokeEnabled)
                 state.StrokeWidth = 1f;
 
-            state.OpacityEnabled = TryGetFloat(attributes, "opacity", out var opacity);
+            state.OpacityEnabled = TryGetFloat(attributes, SvgAttributeName.OPACITY, out var opacity);
             if (state.OpacityEnabled)
                 state.Opacity = Mathf.Clamp01(opacity);
 
             if (state.CornerRadiusEnabled)
             {
-                if (TryGetFloat(attributes, "rx", out var radiusX))
+                if (TryGetFloat(attributes, SvgAttributeName.RX, out var radiusX))
                     state.CornerRadius = Mathf.Max(0f, radiusX);
-                else if (TryGetFloat(attributes, "ry", out var radiusY))
+                else if (TryGetFloat(attributes, SvgAttributeName.RY, out var radiusY))
                     state.CornerRadius = Mathf.Max(0f, radiusY);
             }
 
-            state.DasharrayEnabled = TryGetNonEmpty(attributes, "stroke-dasharray", out var dashRaw);
+            state.DasharrayEnabled = TryGetNonEmpty(attributes, SvgAttributeName.STROKE_DASHARRAY, out var dashRaw);
             if (state.DasharrayEnabled)
             {
                 ParseDasharray(dashRaw, out var dashLength, out var dashGap);
@@ -176,12 +176,12 @@ namespace UnitySvgEditor.Editor
                 state.DashGap = dashGap;
             }
 
-            state.TransformEnabled = TryGetNonEmpty(attributes, "transform", out var transformRaw);
+            state.TransformEnabled = TryGetNonEmpty(attributes, SvgAttributeName.TRANSFORM, out var transformRaw);
             state.Transform = state.TransformEnabled ? transformRaw.Trim() : string.Empty;
             TrySyncTransformHelperFromText(state);
 
-            state.StrokeLinecap = NormalizeStrokeValue(attributes, "stroke-linecap", new[] { "butt", "round", "square" });
-            state.StrokeLinejoin = NormalizeStrokeValue(attributes, "stroke-linejoin", new[] { "miter", "round", "bevel" });
+            state.StrokeLinecap = NormalizeStrokeValue(attributes, SvgAttributeName.STROKE_LINECAP, new[] { "butt", "round", "square" });
+            state.StrokeLinejoin = NormalizeStrokeValue(attributes, SvgAttributeName.STROKE_LINEJOIN, new[] { "miter", "round", "bevel" });
         }
 
         public static bool TrySyncTransformHelperFromText(InspectorPanelState state)

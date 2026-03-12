@@ -150,7 +150,7 @@ Unity Vector Graphics 문서 기준으로, API 표면에서 직접 표현 가능
 - `Editor/Scripts/Renderer/SvgModelSceneBuilder.cs`
   - shape / path / gradient / clipPath / basic mask / `use` direct scene 처리
   - `text`, `tspan`, `textPath`는 drawable 생성 대신 별도 경로로 남긴다
-- `Editor/Scripts/Renderer/SvgCanvasRenderer.cs`
+- `Editor/Scripts/Preview/PreviewSnapshotBuilder.cs`
   - direct scene build 실패 시 import fallback 사용
 - `Editor/Scripts/Preview/PreviewSnapshotBuilder.cs`
   - `PreviewVectorImage`와 `TextOverlays`를 분리해 다룬다

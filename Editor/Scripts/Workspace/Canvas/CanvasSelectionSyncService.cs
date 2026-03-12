@@ -1,4 +1,4 @@
-namespace UnitySvgEditor.Editor
+namespace UnitySvgEditor.Editor.Workspace.Canvas
 {
     internal sealed class CanvasSelectionSyncService
     {
