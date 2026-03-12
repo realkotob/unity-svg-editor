@@ -14,6 +14,7 @@ namespace UnitySvgEditor.Editor
 
             public const string TOOL_BUTTON_ACTIVE = Prefix + "tool-btn--active";
             public const string CANVAS_OVERLAY_READONLY = Prefix + "canvas-overlay--readonly";
+            public const string CANVAS_OVERLAY_PAN_ARMED = Prefix + "canvas-overlay--pan-armed";
         }
 
         private const float MIN_CANVAS_ZOOM = 0.25f;
@@ -72,6 +73,9 @@ namespace UnitySvgEditor.Editor
                 canvasOverlay.EnableClass(
                     UssClassName.CANVAS_OVERLAY_READONLY,
                     ActiveTool != CanvasTool.Move);
+                canvasOverlay.EnableClass(
+                    UssClassName.CANVAS_OVERLAY_PAN_ARMED,
+                    IsSpacePanArmed);
             }
         }
 

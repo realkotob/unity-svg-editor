@@ -85,6 +85,9 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
+            if (!SvgSafeMaskArtifactSanitizer.TrySanitize(sourceText, out sourceText, out _, out error))
+                return false;
+
             var vectorImageAsset = AssetDatabase.LoadAssetAtPath<VectorImage>(assetPath);
             document = new DocumentSession
             {
@@ -173,6 +176,9 @@ namespace UnitySvgEditor.Editor
                 if (!_documentModelSerializer.TrySerialize(document.DocumentModel, out sourceText, out error))
                     return false;
             }
+
+            if (!SvgSafeMaskArtifactSanitizer.TrySanitize(sourceText, out sourceText, out _, out error))
+                return false;
 
             return ValidateXml(sourceText, out error);
         }

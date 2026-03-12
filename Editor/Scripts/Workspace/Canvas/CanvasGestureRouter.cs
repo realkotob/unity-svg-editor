@@ -263,14 +263,13 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            if (TryResolveInteractionElement(localPosition, evt.modifiers, out PreviewElementGeometry interactionElement, out string interactionElementKey) &&
-                TryBeginMoveSelectedElement(localPosition, evt.pointerId, interactionElementKey))
+            if (TryBeginMoveSelectedElement(localPosition, evt.pointerId, evt.modifiers))
             {
                 evt.StopPropagation();
                 return;
             }
 
-            if (!TryResolveInteractionElement(localPosition, evt.modifiers, out interactionElement, out interactionElementKey))
+            if (!TryResolveInteractionElement(localPosition, evt.modifiers, out PreviewElementGeometry interactionElement, out string interactionElementKey))
             {
                 _host.ClearDefinitionProxySelection();
                 _selectionSyncService.ClearCanvasSelection();
@@ -291,12 +290,12 @@ namespace UnitySvgEditor.Editor
             evt.StopPropagation();
         }
 
-        private bool TryBeginMoveSelectedElement(Vector2 localPosition, int pointerId, string interactionElementKey)
+        private bool TryBeginMoveSelectedElement(Vector2 localPosition, int pointerId, EventModifiers modifiers)
         {
             if (_host.HasDefinitionProxySelection ||
+                IsDirectElementSelectionModifier(modifiers) ||
                 _host.SelectionKind != CanvasSelectionKind.Element ||
                 string.IsNullOrWhiteSpace(_host.SelectedElementKey) ||
-                !string.Equals(_host.SelectedElementKey, interactionElementKey, StringComparison.Ordinal) ||
                 !_sceneProjector.TryResolveSelectedElementSceneRect(_host.PreviewSnapshot, _host.SelectedElementKey, out Rect selectedElementSceneRect) ||
                 !_sceneProjector.TrySceneRectToViewportRect(_host.PreviewSnapshot, selectedElementSceneRect, out Rect selectedElementViewportRect) ||
                 !selectedElementViewportRect.Contains(localPosition))

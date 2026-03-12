@@ -96,13 +96,7 @@ namespace UnitySvgEditor.Editor
             if (hasStableId)
                 return true;
 
-            if (!string.Equals(element.LocalName, "g", StringComparison.OrdinalIgnoreCase))
-                return true;
-
-            if (!ReferenceEquals(element.ParentNode, root))
-                return true;
-
-            return SvgDocumentXmlUtility.GetElementChildren(root).Count != 1;
+            return true;
         }
 
         private static string CreateSyntheticId(ISet<string> usedIds, ref int syntheticIdCounter)

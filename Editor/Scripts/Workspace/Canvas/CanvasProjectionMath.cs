@@ -687,13 +687,45 @@ namespace UnitySvgEditor.Editor
                 currentViewportRect.width / dragStartSelectionViewportRect.width,
                 currentViewportRect.height / dragStartSelectionViewportRect.height);
 
-            if (centerAnchor)
+            pivot = GetScalePivot(dragStartElementSceneRect, handle, centerAnchor);
+
+            return !Mathf.Approximately(scale.x, 1f) || !Mathf.Approximately(scale.y, 1f);
+        }
+
+        public static bool TryBuildScaleTransformFromSceneRect(
+            Rect dragStartElementSceneRect,
+            Rect currentSceneRect,
+            CanvasHandle handle,
+            bool centerAnchor,
+            out Vector2 scale,
+            out Vector2 pivot)
+        {
+            scale = Vector2.one;
+            pivot = Vector2.zero;
+
+            if (dragStartElementSceneRect.width <= Mathf.Epsilon ||
+                dragStartElementSceneRect.height <= Mathf.Epsilon)
             {
-                pivot = dragStartElementSceneRect.center;
-                return !Mathf.Approximately(scale.x, 1f) || !Mathf.Approximately(scale.y, 1f);
+                return false;
             }
 
-            pivot = handle switch
+            scale = new Vector2(
+                currentSceneRect.width / dragStartElementSceneRect.width,
+                currentSceneRect.height / dragStartElementSceneRect.height);
+
+            pivot = GetScalePivot(dragStartElementSceneRect, handle, centerAnchor);
+
+            return !Mathf.Approximately(scale.x, 1f) || !Mathf.Approximately(scale.y, 1f);
+        }
+
+        private static Vector2 GetScalePivot(Rect dragStartElementSceneRect, CanvasHandle handle, bool centerAnchor)
+        {
+            if (centerAnchor)
+            {
+                return dragStartElementSceneRect.center;
+            }
+
+            return handle switch
             {
                 CanvasHandle.TopLeft => new Vector2(dragStartElementSceneRect.xMax, dragStartElementSceneRect.yMax),
                 CanvasHandle.Top => new Vector2(dragStartElementSceneRect.center.x, dragStartElementSceneRect.yMax),
@@ -705,8 +737,6 @@ namespace UnitySvgEditor.Editor
                 CanvasHandle.Left => new Vector2(dragStartElementSceneRect.xMax, dragStartElementSceneRect.center.y),
                 _ => dragStartElementSceneRect.center
             };
-
-            return !Mathf.Approximately(scale.x, 1f) || !Mathf.Approximately(scale.y, 1f);
         }
 
         public static bool TryGetFrameContentLayout(

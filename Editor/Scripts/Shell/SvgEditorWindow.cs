@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using Core.UI.Foundation.Editor;
 using InspectorSection = Core.UI.Foundation.Tooling.InspectorSection;
 using InspectorSectionClasses = Core.UI.Foundation.Tooling.InspectorSectionClasses;
 using FoundationButton = Core.UI.Foundation.Components.Button.Button;
@@ -27,7 +28,7 @@ namespace UnitySvgEditor.Editor
             public const string INSPECTOR_CARD_ACCENT = INSPECTOR_CARD + "--accent";
         }
 
-        private const string WINDOW_MENU_PATH = "Window/Unity SVG Editor/SVG Editor";
+        private const string WINDOW_MENU_PATH = "Window/Tools/SVG Editor";
         private const string THEME_RESOURCE_PATH = "Theme/SvgEditorTheme";
         private const string WINDOW_RESOURCE_PATH = "UXML/SvgEditorWindow";
         private const double ShortcutDedupSeconds = 0.05d;
@@ -36,6 +37,7 @@ namespace UnitySvgEditor.Editor
 
         private readonly DocumentRepository _documentRepository = new();
         private readonly PreviewSnapshotBuilder _previewSnapshotBuilder = new();
+        private readonly AssetDatabaseVectorImageSourceProvider _vectorImageSourceProvider = new();
         private readonly AssetLibraryBrowser _assetLibraryBrowser;
         private readonly InspectorPanelController _inspectorPanelController;
         private readonly DocumentLifecycleController _documentLifecycleController;
@@ -65,7 +67,7 @@ namespace UnitySvgEditor.Editor
 
         public SvgEditorWindow()
         {
-            _assetLibraryBrowser = new AssetLibraryBrowser(_documentRepository);
+            _assetLibraryBrowser = new AssetLibraryBrowser(_documentRepository, _vectorImageSourceProvider);
             _inspectorPanelController = new InspectorPanelController(new InspectorPanelState());
             _documentLifecycleController = new DocumentLifecycleController(
                 _documentRepository,

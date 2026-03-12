@@ -10,7 +10,7 @@ namespace UnitySvgEditor.Editor
     public partial class AssetLibraryGridView : VisualElement
     {
         #region Constants
-        private static readonly GridLayoutMetrics PREVIEW_GRID_METRICS = new(51f, 58f, 19f);
+        public static readonly GridLayoutMetrics DefaultGridMetrics = new(51f, 58f, 19f);
 
         private static class UssClassName
         {
@@ -29,12 +29,14 @@ namespace UnitySvgEditor.Editor
         #endregion Constants
 
         #region Variables
-        private readonly VirtualizedGridView _gridView;
+        private VirtualizedGridView _gridView;
         private readonly AssetLibraryGridPreviewRenderer _previewRenderer = new();
         private readonly List<GridViewItem> _gridItems = new();
 
         private Action<GridViewItem> _itemSelectedHandler;
         private Action<List<GridViewItem>> _selectionChangedHandler;
+        private GridLayoutMetrics _gridMetrics = DefaultGridMetrics;
+        private bool _isRuntimeBound;
         private bool _showPreview;
         #endregion Variables
 
@@ -54,24 +56,34 @@ namespace UnitySvgEditor.Editor
                 RefreshPreviewMode();
             }
         }
+
+        internal GridLayoutMetrics GridMetrics => _gridMetrics;
         #endregion Properties
 
         #region Constructor
         public AssetLibraryGridView()
         {
-            _gridView = CreateGridView();
-            _gridView.OnItemSelected += OnGridItemSelected;
-            _gridView.OnSelectionChanged += OnGridSelectionChanged;
-            Add(_gridView);
-            RefreshPreviewMode();
+            RebuildGridView();
         }
         #endregion Constructor
 
         #region Public Methods
+        internal void SetGridMetrics(GridLayoutMetrics gridMetrics)
+        {
+            if (_gridMetrics.Equals(gridMetrics))
+            {
+                return;
+            }
+
+            _gridMetrics = gridMetrics;
+            RebuildGridView();
+        }
+
         internal void BindRuntime(Action<GridViewItem> itemSelectedHandler, Action<List<GridViewItem>> selectionChangedHandler)
         {
             _itemSelectedHandler = itemSelectedHandler;
             _selectionChangedHandler = selectionChangedHandler;
+            _isRuntimeBound = true;
             ShowPreview = false;
         }
 
@@ -79,6 +91,7 @@ namespace UnitySvgEditor.Editor
         {
             _itemSelectedHandler = null;
             _selectionChangedHandler = null;
+            _isRuntimeBound = false;
         }
 
         internal void SetItems(IReadOnlyList<GridViewItem> gridItems)
@@ -109,9 +122,27 @@ namespace UnitySvgEditor.Editor
         #endregion Public Methods
 
         #region Help Methods
-        private VirtualizedGridView CreateGridView()
+        private void RebuildGridView()
         {
-            VirtualizedGridView gridView = new(PREVIEW_GRID_METRICS)
+            string emptyText = _gridView?.EmptyText ?? "No SVG assets found";
+            if (_gridView != null)
+            {
+                _gridView.OnItemSelected -= OnGridItemSelected;
+                _gridView.OnSelectionChanged -= OnGridSelectionChanged;
+                _gridView.RemoveFromHierarchy();
+            }
+
+            _gridView = CreateGridView(_gridMetrics);
+            _gridView.EmptyText = emptyText;
+            _gridView.OnItemSelected += OnGridItemSelected;
+            _gridView.OnSelectionChanged += OnGridSelectionChanged;
+            Add(_gridView);
+            RefreshPreviewMode();
+        }
+
+        private VirtualizedGridView CreateGridView(GridLayoutMetrics gridMetrics)
+        {
+            VirtualizedGridView gridView = new(gridMetrics)
             {
                 GroupByAlpha = true,
                 ShowActionButtons = false
@@ -133,7 +164,8 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            _previewRenderer.ClearPreview(this, _gridView, _gridItems, UssClassName.PREVIEW_ENABLED);
+            _gridView.SetItems(_isRuntimeBound ? _gridItems : null);
+            EnableInClassList(UssClassName.PREVIEW_ENABLED, false);
         }
 
         private void OnGridItemSelected(GridViewItem selectedItem)

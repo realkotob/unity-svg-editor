@@ -254,6 +254,11 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
+            Vector2 scale;
+            Vector2 pivot;
+            Vector2 svgPivot;
+            SvgDocumentModel previewDocumentModel;
+            bool hasScaleTransform;
             if (snapEnabled && host.PreviewSnapshot != null)
             {
                 Rect snappedSceneRect = EditorSnapUtility.SnapRect(
@@ -267,23 +272,47 @@ namespace UnitySvgEditor.Editor
                 {
                     _dragCurrentSelectionViewportRect = snappedViewportRect;
                 }
+
+                hasScaleTransform = _sceneProjector.TryBuildScaleTransformFromSceneRect(
+                    _dragStartElementSceneRect,
+                    snappedSceneRect,
+                    activeHandle,
+                    _dragResizeCenterAnchor,
+                    out scale,
+                    out pivot);
+                if (!hasScaleTransform)
+                {
+                    return false;
+                }
+
+                svgPivot = ElementRotationUtility.ToParentSpacePoint(_dragStartParentWorldTransform, pivot);
+                if (!_transientDocumentModelSession.TryApplyScale(scale, svgPivot) ||
+                    !_transientDocumentModelSession.TryBuildPreviewDocumentModel(out previewDocumentModel, out _) ||
+                    !host.TryRefreshTransientPreview(previewDocumentModel))
+                {
+                    return false;
+                }
+
+                host.RefreshInspector(previewDocumentModel);
+                return true;
             }
 
-            if (!_sceneProjector.TryBuildScaleTransform(
+            hasScaleTransform = _sceneProjector.TryBuildScaleTransform(
                     _dragStartSelectionViewportRect,
                     _dragStartElementSceneRect,
                     _dragCurrentSelectionViewportRect,
                     activeHandle,
                     _dragResizeCenterAnchor,
-                    out Vector2 scale,
-                    out Vector2 pivot))
+                    out scale,
+                    out pivot);
+            if (!hasScaleTransform)
             {
                 return false;
             }
 
-            Vector2 svgPivot = ElementRotationUtility.ToParentSpacePoint(_dragStartParentWorldTransform, pivot);
+            svgPivot = ElementRotationUtility.ToParentSpacePoint(_dragStartParentWorldTransform, pivot);
             if (!_transientDocumentModelSession.TryApplyScale(scale, svgPivot) ||
-                !_transientDocumentModelSession.TryBuildPreviewDocumentModel(out SvgDocumentModel previewDocumentModel, out _) ||
+                !_transientDocumentModelSession.TryBuildPreviewDocumentModel(out previewDocumentModel, out _) ||
                 !host.TryRefreshTransientPreview(previewDocumentModel))
             {
                 return false;

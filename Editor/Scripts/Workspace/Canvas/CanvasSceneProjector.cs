@@ -322,6 +322,23 @@ namespace UnitySvgEditor.Editor
                 out pivot);
         }
 
+        public bool TryBuildScaleTransformFromSceneRect(
+            Rect dragStartElementSceneRect,
+            Rect currentSceneRect,
+            CanvasHandle handle,
+            bool centerAnchor,
+            out Vector2 scale,
+            out Vector2 pivot)
+        {
+            return CanvasProjectionMath.TryBuildScaleTransformFromSceneRect(
+                dragStartElementSceneRect,
+                currentSceneRect,
+                handle,
+                centerAnchor,
+                out scale,
+                out pivot);
+        }
+
         public void UpdateFrameVisual(
             Image previewImage,
             PreviewSnapshot previewSnapshot,

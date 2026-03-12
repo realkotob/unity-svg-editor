@@ -4,8 +4,8 @@ namespace UnitySvgEditor.Editor
 {
     internal static class EditorSnapUtility
     {
-        public const float PositionIncrement = 8f;
-        public const float SizeIncrement = 8f;
+        public const float PositionIncrement = 1f;
+        public const float SizeIncrement = 1f;
         public const float RotationIncrement = 15f;
 
         public static float SnapPosition(float value)

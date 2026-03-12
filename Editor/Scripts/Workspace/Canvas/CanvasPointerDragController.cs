@@ -237,7 +237,7 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            _toolController.HandleKeyDown(
+            bool handled = _toolController.HandleKeyDown(
                 evt,
                 _canvasOverlay,
                 _host.PreviewSnapshot,
@@ -245,11 +245,20 @@ namespace UnitySvgEditor.Editor
                 _viewportState,
                 _host.UpdateCanvasVisualState,
                 NudgeSelectedElement);
+
+            if (handled && evt.keyCode == KeyCode.Space)
+            {
+                _toolController.UpdateVisualState(_canvasOverlay);
+            }
         }
 
         private void OnCanvasKeyUp(KeyUpEvent evt)
         {
-            _toolController.HandleKeyUp(evt);
+            bool handled = _toolController.HandleKeyUp(evt);
+            if (handled)
+            {
+                _toolController.UpdateVisualState(_canvasOverlay);
+            }
         }
 
         private void ResetCanvasViewInternal()

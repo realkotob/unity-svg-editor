@@ -16,9 +16,7 @@
                                 <button:Button name="asset-library-refresh-button" variant="Ghost" size="Icon" tooltip="Rescan local assets" icon="project://database/Packages/com.newmassmedia.unity-uitoolkit-foundation/Runtime/Resources/Icons/lucide/refresh-ccw.svg?fileID=7388822144124034973&amp;guid=7f9b62e9253a412fa97bb5b5ff804416&amp;type=3#refresh-ccw" class="svg-editor__asset-refresh-button"/>
                             </ui:VisualElement>
                         </ui:VisualElement>
-                        <ui:VisualElement name="fixture-library-section" class="svg-editor__asset-subsection">
-                            <svg:AssetLibraryGridView name="fixture-grid-view" show-preview="true" class="svg-editor__asset-grid-view svg-editor__asset-grid-view--fixtures"/>
-                        </ui:VisualElement>
+                        <ui:VisualElement name="asset-library-filter-host" class="svg-editor__asset-filter-host"/>
                         <svg:AssetLibraryGridView name="asset-grid-view" show-preview="true" class="svg-editor__asset-grid-view"/>
                     </ui:VisualElement>
                 </ui:TwoPaneSplitView>

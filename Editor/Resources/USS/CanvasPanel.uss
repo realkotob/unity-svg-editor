@@ -150,6 +150,14 @@
     opacity: 0.9;
 }
 
+.svg-editor__canvas-overlay--pan-armed,
+.svg-editor__canvas-overlay--pan-armed .svg-editor__canvas-frame-label,
+.svg-editor__canvas-overlay--pan-armed .svg-editor__selection-handle,
+.svg-editor__canvas-overlay--pan-armed .svg-editor__edge-zone,
+.svg-editor__canvas-overlay--pan-armed .svg-editor__rotation-zone {
+    cursor: pan;
+}
+
 .svg-editor__canvas-frame-label {
     position: absolute;
     color: var(--foreground);

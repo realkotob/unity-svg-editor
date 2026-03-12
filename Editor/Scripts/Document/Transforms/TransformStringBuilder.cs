@@ -259,7 +259,7 @@ namespace UnitySvgEditor.Editor
 
         private static string FormatNumber(float value)
         {
-            return value.ToString("0.###", CultureInfo.InvariantCulture);
+            return value.ToString("0.######", CultureInfo.InvariantCulture);
         }
     }
 }
