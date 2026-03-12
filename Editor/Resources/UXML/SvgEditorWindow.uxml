@@ -124,11 +124,11 @@
                             <ui:VisualElement class="svg-editor__inspector-row">
                                 <ui:VisualElement class="svg-editor__inspector-field">
                                     <ui:Label text="Line Cap" class="svg-editor__inspector-meta-label"/>
-                                    <uie:DropdownField name="inspector-linecap" choices="butt,round,square" index="-1" class="svg-editor__select-like-dropdown"/>
+                                    <uie:DropdownField name="inspector-linecap" choices="butt,round,square" index="0" class="svg-editor__select-like-dropdown"/>
                                 </ui:VisualElement>
                                 <ui:VisualElement class="svg-editor__inspector-field svg-editor__inspector-field--last">
                                     <ui:Label text="Line Join" class="svg-editor__inspector-meta-label"/>
-                                    <uie:DropdownField name="inspector-linejoin" choices="miter,round,bevel" class="svg-editor__select-like-dropdown"/>
+                                    <uie:DropdownField name="inspector-linejoin" choices="miter,round,bevel" index="0" class="svg-editor__select-like-dropdown"/>
                                 </ui:VisualElement>
                             </ui:VisualElement>
                         </ui:VisualElement>

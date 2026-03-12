@@ -10,6 +10,8 @@ namespace UnitySvgEditor.Editor
 {
     internal sealed class InspectorPanelView
     {
+        private const string DragNumberFieldPrefixClassName = "drag-number-field__prefix";
+
         internal enum ImmediateApplyField
         {
             Opacity,
@@ -35,12 +37,38 @@ namespace UnitySvgEditor.Editor
             FlipVertical
         }
 
+        internal enum TransformHelperField
+        {
+            TranslateX,
+            TranslateY,
+            Rotate,
+            ScaleX,
+            ScaleY
+        }
+
+        internal readonly struct TransformHelperChange
+        {
+            public TransformHelperChange(TransformHelperField field, float delta = 0f)
+            {
+                Field = field;
+                Delta = delta;
+            }
+
+            public TransformHelperField Field { get; }
+            public float Delta { get; }
+        }
+
         private readonly InspectorFormControls _form = new();
 
         public event Action<ImmediateApplyField> ImmediateApplyRequested;
         public event Action FrameRectChanged;
-        public event Action TransformHelperChanged;
+        public event Action<TransformHelperChange> TransformHelperChanged;
+        public event Action RotationDragStarted;
+        public event Action RotationDragEnded;
         public event Action<PositionAction> PositionActionRequested;
+
+        private bool _isRotationDragging;
+        private float _rotationDragStartValue;
 
         public bool IsBound => _form.IsBound;
         public bool FillEnabled => _form.FillEnabled;
@@ -128,11 +156,12 @@ namespace UnitySvgEditor.Editor
             RegisterFrameRectCallback(_form.FrameYField, OnFrameRectChanged);
             RegisterFrameRectCallback(_form.FrameWidthField, OnFrameRectChanged);
             RegisterFrameRectCallback(_form.FrameHeightField, OnFrameRectChanged);
-            RegisterTransformHelperCallback(_form.TranslateXField, OnTransformHelperChanged);
-            RegisterTransformHelperCallback(_form.TranslateYField, OnTransformHelperChanged);
-            RegisterTransformHelperCallback(_form.RotateField, OnTransformHelperChanged);
-            RegisterTransformHelperCallback(_form.ScaleXField, OnTransformHelperChanged);
-            RegisterTransformHelperCallback(_form.ScaleYField, OnTransformHelperChanged);
+            RegisterTransformHelperCallback(_form.TranslateXField, OnTranslateXChanged);
+            RegisterTransformHelperCallback(_form.TranslateYField, OnTranslateYChanged);
+            RegisterTransformHelperCallback(_form.RotateField, OnRotateChanged);
+            RegisterRotateDragCallbacks();
+            RegisterTransformHelperCallback(_form.ScaleXField, OnScaleXChanged);
+            RegisterTransformHelperCallback(_form.ScaleYField, OnScaleYChanged);
             RegisterButtonClicked(_form.PositionAlignLeftButton, OnPositionAlignLeftRequested);
             RegisterButtonClicked(_form.PositionAlignCenterButton, OnPositionAlignCenterRequested);
             RegisterButtonClicked(_form.PositionAlignRightButton, OnPositionAlignRightRequested);
@@ -163,11 +192,12 @@ namespace UnitySvgEditor.Editor
             UnregisterFrameRectCallback(_form.FrameYField, OnFrameRectChanged);
             UnregisterFrameRectCallback(_form.FrameWidthField, OnFrameRectChanged);
             UnregisterFrameRectCallback(_form.FrameHeightField, OnFrameRectChanged);
-            UnregisterTransformHelperCallback(_form.TranslateXField, OnTransformHelperChanged);
-            UnregisterTransformHelperCallback(_form.TranslateYField, OnTransformHelperChanged);
-            UnregisterTransformHelperCallback(_form.RotateField, OnTransformHelperChanged);
-            UnregisterTransformHelperCallback(_form.ScaleXField, OnTransformHelperChanged);
-            UnregisterTransformHelperCallback(_form.ScaleYField, OnTransformHelperChanged);
+            UnregisterTransformHelperCallback(_form.TranslateXField, OnTranslateXChanged);
+            UnregisterTransformHelperCallback(_form.TranslateYField, OnTranslateYChanged);
+            UnregisterTransformHelperCallback(_form.RotateField, OnRotateChanged);
+            UnregisterRotateDragCallbacks();
+            UnregisterTransformHelperCallback(_form.ScaleXField, OnScaleXChanged);
+            UnregisterTransformHelperCallback(_form.ScaleYField, OnScaleYChanged);
             UnregisterButtonClicked(_form.PositionAlignLeftButton, OnPositionAlignLeftRequested);
             UnregisterButtonClicked(_form.PositionAlignCenterButton, OnPositionAlignCenterRequested);
             UnregisterButtonClicked(_form.PositionAlignRightButton, OnPositionAlignRightRequested);
@@ -197,7 +227,89 @@ namespace UnitySvgEditor.Editor
 
         private void OnFrameRectChanged(ChangeEvent<float> evt) => FrameRectChanged?.Invoke();
 
-        private void OnTransformHelperChanged(ChangeEvent<float> evt) => TransformHelperChanged?.Invoke();
+        private void OnTranslateXChanged(ChangeEvent<float> evt) => TransformHelperChanged?.Invoke(new TransformHelperChange(TransformHelperField.TranslateX));
+
+        private void OnTranslateYChanged(ChangeEvent<float> evt) => TransformHelperChanged?.Invoke(new TransformHelperChange(TransformHelperField.TranslateY));
+
+        private void OnRotateChanged(ChangeEvent<float> evt)
+        {
+            float delta = evt.newValue - evt.previousValue;
+            if (_isRotationDragging && _form.RotateField is FloatField rotateField)
+            {
+                rotateField.SetValueWithoutNotify(evt.newValue);
+                delta = evt.newValue - _rotationDragStartValue;
+            }
+
+            TransformHelperChanged?.Invoke(new TransformHelperChange(TransformHelperField.Rotate, delta));
+        }
+
+        private void OnScaleXChanged(ChangeEvent<float> evt) => TransformHelperChanged?.Invoke(new TransformHelperChange(TransformHelperField.ScaleX));
+
+        private void OnScaleYChanged(ChangeEvent<float> evt) => TransformHelperChanged?.Invoke(new TransformHelperChange(TransformHelperField.ScaleY));
+
+        private void RegisterRotateDragCallbacks()
+        {
+            if (_form.RotateField == null)
+            {
+                return;
+            }
+
+            _form.RotateField.RegisterCallback<PointerDownEvent>(OnRotatePointerDown, TrickleDown.TrickleDown);
+            _form.RotateField.RegisterCallback<PointerUpEvent>(OnRotatePointerUp, TrickleDown.TrickleDown);
+            _form.RotateField.RegisterCallback<PointerCancelEvent>(OnRotatePointerCancel, TrickleDown.TrickleDown);
+            _form.RotateField.RegisterCallback<PointerCaptureOutEvent>(OnRotatePointerCaptureOut, TrickleDown.TrickleDown);
+        }
+
+        private void UnregisterRotateDragCallbacks()
+        {
+            if (_form.RotateField == null)
+            {
+                return;
+            }
+
+            _form.RotateField.UnregisterCallback<PointerDownEvent>(OnRotatePointerDown, TrickleDown.TrickleDown);
+            _form.RotateField.UnregisterCallback<PointerUpEvent>(OnRotatePointerUp, TrickleDown.TrickleDown);
+            _form.RotateField.UnregisterCallback<PointerCancelEvent>(OnRotatePointerCancel, TrickleDown.TrickleDown);
+            _form.RotateField.UnregisterCallback<PointerCaptureOutEvent>(OnRotatePointerCaptureOut, TrickleDown.TrickleDown);
+        }
+
+        private void OnRotatePointerDown(PointerDownEvent evt)
+        {
+            if (_form.RotateField == null || evt.button != 0 || evt.target is not VisualElement targetElement)
+            {
+                return;
+            }
+
+            for (VisualElement current = targetElement; current != null && current != _form.RotateField; current = current.parent)
+            {
+                if (!current.ClassListContains(DragNumberFieldPrefixClassName))
+                {
+                    continue;
+                }
+
+                _isRotationDragging = true;
+                _rotationDragStartValue = _form.RotateField.value;
+                RotationDragStarted?.Invoke();
+                return;
+            }
+        }
+
+        private void OnRotatePointerUp(PointerUpEvent evt) => EndRotationDrag();
+
+        private void OnRotatePointerCancel(PointerCancelEvent evt) => EndRotationDrag();
+
+        private void OnRotatePointerCaptureOut(PointerCaptureOutEvent evt) => EndRotationDrag();
+
+        private void EndRotationDrag()
+        {
+            if (!_isRotationDragging)
+            {
+                return;
+            }
+
+            _isRotationDragging = false;
+            RotationDragEnded?.Invoke();
+        }
 
         private void OnPositionAlignLeftRequested() => PositionActionRequested?.Invoke(PositionAction.AlignLeft);
 

@@ -6,6 +6,10 @@ namespace UnitySvgEditor.Editor
 {
     internal static class InspectorStateBinder
     {
+        private const string RemovePlaceholder = "none";
+        private const string LinecapActualDefaultValue = "butt";
+        private const string LinejoinActualDefaultValue = "miter";
+
         public static void CaptureState(InspectorFormControls form, InspectorPanelState inspectorPanelState)
         {
             if (form == null || inspectorPanelState == null)
@@ -23,8 +27,8 @@ namespace UnitySvgEditor.Editor
                 ? Mathf.Clamp01(opacityValue)
                 : Mathf.Clamp01(opacityValue / 100f);
             inspectorPanelState.CornerRadius = Mathf.Max(0f, form.CornerRadiusField?.value ?? 0f);
-            inspectorPanelState.StrokeLinecap = form.LinecapPopup?.Value ?? form.LinecapLegacyPopup?.value ?? string.Empty;
-            inspectorPanelState.StrokeLinejoin = form.LinejoinPopup?.Value ?? form.LinejoinLegacyPopup?.value ?? string.Empty;
+            inspectorPanelState.StrokeLinecap = NormalizeLinecapValue(form.LinecapPopup?.Value ?? form.LinecapLegacyPopup?.value);
+            inspectorPanelState.StrokeLinejoin = NormalizeLinejoinValue(form.LinejoinPopup?.Value ?? form.LinejoinLegacyPopup?.value);
             inspectorPanelState.DasharrayEnabled = form.DashLengthField != null || form.DashGapField != null;
             inspectorPanelState.DashLength = form.DashLengthField?.value ?? 4f;
             inspectorPanelState.DashGap = form.DashGapField?.value ?? 2f;
@@ -58,10 +62,10 @@ namespace UnitySvgEditor.Editor
                 ? inspectorPanelState.Opacity
                 : inspectorPanelState.Opacity * 100f);
             form.CornerRadiusField?.SetValueWithoutNotify(inspectorPanelState.CornerRadius);
-            SetPopupValue(form.LinecapPopup, inspectorPanelState.StrokeLinecap);
-            SetPopupValue(form.LinecapLegacyPopup, inspectorPanelState.StrokeLinecap);
-            SetPopupValue(form.LinejoinPopup, inspectorPanelState.StrokeLinejoin);
-            SetPopupValue(form.LinejoinLegacyPopup, inspectorPanelState.StrokeLinejoin);
+            SetPopupValue(form.LinecapPopup, string.IsNullOrEmpty(inspectorPanelState.StrokeLinecap) ? LinecapActualDefaultValue : inspectorPanelState.StrokeLinecap);
+            SetPopupValue(form.LinecapLegacyPopup, string.IsNullOrEmpty(inspectorPanelState.StrokeLinecap) ? LinecapActualDefaultValue : inspectorPanelState.StrokeLinecap);
+            SetPopupValue(form.LinejoinPopup, string.IsNullOrEmpty(inspectorPanelState.StrokeLinejoin) ? LinejoinActualDefaultValue : inspectorPanelState.StrokeLinejoin);
+            SetPopupValue(form.LinejoinLegacyPopup, string.IsNullOrEmpty(inspectorPanelState.StrokeLinejoin) ? LinejoinActualDefaultValue : inspectorPanelState.StrokeLinejoin);
             form.DashLengthField?.SetValueWithoutNotify(inspectorPanelState.DashLength);
             form.DashGapField?.SetValueWithoutNotify(inspectorPanelState.DashGap);
             form.TransformField?.SetValueWithoutNotify(inspectorPanelState.Transform);
@@ -94,7 +98,28 @@ namespace UnitySvgEditor.Editor
             if (popup == null)
                 return;
 
-            popup.SetValueWithoutNotify(value ?? string.Empty);
+            popup.SetValueWithoutNotify(string.IsNullOrEmpty(value) ? RemovePlaceholder : value);
+        }
+
+        private static string NormalizePopupValue(string value)
+        {
+            return string.Equals(value, RemovePlaceholder, System.StringComparison.Ordinal)
+                ? string.Empty
+                : value ?? string.Empty;
+        }
+
+        private static string NormalizeLinecapValue(string value)
+        {
+            return string.Equals(value, LinecapActualDefaultValue, System.StringComparison.Ordinal)
+                ? string.Empty
+                : NormalizePopupValue(value);
+        }
+
+        private static string NormalizeLinejoinValue(string value)
+        {
+            return string.Equals(value, LinejoinActualDefaultValue, System.StringComparison.Ordinal)
+                ? string.Empty
+                : NormalizePopupValue(value);
         }
     }
 }

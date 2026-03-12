@@ -11,6 +11,10 @@ namespace UnitySvgEditor.Editor
     internal sealed class InspectorFormControls
     {
         private const string NumericDisplayFormat = "0.##";
+        private const string LinecapActualDefaultValue = "butt";
+        private const string LinecapDisplayDefaultValue = "none";
+        private const string LinejoinActualDefaultValue = "miter";
+        private const string LinejoinDisplayDefaultValue = "none";
         private VisualElement _root;
 
         public ColorPercentField FillColorField { get; private set; }
@@ -89,9 +93,11 @@ namespace UnitySvgEditor.Editor
             VisualElement linecapElement = root.Q<VisualElement>("inspector-linecap");
             LinecapPopup = linecapElement as SelectElement;
             LinecapLegacyPopup = linecapElement as DropdownField;
+            ConfigureLinecapDropdown(LinecapLegacyPopup);
             VisualElement linejoinElement = root.Q<VisualElement>("inspector-linejoin");
             LinejoinPopup = linejoinElement as SelectElement;
             LinejoinLegacyPopup = linejoinElement as DropdownField;
+            ConfigureLinejoinDropdown(LinejoinLegacyPopup);
             DashLengthField = root.Q<FloatField>("inspector-dash-length");
             DashGapField = root.Q<FloatField>("inspector-dash-gap");
             TransformField = root.Q<TextField>("inspector-transform");
@@ -201,6 +207,38 @@ namespace UnitySvgEditor.Editor
                 return;
 
             field.formatString = NumericDisplayFormat;
+        }
+
+        private static void ConfigureLinecapDropdown(DropdownField field)
+        {
+            if (field == null)
+                return;
+
+            field.formatListItemCallback = FormatLinecapValue;
+            field.formatSelectedValueCallback = FormatLinecapValue;
+        }
+
+        private static string FormatLinecapValue(string value)
+        {
+            return string.Equals(value, LinecapActualDefaultValue, System.StringComparison.Ordinal)
+                ? LinecapDisplayDefaultValue
+                : value ?? string.Empty;
+        }
+
+        private static void ConfigureLinejoinDropdown(DropdownField field)
+        {
+            if (field == null)
+                return;
+
+            field.formatListItemCallback = FormatLinejoinValue;
+            field.formatSelectedValueCallback = FormatLinejoinValue;
+        }
+
+        private static string FormatLinejoinValue(string value)
+        {
+            return string.Equals(value, LinejoinActualDefaultValue, System.StringComparison.Ordinal)
+                ? LinejoinDisplayDefaultValue
+                : value ?? string.Empty;
         }
 
         private VisualElement ResolveColorControl(string name, ColorPercentField colorPercentField, ColorField colorField)
