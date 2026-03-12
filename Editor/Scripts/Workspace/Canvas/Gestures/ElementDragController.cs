@@ -386,9 +386,9 @@ namespace SvgEditor.Workspace.Canvas
                 updatedSource,
                 dragMode switch
                 {
-                    DragMode.ResizeElement => $"Resized <{host.FindStructureNode(_dragElementKey)?.TagName ?? "element"}>.",
-                    DragMode.RotateElement => $"Rotated <{host.FindStructureNode(_dragElementKey)?.TagName ?? "element"}>.",
-                    _ => $"Moved <{host.FindStructureNode(_dragElementKey)?.TagName ?? "element"}>."
+                    DragMode.ResizeElement => $"Resized <{host.FindHierarchyNode(_dragElementKey)?.TagName ?? "element"}>.",
+                    DragMode.RotateElement => $"Rotated <{host.FindHierarchyNode(_dragElementKey)?.TagName ?? "element"}>.",
+                    _ => $"Moved <{host.FindHierarchyNode(_dragElementKey)?.TagName ?? "element"}>."
                 });
             return true;
         }

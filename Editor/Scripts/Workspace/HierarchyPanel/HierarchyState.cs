@@ -9,13 +9,13 @@ namespace SvgEditor.Workspace.HierarchyPanel
 {
     internal sealed class HierarchyState
     {
-        private readonly List<StructureNode> _elements = new();
+        private readonly List<HierarchyNode> _elements = new();
         private readonly List<LayerSummary> _layers = new();
-        private readonly List<TreeViewItemData<StructureNode>> _hierarchyItems = new();
+        private readonly List<TreeViewItemData<HierarchyNode>> _hierarchyItems = new();
 
-        public IReadOnlyList<StructureNode> Elements => _elements;
+        public IReadOnlyList<HierarchyNode> Elements => _elements;
         public IReadOnlyList<LayerSummary> Layers => _layers;
-        public IReadOnlyList<TreeViewItemData<StructureNode>> HierarchyItems => _hierarchyItems;
+        public IReadOnlyList<TreeViewItemData<HierarchyNode>> HierarchyItems => _hierarchyItems;
 
         public string SelectedElementKey { get; private set; } = string.Empty;
         public bool SelectedElementCanUseTarget { get; private set; }
@@ -39,7 +39,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
             SelectedLayerVisible = true;
         }
 
-        public void SetStructure(StructureOutline snapshot, string activeTargetKey)
+        public void SetStructure(HierarchyOutline snapshot, string activeTargetKey)
         {
             _elements.Clear();
             _layers.Clear();
@@ -134,7 +134,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
         }
 
         private static bool TryGetHierarchyIdRecursive(
-            TreeViewItemData<StructureNode> item,
+            TreeViewItemData<HierarchyNode> item,
             string elementKey,
             out int treeId)
         {

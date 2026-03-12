@@ -16,7 +16,7 @@ namespace SvgEditor.Workspace
         private readonly WorkspaceController _canvasWorkspaceController;
         private readonly EditorWorkspaceShellBinder _shellBinder = new();
         private readonly WorkspaceMutationCoordinator _mutationCoordinator;
-        private readonly WorkspaceHierarchySelectionCoordinator _selectionCoordinator;
+        private readonly WorkspaceSelectionCoordinator _selectionCoordinator;
 
         private VisualElement RootVisualElement => _host.RootVisualElement;
         private DocumentSession CurrentDocument => _host.CurrentDocument;
@@ -26,7 +26,7 @@ namespace SvgEditor.Workspace
             _host = host;
             _canvasWorkspaceController = new WorkspaceController(this);
             _mutationCoordinator = new WorkspaceMutationCoordinator(host, () => CurrentDocument);
-            _selectionCoordinator = new WorkspaceHierarchySelectionCoordinator(
+            _selectionCoordinator = new WorkspaceSelectionCoordinator(
                 host,
                 _canvasWorkspaceController,
                 _shellBinder,
@@ -81,12 +81,12 @@ namespace SvgEditor.Workspace
         public bool TryCancelActiveDrag() => _canvasWorkspaceController.TryCancelActiveDrag();
 
         internal static bool TryResolveSelection(
-            IReadOnlyList<StructureNode> elements,
+            IReadOnlyList<HierarchyNode> elements,
             string selectedElementKey,
             string selectedTargetKey,
-            out StructureNode selectedItem,
+            out HierarchyNode selectedItem,
             out SelectionKind selectionKind) =>
-            WorkspaceHierarchySelectionCoordinator.TryResolveSelection(
+            WorkspaceSelectionCoordinator.TryResolveSelection(
                 elements,
                 selectedElementKey,
                 selectedTargetKey,
@@ -97,9 +97,9 @@ namespace SvgEditor.Workspace
         PreviewSnapshot ICanvasWorkspaceHost.PreviewSnapshot => _host.PreviewSnapshot;
         Image ICanvasWorkspaceHost.PreviewImage => _host.PreviewImage;
         string ICanvasWorkspaceHost.SelectedElementKey => _selectionCoordinator.ResolveCanvasSelectedElementKey();
-        StructureNode ICanvasWorkspaceHost.SelectedStructureNode => _selectionCoordinator.SelectedStructureNode;
+        HierarchyNode ICanvasWorkspaceHost.SelectedHierarchyNode => _selectionCoordinator.SelectedHierarchyNode;
         string ICanvasWorkspaceHost.FormatNumber(float value) => _host.FormatNumber(value);
-        StructureNode ICanvasWorkspaceHost.FindStructureNode(string elementKey) => _selectionCoordinator.FindStructureNode(elementKey);
+        HierarchyNode ICanvasWorkspaceHost.FindHierarchyNode(string elementKey) => _selectionCoordinator.FindHierarchyNode(elementKey);
         void ICanvasWorkspaceHost.UpdateStructureInteractivity(bool hasDocument) => _selectionCoordinator.UpdateStructureInteractivity(hasDocument);
         void ICanvasWorkspaceHost.UpdateSourceStatus(string status) => _host.UpdateSourceStatus(status);
         void ICanvasWorkspaceHost.RefreshLivePreview(bool keepExistingPreviewOnFailure) => _host.RefreshLivePreview(keepExistingPreviewOnFailure);
@@ -109,8 +109,8 @@ namespace SvgEditor.Workspace
         void ICanvasWorkspaceHost.ApplyUpdatedSource(string updatedSource, string successStatus) => _host.ApplyUpdatedSource(updatedSource, successStatus);
 
         DocumentSession IHierarchyHost.CurrentDocument => CurrentDocument;
-        IReadOnlyList<TreeViewItemData<StructureNode>> IHierarchyHost.HierarchyItems => _selectionCoordinator.HierarchyItems;
-        StructureNode IHierarchyHost.FindStructureNode(string elementKey) => _selectionCoordinator.FindStructureNode(elementKey);
+        IReadOnlyList<TreeViewItemData<HierarchyNode>> IHierarchyHost.HierarchyItems => _selectionCoordinator.HierarchyItems;
+        HierarchyNode IHierarchyHost.FindHierarchyNode(string elementKey) => _selectionCoordinator.FindHierarchyNode(elementKey);
         void IHierarchyHost.ApplyUpdatedSource(string updatedSource, string successStatus) => _host.ApplyUpdatedSource(updatedSource, successStatus);
         void IHierarchyHost.UpdateSourceStatus(string status) => _host.UpdateSourceStatus(status);
 

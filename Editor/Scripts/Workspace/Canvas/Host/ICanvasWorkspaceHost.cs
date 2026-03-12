@@ -13,10 +13,10 @@ namespace SvgEditor.Workspace.Canvas
         PreviewSnapshot PreviewSnapshot { get; }
         Image PreviewImage { get; }
         string SelectedElementKey { get; }
-        StructureNode SelectedStructureNode { get; }
+        HierarchyNode SelectedHierarchyNode { get; }
 
         string FormatNumber(float value);
-        StructureNode FindStructureNode(string elementKey);
+        HierarchyNode FindHierarchyNode(string elementKey);
         void ClearStructureSelectionFromCanvas();
         void SelectFrameFromCanvas();
         void SelectStructureElementFromCanvas(string elementKey, bool syncPatchTarget);

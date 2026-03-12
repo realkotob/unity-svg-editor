@@ -312,7 +312,7 @@ namespace SvgEditor.Workspace.Canvas
             }
 
             _host.ClearDefinitionProxySelection();
-            StructureNode selectedNode = _host.FindStructureNode(interactionElementKey);
+            HierarchyNode selectedNode = _host.FindHierarchyNode(interactionElementKey);
             _selectionSyncService.SelectCanvasElement(interactionElementKey, syncPatchTarget: selectedNode?.CanUseAsTarget == true);
             _elementGestureHandler.BeginMove(
                 _gestureState,

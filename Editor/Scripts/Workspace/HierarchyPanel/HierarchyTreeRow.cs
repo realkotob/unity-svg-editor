@@ -109,7 +109,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
             Add(BadgeContainer);
         }
 
-        internal void Bind(StructureNode hierarchyNode, bool hasChildren, bool isExpanded)
+        internal void Bind(HierarchyNode hierarchyNode, bool hasChildren, bool isExpanded)
         {
             string tagName = (hierarchyNode.TagName ?? string.Empty).ToLowerInvariant();
             HierarchyTreeUtility.ApplyHierarchyIconVariant(
@@ -169,7 +169,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
             BadgeContainer.style.display = DisplayStyle.None;
         }
 
-        private static string BuildReferenceTooltip(StructureNode hierarchyNode)
+        private static string BuildReferenceTooltip(HierarchyNode hierarchyNode)
         {
             if (hierarchyNode == null || !hierarchyNode.IsDefinitionProxy || string.IsNullOrWhiteSpace(hierarchyNode.DefinitionReferenceId))
                 return null;

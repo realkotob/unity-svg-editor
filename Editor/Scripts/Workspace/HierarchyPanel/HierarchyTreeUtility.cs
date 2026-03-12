@@ -35,7 +35,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
         public static void SelectElementByKey(
             TreeView treeView,
             string elementKey,
-            IReadOnlyList<TreeViewItemData<StructureNode>> items)
+            IReadOnlyList<TreeViewItemData<HierarchyNode>> items)
         {
             if (treeView == null)
                 return;
@@ -59,10 +59,10 @@ namespace SvgEditor.Workspace.HierarchyPanel
 
         public static bool TryFindHierarchyItemId(
             string elementKey,
-            IEnumerable<TreeViewItemData<StructureNode>> items,
+            IEnumerable<TreeViewItemData<HierarchyNode>> items,
             out int itemId)
         {
-            foreach (TreeViewItemData<StructureNode> item in items)
+            foreach (TreeViewItemData<HierarchyNode> item in items)
             {
                 if (string.Equals(item.data?.Key, elementKey, StringComparison.Ordinal))
                 {
@@ -82,10 +82,10 @@ namespace SvgEditor.Workspace.HierarchyPanel
 
         public static bool TryFindHierarchyItem(
             string elementKey,
-            IEnumerable<TreeViewItemData<StructureNode>> items,
-            out TreeViewItemData<StructureNode> foundItem)
+            IEnumerable<TreeViewItemData<HierarchyNode>> items,
+            out TreeViewItemData<HierarchyNode> foundItem)
         {
-            foreach (TreeViewItemData<StructureNode> item in items)
+            foreach (TreeViewItemData<HierarchyNode> item in items)
             {
                 if (string.Equals(item.data?.Key, elementKey, StringComparison.Ordinal))
                 {
@@ -106,9 +106,9 @@ namespace SvgEditor.Workspace.HierarchyPanel
         public static bool ExpandHierarchyPath(
             TreeView treeView,
             string elementKey,
-            IEnumerable<TreeViewItemData<StructureNode>> items)
+            IEnumerable<TreeViewItemData<HierarchyNode>> items)
         {
-            foreach (TreeViewItemData<StructureNode> item in items)
+            foreach (TreeViewItemData<HierarchyNode> item in items)
             {
                 if (string.Equals(item.data?.Key, elementKey, StringComparison.Ordinal))
                     return true;
@@ -175,7 +175,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
             };
         }
 
-        public static string BuildHierarchyLabel(StructureNode item)
+        public static string BuildHierarchyLabel(HierarchyNode item)
         {
             string source = !string.IsNullOrWhiteSpace(item.TreeLabel) ? item.TreeLabel : item.DisplayName;
             if (string.IsNullOrWhiteSpace(source))

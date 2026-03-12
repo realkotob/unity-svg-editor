@@ -2,7 +2,7 @@ using SvgEditor.Workspace.Canvas;
 
 namespace SvgEditor.Document
 {
-    internal sealed class StructureNode
+    internal sealed class HierarchyNode
     {
         public string Key { get; set; } = string.Empty;
         public string TargetKey { get; set; } = string.Empty;

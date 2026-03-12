@@ -80,7 +80,7 @@ namespace SvgEditor.Workspace.Canvas
 
             _definitionOverlays = overlays ?? Array.Empty<CanvasDefinitionOverlayVisual>();
             overlayController.SetDefinitionOverlays(overlays);
-            SyncDefinitionProxySelectionFromStructure(host.SelectedStructureNode);
+            SyncDefinitionProxySelectionFromStructure(host.SelectedHierarchyNode);
             if (HasDefinitionProxySelection && !TryResolveSelectedDefinitionProxyVisual(host.SelectedElementKey, out _))
             {
                 ClearSelection();
@@ -197,7 +197,7 @@ namespace SvgEditor.Workspace.Canvas
             return false;
         }
 
-        private void SyncDefinitionProxySelectionFromStructure(StructureNode selectedNode)
+        private void SyncDefinitionProxySelectionFromStructure(HierarchyNode selectedNode)
         {
             if (selectedNode?.IsDefinitionProxy != true)
             {

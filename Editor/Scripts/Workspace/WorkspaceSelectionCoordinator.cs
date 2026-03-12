@@ -8,7 +8,7 @@ using SvgEditor.Document;
 
 namespace SvgEditor.Workspace
 {
-    internal sealed class WorkspaceHierarchySelectionCoordinator
+    internal sealed class WorkspaceSelectionCoordinator
     {
         private readonly IEditorWorkspaceHost _host;
         private readonly WorkspaceController _canvasWorkspaceController;
@@ -19,7 +19,7 @@ namespace SvgEditor.Workspace
 
         private bool _isUpdatingStructureSelection;
 
-        public WorkspaceHierarchySelectionCoordinator(
+        public WorkspaceSelectionCoordinator(
             IEditorWorkspaceHost host,
             WorkspaceController canvasWorkspaceController,
             EditorWorkspaceShellBinder shellBinder,
@@ -34,8 +34,8 @@ namespace SvgEditor.Workspace
         private DocumentSession CurrentDocument => _currentDocumentAccessor?.Invoke();
         private HierarchyListView HierarchyListView => _shellBinder.HierarchyListView;
 
-        public IReadOnlyList<TreeViewItemData<StructureNode>> HierarchyItems => _structurePanelState.HierarchyItems;
-        public StructureNode SelectedStructureNode => FindStructureNode(_structurePanelState.SelectedElementKey);
+        public IReadOnlyList<TreeViewItemData<HierarchyNode>> HierarchyItems => _structurePanelState.HierarchyItems;
+        public HierarchyNode SelectedHierarchyNode => FindHierarchyNode(_structurePanelState.SelectedElementKey);
 
         public void Bind(IHierarchyHost hierarchyHost)
         {
@@ -62,7 +62,7 @@ namespace SvgEditor.Workspace
                 return;
             }
 
-            if (!TryBuildStructureSnapshot(CurrentDocument, out StructureOutline snapshot, out string _))
+            if (!TryBuildStructureSnapshot(CurrentDocument, out HierarchyOutline snapshot, out string _))
             {
                 _structurePanelState.Clear();
                 HierarchyListView?.SetHierarchyItems(_structurePanelState.HierarchyItems);
@@ -77,7 +77,7 @@ namespace SvgEditor.Workspace
             _structurePanelState.SetStructure(snapshot, selectedElementKey);
             HierarchyListView?.SetHierarchyItems(_structurePanelState.HierarchyItems);
 
-            if (TryResolveSelection(_structurePanelState.Elements, selectedElementKey, selectedTargetKey, out StructureNode selectedItem, out SelectionKind selectionKind))
+            if (TryResolveSelection(_structurePanelState.Elements, selectedElementKey, selectedTargetKey, out HierarchyNode selectedItem, out SelectionKind selectionKind))
             {
                 ApplySelectionState(selectedItem, selectionKind, syncPatchTarget: false);
                 return;
@@ -91,7 +91,7 @@ namespace SvgEditor.Workspace
             HierarchyListView?.SetEnabled(hasDocument);
         }
 
-        public StructureNode FindStructureNode(string elementKey)
+        public HierarchyNode FindHierarchyNode(string elementKey)
         {
             return _structurePanelState.Elements.FirstOrDefault(item =>
                 string.Equals(item.Key, elementKey, StringComparison.Ordinal));
@@ -99,7 +99,7 @@ namespace SvgEditor.Workspace
 
         public string ResolveCanvasSelectedElementKey()
         {
-            StructureNode selectedNode = FindStructureNode(_structurePanelState.SelectedElementKey);
+            HierarchyNode selectedNode = FindHierarchyNode(_structurePanelState.SelectedElementKey);
             if (selectedNode?.IsDefinitionProxy == true && !string.IsNullOrWhiteSpace(selectedNode.SourceElementKey))
                 return selectedNode.SourceElementKey;
 
@@ -118,7 +118,7 @@ namespace SvgEditor.Workspace
 
         public void SelectStructureElementFromCanvas(string elementKey, bool syncPatchTarget)
         {
-            StructureNode selectedItem = FindStructureNode(elementKey);
+            HierarchyNode selectedItem = FindHierarchyNode(elementKey);
             ApplySelectionState(
                 selectedItem,
                 selectedItem != null ? SelectionKind.Element : SelectionKind.None,
@@ -133,14 +133,14 @@ namespace SvgEditor.Workspace
                 return;
             }
 
-            StructureNode selectedItem = FindStructureNodeByTargetKey(targetKey);
+            HierarchyNode selectedItem = FindHierarchyNodeByTargetKey(targetKey);
             ApplySelectionState(
                 selectedItem,
                 selectedItem != null ? SelectionKind.Element : SelectionKind.None,
                 syncPatchTarget: false);
         }
 
-        private void OnStructureElementSelectionChanged(StructureNode selected)
+        private void OnStructureElementSelectionChanged(HierarchyNode selected)
         {
             if (_isUpdatingStructureSelection)
                 return;
@@ -151,7 +151,7 @@ namespace SvgEditor.Workspace
                 syncPatchTarget: true);
         }
 
-        private bool TryBuildStructureSnapshot(DocumentSession document, out StructureOutline snapshot, out string error)
+        private bool TryBuildStructureSnapshot(DocumentSession document, out HierarchyOutline snapshot, out string error)
         {
             snapshot = null;
             error = string.Empty;
@@ -177,13 +177,13 @@ namespace SvgEditor.Workspace
             return HierarchyDocumentModelReader.TryBuildSnapshot(document.DocumentModel, out snapshot, out error);
         }
 
-        private StructureNode FindStructureNodeByTargetKey(string targetKey)
+        private HierarchyNode FindHierarchyNodeByTargetKey(string targetKey)
         {
             return _structurePanelState.Elements.FirstOrDefault(item =>
                 string.Equals(item.TargetKey, targetKey, StringComparison.Ordinal));
         }
 
-        private void ApplySelectionState(StructureNode selectedItem, SelectionKind selectionKind, bool syncPatchTarget)
+        private void ApplySelectionState(HierarchyNode selectedItem, SelectionKind selectionKind, bool syncPatchTarget)
         {
             _structurePanelState.SelectElement(selectedItem?.Key);
             _structurePanelState.SelectLayer(selectedItem?.LayerKey);
@@ -205,10 +205,10 @@ namespace SvgEditor.Workspace
         }
 
         internal static bool TryResolveSelection(
-            IReadOnlyList<StructureNode> elements,
+            IReadOnlyList<HierarchyNode> elements,
             string selectedElementKey,
             string selectedTargetKey,
-            out StructureNode selectedItem,
+            out HierarchyNode selectedItem,
             out SelectionKind selectionKind)
         {
             selectedItem = elements?.FirstOrDefault(item =>

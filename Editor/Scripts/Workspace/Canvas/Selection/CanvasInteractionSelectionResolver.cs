@@ -66,7 +66,7 @@ namespace SvgEditor.Workspace.Canvas
                 return elementKey;
             }
 
-            StructureNode currentNode = _host.FindStructureNode(elementKey);
+            HierarchyNode currentNode = _host.FindHierarchyNode(elementKey);
             while (currentNode != null)
             {
                 if (string.Equals(currentNode.TagName, SvgTagName.GROUP, StringComparison.Ordinal))
@@ -79,7 +79,7 @@ namespace SvgEditor.Workspace.Canvas
                     break;
                 }
 
-                currentNode = _host.FindStructureNode(currentNode.ParentKey);
+                currentNode = _host.FindHierarchyNode(currentNode.ParentKey);
             }
 
             return elementKey;
@@ -106,7 +106,7 @@ namespace SvgEditor.Workspace.Canvas
                     continue;
                 }
 
-                StructureNode candidateNode = _host.FindStructureNode(candidate.Key);
+                HierarchyNode candidateNode = _host.FindHierarchyNode(candidate.Key);
                 if (candidateNode == null ||
                     !string.Equals(candidateNode.TagName, SvgTagName.GROUP, StringComparison.Ordinal))
                 {

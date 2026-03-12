@@ -6,15 +6,15 @@ using SvgEditor.Shared;
 
 namespace SvgEditor.Document
 {
-    internal static class StructureOutlineBuilder
+    internal static class HierarchyOutlineBuilder
     {
         public static bool TryBuildSnapshot(
             string sourceText,
-            out StructureOutline snapshot,
+            out HierarchyOutline snapshot,
             out string error,
             bool showDefinitions = false)
         {
-            snapshot = new StructureOutline();
+            snapshot = new HierarchyOutline();
             error = string.Empty;
 
             if (string.IsNullOrWhiteSpace(sourceText))
@@ -28,12 +28,12 @@ namespace SvgEditor.Document
 
             var context = new BuildContext(root, showDefinitions);
             context.Elements.Add(CreateElementItem(root, root, 0, string.Empty, string.Empty, 0));
-            context.HierarchyItems.Add(new TreeViewItemData<StructureNode>(
+            context.HierarchyItems.Add(new TreeViewItemData<HierarchyNode>(
                 CreateTreeId(context.Elements[0].Key, context.UsedTreeIds),
                 context.Elements[0],
                 BuildVisibleChildren(context, root, 1, string.Empty, context.Elements[0].Key)));
 
-            snapshot = new StructureOutline
+            snapshot = new HierarchyOutline
             {
                 Elements = context.Elements,
                 Layers = context.Layers,
@@ -42,14 +42,14 @@ namespace SvgEditor.Document
             return true;
         }
 
-        private static List<TreeViewItemData<StructureNode>> BuildVisibleChildren(
+        private static List<TreeViewItemData<HierarchyNode>> BuildVisibleChildren(
             BuildContext context,
             XmlElement parent,
             int depth,
             string activeLayerKey,
             string parentKey)
         {
-            var items = new List<TreeViewItemData<StructureNode>>();
+            var items = new List<TreeViewItemData<HierarchyNode>>();
             var children = SvgDocumentXmlUtility.GetElementChildren(parent);
             for (var childIndex = 0; childIndex < children.Count; childIndex++)
             {
@@ -72,7 +72,7 @@ namespace SvgEditor.Document
                 context.Elements.Add(elementItem);
                 IncrementLayerElementCount(context, childActiveLayerKey, elementItem);
 
-                items.Add(new TreeViewItemData<StructureNode>(
+                items.Add(new TreeViewItemData<HierarchyNode>(
                     CreateTreeId(elementItem.Key, context.UsedTreeIds),
                     elementItem,
                     BuildVisibleChildren(context, child, depth + 1, childActiveLayerKey, elementItem.Key)));
@@ -108,7 +108,7 @@ namespace SvgEditor.Document
             return childActiveLayerKey;
         }
 
-        private static void IncrementLayerElementCount(BuildContext context, string activeLayerKey, StructureNode elementItem)
+        private static void IncrementLayerElementCount(BuildContext context, string activeLayerKey, HierarchyNode elementItem)
         {
             if (string.IsNullOrWhiteSpace(activeLayerKey))
                 return;
@@ -122,7 +122,7 @@ namespace SvgEditor.Document
             ownerLayer.ElementCount++;
         }
 
-        private static StructureNode CreateElementItem(
+        private static HierarchyNode CreateElementItem(
             XmlElement element,
             XmlElement root,
             int depth,
@@ -133,7 +133,7 @@ namespace SvgEditor.Document
             var hasStableId = SvgDocumentXmlUtility.TryGetId(element, out string stableId);
             var elementKey = SvgDocumentXmlUtility.BuildElementKey(element, root);
             var isRoot = ReferenceEquals(element, root);
-            return new StructureNode
+            return new HierarchyNode
             {
                 Key = elementKey,
                 TargetKey = isRoot ? string.Empty : elementKey,
@@ -219,9 +219,9 @@ namespace SvgEditor.Document
 
             public XmlElement Root { get; }
             public bool ShowDefinitions { get; }
-            public List<StructureNode> Elements { get; } = new();
+            public List<HierarchyNode> Elements { get; } = new();
             public List<LayerSummary> Layers { get; } = new();
-            public List<TreeViewItemData<StructureNode>> HierarchyItems { get; } = new();
+            public List<TreeViewItemData<HierarchyNode>> HierarchyItems { get; } = new();
             public Dictionary<string, LayerSummary> LayersByKey { get; } = new(StringComparer.Ordinal);
             public HashSet<int> UsedTreeIds { get; } = new();
         }

@@ -84,7 +84,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
                 return;
             }
 
-            StructureNode draggedItem = _host.FindStructureNode(_reorderSession.PressedHierarchyElementKey);
+            HierarchyNode draggedItem = _host.FindHierarchyNode(_reorderSession.PressedHierarchyElementKey);
             if (draggedItem == null || string.IsNullOrWhiteSpace(draggedItem.ParentKey))
             {
                 ResetDragState();
@@ -123,7 +123,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
                 ResetDragState();
         }
 
-        private void UpdateHierarchyInsertionIndicator(Vector2 pointerPosition, VisualElement hoveredElement, StructureNode draggedItem)
+        private void UpdateHierarchyInsertionIndicator(Vector2 pointerPosition, VisualElement hoveredElement, HierarchyNode draggedItem)
         {
             if (_treeView == null || _host == null)
             {
@@ -144,7 +144,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
                 return;
             }
 
-            StructureNode hoveredItem = _host.FindStructureNode(hoveredKey);
+            HierarchyNode hoveredItem = _host.FindHierarchyNode(hoveredKey);
             if (hoveredItem == null ||
                 string.Equals(hoveredItem.Key, draggedItem.Key, StringComparison.Ordinal) ||
                 IsSameOrDescendantOf(hoveredItem.Key, draggedItem.Key))
@@ -161,7 +161,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
                                       pointerOffsetY <= rowHeight * 0.75f;
 
             if (canDropIntoHovered &&
-                HierarchyTreeUtility.TryFindHierarchyItem(hoveredKey, _host.HierarchyItems, out TreeViewItemData<StructureNode> hoveredTreeItem))
+                HierarchyTreeUtility.TryFindHierarchyItem(hoveredKey, _host.HierarchyItems, out TreeViewItemData<HierarchyNode> hoveredTreeItem))
             {
                 int hoveredChildCount = CountChildren(hoveredTreeItem.children);
                 bool insertAsFirstChild = hoveredChildCount > 0 && pointerOffsetY < rowHeight * 0.5f;
@@ -174,7 +174,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
             }
 
             if (string.IsNullOrWhiteSpace(hoveredItem.ParentKey) ||
-                !HierarchyTreeUtility.TryFindHierarchyItem(hoveredItem.ParentKey, _host.HierarchyItems, out TreeViewItemData<StructureNode> parentItem))
+                !HierarchyTreeUtility.TryFindHierarchyItem(hoveredItem.ParentKey, _host.HierarchyItems, out TreeViewItemData<HierarchyNode> parentItem))
             {
                 ClearPendingDropIndicator();
                 return;
@@ -230,13 +230,13 @@ namespace SvgEditor.Workspace.HierarchyPanel
                     return true;
                 }
 
-                currentKey = _host?.FindStructureNode(currentKey)?.ParentKey;
+                currentKey = _host?.FindHierarchyNode(currentKey)?.ParentKey;
             }
 
             return false;
         }
 
-        private static bool CanAcceptChildren(StructureNode item)
+        private static bool CanAcceptChildren(HierarchyNode item)
         {
             if (item == null)
             {
@@ -247,10 +247,10 @@ namespace SvgEditor.Workspace.HierarchyPanel
                    string.Equals(item.TagName, SvgTagName.GROUP, StringComparison.OrdinalIgnoreCase);
         }
 
-        private static int FindChildIndex(IEnumerable<TreeViewItemData<StructureNode>> items, string targetKey)
+        private static int FindChildIndex(IEnumerable<TreeViewItemData<HierarchyNode>> items, string targetKey)
         {
             int index = 0;
-            foreach (TreeViewItemData<StructureNode> item in items)
+            foreach (TreeViewItemData<HierarchyNode> item in items)
             {
                 if (string.Equals(item.data?.Key, targetKey, StringComparison.Ordinal))
                 {
@@ -263,7 +263,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
             return -1;
         }
 
-        private static int CountChildren(IEnumerable<TreeViewItemData<StructureNode>> items)
+        private static int CountChildren(IEnumerable<TreeViewItemData<HierarchyNode>> items)
         {
             if (items == null)
             {
@@ -271,7 +271,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
             }
 
             int count = 0;
-            foreach (TreeViewItemData<StructureNode> _ in items)
+            foreach (TreeViewItemData<HierarchyNode> _ in items)
             {
                 count++;
             }

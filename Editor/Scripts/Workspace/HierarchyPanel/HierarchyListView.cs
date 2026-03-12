@@ -36,10 +36,10 @@ namespace SvgEditor.Workspace.HierarchyPanel
         #region Variables
         private readonly TreeView _hierarchyTreeView;
         private readonly HierarchyPreviewRenderer _previewRenderer = new();
-        private readonly List<TreeViewItemData<StructureNode>> _hierarchyItems = new();
+        private readonly List<TreeViewItemData<HierarchyNode>> _hierarchyItems = new();
 
         private HierarchyInteractionController _interactionController;
-        private Action<StructureNode> _selectionChangedHandler;
+        private Action<HierarchyNode> _selectionChangedHandler;
         private bool _showPreview;
         #endregion Variables
 
@@ -78,7 +78,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
         internal void BindRuntime(
             IHierarchyHost host,
             HierarchyInteractionController interactionController,
-            Action<StructureNode> selectionChangedHandler)
+            Action<HierarchyNode> selectionChangedHandler)
         {
             _selectionChangedHandler = selectionChangedHandler;
             _interactionController = interactionController;
@@ -93,7 +93,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
             _selectionChangedHandler = null;
         }
 
-        internal void SetHierarchyItems(IReadOnlyList<TreeViewItemData<StructureNode>> hierarchyItems)
+        internal void SetHierarchyItems(IReadOnlyList<TreeViewItemData<HierarchyNode>> hierarchyItems)
         {
             _hierarchyItems.Clear();
             if (hierarchyItems != null)
@@ -101,7 +101,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
                 _hierarchyItems.AddRange(hierarchyItems);
             }
 
-            _hierarchyTreeView.SetRootItems<StructureNode>(_hierarchyItems);
+            _hierarchyTreeView.SetRootItems<HierarchyNode>(_hierarchyItems);
             _hierarchyTreeView.Rebuild();
         }
 
@@ -162,7 +162,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
                 return;
             }
 
-            if (!TryGetHierarchyNode(index, out StructureNode hierarchyNode))
+            if (!TryGetHierarchyNode(index, out HierarchyNode hierarchyNode))
             {
                 return;
             }
@@ -170,7 +170,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
             bool hasChildren = HierarchyTreeUtility.TryFindHierarchyItem(
                 hierarchyNode.Key,
                 _hierarchyItems,
-                out TreeViewItemData<StructureNode> hierarchyItem) &&
+                out TreeViewItemData<HierarchyNode> hierarchyItem) &&
                 hierarchyItem.hasChildren;
             bool isExpanded =
                 hasChildren &&
@@ -190,11 +190,11 @@ namespace SvgEditor.Workspace.HierarchyPanel
             row.Unbind();
         }
 
-        private bool TryGetHierarchyNode(int index, out StructureNode hierarchyNode)
+        private bool TryGetHierarchyNode(int index, out HierarchyNode hierarchyNode)
         {
             try
             {
-                hierarchyNode = _hierarchyTreeView.GetItemDataForIndex<StructureNode>(index);
+                hierarchyNode = _hierarchyTreeView.GetItemDataForIndex<HierarchyNode>(index);
                 return true;
             }
             catch
@@ -209,7 +209,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
             _selectionChangedHandler?.Invoke(ResolveSelectedNode(selectedIndices));
         }
 
-        private StructureNode ResolveSelectedNode(IEnumerable<int> selectedIndices)
+        private HierarchyNode ResolveSelectedNode(IEnumerable<int> selectedIndices)
         {
             if (selectedIndices == null)
             {
@@ -223,7 +223,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
                     continue;
                 }
 
-                return _hierarchyTreeView.GetItemDataForIndex<StructureNode>(index);
+                return _hierarchyTreeView.GetItemDataForIndex<HierarchyNode>(index);
             }
 
             return null;

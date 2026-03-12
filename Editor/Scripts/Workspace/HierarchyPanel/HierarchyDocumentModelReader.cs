@@ -12,11 +12,11 @@ namespace SvgEditor.Workspace.HierarchyPanel
     {
         public static bool TryBuildSnapshot(
             SvgDocumentModel documentModel,
-            out StructureOutline snapshot,
+            out HierarchyOutline snapshot,
             out string error,
             bool showDefinitions = false)
         {
-            snapshot = new StructureOutline();
+            snapshot = new HierarchyOutline();
             error = string.Empty;
 
             if (documentModel?.Root == null)
@@ -26,14 +26,14 @@ namespace SvgEditor.Workspace.HierarchyPanel
             }
 
             BuildContext context = new(showDefinitions);
-            StructureNode rootNode = CreateStructureNode(documentModel.Root, parentKey: string.Empty, activeLayerKey: string.Empty);
+            HierarchyNode rootNode = CreateHierarchyNode(documentModel.Root, parentKey: string.Empty, activeLayerKey: string.Empty);
             context.Elements.Add(rootNode);
-            context.HierarchyItems.Add(new TreeViewItemData<StructureNode>(
+            context.HierarchyItems.Add(new TreeViewItemData<HierarchyNode>(
                 CreateTreeId(rootNode.Key, context.UsedTreeIds),
                 rootNode,
                 BuildVisibleChildren(documentModel, context, documentModel.Root, activeLayerKey: string.Empty)));
 
-            snapshot = new StructureOutline
+            snapshot = new HierarchyOutline
             {
                 Elements = context.Elements,
                 Layers = context.Layers,
@@ -42,13 +42,13 @@ namespace SvgEditor.Workspace.HierarchyPanel
             return true;
         }
 
-        private static List<TreeViewItemData<StructureNode>> BuildVisibleChildren(
+        private static List<TreeViewItemData<HierarchyNode>> BuildVisibleChildren(
             SvgDocumentModel documentModel,
             BuildContext context,
             SvgNodeModel parentNode,
             string activeLayerKey)
         {
-            List<TreeViewItemData<StructureNode>> items = new();
+            List<TreeViewItemData<HierarchyNode>> items = new();
             if (parentNode?.Children == null)
                 return items;
 
@@ -61,14 +61,14 @@ namespace SvgEditor.Workspace.HierarchyPanel
                     continue;
 
                 string childActiveLayerKey = RegisterLayer(context, documentModel.Root, childNode, activeLayerKey);
-                StructureNode structureNode = CreateStructureNode(childNode, parentNode.LegacyElementKey, childActiveLayerKey);
+                HierarchyNode structureNode = CreateHierarchyNode(childNode, parentNode.LegacyElementKey, childActiveLayerKey);
 
                 context.Elements.Add(structureNode);
                 IncrementLayerElementCount(context, childActiveLayerKey, structureNode);
-                List<TreeViewItemData<StructureNode>> childItems = BuildVisibleChildren(documentModel, context, childNode, childActiveLayerKey);
+                List<TreeViewItemData<HierarchyNode>> childItems = BuildVisibleChildren(documentModel, context, childNode, childActiveLayerKey);
                 AppendDefinitionProxyItems(documentModel, context, structureNode, childItems);
 
-                items.Add(new TreeViewItemData<StructureNode>(
+                items.Add(new TreeViewItemData<HierarchyNode>(
                     CreateTreeId(structureNode.Key, context.UsedTreeIds),
                     structureNode,
                     childItems));
@@ -106,7 +106,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
             return childActiveLayerKey;
         }
 
-        private static void IncrementLayerElementCount(BuildContext context, string activeLayerKey, StructureNode elementItem)
+        private static void IncrementLayerElementCount(BuildContext context, string activeLayerKey, HierarchyNode elementItem)
         {
             if (string.IsNullOrWhiteSpace(activeLayerKey))
                 return;
@@ -120,10 +120,10 @@ namespace SvgEditor.Workspace.HierarchyPanel
             ownerLayer.ElementCount++;
         }
 
-        private static StructureNode CreateStructureNode(SvgNodeModel node, string parentKey, string activeLayerKey)
+        private static HierarchyNode CreateHierarchyNode(SvgNodeModel node, string parentKey, string activeLayerKey)
         {
             bool isRoot = node.Id.IsRoot;
-            return new StructureNode
+            return new HierarchyNode
             {
                 Key = node.LegacyElementKey,
                 TargetKey = isRoot ? string.Empty : node.LegacyTargetKey,
@@ -141,8 +141,8 @@ namespace SvgEditor.Workspace.HierarchyPanel
         private static void AppendDefinitionProxyItems(
             SvgDocumentModel documentModel,
             BuildContext context,
-            StructureNode sourceNode,
-            List<TreeViewItemData<StructureNode>> childItems)
+            HierarchyNode sourceNode,
+            List<TreeViewItemData<HierarchyNode>> childItems)
         {
             if (documentModel == null || context == null || sourceNode == null || childItems == null)
                 return;
@@ -154,8 +154,8 @@ namespace SvgEditor.Workspace.HierarchyPanel
         private static void AppendDefinitionProxyItem(
             SvgDocumentModel documentModel,
             BuildContext context,
-            StructureNode sourceNode,
-            List<TreeViewItemData<StructureNode>> childItems,
+            HierarchyNode sourceNode,
+            List<TreeViewItemData<HierarchyNode>> childItems,
             CanvasDefinitionOverlayKind kind,
             string referenceId)
         {
@@ -167,7 +167,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
                 definitionElementKey = definitionNode.LegacyElementKey;
 
             string label = DefinitionProxyUtility.BuildProxyLabel(kind, referenceId);
-            StructureNode proxyNode = new()
+            HierarchyNode proxyNode = new()
             {
                 Key = DefinitionProxyUtility.BuildProxyKey(sourceNode.Key, kind, referenceId),
                 TargetKey = string.Empty,
@@ -185,10 +185,10 @@ namespace SvgEditor.Workspace.HierarchyPanel
             };
 
             context.Elements.Add(proxyNode);
-            childItems.Add(new TreeViewItemData<StructureNode>(
+            childItems.Add(new TreeViewItemData<HierarchyNode>(
                 CreateTreeId(proxyNode.Key, context.UsedTreeIds),
                 proxyNode,
-                new List<TreeViewItemData<StructureNode>>()));
+                new List<TreeViewItemData<HierarchyNode>>()));
         }
 
         private static bool IsLayerCandidate(SvgNodeModel node, SvgNodeModel rootNode)
@@ -299,9 +299,9 @@ namespace SvgEditor.Workspace.HierarchyPanel
             }
 
             public bool ShowDefinitions { get; }
-            public List<StructureNode> Elements { get; } = new();
+            public List<HierarchyNode> Elements { get; } = new();
             public List<LayerSummary> Layers { get; } = new();
-            public List<TreeViewItemData<StructureNode>> HierarchyItems { get; } = new();
+            public List<TreeViewItemData<HierarchyNode>> HierarchyItems { get; } = new();
             public Dictionary<string, LayerSummary> LayersByKey { get; } = new(StringComparer.Ordinal);
             public HashSet<int> UsedTreeIds { get; } = new();
         }

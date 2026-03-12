@@ -21,7 +21,7 @@ namespace SvgEditor.Workspace.Canvas
         void RefreshInspector(SvgDocumentModel documentModel);
         void ApplyUpdatedSource(string updatedSource, string successStatus);
         void UpdateSourceStatus(string status);
-        StructureNode FindStructureNode(string elementKey);
+        HierarchyNode FindHierarchyNode(string elementKey);
         void SelectFrame();
         void SelectElement(string elementKey, bool syncPatchTarget);
         void ClearSelection();

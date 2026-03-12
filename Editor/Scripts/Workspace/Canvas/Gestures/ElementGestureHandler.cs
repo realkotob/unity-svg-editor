@@ -46,7 +46,7 @@ namespace SvgEditor.Workspace.Canvas
                 return false;
             }
 
-            string tagName = _host.FindStructureNode(_host.SelectedElementKey)?.TagName;
+            string tagName = _host.FindHierarchyNode(_host.SelectedElementKey)?.TagName;
             if (string.Equals(tagName, SvgTagName.TSPAN, StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(tagName, SvgTagName.TEXT_PATH, StringComparison.OrdinalIgnoreCase))
             {

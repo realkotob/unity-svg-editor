@@ -7,12 +7,12 @@ namespace SvgEditor.Workspace.HierarchyPanel
 {
     internal sealed class HierarchyPreviewRenderer
     {
-        private List<TreeViewItemData<StructureNode>> _previewHierarchyItems;
+        private List<TreeViewItemData<HierarchyNode>> _previewHierarchyItems;
 
         public void ApplyPreview(
             VisualElement owner,
             TreeView hierarchyTreeView,
-            List<TreeViewItemData<StructureNode>> hierarchyItems,
+            List<TreeViewItemData<HierarchyNode>> hierarchyItems,
             string previewEnabledClassName)
         {
             if (owner == null || hierarchyTreeView == null || hierarchyItems == null)
@@ -22,10 +22,10 @@ namespace SvgEditor.Workspace.HierarchyPanel
 
             hierarchyItems.Clear();
             hierarchyItems.AddRange(GetPreviewHierarchyItems());
-            hierarchyTreeView.SetRootItems<StructureNode>(hierarchyItems);
+            hierarchyTreeView.SetRootItems<HierarchyNode>(hierarchyItems);
             owner.EnableClass(previewEnabledClassName, true);
 
-            foreach (TreeViewItemData<StructureNode> hierarchyItem in hierarchyItems)
+            foreach (TreeViewItemData<HierarchyNode> hierarchyItem in hierarchyItems)
             {
                 ExpandHierarchyItemRecursive(hierarchyTreeView, hierarchyItem);
             }
@@ -36,7 +36,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
         public void ClearPreview(
             VisualElement owner,
             TreeView hierarchyTreeView,
-            List<TreeViewItemData<StructureNode>> hierarchyItems,
+            List<TreeViewItemData<HierarchyNode>> hierarchyItems,
             string previewEnabledClassName)
         {
             if (owner == null || hierarchyTreeView == null || hierarchyItems == null)
@@ -45,19 +45,19 @@ namespace SvgEditor.Workspace.HierarchyPanel
             }
 
             hierarchyItems.Clear();
-            hierarchyTreeView.SetRootItems<StructureNode>(hierarchyItems);
+            hierarchyTreeView.SetRootItems<HierarchyNode>(hierarchyItems);
             owner.EnableClass(previewEnabledClassName, false);
             hierarchyTreeView.Rebuild();
             _previewHierarchyItems = null;
         }
 
-        private IReadOnlyList<TreeViewItemData<StructureNode>> GetPreviewHierarchyItems()
+        private IReadOnlyList<TreeViewItemData<HierarchyNode>> GetPreviewHierarchyItems()
         {
             _previewHierarchyItems ??= CreatePreviewHierarchyItems();
             return _previewHierarchyItems;
         }
 
-        private static void ExpandHierarchyItemRecursive(TreeView hierarchyTreeView, TreeViewItemData<StructureNode> hierarchyItem)
+        private static void ExpandHierarchyItemRecursive(TreeView hierarchyTreeView, TreeViewItemData<HierarchyNode> hierarchyItem)
         {
             if (!hierarchyItem.hasChildren)
             {
@@ -65,32 +65,32 @@ namespace SvgEditor.Workspace.HierarchyPanel
             }
 
             hierarchyTreeView.ExpandItem(hierarchyItem.id, false);
-            foreach (TreeViewItemData<StructureNode> childItem in hierarchyItem.children)
+            foreach (TreeViewItemData<HierarchyNode> childItem in hierarchyItem.children)
             {
                 ExpandHierarchyItemRecursive(hierarchyTreeView, childItem);
             }
         }
 
-        private static List<TreeViewItemData<StructureNode>> CreatePreviewHierarchyItems()
+        private static List<TreeViewItemData<HierarchyNode>> CreatePreviewHierarchyItems()
         {
-            StructureNode rootNode = CreatePreviewHierarchyNode("preview-svg", "landing-hero", "svg", 0);
-            StructureNode heroLayerNode = CreatePreviewHierarchyNode("preview-hero-layer", "hero-layer", "g", 1, rootNode.Key, "hero-layer");
-            StructureNode heroBackgroundNode = CreatePreviewHierarchyNode("preview-hero-background", "hero-bg", "rect", 2, heroLayerNode.Key, "hero-layer");
-            StructureNode heroAccentNode = CreatePreviewHierarchyNode("preview-hero-accent", "hero-accent", "path", 2, heroLayerNode.Key, "hero-layer");
-            StructureNode badgeLayerNode = CreatePreviewHierarchyNode("preview-badge-layer", "badge-layer", "g", 1, rootNode.Key, "badge-layer");
-            StructureNode badgeRingNode = CreatePreviewHierarchyNode("preview-badge-ring", "badge-ring", "circle", 2, badgeLayerNode.Key, "badge-layer");
+            HierarchyNode rootNode = CreatePreviewHierarchyNode("preview-svg", "landing-hero", "svg", 0);
+            HierarchyNode heroLayerNode = CreatePreviewHierarchyNode("preview-hero-layer", "hero-layer", "g", 1, rootNode.Key, "hero-layer");
+            HierarchyNode heroBackgroundNode = CreatePreviewHierarchyNode("preview-hero-background", "hero-bg", "rect", 2, heroLayerNode.Key, "hero-layer");
+            HierarchyNode heroAccentNode = CreatePreviewHierarchyNode("preview-hero-accent", "hero-accent", "path", 2, heroLayerNode.Key, "hero-layer");
+            HierarchyNode badgeLayerNode = CreatePreviewHierarchyNode("preview-badge-layer", "badge-layer", "g", 1, rootNode.Key, "badge-layer");
+            HierarchyNode badgeRingNode = CreatePreviewHierarchyNode("preview-badge-ring", "badge-ring", "circle", 2, badgeLayerNode.Key, "badge-layer");
 
-            return new List<TreeViewItemData<StructureNode>>
+            return new List<TreeViewItemData<HierarchyNode>>
             {
-                new TreeViewItemData<StructureNode>(
+                new TreeViewItemData<HierarchyNode>(
                     1,
                     rootNode,
-                    new List<TreeViewItemData<StructureNode>>
+                    new List<TreeViewItemData<HierarchyNode>>
                     {
                         new(
                             2,
                             heroLayerNode,
-                            new List<TreeViewItemData<StructureNode>>
+                            new List<TreeViewItemData<HierarchyNode>>
                             {
                                 new(3, heroBackgroundNode),
                                 new(4, heroAccentNode)
@@ -98,7 +98,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
                         new(
                             5,
                             badgeLayerNode,
-                            new List<TreeViewItemData<StructureNode>>
+                            new List<TreeViewItemData<HierarchyNode>>
                             {
                                 new(6, badgeRingNode)
                             })
@@ -106,7 +106,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
             };
         }
 
-        private static StructureNode CreatePreviewHierarchyNode(
+        private static HierarchyNode CreatePreviewHierarchyNode(
             string key,
             string targetKey,
             string tagName,
@@ -115,7 +115,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
             string layerKey = "")
         {
             string label = $"{tagName}#{targetKey}";
-            return new StructureNode
+            return new HierarchyNode
             {
                 Key = key,
                 TargetKey = targetKey,

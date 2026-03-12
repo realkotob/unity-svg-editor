@@ -298,7 +298,7 @@ namespace SvgEditor.Workspace.Canvas
         void ICanvasPointerDragHost.RefreshInspector(SvgDocumentModel documentModel) => _host.RefreshInspector(documentModel);
         void ICanvasPointerDragHost.ApplyUpdatedSource(string updatedSource, string successStatus) => _host.ApplyUpdatedSource(updatedSource, successStatus);
         void ICanvasPointerDragHost.UpdateSourceStatus(string status) => _host.UpdateSourceStatus(status);
-        StructureNode ICanvasPointerDragHost.FindStructureNode(string elementKey) => _host.FindStructureNode(elementKey);
+        HierarchyNode ICanvasPointerDragHost.FindHierarchyNode(string elementKey) => _host.FindHierarchyNode(elementKey);
         void ICanvasPointerDragHost.SelectFrame() => _host.SelectFrameFromCanvas();
         void ICanvasPointerDragHost.SelectElement(string elementKey, bool syncPatchTarget) => _host.SelectStructureElementFromCanvas(elementKey, syncPatchTarget);
         void ICanvasPointerDragHost.ClearSelection() => _host.ClearStructureSelectionFromCanvas();
@@ -332,7 +332,7 @@ namespace SvgEditor.Workspace.Canvas
                     selectedProxy.ParentWorldTransform,
                     out string proxyUpdatedSource))
             {
-                _host.ApplyUpdatedSource(proxyUpdatedSource, $"Moved <{_host.FindStructureNode(selectedProxy.DefinitionElementKey)?.TagName ?? "definition"}>.");
+                _host.ApplyUpdatedSource(proxyUpdatedSource, $"Moved <{_host.FindHierarchyNode(selectedProxy.DefinitionElementKey)?.TagName ?? "definition"}>.");
                 return true;
             }
 
@@ -353,7 +353,7 @@ namespace SvgEditor.Workspace.Canvas
                 return false;
             }
 
-            _host.ApplyUpdatedSource(updatedSource, $"Moved <{_host.FindStructureNode(_host.SelectedElementKey)?.TagName ?? "element"}>.");
+            _host.ApplyUpdatedSource(updatedSource, $"Moved <{_host.FindHierarchyNode(_host.SelectedElementKey)?.TagName ?? "element"}>.");
             return true;
         }
 
@@ -376,7 +376,7 @@ namespace SvgEditor.Workspace.Canvas
 
         private bool IsResizeUnsupported(string elementKey)
         {
-            string tagName = _host.FindStructureNode(elementKey)?.TagName;
+            string tagName = _host.FindHierarchyNode(elementKey)?.TagName;
             return string.Equals(tagName, SvgTagName.TSPAN, System.StringComparison.OrdinalIgnoreCase) ||
                    string.Equals(tagName, SvgTagName.TEXT_PATH, System.StringComparison.OrdinalIgnoreCase);
         }
