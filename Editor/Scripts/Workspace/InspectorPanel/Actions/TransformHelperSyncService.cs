@@ -1,5 +1,6 @@
 using System;
 using SvgEditor.Document;
+using SvgEditor.Workspace.Document;
 
 using SvgEditor;
 

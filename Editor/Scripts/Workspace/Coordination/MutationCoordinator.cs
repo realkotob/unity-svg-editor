@@ -3,18 +3,20 @@ using System.Linq;
 using Unity.VectorGraphics;
 using UnityEngine;
 using SvgEditor.Preview;
+using SvgEditor.Workspace.Document;
+using SvgEditor.Workspace.Host;
 using SvgEditor.DocumentModel;
 using SvgEditor.Document;
 
-namespace SvgEditor.Workspace
+namespace SvgEditor.Workspace.Coordination
 {
-    internal sealed class WorkspaceMutationCoordinator
+    internal sealed class MutationCoordinator
     {
         private readonly IEditorWorkspaceHost _host;
         private readonly Func<DocumentSession> _currentDocumentAccessor;
         private readonly SvgDocumentModelMutationService _documentModelMutationService = new();
 
-        public WorkspaceMutationCoordinator(IEditorWorkspaceHost host, Func<DocumentSession> currentDocumentAccessor)
+        public MutationCoordinator(IEditorWorkspaceHost host, Func<DocumentSession> currentDocumentAccessor)
         {
             _host = host;
             _currentDocumentAccessor = currentDocumentAccessor;

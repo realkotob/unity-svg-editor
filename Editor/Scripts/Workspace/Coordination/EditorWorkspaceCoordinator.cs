@@ -5,18 +5,20 @@ using UnityEngine.UIElements;
 using SvgEditor.Preview;
 using SvgEditor.Workspace.Canvas;
 using SvgEditor.Workspace.HierarchyPanel;
+using SvgEditor.Workspace.Document;
+using SvgEditor.Workspace.Host;
 using SvgEditor.DocumentModel;
 using SvgEditor.Document;
 
-namespace SvgEditor.Workspace
+namespace SvgEditor.Workspace.Coordination
 {
     internal sealed class EditorWorkspaceCoordinator : ICanvasWorkspaceHost, IHierarchyHost
     {
         private readonly IEditorWorkspaceHost _host;
         private readonly WorkspaceController _canvasWorkspaceController;
-        private readonly WorkspaceShellBinder _shellBinder = new();
-        private readonly WorkspaceMutationCoordinator _mutationCoordinator;
-        private readonly WorkspaceSelectionCoordinator _selectionCoordinator;
+        private readonly ShellBinder _shellBinder = new();
+        private readonly MutationCoordinator _mutationCoordinator;
+        private readonly SelectionCoordinator _selectionCoordinator;
 
         private VisualElement RootVisualElement => _host.RootVisualElement;
         private DocumentSession CurrentDocument => _host.CurrentDocument;
@@ -25,8 +27,8 @@ namespace SvgEditor.Workspace
         {
             _host = host;
             _canvasWorkspaceController = new WorkspaceController(this);
-            _mutationCoordinator = new WorkspaceMutationCoordinator(host, () => CurrentDocument);
-            _selectionCoordinator = new WorkspaceSelectionCoordinator(
+            _mutationCoordinator = new MutationCoordinator(host, () => CurrentDocument);
+            _selectionCoordinator = new SelectionCoordinator(
                 host,
                 _canvasWorkspaceController,
                 _shellBinder,
@@ -86,7 +88,7 @@ namespace SvgEditor.Workspace
             string selectedTargetKey,
             out HierarchyNode selectedItem,
             out SelectionKind selectionKind) =>
-            WorkspaceSelectionCoordinator.TryResolveSelection(
+            SelectionCoordinator.TryResolveSelection(
                 elements,
                 selectedElementKey,
                 selectedTargetKey,

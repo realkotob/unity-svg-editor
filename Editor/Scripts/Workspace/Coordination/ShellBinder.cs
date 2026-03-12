@@ -2,9 +2,9 @@ using System;
 using UnityEngine.UIElements;
 using SvgEditor.Workspace.HierarchyPanel;
 
-namespace SvgEditor.Workspace
+namespace SvgEditor.Workspace.Coordination
 {
-    internal sealed class WorkspaceShellBinder
+    internal sealed class ShellBinder
     {
         public HierarchyListView HierarchyListView { get; private set; }
 

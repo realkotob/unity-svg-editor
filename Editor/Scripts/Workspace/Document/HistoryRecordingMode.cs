@@ -1,4 +1,4 @@
-namespace SvgEditor.Workspace
+namespace SvgEditor.Workspace.Document
 {
     internal enum HistoryRecordingMode
     {

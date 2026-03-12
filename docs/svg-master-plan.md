@@ -39,8 +39,8 @@
 - renderer invalidation / rebuild 비용 추가 최적화 여부 판단
 - inspector transform helper와 직접 입력 UX 충돌 정리
 - structure-first refactor final pass
-  - `Preview/Contracts` naming
-  - `Workspace/Coordination` naming
+  - `Preview` contract placement
+  - `Workspace` root orchestration placement
   - `Document/Structure` 물리/namespace 정리
 
 ## 2. 제품 정의

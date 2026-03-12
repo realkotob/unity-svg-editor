@@ -2,8 +2,9 @@ using UnityEngine.UIElements;
 using SvgEditor.Preview;
 using SvgEditor.DocumentModel;
 using SvgEditor.Document;
+using SvgEditor.Workspace.Document;
 
-namespace SvgEditor.Workspace
+namespace SvgEditor.Workspace.Host
 {
     internal interface IEditorWorkspaceHost
     {

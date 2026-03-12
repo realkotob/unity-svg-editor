@@ -4,25 +4,26 @@ using System.Linq;
 using UnityEngine.UIElements;
 using SvgEditor.Workspace.Canvas;
 using SvgEditor.Workspace.HierarchyPanel;
+using SvgEditor.Workspace.Host;
 using SvgEditor.Document;
 
-namespace SvgEditor.Workspace
+namespace SvgEditor.Workspace.Coordination
 {
-    internal sealed class WorkspaceSelectionCoordinator
+    internal sealed class SelectionCoordinator
     {
         private readonly IEditorWorkspaceHost _host;
         private readonly WorkspaceController _canvasWorkspaceController;
-        private readonly WorkspaceShellBinder _shellBinder;
+        private readonly ShellBinder _shellBinder;
         private readonly Func<DocumentSession> _currentDocumentAccessor;
         private readonly HierarchyState _structurePanelState = new();
         private readonly HierarchyInteractionController _structureHierarchyInteractionController = new();
 
         private bool _isUpdatingStructureSelection;
 
-        public WorkspaceSelectionCoordinator(
+        public SelectionCoordinator(
             IEditorWorkspaceHost host,
             WorkspaceController canvasWorkspaceController,
-            WorkspaceShellBinder shellBinder,
+            ShellBinder shellBinder,
             Func<DocumentSession> currentDocumentAccessor)
         {
             _host = host;

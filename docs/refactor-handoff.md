@@ -58,10 +58,12 @@
   - `SvgEditor.Renderer`
   - `SvgEditor.RenderModel`
   - `SvgEditor.Workspace`
+  - `SvgEditor.Workspace.Coordination`
   - `SvgEditor.Workspace.Document`
+  - `SvgEditor.Workspace.Host`
   - `SvgEditor.Workspace.Canvas`
   - `SvgEditor.Workspace.InspectorPanel`
-  - `SvgEditor.Workspace.StructureInspector`
+  - `SvgEditor.Workspace.HierarchyPanel`
   - `SvgEditor.Workspace.AssetLibrary`
   - `SvgEditor.Shell`
 - UXML namespace 정리
@@ -143,6 +145,10 @@
     - `GeometryWorldContext`
     - `GeometryWorldContextBuilder`
     - `TessellatedNodeGeometry`
+  - 후속 정리:
+    - `PreviewElementGeometry`, `BoundsQuality` -> `Preview/Geometry`
+    - `PreviewTextOverlay` -> `Preview/Text`
+    - empty `BackendResearchCatalog` 제거
 - Document / structure / workspace 재편
   - `Document/Structure` 를 `Hierarchy / Lookup / Xml / Geometry` 로 재편
   - `Workspace` 루트 파일을 `Coordination / Host / Document / Transforms` 로 재편
@@ -157,6 +163,10 @@
     - `ElementRotationSession`
     - `ElementRotationUtility`
     - `SnapUtility`
+  - `Coordination` naming 정리:
+    - `MutationCoordinator`
+    - `SelectionCoordinator`
+    - `ShellBinder`
 - Hierarchy contract naming 정리
   - `HierarchyNode`
   - `HierarchyOutline`
@@ -166,13 +176,13 @@
 
 - `.cs` 파일 수는 `138` 기준이다.
 - namespace는 이제 role-based spine 으로 정리된 상태다.
-- `Canvas`, `InspectorPanel`, `HierarchyPanel`, `AssetLibrary`, `Preview` 는 folder 기준 1차 재편이 끝난 상태다.
+- `Canvas`, `InspectorPanel`, `HierarchyPanel`, `AssetLibrary`, `Preview`, `Workspace`, `Document/Structure` 는 folder 기준 1차 재편이 끝난 상태다.
 - `SvgModelSceneBuilder.cs` 는 traversal coordinator 성격으로 수렴했고 `218`줄 수준이다.
 - 가장 큰 후속 분해 후보:
   - `SvgSafeMaskArtifactSanitizer.cs`
   - `SvgPathGeometryParser.cs`
-  - `PreviewSnapshot.cs` / `Preview/Contracts` folder naming 확정
-  - `Workspace/Coordination` naming final pass
+  - `PreviewSnapshot.cs` / `SvgPreserveAspectRatioMode.cs` 최종 위치 확정
+  - 필요 시 `Coordination` namespace 세분화 범위 재점검
   - 필요 시 `Document/Structure` namespace 세분화 검토
 
 ## 4. 네이밍 / 상수 규칙
@@ -190,29 +200,23 @@
 
 ## 5. 다음 세션 첫 우선순위
 
-1. `Preview/Contracts` 재평가
-- `Contracts` folder 이름을 유지할지, 더 구체적인 이름으로 바꿀지 검토
-- 필요 시 `SvgPreserveAspectRatioMode` 의 위치 재판단
+1. `Preview` contract placement final pass
+- `PreviewSnapshot`
+- `SvgPreserveAspectRatioMode`
+  의 최종 위치와 `Contracts` 폴더 유지 여부 검토
 
-2. `Workspace/Coordination` final pass
-- `EditorWorkspaceCoordinator`
-- `WorkspaceMutationCoordinator`
-- `WorkspaceSelectionCoordinator`
-- `WorkspaceShellBinder`
-  의미 축소 가능성 재검토
-
-3. `Document/Structure` namespace 세분화 여부 검토
+2. `Document/Structure` namespace 세분화 여부 검토
 - 현재는 물리 폴더만 `Hierarchy / Lookup / Xml / Geometry`
 - namespace는 여전히 `SvgEditor.Document`
 - 실제 이득이 있을 때만 세분화
 
-4. 남은 large file 후보
+3. 남은 large file 후보
 - `SvgSafeMaskArtifactSanitizer.cs`
 - `SvgPathGeometryParser.cs`
 - 필요 시 `PanelView.cs`
 - 필요 시 `TransformActionService.cs`
 
-5. 손대지 말 것
+4. 손대지 말 것
 - `Svg*` domain prefix 는 무리하게 전역 축소하지 않는다.
 - `CanvasStageView` 같은 `[UxmlElement]` 타입은 rename/move와 UXML alias 변경을 같은 배치로만 처리한다.
 

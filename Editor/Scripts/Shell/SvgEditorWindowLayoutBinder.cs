@@ -6,9 +6,9 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using SvgEditor.Shared;
-using SvgEditor.Workspace;
 using SvgEditor.Workspace.AssetLibrary.Browser;
 using SvgEditor.Workspace.Canvas;
+using SvgEditor.Workspace.Coordination;
 using SvgEditor.Workspace.Document;
 using SvgEditor.Workspace.InspectorPanel;
 

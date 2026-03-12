@@ -64,16 +64,16 @@
 
 .svg-editor__selection-box {
     border-color: var(--info);
-    background-color: var(--editor-selection-fill);
+    background-color: var(--transparent);
 }
 
 .svg-editor__selection-box--frame {
-    background-color: var(--editor-selection-frame-fill);
+    background-color: var(--transparent);
 }
 
 .svg-editor__hover-box {
     border-color: var(--editor-hover-border);
-    background-color: var(--editor-surface-soft);
+    background-color: var(--transparent);
 }
 
 .svg-editor__selection-handle {

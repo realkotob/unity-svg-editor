@@ -15,10 +15,12 @@
   - `SvgEditor.Renderer`
   - `SvgEditor.RenderModel`
   - `SvgEditor.Workspace`
+  - `SvgEditor.Workspace.Coordination`
   - `SvgEditor.Workspace.Document`
+  - `SvgEditor.Workspace.Host`
   - `SvgEditor.Workspace.Canvas`
   - `SvgEditor.Workspace.InspectorPanel`
-  - `SvgEditor.Workspace.StructureInspector`
+  - `SvgEditor.Workspace.HierarchyPanel`
   - `SvgEditor.Workspace.AssetLibrary`
   - `SvgEditor.Shell`
 - 가장 큰 구조 문제는 이제 namespace 부재가 아니라,
@@ -33,7 +35,7 @@
 파일 길이와 책임 기준으로 우선순위를 잡으면 아래가 먼저다.
 
 1. `Workspace`
-- `Workspace/Coordination` 최종 naming
+- `Workspace/Coordination` further rename 여부
 - `CanvasViewportLayoutUtility`
 - `PanelView`
 - `TransformActionService`
@@ -43,7 +45,7 @@
 - `SvgSafeMaskArtifactSanitizer`
 
 3. `Preview / Shell`
-- `Preview/Contracts` naming
+- `Preview/Contracts` placement
 - `PreviewGeometryLookupService`
 - `SvgEditorWindow`
 
@@ -129,13 +131,24 @@
 
 - `Preview` 는 `Build / Geometry / Text / Contracts / Research` 로 재편됐다.
 - `SnapshotBuilder`, `SnapshotGeometryBuilder`, `SnapshotTextBuilder` 축으로 읽기 경계가 생겼다.
-- 남은 이슈는 `Contracts` 라는 폴더명이 실제 역할에 비해 다소 generic 하다는 점이다.
+- 추가 정리:
+  - `PreviewElementGeometry`, `BoundsQuality` 는 `Geometry` 로 이동
+  - `PreviewTextOverlay` 는 `Text` 로 이동
+  - empty `Research` catalog 는 제거했다
+- 남은 이슈는 `PreviewSnapshot` / `SvgPreserveAspectRatioMode` 의 최종 위치와 `Contracts` 폴더명의 적합성이다.
 
 ### 3.6 Workspace Root
 
 - `Workspace` 루트 파일은 `Coordination / Host / Document / Transforms` 로 물리 재배치했다.
 - 루트는 이제 folder marker 수준으로 비워진 상태다.
-- 남은 이슈는 `Coordination` cluster naming final pass다.
+- `Coordination` helper도 `MutationCoordinator`, `SelectionCoordinator`, `ShellBinder` 로 정리했다.
+- 남은 이슈는 top-level orchestrator `EditorWorkspaceCoordinator` 이름을 더 줄일지 여부다.
+
+### 3.7 Document Structure
+
+- `Document/Structure` 는 `Hierarchy / Lookup / Xml / Geometry` 로 물리 재배치했다.
+- 현재는 namespace를 계속 `SvgEditor.Document` 로 유지 중이다.
+- 남은 이슈는 namespace까지 세분화할 실익이 있는지 판단하는 것이다.
 
 ## 4. 네이밍 진단
 
@@ -193,6 +206,6 @@
 
 다음 코드 배치는 아래 둘 중 하나로 잡는다.
 
-1. `Preview/Contracts` naming and placement final pass
-2. `Workspace/Coordination` naming final pass
-3. `Document/Structure` namespace granularity 검토
+1. `PreviewSnapshot` / `SvgPreserveAspectRatioMode` placement final pass
+2. `Document/Structure` namespace granularity 검토
+3. 남은 large file 후보 정리
