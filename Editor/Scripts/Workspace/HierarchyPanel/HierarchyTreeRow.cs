@@ -6,9 +6,9 @@ using SvgEditor.Workspace.Canvas;
 using SvgEditor.Shared;
 using SvgEditor.Document;
 
-namespace SvgEditor.Workspace.StructureInspector
+namespace SvgEditor.Workspace.HierarchyPanel
 {
-    internal sealed class AssetHierarchyTreeRow : VisualElement
+    internal sealed class HierarchyTreeRow : VisualElement
     {
         internal static class ElementName
         {
@@ -64,7 +64,7 @@ namespace SvgEditor.Workspace.StructureInspector
 
         internal bool HasExpandableChildren => Expander.userData is string;
 
-        public AssetHierarchyTreeRow()
+        public HierarchyTreeRow()
         {
             this.AddClass(UssClassName.ITEM);
 
@@ -112,12 +112,12 @@ namespace SvgEditor.Workspace.StructureInspector
         internal void Bind(StructureNode hierarchyNode, bool hasChildren, bool isExpanded)
         {
             string tagName = (hierarchyNode.TagName ?? string.Empty).ToLowerInvariant();
-            StructureHierarchyTreeUtility.ApplyHierarchyIconVariant(
+            HierarchyTreeUtility.ApplyHierarchyIconVariant(
                 Icon,
-                StructureHierarchyTreeUtility.ResolveHierarchyIconKind(tagName));
-            TextLabel.SetText(StructureHierarchyTreeUtility.BuildHierarchyLabel(hierarchyNode));
-            style.paddingLeft = AssetHierarchyListView.Layout.ROW_PADDING_LEFT +
-                (hierarchyNode.Depth * AssetHierarchyListView.Layout.ROW_DEPTH_OFFSET);
+                HierarchyTreeUtility.ResolveHierarchyIconKind(tagName));
+            TextLabel.SetText(HierarchyTreeUtility.BuildHierarchyLabel(hierarchyNode));
+            style.paddingLeft = HierarchyListView.Layout.ROW_PADDING_LEFT +
+                (hierarchyNode.Depth * HierarchyListView.Layout.ROW_DEPTH_OFFSET);
             userData = hierarchyNode.Key;
             tooltip = BuildReferenceTooltip(hierarchyNode);
 
@@ -162,7 +162,7 @@ namespace SvgEditor.Workspace.StructureInspector
                 .EnableClass(UssClassName.EXPANDER_PLACEHOLDER, true)
                 .EnableClass(UssClassName.EXPANDER_EXPANDED, false);
 
-            StructureHierarchyTreeUtility.ApplyHierarchyIconVariant(Icon, IconKind.File);
+            HierarchyTreeUtility.ApplyHierarchyIconVariant(Icon, IconKind.File);
             TextLabel.SetText(string.Empty);
             MaskBadge.style.display = DisplayStyle.None;
             ClipBadge.style.display = DisplayStyle.None;

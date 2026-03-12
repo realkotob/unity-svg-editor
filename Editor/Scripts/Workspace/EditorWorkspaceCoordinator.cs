@@ -4,19 +4,19 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using SvgEditor.Preview;
 using SvgEditor.Workspace.Canvas;
-using SvgEditor.Workspace.StructureInspector;
+using SvgEditor.Workspace.HierarchyPanel;
 using SvgEditor.DocumentModel;
 using SvgEditor.Document;
 
 namespace SvgEditor.Workspace
 {
-    internal sealed class EditorWorkspaceCoordinator : ICanvasWorkspaceHost, IStructureHierarchyHost
+    internal sealed class EditorWorkspaceCoordinator : ICanvasWorkspaceHost, IHierarchyHost
     {
         private readonly IEditorWorkspaceHost _host;
         private readonly WorkspaceController _canvasWorkspaceController;
         private readonly EditorWorkspaceShellBinder _shellBinder = new();
         private readonly WorkspaceMutationCoordinator _mutationCoordinator;
-        private readonly WorkspaceStructureSelectionCoordinator _selectionCoordinator;
+        private readonly WorkspaceHierarchySelectionCoordinator _selectionCoordinator;
 
         private VisualElement RootVisualElement => _host.RootVisualElement;
         private DocumentSession CurrentDocument => _host.CurrentDocument;
@@ -26,7 +26,7 @@ namespace SvgEditor.Workspace
             _host = host;
             _canvasWorkspaceController = new WorkspaceController(this);
             _mutationCoordinator = new WorkspaceMutationCoordinator(host, () => CurrentDocument);
-            _selectionCoordinator = new WorkspaceStructureSelectionCoordinator(
+            _selectionCoordinator = new WorkspaceHierarchySelectionCoordinator(
                 host,
                 _canvasWorkspaceController,
                 _shellBinder,
@@ -86,7 +86,7 @@ namespace SvgEditor.Workspace
             string selectedTargetKey,
             out StructureNode selectedItem,
             out SelectionKind selectionKind) =>
-            WorkspaceStructureSelectionCoordinator.TryResolveSelection(
+            WorkspaceHierarchySelectionCoordinator.TryResolveSelection(
                 elements,
                 selectedElementKey,
                 selectedTargetKey,
@@ -108,11 +108,11 @@ namespace SvgEditor.Workspace
         void ICanvasWorkspaceHost.RefreshInspector(SvgDocumentModel documentModel) => _host.RefreshInspector(documentModel);
         void ICanvasWorkspaceHost.ApplyUpdatedSource(string updatedSource, string successStatus) => _host.ApplyUpdatedSource(updatedSource, successStatus);
 
-        DocumentSession IStructureHierarchyHost.CurrentDocument => CurrentDocument;
-        IReadOnlyList<TreeViewItemData<StructureNode>> IStructureHierarchyHost.HierarchyItems => _selectionCoordinator.HierarchyItems;
-        StructureNode IStructureHierarchyHost.FindStructureNode(string elementKey) => _selectionCoordinator.FindStructureNode(elementKey);
-        void IStructureHierarchyHost.ApplyUpdatedSource(string updatedSource, string successStatus) => _host.ApplyUpdatedSource(updatedSource, successStatus);
-        void IStructureHierarchyHost.UpdateSourceStatus(string status) => _host.UpdateSourceStatus(status);
+        DocumentSession IHierarchyHost.CurrentDocument => CurrentDocument;
+        IReadOnlyList<TreeViewItemData<StructureNode>> IHierarchyHost.HierarchyItems => _selectionCoordinator.HierarchyItems;
+        StructureNode IHierarchyHost.FindStructureNode(string elementKey) => _selectionCoordinator.FindStructureNode(elementKey);
+        void IHierarchyHost.ApplyUpdatedSource(string updatedSource, string successStatus) => _host.ApplyUpdatedSource(updatedSource, successStatus);
+        void IHierarchyHost.UpdateSourceStatus(string status) => _host.UpdateSourceStatus(status);
 
         void ICanvasWorkspaceHost.ClearStructureSelectionFromCanvas() => _selectionCoordinator.ClearStructureSelectionFromCanvas();
 

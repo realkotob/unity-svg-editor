@@ -1,4 +1,4 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:toggle="Core.UI.Foundation.Components.Toggle" xmlns:togglegroup="Core.UI.Foundation.Components.ToggleGroup" xmlns:button="Core.UI.Foundation.Components.Button" xmlns:drag="Core.UI.Foundation.Components.DragNumberField" xmlns:colorpercent="Core.UI.Foundation.Components.ColorPercentField" xmlns:select="Core.UI.Foundation.Components.Select" xmlns:acc="Core.UI.Foundation.Components.Accordion" xmlns:svg="SvgEditor" xmlns:canvas="SvgEditor.Workspace.Canvas" xmlns:asset="SvgEditor.Workspace.AssetLibrary" xmlns:structure="SvgEditor.Workspace.StructureInspector" editor-extension-mode="True">
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:toggle="Core.UI.Foundation.Components.Toggle" xmlns:togglegroup="Core.UI.Foundation.Components.ToggleGroup" xmlns:button="Core.UI.Foundation.Components.Button" xmlns:drag="Core.UI.Foundation.Components.DragNumberField" xmlns:colorpercent="Core.UI.Foundation.Components.ColorPercentField" xmlns:select="Core.UI.Foundation.Components.Select" xmlns:acc="Core.UI.Foundation.Components.Accordion" xmlns:svg="SvgEditor" xmlns:canvas="SvgEditor.Workspace.Canvas" xmlns:asset="SvgEditor.Workspace.AssetLibrary" xmlns:hierarchy="SvgEditor.Workspace.HierarchyPanel" editor-extension-mode="True">
     <ui:VisualElement class="svg-editor">
         <ui:TwoPaneSplitView name="main-split" fixed-pane-index="0" fixed-pane-initial-dimension="240" orientation="Horizontal" class="svg-editor__main-split">
             <ui:VisualElement name="asset-panel" class="svg-editor__asset-panel">
@@ -7,7 +7,7 @@
                         <ui:VisualElement class="svg-editor__asset-section-header editor__panel-header">
                             <ui:Label text="Layers" class="svg-editor__asset-section-title"/>
                         </ui:VisualElement>
-                        <structure:AssetHierarchyListView name="asset-hierarchy-list" show-preview="true" class="svg-editor__asset-hierarchy-list"/>
+                        <hierarchy:HierarchyListView name="asset-hierarchy-list" show-preview="true" class="svg-editor__asset-hierarchy-list"/>
                     </ui:VisualElement>
                     <ui:VisualElement name="asset-panel-bottom" class="svg-editor__asset-panel-bottom icon-tab">
                         <ui:VisualElement class="svg-editor__asset-section-header editor__panel-header" style="padding-top: 0; padding-bottom: 0; padding-right: 0;">

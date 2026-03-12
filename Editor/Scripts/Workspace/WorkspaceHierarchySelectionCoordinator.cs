@@ -3,23 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.UIElements;
 using SvgEditor.Workspace.Canvas;
-using SvgEditor.Workspace.StructureInspector;
+using SvgEditor.Workspace.HierarchyPanel;
 using SvgEditor.Document;
 
 namespace SvgEditor.Workspace
 {
-    internal sealed class WorkspaceStructureSelectionCoordinator
+    internal sealed class WorkspaceHierarchySelectionCoordinator
     {
         private readonly IEditorWorkspaceHost _host;
         private readonly WorkspaceController _canvasWorkspaceController;
         private readonly EditorWorkspaceShellBinder _shellBinder;
         private readonly Func<DocumentSession> _currentDocumentAccessor;
-        private readonly StructurePanelState _structurePanelState = new();
-        private readonly StructureHierarchyInteractionController _structureHierarchyInteractionController = new();
+        private readonly HierarchyState _structurePanelState = new();
+        private readonly HierarchyInteractionController _structureHierarchyInteractionController = new();
 
         private bool _isUpdatingStructureSelection;
 
-        public WorkspaceStructureSelectionCoordinator(
+        public WorkspaceHierarchySelectionCoordinator(
             IEditorWorkspaceHost host,
             WorkspaceController canvasWorkspaceController,
             EditorWorkspaceShellBinder shellBinder,
@@ -32,12 +32,12 @@ namespace SvgEditor.Workspace
         }
 
         private DocumentSession CurrentDocument => _currentDocumentAccessor?.Invoke();
-        private AssetHierarchyListView HierarchyListView => _shellBinder.HierarchyListView;
+        private HierarchyListView HierarchyListView => _shellBinder.HierarchyListView;
 
         public IReadOnlyList<TreeViewItemData<StructureNode>> HierarchyItems => _structurePanelState.HierarchyItems;
         public StructureNode SelectedStructureNode => FindStructureNode(_structurePanelState.SelectedElementKey);
 
-        public void Bind(IStructureHierarchyHost hierarchyHost)
+        public void Bind(IHierarchyHost hierarchyHost)
         {
             HierarchyListView?.BindRuntime(hierarchyHost, _structureHierarchyInteractionController, OnStructureElementSelectionChanged);
             HierarchyListView?.SetHierarchyItems(_structurePanelState.HierarchyItems);
@@ -174,7 +174,7 @@ namespace SvgEditor.Workspace
                 return false;
             }
 
-            return StructureDocumentModelReader.TryBuildSnapshot(document.DocumentModel, out snapshot, out error);
+            return HierarchyDocumentModelReader.TryBuildSnapshot(document.DocumentModel, out snapshot, out error);
         }
 
         private StructureNode FindStructureNodeByTargetKey(string targetKey)

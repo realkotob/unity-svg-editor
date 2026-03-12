@@ -5,19 +5,19 @@ using Core.UI.Foundation;
 using SvgEditor.Shared;
 using SvgEditor.Document;
 
-namespace SvgEditor.Workspace.StructureInspector
+namespace SvgEditor.Workspace.HierarchyPanel
 {
-    internal static class StructureHierarchyTreeUtility
+    internal static class HierarchyTreeUtility
     {
         private static readonly string[] HierarchyIconVariantClasses =
         {
-            AssetHierarchyTreeRow.UssClassName.ICON_SQUARE,
-            AssetHierarchyTreeRow.UssClassName.ICON_CIRCLE,
-            AssetHierarchyTreeRow.UssClassName.ICON_FILE_TEXT,
-            AssetHierarchyTreeRow.UssClassName.ICON_MINUS,
-            AssetHierarchyTreeRow.UssClassName.ICON_PEN,
-            AssetHierarchyTreeRow.UssClassName.ICON_FOLDER,
-            AssetHierarchyTreeRow.UssClassName.ICON_FILE
+            HierarchyTreeRow.UssClassName.ICON_SQUARE,
+            HierarchyTreeRow.UssClassName.ICON_CIRCLE,
+            HierarchyTreeRow.UssClassName.ICON_FILE_TEXT,
+            HierarchyTreeRow.UssClassName.ICON_MINUS,
+            HierarchyTreeRow.UssClassName.ICON_PEN,
+            HierarchyTreeRow.UssClassName.ICON_FOLDER,
+            HierarchyTreeRow.UssClassName.ICON_FILE
         };
 
         private static readonly string[] FoundationHierarchyIconClasses =
@@ -164,14 +164,14 @@ namespace SvgEditor.Workspace.StructureInspector
         {
             return iconKind switch
             {
-                IconKind.Square => AssetHierarchyTreeRow.UssClassName.ICON_SQUARE,
-                IconKind.Circle => AssetHierarchyTreeRow.UssClassName.ICON_CIRCLE,
-                IconKind.FileText => AssetHierarchyTreeRow.UssClassName.ICON_FILE_TEXT,
-                IconKind.Minus => AssetHierarchyTreeRow.UssClassName.ICON_MINUS,
-                IconKind.Pen => AssetHierarchyTreeRow.UssClassName.ICON_PEN,
-                IconKind.Mask => AssetHierarchyTreeRow.UssClassName.ICON_FILE,
-                IconKind.Folder => AssetHierarchyTreeRow.UssClassName.ICON_FOLDER,
-                _ => AssetHierarchyTreeRow.UssClassName.ICON_FILE
+                IconKind.Square => HierarchyTreeRow.UssClassName.ICON_SQUARE,
+                IconKind.Circle => HierarchyTreeRow.UssClassName.ICON_CIRCLE,
+                IconKind.FileText => HierarchyTreeRow.UssClassName.ICON_FILE_TEXT,
+                IconKind.Minus => HierarchyTreeRow.UssClassName.ICON_MINUS,
+                IconKind.Pen => HierarchyTreeRow.UssClassName.ICON_PEN,
+                IconKind.Mask => HierarchyTreeRow.UssClassName.ICON_FILE,
+                IconKind.Folder => HierarchyTreeRow.UssClassName.ICON_FOLDER,
+                _ => HierarchyTreeRow.UssClassName.ICON_FILE
             };
         }
 

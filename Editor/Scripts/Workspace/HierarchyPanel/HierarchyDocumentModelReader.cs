@@ -6,9 +6,9 @@ using SvgEditor.DocumentModel;
 using SvgEditor.Shared;
 using SvgEditor.Document;
 
-namespace SvgEditor.Workspace.StructureInspector
+namespace SvgEditor.Workspace.HierarchyPanel
 {
-    internal static class StructureDocumentModelReader
+    internal static class HierarchyDocumentModelReader
     {
         public static bool TryBuildSnapshot(
             SvgDocumentModel documentModel,

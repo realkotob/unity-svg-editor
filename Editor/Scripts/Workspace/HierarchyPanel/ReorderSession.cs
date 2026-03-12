@@ -2,9 +2,9 @@ using Core.UI.Foundation;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace SvgEditor.Workspace.StructureInspector
+namespace SvgEditor.Workspace.HierarchyPanel
 {
-    internal sealed class StructureReorderSession
+    internal sealed class ReorderSession
     {
         private readonly PointerDragSession _dragSession = new();
         private bool _shouldSuppressHierarchyRowClick;

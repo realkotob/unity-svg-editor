@@ -1,14 +1,14 @@
 using System;
 using SvgEditor.DocumentModel;
 
-namespace SvgEditor.Workspace.StructureInspector
+namespace SvgEditor.Workspace.HierarchyPanel
 {
-    internal sealed class StructureReorderMutationService
+    internal sealed class ReorderMutationService
     {
         private readonly SvgDocumentModelMutationService _documentModelMutationService = new();
 
         public void ApplyMove(
-            IStructureHierarchyHost host,
+            IHierarchyHost host,
             string elementKey,
             string parentKey,
             int childIndex)

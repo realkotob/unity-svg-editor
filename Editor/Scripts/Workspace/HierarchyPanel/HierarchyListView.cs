@@ -4,10 +4,10 @@ using UnityEngine.UIElements;
 using Core.UI.Foundation;
 using SvgEditor.Document;
 
-namespace SvgEditor.Workspace.StructureInspector
+namespace SvgEditor.Workspace.HierarchyPanel
 {
     [UxmlElement]
-    public partial class AssetHierarchyListView : VisualElement
+    public partial class HierarchyListView : VisualElement
     {
         #region Constants
         internal static class Layout
@@ -35,10 +35,10 @@ namespace SvgEditor.Workspace.StructureInspector
 
         #region Variables
         private readonly TreeView _hierarchyTreeView;
-        private readonly AssetHierarchyPreviewRenderer _previewRenderer = new();
+        private readonly HierarchyPreviewRenderer _previewRenderer = new();
         private readonly List<TreeViewItemData<StructureNode>> _hierarchyItems = new();
 
-        private StructureHierarchyInteractionController _interactionController;
+        private HierarchyInteractionController _interactionController;
         private Action<StructureNode> _selectionChangedHandler;
         private bool _showPreview;
         #endregion Variables
@@ -62,7 +62,7 @@ namespace SvgEditor.Workspace.StructureInspector
         #endregion Properties
 
         #region Constructor
-        public AssetHierarchyListView()
+        public HierarchyListView()
         {
             _hierarchyTreeView = CreateHierarchyTreeView();
             _hierarchyTreeView.makeItem = CreateHierarchyItemElement;
@@ -76,8 +76,8 @@ namespace SvgEditor.Workspace.StructureInspector
 
         #region Internal Methods
         internal void BindRuntime(
-            IStructureHierarchyHost host,
-            StructureHierarchyInteractionController interactionController,
+            IHierarchyHost host,
+            HierarchyInteractionController interactionController,
             Action<StructureNode> selectionChangedHandler)
         {
             _selectionChangedHandler = selectionChangedHandler;
@@ -112,7 +112,7 @@ namespace SvgEditor.Workspace.StructureInspector
 
         internal void SelectElementByKey(string elementKey)
         {
-            StructureHierarchyTreeUtility.SelectElementByKey(_hierarchyTreeView, elementKey, _hierarchyItems);
+            HierarchyTreeUtility.SelectElementByKey(_hierarchyTreeView, elementKey, _hierarchyItems);
         }
         #endregion Internal Methods
 
@@ -148,7 +148,7 @@ namespace SvgEditor.Workspace.StructureInspector
 
         private static VisualElement CreateHierarchyItemElement()
         {
-            AssetHierarchyTreeRow hierarchyItemRow = new();
+            HierarchyTreeRow hierarchyItemRow = new();
             hierarchyItemRow.RegisterCallback<PointerDownEvent>(OnHierarchyRowPointerDown, TrickleDown.TrickleDown);
             hierarchyItemRow.RegisterCallback<ClickEvent>(OnHierarchyRowClicked);
             hierarchyItemRow.Expander.RegisterCallback<PointerDownEvent>(OnHierarchyExpanderPointerDown, TrickleDown.TrickleDown);
@@ -157,7 +157,7 @@ namespace SvgEditor.Workspace.StructureInspector
 
         private void BindHierarchyItem(VisualElement hierarchyItemRow, int index)
         {
-            if (hierarchyItemRow is not AssetHierarchyTreeRow row)
+            if (hierarchyItemRow is not HierarchyTreeRow row)
             {
                 return;
             }
@@ -167,14 +167,14 @@ namespace SvgEditor.Workspace.StructureInspector
                 return;
             }
 
-            bool hasChildren = StructureHierarchyTreeUtility.TryFindHierarchyItem(
+            bool hasChildren = HierarchyTreeUtility.TryFindHierarchyItem(
                 hierarchyNode.Key,
                 _hierarchyItems,
                 out TreeViewItemData<StructureNode> hierarchyItem) &&
                 hierarchyItem.hasChildren;
             bool isExpanded =
                 hasChildren &&
-                StructureHierarchyTreeUtility.TryFindHierarchyItemId(hierarchyNode.Key, _hierarchyItems, out int hierarchyItemId) &&
+                HierarchyTreeUtility.TryFindHierarchyItemId(hierarchyNode.Key, _hierarchyItems, out int hierarchyItemId) &&
                 _hierarchyTreeView.IsExpanded(hierarchyItemId);
 
             row.Bind(hierarchyNode, hasChildren, isExpanded);
@@ -182,7 +182,7 @@ namespace SvgEditor.Workspace.StructureInspector
 
         private static void UnbindHierarchyItem(VisualElement hierarchyItemRow, int index)
         {
-            if (hierarchyItemRow is not AssetHierarchyTreeRow row)
+            if (hierarchyItemRow is not HierarchyTreeRow row)
             {
                 return;
             }
@@ -231,7 +231,7 @@ namespace SvgEditor.Workspace.StructureInspector
 
         private void ToggleHierarchyItemExpansion(string elementKey)
         {
-            if (!StructureHierarchyTreeUtility.TryFindHierarchyItemId(elementKey, _hierarchyItems, out int hierarchyItemId))
+            if (!HierarchyTreeUtility.TryFindHierarchyItemId(elementKey, _hierarchyItems, out int hierarchyItemId))
             {
                 return;
             }
@@ -255,7 +255,7 @@ namespace SvgEditor.Workspace.StructureInspector
                 return;
             }
 
-            hierarchyItemRow.GetFirstAncestorOfType<AssetHierarchyListView>()?._interactionController?.OnHierarchyRowPointerDown(evt);
+            hierarchyItemRow.GetFirstAncestorOfType<HierarchyListView>()?._interactionController?.OnHierarchyRowPointerDown(evt);
         }
 
         private static void OnHierarchyExpanderPointerDown(PointerDownEvent evt)
@@ -265,7 +265,7 @@ namespace SvgEditor.Workspace.StructureInspector
                 return;
             }
 
-            AssetHierarchyListView hierarchyListView = hierarchyExpander.GetFirstAncestorOfType<AssetHierarchyListView>();
+            HierarchyListView hierarchyListView = hierarchyExpander.GetFirstAncestorOfType<HierarchyListView>();
             hierarchyListView?._interactionController?.CancelPendingPress();
             if (hierarchyExpander.userData is not string elementKey)
             {
@@ -279,12 +279,12 @@ namespace SvgEditor.Workspace.StructureInspector
 
         private static void OnHierarchyRowClicked(ClickEvent evt)
         {
-            if (evt.currentTarget is not AssetHierarchyTreeRow hierarchyItemRow)
+            if (evt.currentTarget is not HierarchyTreeRow hierarchyItemRow)
             {
                 return;
             }
 
-            AssetHierarchyListView hierarchyListView = hierarchyItemRow.GetFirstAncestorOfType<AssetHierarchyListView>();
+            HierarchyListView hierarchyListView = hierarchyItemRow.GetFirstAncestorOfType<HierarchyListView>();
             if (hierarchyListView == null)
             {
                 return;

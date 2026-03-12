@@ -1,8 +1,8 @@
 using UnityEngine.UIElements;
 
-namespace SvgEditor.Workspace.StructureInspector
+namespace SvgEditor.Workspace.HierarchyPanel
 {
-    internal sealed class StructureDropIndicatorPresenter
+    internal sealed class DropIndicatorPresenter
     {
         private const float IndicatorRight = 8f;
         private VisualElement _indicator;

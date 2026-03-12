@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using UnityEngine.UIElements;
 using SvgEditor.Document;
 
-namespace SvgEditor.Workspace.StructureInspector
+namespace SvgEditor.Workspace.HierarchyPanel
 {
-    internal interface IStructureHierarchyHost
+    internal interface IHierarchyHost
     {
         DocumentSession CurrentDocument { get; }
         IReadOnlyList<TreeViewItemData<StructureNode>> HierarchyItems { get; }

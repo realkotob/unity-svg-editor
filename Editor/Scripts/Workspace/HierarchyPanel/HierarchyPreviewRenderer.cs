@@ -3,9 +3,9 @@ using Core.UI.Foundation;
 using UnityEngine.UIElements;
 using SvgEditor.Document;
 
-namespace SvgEditor.Workspace.StructureInspector
+namespace SvgEditor.Workspace.HierarchyPanel
 {
-    internal sealed class AssetHierarchyPreviewRenderer
+    internal sealed class HierarchyPreviewRenderer
     {
         private List<TreeViewItemData<StructureNode>> _previewHierarchyItems;
 

@@ -5,9 +5,9 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using SvgEditor.Document;
 
-namespace SvgEditor.Workspace.StructureInspector
+namespace SvgEditor.Workspace.HierarchyPanel
 {
-    internal sealed class StructurePanelState
+    internal sealed class HierarchyState
     {
         private readonly List<StructureNode> _elements = new();
         private readonly List<LayerSummary> _layers = new();

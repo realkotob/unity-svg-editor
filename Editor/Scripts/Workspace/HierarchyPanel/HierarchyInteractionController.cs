@@ -5,18 +5,18 @@ using UnityEngine.UIElements;
 using SvgEditor.Shared;
 using SvgEditor.Document;
 
-namespace SvgEditor.Workspace.StructureInspector
+namespace SvgEditor.Workspace.HierarchyPanel
 {
-    internal sealed class StructureHierarchyInteractionController
+    internal sealed class HierarchyInteractionController
     {
         private const float DragThreshold = 5f;
         private TreeView _treeView;
-        private IStructureHierarchyHost _host;
-        private readonly StructureReorderSession _reorderSession = new();
-        private readonly StructureDropIndicatorPresenter _dropIndicatorPresenter = new();
-        private readonly StructureReorderMutationService _mutationService = new();
+        private IHierarchyHost _host;
+        private readonly ReorderSession _reorderSession = new();
+        private readonly DropIndicatorPresenter _dropIndicatorPresenter = new();
+        private readonly ReorderMutationService _mutationService = new();
 
-        public void Bind(TreeView treeView, IStructureHierarchyHost host)
+        public void Bind(TreeView treeView, IHierarchyHost host)
         {
             Unbind();
             _treeView = treeView;
@@ -65,7 +65,7 @@ namespace SvgEditor.Workspace.StructureInspector
 
             if (_treeView == null ||
                 _host == null ||
-                !StructureHierarchyTreeUtility.TryFindHierarchyItemId(pressedHierarchyElementKey, _host.HierarchyItems, out int treeItemId))
+                !HierarchyTreeUtility.TryFindHierarchyItemId(pressedHierarchyElementKey, _host.HierarchyItems, out int treeItemId))
             {
                 return;
             }
@@ -161,20 +161,20 @@ namespace SvgEditor.Workspace.StructureInspector
                                       pointerOffsetY <= rowHeight * 0.75f;
 
             if (canDropIntoHovered &&
-                StructureHierarchyTreeUtility.TryFindHierarchyItem(hoveredKey, _host.HierarchyItems, out TreeViewItemData<StructureNode> hoveredTreeItem))
+                HierarchyTreeUtility.TryFindHierarchyItem(hoveredKey, _host.HierarchyItems, out TreeViewItemData<StructureNode> hoveredTreeItem))
             {
                 int hoveredChildCount = CountChildren(hoveredTreeItem.children);
                 bool insertAsFirstChild = hoveredChildCount > 0 && pointerOffsetY < rowHeight * 0.5f;
 
                 _reorderSession.SetPendingDrop(hoveredKey, insertAsFirstChild ? 0 : hoveredChildCount);
                 _dropIndicatorPresenter.Show(
-                    hoveredRow.resolvedStyle.paddingLeft + AssetHierarchyListView.Layout.ROW_DEPTH_OFFSET + 22f,
+                    hoveredRow.resolvedStyle.paddingLeft + HierarchyListView.Layout.ROW_DEPTH_OFFSET + 22f,
                     rowTopLeft.y + rowHeight - 1f);
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(hoveredItem.ParentKey) ||
-                !StructureHierarchyTreeUtility.TryFindHierarchyItem(hoveredItem.ParentKey, _host.HierarchyItems, out TreeViewItemData<StructureNode> parentItem))
+                !HierarchyTreeUtility.TryFindHierarchyItem(hoveredItem.ParentKey, _host.HierarchyItems, out TreeViewItemData<StructureNode> parentItem))
             {
                 ClearPendingDropIndicator();
                 return;
@@ -202,7 +202,7 @@ namespace SvgEditor.Workspace.StructureInspector
         {
             for (VisualElement current = hoveredElement; current != null && current != _treeView; current = current.parent)
             {
-                if (current.ClassListContains(AssetHierarchyTreeRow.UssClassName.ITEM))
+                if (current.ClassListContains(HierarchyTreeRow.UssClassName.ITEM))
                 {
                     return current;
                 }
