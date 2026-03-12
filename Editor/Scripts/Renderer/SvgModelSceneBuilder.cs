@@ -8,6 +8,8 @@ namespace UnitySvgEditor.Editor
 {
     internal sealed class SvgModelSceneBuilder
     {
+        private readonly SvgPrimitiveShapeBuilder _primitiveShapeBuilder = new();
+
         public bool TryBuildReferenceOverlayScenes(
             SvgDocumentModel documentModel,
             string elementKey,
@@ -232,19 +234,19 @@ namespace UnitySvgEditor.Editor
                 case "svg":
                     return true;
                 case "rect":
-                    return TryAddRectShape(documentModel, node, nodesByXmlId, sceneNode, out error);
+                    return _primitiveShapeBuilder.TryAddRectShape(documentModel, node, nodesByXmlId, sceneNode, out error);
                 case "circle":
-                    return TryAddCircleShape(documentModel, node, nodesByXmlId, sceneNode, out error);
+                    return _primitiveShapeBuilder.TryAddCircleShape(documentModel, node, nodesByXmlId, sceneNode, out error);
                 case "ellipse":
-                    return TryAddEllipseShape(documentModel, node, nodesByXmlId, sceneNode, out error);
+                    return _primitiveShapeBuilder.TryAddEllipseShape(documentModel, node, nodesByXmlId, sceneNode, out error);
                 case "line":
-                    return TryAddLineShape(documentModel, node, nodesByXmlId, sceneNode, out error);
+                    return _primitiveShapeBuilder.TryAddLineShape(documentModel, node, nodesByXmlId, sceneNode, out error);
                 case "polyline":
-                    return TryAddPolylineShape(documentModel, node, nodesByXmlId, sceneNode, out error, closed: false);
+                    return _primitiveShapeBuilder.TryAddPolylineShape(documentModel, node, nodesByXmlId, sceneNode, out error, closed: false);
                 case "polygon":
-                    return TryAddPolylineShape(documentModel, node, nodesByXmlId, sceneNode, out error, closed: true);
+                    return _primitiveShapeBuilder.TryAddPolylineShape(documentModel, node, nodesByXmlId, sceneNode, out error, closed: true);
                 case "path":
-                    return TryAddPathShape(documentModel, node, nodesByXmlId, sceneNode, out error);
+                    return _primitiveShapeBuilder.TryAddPathShape(documentModel, node, nodesByXmlId, sceneNode, out error);
                 case "text":
                 case "tspan":
                 case "textPath":
@@ -256,192 +258,6 @@ namespace UnitySvgEditor.Editor
             }
         }
 
-        private bool TryAddRectShape(
-            SvgDocumentModel documentModel,
-            SvgNodeModel node,
-            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
-            SceneNode sceneNode,
-            out string error)
-        {
-            error = string.Empty;
-            if (!TryGetFloat(node.RawAttributes, "x", out float x))
-                x = 0f;
-            if (!TryGetFloat(node.RawAttributes, "y", out float y))
-                y = 0f;
-            if (!TryGetFloat(node.RawAttributes, "width", out float width) ||
-                !TryGetFloat(node.RawAttributes, "height", out float height))
-            {
-                error = $"Rect '{node.LegacyElementKey}' is missing width/height.";
-                return false;
-            }
-
-            Shape shape = CreateStyledShape(documentModel, node, nodesByXmlId);
-            float rx = 0f;
-            float ry = 0f;
-            TryGetFloat(node.RawAttributes, "rx", out rx);
-            TryGetFloat(node.RawAttributes, "ry", out ry);
-            if (Mathf.Approximately(rx, 0f) && !Mathf.Approximately(ry, 0f))
-                rx = ry;
-            if (Mathf.Approximately(ry, 0f) && !Mathf.Approximately(rx, 0f))
-                ry = rx;
-
-            VectorUtils.MakeRectangleShape(
-                shape,
-                new Rect(x, y, width, height),
-                new Vector2(rx, ry),
-                new Vector2(rx, ry),
-                new Vector2(rx, ry),
-                new Vector2(rx, ry));
-            sceneNode.Shapes.Add(shape);
-            return true;
-        }
-
-        private bool TryAddCircleShape(
-            SvgDocumentModel documentModel,
-            SvgNodeModel node,
-            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
-            SceneNode sceneNode,
-            out string error)
-        {
-            error = string.Empty;
-            if (!TryGetFloat(node.RawAttributes, "cx", out float cx))
-                cx = 0f;
-            if (!TryGetFloat(node.RawAttributes, "cy", out float cy))
-                cy = 0f;
-            if (!TryGetFloat(node.RawAttributes, "r", out float radius))
-            {
-                error = $"Circle '{node.LegacyElementKey}' is missing radius.";
-                return false;
-            }
-
-            Shape shape = CreateStyledShape(documentModel, node, nodesByXmlId);
-            VectorUtils.MakeCircleShape(shape, new Vector2(cx, cy), radius);
-            sceneNode.Shapes.Add(shape);
-            return true;
-        }
-
-        private bool TryAddEllipseShape(
-            SvgDocumentModel documentModel,
-            SvgNodeModel node,
-            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
-            SceneNode sceneNode,
-            out string error)
-        {
-            error = string.Empty;
-            if (!TryGetFloat(node.RawAttributes, "cx", out float cx))
-                cx = 0f;
-            if (!TryGetFloat(node.RawAttributes, "cy", out float cy))
-                cy = 0f;
-            if (!TryGetFloat(node.RawAttributes, "rx", out float rx) ||
-                !TryGetFloat(node.RawAttributes, "ry", out float ry))
-            {
-                error = $"Ellipse '{node.LegacyElementKey}' is missing radius.";
-                return false;
-            }
-
-            Shape shape = CreateStyledShape(documentModel, node, nodesByXmlId);
-            VectorUtils.MakeEllipseShape(shape, new Vector2(cx, cy), rx, ry);
-            sceneNode.Shapes.Add(shape);
-            return true;
-        }
-
-        private bool TryAddLineShape(
-            SvgDocumentModel documentModel,
-            SvgNodeModel node,
-            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
-            SceneNode sceneNode,
-            out string error)
-        {
-            error = string.Empty;
-            if (!TryGetFloat(node.RawAttributes, "x1", out float x1))
-                x1 = 0f;
-            if (!TryGetFloat(node.RawAttributes, "y1", out float y1))
-                y1 = 0f;
-            if (!TryGetFloat(node.RawAttributes, "x2", out float x2))
-                x2 = 0f;
-            if (!TryGetFloat(node.RawAttributes, "y2", out float y2))
-                y2 = 0f;
-
-            Shape shape = CreateStyledShape(documentModel, node, nodesByXmlId, allowDefaultFill: false);
-            shape.Contours = new[]
-            {
-                new BezierContour
-                {
-                    Segments = VectorUtils.BezierSegmentToPath(VectorUtils.MakeLine(new Vector2(x1, y1), new Vector2(x2, y2))),
-                    Closed = false
-                }
-            };
-            shape.IsConvex = false;
-            sceneNode.Shapes.Add(shape);
-            return true;
-        }
-
-        private bool TryAddPathShape(
-            SvgDocumentModel documentModel,
-            SvgNodeModel node,
-            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
-            SceneNode sceneNode,
-            out string error)
-        {
-            error = string.Empty;
-            if (!SvgAttributeUtility.TryGetAttribute(node.RawAttributes, "d", out var pathData))
-            {
-                error = $"Path '{node.LegacyElementKey}' is missing geometry.";
-                return false;
-            }
-
-            if (!SvgPathGeometryParser.TryParsePathContours(pathData, out BezierContour[] contours))
-            {
-                error = $"Direct renderer does not yet support path data on '{node.LegacyElementKey}'.";
-                return false;
-            }
-
-            Shape shape = CreateStyledShape(documentModel, node, nodesByXmlId, allowDefaultFill: false);
-            shape.Contours = contours;
-            shape.IsConvex = false;
-            sceneNode.Shapes.Add(shape);
-            return true;
-        }
-
-        private bool TryAddPolylineShape(
-            SvgDocumentModel documentModel,
-            SvgNodeModel node,
-            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
-            SceneNode sceneNode,
-            out string error,
-            bool closed)
-        {
-            error = string.Empty;
-            if (!SvgAttributeUtility.TryGetAttribute(node.RawAttributes, "points", out var pointsText) ||
-                !SvgPathGeometryParser.TryParsePoints(pointsText, out List<Vector2> points) ||
-                points.Count < 2)
-            {
-                error = $"Polyline data on '{node.LegacyElementKey}' was invalid.";
-                return false;
-            }
-
-            List<BezierSegment> segments = new();
-            for (int index = 1; index < points.Count; index++)
-            {
-                segments.Add(VectorUtils.MakeLine(points[index - 1], points[index]));
-            }
-
-            if (closed && (points[0] - points[^1]).sqrMagnitude > Mathf.Epsilon)
-                segments.Add(VectorUtils.MakeLine(points[^1], points[0]));
-
-            Shape shape = CreateStyledShape(documentModel, node, nodesByXmlId, allowDefaultFill: closed);
-            shape.Contours = new[]
-            {
-                new BezierContour
-                {
-                    Segments = VectorUtils.BezierSegmentsToPath(segments.ToArray()),
-                    Closed = closed
-                }
-            };
-            shape.IsConvex = closed;
-            sceneNode.Shapes.Add(shape);
-            return true;
-        }
 
         private bool TryAddUseNode(
             SvgDocumentModel documentModel,
@@ -639,167 +455,6 @@ namespace UnitySvgEditor.Editor
             }
 
             return sceneNode.Children.Count > 0;
-        }
-
-        private Shape CreateStyledShape(
-            SvgDocumentModel documentModel,
-            SvgNodeModel node,
-            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
-            bool allowDefaultFill = true)
-        {
-            Shape shape = new();
-            shape.Fill = BuildFill(documentModel, node, nodesByXmlId, allowDefaultFill);
-            shape.PathProps = BuildPathProperties(documentModel, node);
-            shape.FillTransform = Matrix2D.identity;
-            return shape;
-        }
-
-        private IFill BuildFill(
-            SvgDocumentModel documentModel,
-            SvgNodeModel node,
-            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
-            bool allowDefaultFill)
-        {
-            if (SvgInheritedAttributeResolver.TryGetInheritedAttribute(documentModel, node, "fill", out var fillValue))
-            {
-                if (string.Equals(fillValue, "none", StringComparison.OrdinalIgnoreCase))
-                    return null;
-
-                if (fillValue.Contains("url(", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (TryBuildGradientFill(documentModel, fillValue, nodesByXmlId, node, out IFill gradientFill))
-                        return gradientFill;
-
-                    return null;
-                }
-
-                if (SvgAttributeUtility.TryParseColor(fillValue, out var color))
-                {
-                    return new SolidFill
-                    {
-                        Color = color,
-                        Opacity = SvgInheritedAttributeResolver.ResolveFillOpacity(documentModel, node),
-                        Mode = SvgInheritedAttributeResolver.ResolveFillMode(documentModel, node)
-                    };
-                }
-            }
-
-            if (!allowDefaultFill)
-                return null;
-
-            return new SolidFill
-            {
-                Color = Color.black,
-                Opacity = SvgInheritedAttributeResolver.ResolveFillOpacity(documentModel, node),
-                Mode = SvgInheritedAttributeResolver.ResolveFillMode(documentModel, node)
-            };
-        }
-
-        private bool TryBuildGradientFill(
-            SvgDocumentModel documentModel,
-            string fillValue,
-            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
-            SvgNodeModel consumerNode,
-            out IFill fill)
-        {
-            fill = null;
-            if (!SvgNodeLookupUtility.TryExtractFragmentId(fillValue, out var fragmentId) ||
-                nodesByXmlId == null ||
-                !nodesByXmlId.TryGetValue(fragmentId, out var gradientNode) ||
-                !(string.Equals(gradientNode.TagName, "linearGradient", StringComparison.OrdinalIgnoreCase) ||
-                  string.Equals(gradientNode.TagName, "radialGradient", StringComparison.OrdinalIgnoreCase)))
-            {
-                return false;
-            }
-
-            List<GradientStop> stops = new();
-            for (int index = 0; gradientNode.Children != null && index < gradientNode.Children.Count; index++)
-            {
-                SvgNodeId childId = gradientNode.Children[index];
-                if ((documentModel == null || !documentModel.TryGetNode(childId, out SvgNodeModel stopNode)) ||
-                    stopNode == null ||
-                    !string.Equals(stopNode.TagName, "stop", StringComparison.OrdinalIgnoreCase) ||
-                    !SvgAttributeUtility.TryGetAttribute(stopNode.RawAttributes, "offset", out var offsetText) ||
-                    !SvgAttributeUtility.TryGetAttribute(stopNode.RawAttributes, "stop-color", out var stopColorText) ||
-                    !SvgAttributeUtility.TryParseColor(stopColorText, out var stopColor))
-                {
-                    continue;
-                }
-
-                float stopOpacity = 1f;
-                if (SvgAttributeUtility.TryGetFloat(stopNode.RawAttributes, "stop-opacity", out var resolvedStopOpacity))
-                    stopOpacity = Mathf.Clamp01(resolvedStopOpacity);
-                stopColor.a *= stopOpacity;
-
-                if (!TryParseOffset(offsetText, out float stopPercentage))
-                    continue;
-
-                stops.Add(new GradientStop
-                {
-                    Color = stopColor,
-                    StopPercentage = stopPercentage
-                });
-            }
-
-            if (stops.Count == 0)
-                return false;
-
-            GradientFillType gradientType = string.Equals(gradientNode.TagName, "radialGradient", StringComparison.OrdinalIgnoreCase)
-                ? GradientFillType.Radial
-                : GradientFillType.Linear;
-
-            fill = new GradientFill
-            {
-                Type = gradientType,
-                Stops = stops.ToArray(),
-                Mode = ResolveFillMode(documentModel, consumerNode),
-                Opacity = SvgInheritedAttributeResolver.ResolveFillOpacity(documentModel, consumerNode),
-                Addressing = AddressMode.Clamp
-            };
-            return true;
-        }
-
-        private PathProperties BuildPathProperties(SvgDocumentModel documentModel, SvgNodeModel node)
-        {
-            var stroke = BuildStroke(documentModel, node);
-            return new PathProperties
-            {
-                Stroke = stroke,
-                Head = SvgInheritedAttributeResolver.ResolvePathEnding(documentModel, node, "stroke-linecap"),
-                Tail = SvgInheritedAttributeResolver.ResolvePathEnding(documentModel, node, "stroke-linecap"),
-                Corners = SvgInheritedAttributeResolver.ResolvePathCorner(documentModel, node, "stroke-linejoin")
-            };
-        }
-
-        private Stroke BuildStroke(SvgDocumentModel documentModel, SvgNodeModel node)
-        {
-            if (!SvgInheritedAttributeResolver.TryGetInheritedAttribute(documentModel, node, "stroke", out var strokeValue) ||
-                string.Equals(strokeValue, "none", StringComparison.OrdinalIgnoreCase) ||
-                strokeValue.Contains("url(", StringComparison.OrdinalIgnoreCase) ||
-                !SvgAttributeUtility.TryParseColor(strokeValue, out var strokeColor))
-            {
-                return null;
-            }
-
-            var strokeWidth = 1f;
-            SvgInheritedAttributeResolver.TryGetInheritedFloat(documentModel, node, "stroke-width", out strokeWidth);
-            float[] pattern = TryParseDasharray(documentModel, node, out float[] dashPattern)
-                ? dashPattern
-                : null;
-
-            return new Stroke
-            {
-                Fill = new SolidFill
-                {
-                    Color = strokeColor,
-                    Opacity = SvgInheritedAttributeResolver.ResolveStrokeOpacity(documentModel, node),
-                    Mode = FillMode.NonZero
-                },
-                HalfThickness = Mathf.Max(0f, strokeWidth) * 0.5f,
-                Pattern = pattern,
-                PatternOffset = 0f,
-                TippedCornerLimit = 4f
-            };
         }
 
         private static Rect ResolveDocumentViewport(SvgDocumentModel documentModel)
