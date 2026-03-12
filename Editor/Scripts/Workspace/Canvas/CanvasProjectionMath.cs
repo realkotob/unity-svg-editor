@@ -1,6 +1,4 @@
-using Core.UI.Foundation;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace UnitySvgEditor.Editor
 {
@@ -56,10 +54,9 @@ namespace UnitySvgEditor.Editor
             Vector2 sourceSize,
             bool showHandles)
         {
-            return BuildSelectionVisual(
+            return CanvasSelectionVisualBuilder.BuildSelectionVisual(
                 viewportState,
-                CanvasViewportLayoutUtility.GetPreviewSceneRect(previewSnapshot),
-                previewSnapshot?.PreserveAspectRatioMode ?? SvgPreserveAspectRatioMode.Meet,
+                previewSnapshot,
                 framePadding,
                 frameHeaderHeight,
                 alignmentGuideThreshold,
@@ -80,10 +77,9 @@ namespace UnitySvgEditor.Editor
             Vector2 sourceSize,
             bool showHandles)
         {
-            return BuildSelectionVisual(
+            return CanvasSelectionVisualBuilder.BuildSelectionVisual(
                 viewportState,
                 projectionSceneRect,
-                SvgPreserveAspectRatioMode.Meet,
                 framePadding,
                 frameHeaderHeight,
                 alignmentGuideThreshold,
@@ -105,36 +101,17 @@ namespace UnitySvgEditor.Editor
             Vector2 sourceSize,
             bool showHandles)
         {
-            bool showVerticalGuide = false;
-            bool showHorizontalGuide = false;
-            float verticalGuideX = 0f;
-            float horizontalGuideY = 0f;
-            if (kind == CanvasSelectionKind.Element &&
-                CanvasViewportLayoutUtility.TryGetFrameContentLayout(
-                    viewportState,
-                    projectionSceneRect,
-                    preserveAspectRatioMode,
-                    framePadding,
-                    frameHeaderHeight,
-                    out CanvasViewportLayoutUtility.FrameContentLayout layout))
-            {
-                showVerticalGuide = Mathf.Abs(viewportRect.center.x - layout.ImageViewportRect.center.x) <= alignmentGuideThreshold;
-                showHorizontalGuide = Mathf.Abs(viewportRect.center.y - layout.ImageViewportRect.center.y) <= alignmentGuideThreshold;
-                verticalGuideX = layout.ImageViewportRect.center.x;
-                horizontalGuideY = layout.ImageViewportRect.center.y;
-            }
-
-            return new CanvasSelectionVisual
-            {
-                Kind = kind,
-                Rect = viewportRect,
-                ShowHandles = showHandles,
-                SizeText = $"{Mathf.RoundToInt(sourceSize.x)} × {Mathf.RoundToInt(sourceSize.y)}",
-                ShowVerticalGuide = showVerticalGuide,
-                VerticalGuideX = verticalGuideX,
-                ShowHorizontalGuide = showHorizontalGuide,
-                HorizontalGuideY = horizontalGuideY
-            };
+            return CanvasSelectionVisualBuilder.BuildSelectionVisual(
+                viewportState,
+                projectionSceneRect,
+                preserveAspectRatioMode,
+                framePadding,
+                frameHeaderHeight,
+                alignmentGuideThreshold,
+                kind,
+                viewportRect,
+                sourceSize,
+                showHandles);
         }
 
         public static Rect BuildScaledSceneRect(
@@ -144,73 +121,12 @@ namespace UnitySvgEditor.Editor
             CanvasHandle handle,
             bool centerAnchor = false)
         {
-            if (dragStartSelectionViewportRect.width <= Mathf.Epsilon ||
-                dragStartSelectionViewportRect.height <= Mathf.Epsilon)
-            {
-                return dragStartElementSceneRect;
-            }
-
-            Vector2 scale = new(
-                currentViewportRect.width / dragStartSelectionViewportRect.width,
-                currentViewportRect.height / dragStartSelectionViewportRect.height);
-
-            Vector2 newSize = new(
-                dragStartElementSceneRect.width * scale.x,
-                dragStartElementSceneRect.height * scale.y);
-
-            if (centerAnchor)
-            {
-                return Rect.MinMaxRect(
-                    dragStartElementSceneRect.center.x - (newSize.x * 0.5f),
-                    dragStartElementSceneRect.center.y - (newSize.y * 0.5f),
-                    dragStartElementSceneRect.center.x + (newSize.x * 0.5f),
-                    dragStartElementSceneRect.center.y + (newSize.y * 0.5f));
-            }
-
-            return handle switch
-            {
-                CanvasHandle.TopLeft => Rect.MinMaxRect(
-                    dragStartElementSceneRect.xMax - newSize.x,
-                    dragStartElementSceneRect.yMax - newSize.y,
-                    dragStartElementSceneRect.xMax,
-                    dragStartElementSceneRect.yMax),
-                CanvasHandle.Top => Rect.MinMaxRect(
-                    dragStartElementSceneRect.xMin,
-                    dragStartElementSceneRect.yMax - newSize.y,
-                    dragStartElementSceneRect.xMax,
-                    dragStartElementSceneRect.yMax),
-                CanvasHandle.TopRight => Rect.MinMaxRect(
-                    dragStartElementSceneRect.xMin,
-                    dragStartElementSceneRect.yMax - newSize.y,
-                    dragStartElementSceneRect.xMin + newSize.x,
-                    dragStartElementSceneRect.yMax),
-                CanvasHandle.Right => Rect.MinMaxRect(
-                    dragStartElementSceneRect.xMin,
-                    dragStartElementSceneRect.yMin,
-                    dragStartElementSceneRect.xMin + newSize.x,
-                    dragStartElementSceneRect.yMax),
-                CanvasHandle.BottomRight => Rect.MinMaxRect(
-                    dragStartElementSceneRect.xMin,
-                    dragStartElementSceneRect.yMin,
-                    dragStartElementSceneRect.xMin + newSize.x,
-                    dragStartElementSceneRect.yMin + newSize.y),
-                CanvasHandle.Bottom => Rect.MinMaxRect(
-                    dragStartElementSceneRect.xMin,
-                    dragStartElementSceneRect.yMin,
-                    dragStartElementSceneRect.xMax,
-                    dragStartElementSceneRect.yMin + newSize.y),
-                CanvasHandle.BottomLeft => Rect.MinMaxRect(
-                    dragStartElementSceneRect.xMax - newSize.x,
-                    dragStartElementSceneRect.yMin,
-                    dragStartElementSceneRect.xMax,
-                    dragStartElementSceneRect.yMin + newSize.y),
-                CanvasHandle.Left => Rect.MinMaxRect(
-                    dragStartElementSceneRect.xMax - newSize.x,
-                    dragStartElementSceneRect.yMin,
-                    dragStartElementSceneRect.xMax,
-                    dragStartElementSceneRect.yMax),
-                _ => new Rect(dragStartElementSceneRect.position, newSize)
-            };
+            return CanvasResizeMath.BuildScaledSceneRect(
+                dragStartSelectionViewportRect,
+                dragStartElementSceneRect,
+                currentViewportRect,
+                handle,
+                centerAnchor);
         }
 
         public static Rect GetResizeViewportRect(
@@ -220,152 +136,12 @@ namespace UnitySvgEditor.Editor
             bool uniformScale,
             bool centerAnchor)
         {
-            if (dragStartSelectionViewportRect.width <= Mathf.Epsilon ||
-                dragStartSelectionViewportRect.height <= Mathf.Epsilon)
-            {
-                return resizedViewportRect;
-            }
-
-            if (centerAnchor)
-            {
-                return GetCenterAnchoredResizeViewportRect(
-                    dragStartSelectionViewportRect,
-                    resizedViewportRect,
-                    handle,
-                    uniformScale);
-            }
-
-            if (IsCornerHandle(handle))
-            {
-                float scaleX = resizedViewportRect.width / dragStartSelectionViewportRect.width;
-                float scaleY = resizedViewportRect.height / dragStartSelectionViewportRect.height;
-                float scaleDeltaX = Mathf.Abs(scaleX - 1f);
-                float scaleDeltaY = Mathf.Abs(scaleY - 1f);
-                float uniformScaleFactor = scaleDeltaX >= scaleDeltaY ? scaleX : scaleY;
-                uniformScaleFactor = Mathf.Max(GetMinimumUniformScaleFactor(dragStartSelectionViewportRect.size), uniformScaleFactor);
-
-                Vector2 uniformSize = dragStartSelectionViewportRect.size * uniformScaleFactor;
-
-                return handle switch
-                {
-                    CanvasHandle.TopLeft => Rect.MinMaxRect(
-                        dragStartSelectionViewportRect.xMax - uniformSize.x,
-                        dragStartSelectionViewportRect.yMax - uniformSize.y,
-                        dragStartSelectionViewportRect.xMax,
-                        dragStartSelectionViewportRect.yMax),
-                    CanvasHandle.TopRight => Rect.MinMaxRect(
-                        dragStartSelectionViewportRect.xMin,
-                        dragStartSelectionViewportRect.yMax - uniformSize.y,
-                        dragStartSelectionViewportRect.xMin + uniformSize.x,
-                        dragStartSelectionViewportRect.yMax),
-                    CanvasHandle.BottomRight => Rect.MinMaxRect(
-                        dragStartSelectionViewportRect.xMin,
-                        dragStartSelectionViewportRect.yMin,
-                        dragStartSelectionViewportRect.xMin + uniformSize.x,
-                        dragStartSelectionViewportRect.yMin + uniformSize.y),
-                    CanvasHandle.BottomLeft => Rect.MinMaxRect(
-                        dragStartSelectionViewportRect.xMax - uniformSize.x,
-                        dragStartSelectionViewportRect.yMin,
-                        dragStartSelectionViewportRect.xMax,
-                        dragStartSelectionViewportRect.yMin + uniformSize.y),
-                    _ => resizedViewportRect
-                };
-            }
-
-            if (!uniformScale ||
-                dragStartSelectionViewportRect.width <= Mathf.Epsilon ||
-                dragStartSelectionViewportRect.height <= Mathf.Epsilon)
-            {
-                return resizedViewportRect;
-            }
-
-            float edgeUniformScaleFactor = handle is CanvasHandle.Top or CanvasHandle.Bottom
-                ? resizedViewportRect.height / dragStartSelectionViewportRect.height
-                : resizedViewportRect.width / dragStartSelectionViewportRect.width;
-            edgeUniformScaleFactor = Mathf.Max(GetMinimumUniformScaleFactor(dragStartSelectionViewportRect.size), edgeUniformScaleFactor);
-
-            Vector2 edgeUniformSize = dragStartSelectionViewportRect.size * edgeUniformScaleFactor;
-
-            return handle switch
-            {
-                CanvasHandle.Top => Rect.MinMaxRect(
-                    dragStartSelectionViewportRect.center.x - (edgeUniformSize.x * 0.5f),
-                    dragStartSelectionViewportRect.yMax - edgeUniformSize.y,
-                    dragStartSelectionViewportRect.center.x + (edgeUniformSize.x * 0.5f),
-                    dragStartSelectionViewportRect.yMax),
-                CanvasHandle.Right => Rect.MinMaxRect(
-                    dragStartSelectionViewportRect.xMin,
-                    dragStartSelectionViewportRect.center.y - (edgeUniformSize.y * 0.5f),
-                    dragStartSelectionViewportRect.xMin + edgeUniformSize.x,
-                    dragStartSelectionViewportRect.center.y + (edgeUniformSize.y * 0.5f)),
-                CanvasHandle.Bottom => Rect.MinMaxRect(
-                    dragStartSelectionViewportRect.center.x - (edgeUniformSize.x * 0.5f),
-                    dragStartSelectionViewportRect.yMin,
-                    dragStartSelectionViewportRect.center.x + (edgeUniformSize.x * 0.5f),
-                    dragStartSelectionViewportRect.yMin + edgeUniformSize.y),
-                CanvasHandle.Left => Rect.MinMaxRect(
-                    dragStartSelectionViewportRect.xMax - edgeUniformSize.x,
-                    dragStartSelectionViewportRect.center.y - (edgeUniformSize.y * 0.5f),
-                    dragStartSelectionViewportRect.xMax,
-                    dragStartSelectionViewportRect.center.y + (edgeUniformSize.y * 0.5f)),
-                _ => resizedViewportRect
-            };
-        }
-
-        private static Rect GetCenterAnchoredResizeViewportRect(
-            Rect dragStartSelectionViewportRect,
-            Rect resizedViewportRect,
-            CanvasHandle handle,
-            bool uniformScale)
-        {
-            Vector2 center = dragStartSelectionViewportRect.center;
-            float doubledWidth = Mathf.Max(12f, dragStartSelectionViewportRect.width + ((resizedViewportRect.width - dragStartSelectionViewportRect.width) * 2f));
-            float doubledHeight = Mathf.Max(12f, dragStartSelectionViewportRect.height + ((resizedViewportRect.height - dragStartSelectionViewportRect.height) * 2f));
-
-            if (IsCornerHandle(handle))
-            {
-                float scaleX = doubledWidth / dragStartSelectionViewportRect.width;
-                float scaleY = doubledHeight / dragStartSelectionViewportRect.height;
-                float scaleDeltaX = Mathf.Abs(scaleX - 1f);
-                float scaleDeltaY = Mathf.Abs(scaleY - 1f);
-                float uniformScaleFactor = scaleDeltaX >= scaleDeltaY ? scaleX : scaleY;
-                uniformScaleFactor = Mathf.Max(GetMinimumUniformScaleFactor(dragStartSelectionViewportRect.size), uniformScaleFactor);
-
-                Vector2 uniformSize = dragStartSelectionViewportRect.size * uniformScaleFactor;
-                return Rect.MinMaxRect(
-                    center.x - (uniformSize.x * 0.5f),
-                    center.y - (uniformSize.y * 0.5f),
-                    center.x + (uniformSize.x * 0.5f),
-                    center.y + (uniformSize.y * 0.5f));
-            }
-
-            if (uniformScale)
-            {
-                float uniformScaleFactor = handle is CanvasHandle.Top or CanvasHandle.Bottom
-                    ? doubledHeight / dragStartSelectionViewportRect.height
-                    : doubledWidth / dragStartSelectionViewportRect.width;
-                uniformScaleFactor = Mathf.Max(GetMinimumUniformScaleFactor(dragStartSelectionViewportRect.size), uniformScaleFactor);
-
-                Vector2 uniformSize = dragStartSelectionViewportRect.size * uniformScaleFactor;
-                return Rect.MinMaxRect(
-                    center.x - (uniformSize.x * 0.5f),
-                    center.y - (uniformSize.y * 0.5f),
-                    center.x + (uniformSize.x * 0.5f),
-                    center.y + (uniformSize.y * 0.5f));
-            }
-
-            return handle switch
-            {
-                CanvasHandle.Top or CanvasHandle.Bottom => BuildCenteredResizeRect(
-                    dragStartSelectionViewportRect.width,
-                    doubledHeight,
-                    center),
-                CanvasHandle.Left or CanvasHandle.Right => BuildCenteredResizeRect(
-                    doubledWidth,
-                    dragStartSelectionViewportRect.height,
-                    center),
-                _ => resizedViewportRect
-            };
+            return CanvasResizeMath.GetResizeViewportRect(
+                dragStartSelectionViewportRect,
+                resizedViewportRect,
+                handle,
+                uniformScale,
+                centerAnchor);
         }
 
         public static bool TryBuildScaleTransform(
@@ -377,22 +153,14 @@ namespace UnitySvgEditor.Editor
             out Vector2 scale,
             out Vector2 pivot)
         {
-            scale = Vector2.one;
-            pivot = Vector2.zero;
-
-            if (dragStartSelectionViewportRect.width <= Mathf.Epsilon ||
-                dragStartSelectionViewportRect.height <= Mathf.Epsilon)
-            {
-                return false;
-            }
-
-            scale = new Vector2(
-                currentViewportRect.width / dragStartSelectionViewportRect.width,
-                currentViewportRect.height / dragStartSelectionViewportRect.height);
-
-            pivot = GetScalePivot(dragStartElementSceneRect, handle, centerAnchor);
-
-            return !Mathf.Approximately(scale.x, 1f) || !Mathf.Approximately(scale.y, 1f);
+            return CanvasResizeMath.TryBuildScaleTransform(
+                dragStartSelectionViewportRect,
+                dragStartElementSceneRect,
+                currentViewportRect,
+                handle,
+                centerAnchor,
+                out scale,
+                out pivot);
         }
 
         public static bool TryBuildScaleTransformFromSceneRect(
@@ -403,67 +171,13 @@ namespace UnitySvgEditor.Editor
             out Vector2 scale,
             out Vector2 pivot)
         {
-            scale = Vector2.one;
-            pivot = Vector2.zero;
-
-            if (dragStartElementSceneRect.width <= Mathf.Epsilon ||
-                dragStartElementSceneRect.height <= Mathf.Epsilon)
-            {
-                return false;
-            }
-
-            scale = new Vector2(
-                currentSceneRect.width / dragStartElementSceneRect.width,
-                currentSceneRect.height / dragStartElementSceneRect.height);
-
-            pivot = GetScalePivot(dragStartElementSceneRect, handle, centerAnchor);
-
-            return !Mathf.Approximately(scale.x, 1f) || !Mathf.Approximately(scale.y, 1f);
-        }
-
-        private static Vector2 GetScalePivot(Rect dragStartElementSceneRect, CanvasHandle handle, bool centerAnchor)
-        {
-            if (centerAnchor)
-            {
-                return dragStartElementSceneRect.center;
-            }
-
-            return handle switch
-            {
-                CanvasHandle.TopLeft => new Vector2(dragStartElementSceneRect.xMax, dragStartElementSceneRect.yMax),
-                CanvasHandle.Top => new Vector2(dragStartElementSceneRect.center.x, dragStartElementSceneRect.yMax),
-                CanvasHandle.TopRight => new Vector2(dragStartElementSceneRect.xMin, dragStartElementSceneRect.yMax),
-                CanvasHandle.Right => new Vector2(dragStartElementSceneRect.xMin, dragStartElementSceneRect.center.y),
-                CanvasHandle.BottomRight => new Vector2(dragStartElementSceneRect.xMin, dragStartElementSceneRect.yMin),
-                CanvasHandle.Bottom => new Vector2(dragStartElementSceneRect.center.x, dragStartElementSceneRect.yMin),
-                CanvasHandle.BottomLeft => new Vector2(dragStartElementSceneRect.xMax, dragStartElementSceneRect.yMin),
-                CanvasHandle.Left => new Vector2(dragStartElementSceneRect.xMax, dragStartElementSceneRect.center.y),
-                _ => dragStartElementSceneRect.center
-            };
-        }
-
-        private static bool IsCornerHandle(CanvasHandle handle)
-        {
-            return handle is CanvasHandle.TopLeft or CanvasHandle.TopRight or CanvasHandle.BottomRight or CanvasHandle.BottomLeft;
-        }
-
-        private static float GetMinimumUniformScaleFactor(Vector2 size)
-        {
-            float safeWidth = Mathf.Max(size.x, Mathf.Epsilon);
-            float safeHeight = Mathf.Max(size.y, Mathf.Epsilon);
-            return Mathf.Max(12f / safeWidth, 12f / safeHeight);
-        }
-
-        private static Rect BuildCenteredResizeRect(
-            float width,
-            float height,
-            Vector2 center)
-        {
-            return Rect.MinMaxRect(
-                center.x - (width * 0.5f),
-                center.y - (height * 0.5f),
-                center.x + (width * 0.5f),
-                center.y + (height * 0.5f));
+            return CanvasResizeMath.TryBuildScaleTransformFromSceneRect(
+                dragStartElementSceneRect,
+                currentSceneRect,
+                handle,
+                centerAnchor,
+                out scale,
+                out pivot);
         }
     }
 }

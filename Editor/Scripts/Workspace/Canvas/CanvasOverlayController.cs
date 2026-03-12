@@ -53,14 +53,13 @@ namespace UnitySvgEditor.Editor
         private Label _sizeBadge;
         private VisualElement _verticalGuide;
         private VisualElement _horizontalGuide;
-        private readonly List<Label> _textOverlays = new();
+        private readonly CanvasTextOverlayPresenter _textOverlayPresenter = new();
+        private readonly CanvasDefinitionOverlayPresenter _definitionOverlayPresenter = new();
         private CanvasSelectionVisual _currentSelection;
         private VisualElement _maskBoundsBox;
         private VisualElement _clipBoundsBox;
         private CanvasPolylineOverlayElement _maskOutline;
         private CanvasPolylineOverlayElement _clipOutline;
-        private CanvasDefinitionOverlayVisual _maskOverlayVisual;
-        private CanvasDefinitionOverlayVisual _clipOverlayVisual;
 
         public VisualElement Overlay => _overlay;
 
@@ -112,6 +111,7 @@ namespace UnitySvgEditor.Editor
             _clipBoundsBox = CreateDefinitionBoundsBox(UssClassName.DEFINITION_BOUNDS_CLIP);
             _maskOutline = CreateDefinitionOutline();
             _clipOutline = CreateDefinitionOutline();
+            _definitionOverlayPresenter.Bind(_maskBoundsBox, _clipBoundsBox, _maskOutline, _clipOutline);
 
             _selectionBox = new VisualElement();
             _selectionBox.AddClass(UssClassName.SELECTION_BOX);
@@ -122,6 +122,7 @@ namespace UnitySvgEditor.Editor
             _sizeBadge.AddClass(UssClassName.SELECTION_SIZE_BADGE);
             _sizeBadge.pickingMode = PickingMode.Ignore;
             _overlay.Add(_sizeBadge);
+            _textOverlayPresenter.Bind(_overlay);
 
             CreateHandle(CanvasHandle.TopLeft);
             CreateHandle(CanvasHandle.TopRight);
@@ -169,7 +170,7 @@ namespace UnitySvgEditor.Editor
             _verticalGuide?.RemoveFromHierarchy();
             _horizontalGuide?.RemoveFromHierarchy();
             _frameLabel?.RemoveFromHierarchy();
-            ClearTextOverlays();
+            _textOverlayPresenter.Clear();
             _overlay?.RemoveFromHierarchy();
 
             _sizeBadge = null;
@@ -194,54 +195,17 @@ namespace UnitySvgEditor.Editor
 
         public void SetDefinitionOverlays(IReadOnlyList<CanvasDefinitionOverlayVisual> overlays)
         {
-            ClearDefinitionOverlays();
-            if (overlays == null || overlays.Count == 0)
-                return;
-
-            for (int index = 0; index < overlays.Count; index++)
-            {
-                CanvasDefinitionOverlayVisual overlay = overlays[index];
-                if (overlay == null)
-                    continue;
-
-                switch (overlay.Kind)
-                {
-                    case CanvasDefinitionOverlayKind.Mask:
-                        _maskOverlayVisual = overlay;
-                        ApplyDefinitionOverlay(_maskBoundsBox, _maskOutline, overlay, new Color(0.86f, 0.72f, 0.45f, 0.95f));
-                        break;
-                    case CanvasDefinitionOverlayKind.ClipPath:
-                        _clipOverlayVisual = overlay;
-                        ApplyDefinitionOverlay(_clipBoundsBox, _clipOutline, overlay, new Color(0.55f, 0.83f, 0.62f, 0.95f));
-                        break;
-                }
-            }
+            _definitionOverlayPresenter.SetOverlays(overlays);
         }
 
         public void ClearDefinitionOverlays()
         {
-            _maskOverlayVisual = null;
-            _clipOverlayVisual = null;
-            ClearDefinitionOverlay(_maskBoundsBox, _maskOutline);
-            ClearDefinitionOverlay(_clipBoundsBox, _clipOutline);
+            _definitionOverlayPresenter.Clear();
         }
 
         public bool TryHitTestDefinitionOverlay(Vector2 localPoint, out CanvasDefinitionOverlayVisual overlay)
         {
-            overlay = null;
-            if (_clipOverlayVisual != null && _clipOverlayVisual.ViewportBounds.Contains(localPoint))
-            {
-                overlay = _clipOverlayVisual;
-                return true;
-            }
-
-            if (_maskOverlayVisual != null && _maskOverlayVisual.ViewportBounds.Contains(localPoint))
-            {
-                overlay = _maskOverlayVisual;
-                return true;
-            }
-
-            return false;
+            return _definitionOverlayPresenter.TryHitTest(localPoint, out overlay);
         }
 
         public void ClearFrame()
@@ -282,62 +246,12 @@ namespace UnitySvgEditor.Editor
 
         public void SetTextOverlays(PreviewSnapshot previewSnapshot, CanvasSceneProjector sceneProjector)
         {
-            ClearTextOverlays();
-            if (_overlay == null || previewSnapshot?.TextOverlays == null || sceneProjector == null)
-                return;
-
-            for (int index = 0; index < previewSnapshot.TextOverlays.Count; index++)
-            {
-                PreviewTextOverlay textOverlay = previewSnapshot.TextOverlays[index];
-                if (textOverlay == null ||
-                    string.IsNullOrWhiteSpace(textOverlay.Text) ||
-                    !sceneProjector.TryScenePointToViewportPoint(previewSnapshot, textOverlay.ScenePosition, out Vector2 viewportPoint))
-                {
-                    continue;
-                }
-
-                Label label = new(textOverlay.Text);
-                label.pickingMode = PickingMode.Ignore;
-                label.style.position = Position.Absolute;
-                label.style.left = viewportPoint.x + ResolveAnchorOffset(textOverlay);
-                label.style.top = viewportPoint.y - (textOverlay.FontSize * 1.05f);
-                label.style.fontSize = textOverlay.FontSize;
-                label.style.color = textOverlay.Color;
-                label.style.whiteSpace = WhiteSpace.NoWrap;
-                _overlay.Add(label);
-                _textOverlays.Add(label);
-            }
-        }
-
-        private void ClearTextOverlays()
-        {
-            for (int index = 0; index < _textOverlays.Count; index++)
-            {
-                _textOverlays[index]?.RemoveFromHierarchy();
-            }
-
-            _textOverlays.Clear();
+            _textOverlayPresenter.SetTextOverlays(previewSnapshot, sceneProjector);
         }
 
         public bool IsFrameLabelTarget(object target)
         {
             return target != null && ReferenceEquals(target, _frameLabel);
-        }
-
-        private static float ResolveAnchorOffset(PreviewTextOverlay textOverlay)
-        {
-            if (textOverlay == null)
-                return 0f;
-
-            float estimatedWidth = (textOverlay.SceneBounds.width > 0f)
-                ? textOverlay.SceneBounds.width
-                : textOverlay.Text.Length * Mathf.Max(1f, textOverlay.FontSize) * 0.68f;
-            return textOverlay.TextAnchor switch
-            {
-                "middle" => -estimatedWidth * 0.5f,
-                "end" => -estimatedWidth,
-                _ => 0f
-            };
         }
 
         public void ClearSelection()
@@ -533,32 +447,6 @@ namespace UnitySvgEditor.Editor
             CanvasPolylineOverlayElement element = new();
             _overlay.Add(element);
             return element;
-        }
-
-        private static void ApplyDefinitionOverlay(
-            VisualElement boundsBox,
-            CanvasPolylineOverlayElement outlineElement,
-            CanvasDefinitionOverlayVisual overlay,
-            Color outlineColor)
-        {
-            if (boundsBox != null)
-            {
-                boundsBox.style.display = DisplayStyle.Flex;
-                boundsBox.style.left = overlay.ViewportBounds.xMin;
-                boundsBox.style.top = overlay.ViewportBounds.yMin;
-                boundsBox.style.width = overlay.ViewportBounds.width;
-                boundsBox.style.height = overlay.ViewportBounds.height;
-            }
-
-            outlineElement?.SetSegments(overlay.OutlineSegments, outlineColor);
-        }
-
-        private static void ClearDefinitionOverlay(VisualElement boundsBox, CanvasPolylineOverlayElement outlineElement)
-        {
-            if (boundsBox != null)
-                boundsBox.style.display = DisplayStyle.None;
-
-            outlineElement?.ClearSegments();
         }
 
         private void CreateHandle(CanvasHandle handle)
