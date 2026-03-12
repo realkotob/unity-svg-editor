@@ -7,7 +7,7 @@ using SvgEditor.Preview;
 
 namespace SvgEditor.Preview.Build
 {
-    internal sealed class PreviewSnapshotPreparedDocument
+    internal sealed class PreparedSnapshotDocument
     {
         public XmlDocument Document { get; set; }
         public XmlElement Root { get; set; }

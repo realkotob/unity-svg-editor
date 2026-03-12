@@ -11,7 +11,7 @@ namespace SvgEditor.Renderer
 {
     internal sealed class SvgCanvasRenderer
     {
-        private readonly PreviewSnapshotBuilder _previewSnapshotBuilder = new();
+        private readonly SnapshotBuilder _previewSnapshotBuilder = new();
 
         public bool TryBuildRenderDocument(
             SvgDocumentModel documentModel,

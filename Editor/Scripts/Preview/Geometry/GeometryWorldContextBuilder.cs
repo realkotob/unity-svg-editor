@@ -148,7 +148,7 @@ namespace SvgEditor.Preview.Geometry
             List<Vector2[]> triangles = new();
             IEnumerable<VectorUtils.Geometry> geometries = VectorUtils.TessellateScene(
                 tempScene,
-                PreviewBuildOptions.CreateTessellationOptions());
+                BuildOptions.CreateTessellationOptions());
 
             foreach (var geometry in geometries)
             {

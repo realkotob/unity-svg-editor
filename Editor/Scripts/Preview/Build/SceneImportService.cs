@@ -11,7 +11,7 @@ using SvgEditor.Preview;
 
 namespace SvgEditor.Preview.Build
 {
-    internal static class PreviewSnapshotSceneImportService
+    internal static class SceneImportService
     {
         private static readonly MethodInfo InternalBuildVectorImageMethod = typeof(VectorUtils).GetMethod(
             "BuildVectorImage",
@@ -67,7 +67,7 @@ namespace SvgEditor.Preview.Build
 
             IEnumerable<VectorUtils.Geometry> geometries = VectorUtils.TessellateScene(
                 sceneInfo.Scene,
-                PreviewBuildOptions.CreateTessellationOptions(),
+                BuildOptions.CreateTessellationOptions(),
                 sceneInfo.NodeOpacity);
 
             VectorImage vectorImage = InternalBuildVectorImageMethod.Invoke(
@@ -76,7 +76,7 @@ namespace SvgEditor.Preview.Build
                 {
                     geometries,
                     previewRect,
-                    PreviewBuildOptions.GRADIENT_RESOLUTION
+                    BuildOptions.GRADIENT_RESOLUTION
                 }) as VectorImage;
 
             return FinalizePreviewVectorImage(vectorImage ?? VectorUtils.BuildVectorImage(sceneInfo));
@@ -86,11 +86,11 @@ namespace SvgEditor.Preview.Build
         {
             IEnumerable<VectorUtils.Geometry> geometries = VectorUtils.TessellateScene(
                 scene,
-                PreviewBuildOptions.CreateTessellationOptions(),
+                BuildOptions.CreateTessellationOptions(),
                 nodeOpacity);
 
             if (InternalBuildVectorImageMethod == null)
-                return FinalizePreviewVectorImage(VectorUtils.BuildVectorImage(geometries, PreviewBuildOptions.GRADIENT_RESOLUTION));
+                return FinalizePreviewVectorImage(VectorUtils.BuildVectorImage(geometries, BuildOptions.GRADIENT_RESOLUTION));
 
             VectorImage vectorImage = InternalBuildVectorImageMethod.Invoke(
                 null,
@@ -98,10 +98,10 @@ namespace SvgEditor.Preview.Build
                 {
                     geometries,
                     previewRect,
-                    PreviewBuildOptions.GRADIENT_RESOLUTION
+                    BuildOptions.GRADIENT_RESOLUTION
                 }) as VectorImage;
 
-            return FinalizePreviewVectorImage(vectorImage ?? VectorUtils.BuildVectorImage(geometries, PreviewBuildOptions.GRADIENT_RESOLUTION));
+            return FinalizePreviewVectorImage(vectorImage ?? VectorUtils.BuildVectorImage(geometries, BuildOptions.GRADIENT_RESOLUTION));
         }
 
         private static VectorImage FinalizePreviewVectorImage(VectorImage vectorImage)

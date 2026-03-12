@@ -11,9 +11,9 @@ namespace SvgEditor.Workspace.Canvas
     internal sealed class CanvasSceneHitTestHelper
     {
         private const float HitViewportRadius = 6f;
-        private readonly PreviewElementHitTester _elementHitTester;
+        private readonly ElementHitTester _elementHitTester;
 
-        public CanvasSceneHitTestHelper(PreviewElementHitTester elementHitTester)
+        public CanvasSceneHitTestHelper(ElementHitTester elementHitTester)
         {
             _elementHitTester = elementHitTester;
         }

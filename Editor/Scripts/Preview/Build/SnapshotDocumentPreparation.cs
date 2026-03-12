@@ -9,13 +9,13 @@ using SvgEditor.Preview;
 
 namespace SvgEditor.Preview.Build
 {
-    internal static class PreviewSnapshotDocumentPreparation
+    internal static class SnapshotDocumentPreparation
     {
         private const string SyntheticIdPrefix = "__unity_svg_editor_preview__";
 
         public static bool TryPrepare(
             string sourceText,
-            out PreviewSnapshotPreparedDocument preparedDocument,
+            out PreparedSnapshotDocument preparedDocument,
             out string error)
         {
             preparedDocument = null;
@@ -37,7 +37,7 @@ namespace SvgEditor.Preview.Build
             var syntheticIdCounter = 0;
             RegisterElementMappings(root, root, keyByNodeId, usedIds, ref syntheticIdCounter);
 
-            preparedDocument = new PreviewSnapshotPreparedDocument
+            preparedDocument = new PreparedSnapshotDocument
             {
                 Document = document,
                 Root = root,

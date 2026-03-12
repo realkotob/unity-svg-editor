@@ -18,7 +18,7 @@ namespace SvgEditor.Workspace.Canvas
         {
             _sceneProjector = new SceneProjector(
                 _viewportState,
-                new PreviewElementHitTester(),
+                new ElementHitTester(),
                 framePadding: 0f,
                 frameHeaderHeight: 0f,
                 alignmentGuideThreshold: 2f);

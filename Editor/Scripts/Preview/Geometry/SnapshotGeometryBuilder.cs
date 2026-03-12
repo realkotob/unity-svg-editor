@@ -8,7 +8,7 @@ using SvgEditor.Preview;
 
 namespace SvgEditor.Preview.Geometry
 {
-    internal static class PreviewSnapshotGeometryBuilder
+    internal static class SnapshotGeometryBuilder
     {
         public static bool TryBuildVisualContentBounds(
             IReadOnlyList<PreviewElementGeometry> elements,

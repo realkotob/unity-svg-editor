@@ -11,7 +11,7 @@ using SvgEditor.Preview;
 
 namespace SvgEditor.Preview.Text
 {
-    internal static class PreviewSnapshotTextBuilder
+    internal static class SnapshotTextBuilder
     {
         public static IReadOnlyList<PreviewTextOverlay> BuildTextOverlays(SvgDocumentModel documentModel)
         {

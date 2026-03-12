@@ -6,7 +6,7 @@ using SvgEditor.Preview;
 
 namespace SvgEditor.Preview.Geometry
 {
-    internal sealed class PreviewElementHitTester
+    internal sealed class ElementHitTester
     {
         public bool TryHitTest(
             IReadOnlyList<PreviewElementGeometry> elements,

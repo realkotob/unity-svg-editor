@@ -4,7 +4,7 @@ using SvgEditor;
 
 namespace SvgEditor.Preview.Build
 {
-    internal static class PreviewBuildOptions
+    internal static class BuildOptions
     {
         public const uint GRADIENT_RESOLUTION = 32u;
 

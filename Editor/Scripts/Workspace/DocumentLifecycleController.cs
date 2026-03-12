@@ -19,7 +19,7 @@ namespace SvgEditor.Workspace
 
         public DocumentLifecycleController(
             DocumentRepository documentRepository,
-            PreviewSnapshotBuilder previewSnapshotBuilder,
+            SnapshotBuilder previewSnapshotBuilder,
             PanelController inspectorPanelController,
             Func<EditorWorkspaceCoordinator> workspaceCoordinatorAccessor,
             Action updateEditorInteractivity)

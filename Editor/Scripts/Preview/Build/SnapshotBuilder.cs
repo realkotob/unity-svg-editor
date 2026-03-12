@@ -13,7 +13,7 @@ using SvgEditor.Renderer;
 
 namespace SvgEditor.Preview.Build
 {
-    internal sealed class PreviewSnapshotBuilder
+    internal sealed class SnapshotBuilder
     {
         private readonly SvgDocumentModelSerializer _serializer = new();
         private readonly SvgModelSceneBuilder _sceneBuilder = new();
@@ -55,8 +55,8 @@ namespace SvgEditor.Preview.Build
                 return false;
             }
 
-            IReadOnlyList<PreviewTextOverlay> textOverlays = PreviewSnapshotTextBuilder.BuildTextOverlays(documentModel);
-            IReadOnlyList<PreviewElementGeometry> textElements = PreviewSnapshotTextBuilder.BuildTextElements(
+            IReadOnlyList<PreviewTextOverlay> textOverlays = SnapshotTextBuilder.BuildTextOverlays(documentModel);
+            IReadOnlyList<PreviewElementGeometry> textElements = SnapshotTextBuilder.BuildTextElements(
                 textOverlays,
                 snapshot.Elements?.Count ?? 0);
 
@@ -69,10 +69,10 @@ namespace SvgEditor.Preview.Build
                 mergedElements.AddRange(textElements);
                 snapshot.Elements = mergedElements;
 
-                if (PreviewSnapshotGeometryBuilder.TryBuildVisualContentBounds(snapshot.Elements, out Rect visualContentBounds))
+                if (SnapshotGeometryBuilder.TryBuildVisualContentBounds(snapshot.Elements, out Rect visualContentBounds))
                 {
                     snapshot.VisualContentBounds = visualContentBounds;
-                    snapshot.ProjectionRect = PreviewSnapshotSceneImportService.ResolveProjectionRect(
+                    snapshot.ProjectionRect = SceneImportService.ResolveProjectionRect(
                         snapshot.DocumentViewportRect,
                         visualContentBounds,
                         preferredViewportRect);
@@ -95,25 +95,25 @@ namespace SvgEditor.Preview.Build
             VectorImage previewVectorImage = null;
             try
             {
-                IReadOnlyList<PreviewElementGeometry> elements = PreviewSnapshotGeometryBuilder.BuildElementBounds(
+                IReadOnlyList<PreviewElementGeometry> elements = SnapshotGeometryBuilder.BuildElementBounds(
                     sceneBuildResult.Scene,
                     sceneBuildResult.NodeMappings,
                     sceneBuildResult.NodeOpacities);
-                Rect fallbackVisualContentBounds = PreviewSnapshotGeometryBuilder.TryBuildSceneRootBounds(
+                Rect fallbackVisualContentBounds = SnapshotGeometryBuilder.TryBuildSceneRootBounds(
                     sceneBuildResult.Scene,
                     sceneBuildResult.NodeOpacities,
                     out Rect sceneRootBounds)
                     ? sceneRootBounds
                     : default;
-                Rect visualContentBounds = PreviewSnapshotGeometryBuilder.TryBuildVisualContentBounds(elements, out Rect resolvedVisualContentBounds)
+                Rect visualContentBounds = SnapshotGeometryBuilder.TryBuildVisualContentBounds(elements, out Rect resolvedVisualContentBounds)
                     ? resolvedVisualContentBounds
                     : fallbackVisualContentBounds;
-                Rect projectionRect = PreviewSnapshotSceneImportService.ResolveProjectionRect(
+                Rect projectionRect = SceneImportService.ResolveProjectionRect(
                     sceneBuildResult.DocumentViewportRect,
                     visualContentBounds,
                     preferredViewportRect);
 
-                previewVectorImage = PreviewSnapshotSceneImportService.BuildPreviewVectorImage(
+                previewVectorImage = SceneImportService.BuildPreviewVectorImage(
                     sceneBuildResult.Scene,
                     sceneBuildResult.NodeOpacities,
                     projectionRect);
@@ -147,15 +147,15 @@ namespace SvgEditor.Preview.Build
             snapshot = new PreviewSnapshot();
             error = string.Empty;
 
-            if (!PreviewSnapshotDocumentPreparation.TryPrepare(
+            if (!SnapshotDocumentPreparation.TryPrepare(
                     sourceText,
-                    out PreviewSnapshotPreparedDocument preparedDocument,
+                    out PreparedSnapshotDocument preparedDocument,
                     out error))
             {
                 return false;
             }
 
-            if (!PreviewSnapshotSceneImportService.TryImportScene(
+            if (!SceneImportService.TryImportScene(
                     preparedDocument.Document.OuterXml,
                     out SVGParser.SceneInfo sceneInfo,
                     out error))
@@ -166,20 +166,20 @@ namespace SvgEditor.Preview.Build
             VectorImage previewVectorImage = null;
             try
             {
-                var elements = PreviewSnapshotGeometryBuilder.BuildElementBounds(sceneInfo, preparedDocument.KeyByNodeId);
-                var fallbackVisualContentBounds = PreviewSnapshotGeometryBuilder.TryBuildSceneRootBounds(sceneInfo, out Rect sceneRootBounds)
+                var elements = SnapshotGeometryBuilder.BuildElementBounds(sceneInfo, preparedDocument.KeyByNodeId);
+                var fallbackVisualContentBounds = SnapshotGeometryBuilder.TryBuildSceneRootBounds(sceneInfo, out Rect sceneRootBounds)
                     ? sceneRootBounds
                     : VectorUtils.SceneNodeBounds(sceneInfo.Scene.Root);
-                var visualContentBounds = PreviewSnapshotGeometryBuilder.TryBuildVisualContentBounds(elements, out Rect resolvedVisualContentBounds)
+                var visualContentBounds = SnapshotGeometryBuilder.TryBuildVisualContentBounds(elements, out Rect resolvedVisualContentBounds)
                     ? resolvedVisualContentBounds
                     : fallbackVisualContentBounds;
                 Rect documentViewportRect = sceneInfo.SceneViewport;
-                Rect projectionRect = PreviewSnapshotSceneImportService.ResolveProjectionRect(
+                Rect projectionRect = SceneImportService.ResolveProjectionRect(
                     documentViewportRect,
                     visualContentBounds,
                     preferredViewportRect);
 
-                previewVectorImage = PreviewSnapshotSceneImportService.BuildPreviewVectorImage(sceneInfo, projectionRect);
+                previewVectorImage = SceneImportService.BuildPreviewVectorImage(sceneInfo, projectionRect);
                 snapshot = new PreviewSnapshot
                 {
                     PreviewVectorImage = previewVectorImage,

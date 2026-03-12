@@ -19,7 +19,7 @@ namespace SvgEditor.Workspace.Canvas
 
         public SceneProjector(
             ViewportState viewportState,
-            PreviewElementHitTester elementHitTester,
+            ElementHitTester elementHitTester,
             float framePadding,
             float frameHeaderHeight,
             float alignmentGuideThreshold)

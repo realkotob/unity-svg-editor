@@ -23,7 +23,7 @@ namespace SvgEditor.Shell
         #region Variables
 
         private DocumentRepository _documentRepository;
-        private PreviewSnapshotBuilder _previewSnapshotBuilder;
+        private SnapshotBuilder _previewSnapshotBuilder;
         private AssetDatabaseVectorImageSourceProvider _vectorImageSourceProvider;
         private AssetBrowser _assetLibraryBrowser;
         private PanelController _inspectorPanelController;
@@ -123,7 +123,7 @@ namespace SvgEditor.Shell
         private void EnsureInitialized()
         {
             _documentRepository ??= new DocumentRepository();
-            _previewSnapshotBuilder ??= new PreviewSnapshotBuilder();
+            _previewSnapshotBuilder ??= new SnapshotBuilder();
             _vectorImageSourceProvider ??= new AssetDatabaseVectorImageSourceProvider();
             _assetLibraryBrowser ??= new AssetBrowser(_documentRepository, _vectorImageSourceProvider);
             _inspectorPanelController ??= new PanelController(new PanelState());

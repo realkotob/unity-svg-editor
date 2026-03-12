@@ -18,7 +18,7 @@ namespace SvgEditor.Workspace.Document
         }
 
         private const int PreviewDisposeDelayTicks = 3;
-        private readonly PreviewSnapshotBuilder _previewSnapshotBuilder;
+        private readonly SnapshotBuilder _previewSnapshotBuilder;
         private readonly DocumentLifecycleView _view;
         private readonly Func<DocumentSession> _currentDocumentAccessor;
         private readonly Func<EditorWorkspaceCoordinator> _workspaceCoordinatorAccessor;
@@ -26,7 +26,7 @@ namespace SvgEditor.Workspace.Document
         private bool _isDisposeScheduled;
 
         public DocumentPreviewService(
-            PreviewSnapshotBuilder previewSnapshotBuilder,
+            SnapshotBuilder previewSnapshotBuilder,
             DocumentLifecycleView view,
             Func<DocumentSession> currentDocumentAccessor,
             Func<EditorWorkspaceCoordinator> workspaceCoordinatorAccessor)

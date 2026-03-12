@@ -50,7 +50,7 @@ namespace SvgEditor.Workspace.Canvas
             {
                 CanvasDefinitionOverlayScene overlayScene = overlayScenes[index];
                 if (overlayScene?.RootNode == null ||
-                    !PreviewSnapshotGeometryBuilder.TryBuildOverlayGeometry(
+                    !SnapshotGeometryBuilder.TryBuildOverlayGeometry(
                         overlayScene.RootNode,
                         overlayScene.NodeOpacities,
                         out Rect sceneBounds,
