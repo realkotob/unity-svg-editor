@@ -32,10 +32,10 @@ namespace SvgEditor.Workspace.Canvas
                 return false;
             }
 
-            if (!TryFindNodeByLegacyElementKey(document.DocumentModel, elementKey, out SvgNodeModel sourceNode))
+            if (!SvgNodeLookupUtility.TryFindNodeByLegacyElementKey(document.DocumentModel, elementKey, out SvgNodeModel sourceNode))
                 return false;
 
-            _workingDocumentModel = CloneDocumentModel(document.DocumentModel);
+            _workingDocumentModel = SvgDocumentModelCloneUtility.CloneDocumentModel(document.DocumentModel);
             _activeNodeId = sourceNode.Id;
             _baseTransform = sourceNode.RawAttributes != null &&
                              sourceNode.RawAttributes.TryGetValue(SvgAttributeName.TRANSFORM, out string transform)
@@ -164,7 +164,7 @@ namespace SvgEditor.Workspace.Canvas
                 return;
             }
 
-            Dictionary<string, string> attributes = CloneAttributes(node.RawAttributes);
+            Dictionary<string, string> attributes = SvgDocumentModelCloneUtility.CloneAttributes(node.RawAttributes);
             if (string.IsNullOrWhiteSpace(transformValue))
                 attributes.Remove(SvgAttributeName.TRANSFORM);
             else
@@ -182,129 +182,11 @@ namespace SvgEditor.Workspace.Canvas
                    _serializer.TrySerialize(_workingDocumentModel, out sourceText, out error);
         }
 
-        private static bool TryFindNodeByLegacyElementKey(
-            SvgDocumentModel documentModel,
-            string elementKey,
-            out SvgNodeModel node)
-        {
-            node = null;
-            if (documentModel?.NodeOrder == null)
-                return false;
-
-            for (var index = 0; index < documentModel.NodeOrder.Count; index++)
-            {
-                SvgNodeId nodeId = documentModel.NodeOrder[index];
-                if (!documentModel.TryGetNode(nodeId, out SvgNodeModel currentNode) || currentNode == null)
-                    continue;
-
-                if (string.Equals(currentNode.LegacyElementKey, elementKey, StringComparison.Ordinal))
-                {
-                    node = currentNode;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         private static string PrependTransform(string baseTransform, string transformSegment)
         {
             return string.IsNullOrWhiteSpace(baseTransform)
                 ? transformSegment
                 : $"{transformSegment} {baseTransform}";
-        }
-
-        private static SvgDocumentModel CloneDocumentModel(SvgDocumentModel source)
-        {
-            Dictionary<SvgNodeId, SvgNodeModel> nodes = new();
-            foreach (var pair in source.Nodes)
-            {
-                SvgNodeModel sourceNode = pair.Value;
-                nodes.Add(pair.Key, new SvgNodeModel
-                {
-                    Id = sourceNode.Id,
-                    ParentId = sourceNode.ParentId,
-                    TagName = sourceNode.TagName,
-                    Kind = sourceNode.Kind,
-                    XmlId = sourceNode.XmlId,
-                    LegacyElementKey = sourceNode.LegacyElementKey,
-                    LegacyTargetKey = sourceNode.LegacyTargetKey,
-                    TextContent = sourceNode.TextContent,
-                    Depth = sourceNode.Depth,
-                    SiblingIndex = sourceNode.SiblingIndex,
-                    IsDefinitionNode = sourceNode.IsDefinitionNode,
-                    RawAttributes = CloneAttributes(sourceNode.RawAttributes),
-                    Children = new List<SvgNodeId>(sourceNode.Children ?? Array.Empty<SvgNodeId>()),
-                    References = CloneReferences(sourceNode.References)
-                });
-            }
-
-            return new SvgDocumentModel
-            {
-                SourceText = source.SourceText,
-                RootId = source.RootId,
-                Nodes = nodes,
-                NodeOrder = new List<SvgNodeId>(source.NodeOrder ?? Array.Empty<SvgNodeId>()),
-                NodeIdsByXmlId = CloneNodeIdLookup(source.NodeIdsByXmlId),
-                Namespaces = CloneNamespaceLookup(source.Namespaces),
-                DefinitionNodeIds = new List<SvgNodeId>(source.DefinitionNodeIds ?? Array.Empty<SvgNodeId>())
-            };
-        }
-
-        private static Dictionary<string, string> CloneAttributes(IReadOnlyDictionary<string, string> source)
-        {
-            Dictionary<string, string> attributes = new(StringComparer.Ordinal);
-            if (source == null)
-                return attributes;
-
-            foreach (var pair in source)
-                attributes[pair.Key] = pair.Value ?? string.Empty;
-
-            return attributes;
-        }
-
-        private static List<SvgNodeReference> CloneReferences(IReadOnlyList<SvgNodeReference> source)
-        {
-            List<SvgNodeReference> references = new();
-            if (source == null)
-                return references;
-
-            for (var index = 0; index < source.Count; index++)
-            {
-                SvgNodeReference reference = source[index];
-                references.Add(new SvgNodeReference
-                {
-                    AttributeName = reference.AttributeName,
-                    RawValue = reference.RawValue,
-                    FragmentId = reference.FragmentId
-                });
-            }
-
-            return references;
-        }
-
-        private static Dictionary<string, SvgNodeId> CloneNodeIdLookup(IReadOnlyDictionary<string, SvgNodeId> source)
-        {
-            Dictionary<string, SvgNodeId> lookup = new(StringComparer.Ordinal);
-            if (source == null)
-                return lookup;
-
-            foreach (var pair in source)
-                lookup[pair.Key] = pair.Value;
-
-            return lookup;
-        }
-
-        private static Dictionary<string, string> CloneNamespaceLookup(IReadOnlyDictionary<string, string> source)
-        {
-            Dictionary<string, string> namespaces = new(StringComparer.Ordinal);
-            if (source == null)
-                return namespaces;
-
-            foreach (var pair in source)
-                namespaces[pair.Key] = pair.Value ?? string.Empty;
-
-            return namespaces;
         }
     }
 }
