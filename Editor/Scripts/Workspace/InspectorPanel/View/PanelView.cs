@@ -10,7 +10,7 @@ using SvgEditor;
 
 namespace SvgEditor.Workspace.InspectorPanel
 {
-    internal sealed class InspectorPanelView
+    internal sealed class PanelView
     {
         private const string DragNumberFieldPrefixClassName = "drag-number-field__prefix";
 
@@ -68,7 +68,7 @@ namespace SvgEditor.Workspace.InspectorPanel
             public float Delta { get; }
         }
 
-        private readonly InspectorFormControls _form = new();
+        private readonly FormControls _form = new();
 
         public event Action<ImmediateApplyField> ImmediateApplyRequested;
         public event Action FrameRectChanged;
@@ -137,14 +137,14 @@ namespace SvgEditor.Workspace.InspectorPanel
             _form.Unbind();
         }
 
-        public void CaptureState(InspectorPanelState inspectorPanelState)
+        public void CaptureState(PanelState inspectorPanelState)
         {
-            InspectorStateBinder.CaptureState(_form, inspectorPanelState);
+            StateBinder.CaptureState(_form, inspectorPanelState);
         }
 
-        public void ApplyState(InspectorPanelState inspectorPanelState)
+        public void ApplyState(PanelState inspectorPanelState)
         {
-            InspectorStateBinder.ApplyState(_form, inspectorPanelState);
+            StateBinder.ApplyState(_form, inspectorPanelState);
         }
 
         public void SetTransformText(string transform)

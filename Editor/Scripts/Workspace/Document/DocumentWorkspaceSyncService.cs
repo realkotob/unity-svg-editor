@@ -8,7 +8,7 @@ namespace SvgEditor.Workspace.Document
     {
         private readonly DocumentLifecycleView _view;
         private readonly DocumentPreviewService _previewService;
-        private readonly InspectorPanelController _inspectorPanelController;
+        private readonly PanelController _inspectorPanelController;
         private readonly Func<DocumentSession> _currentDocumentAccessor;
         private readonly Func<EditorWorkspaceCoordinator> _workspaceCoordinatorAccessor;
         private readonly Action _updateEditorInteractivity;
@@ -16,7 +16,7 @@ namespace SvgEditor.Workspace.Document
         public DocumentWorkspaceSyncService(
             DocumentLifecycleView view,
             DocumentPreviewService previewService,
-            InspectorPanelController inspectorPanelController,
+            PanelController inspectorPanelController,
             Func<DocumentSession> currentDocumentAccessor,
             Func<EditorWorkspaceCoordinator> workspaceCoordinatorAccessor,
             Action updateEditorInteractivity)

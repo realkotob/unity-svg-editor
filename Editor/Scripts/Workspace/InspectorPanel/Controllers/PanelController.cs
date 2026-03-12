@@ -6,14 +6,14 @@ using SvgEditor;
 
 namespace SvgEditor.Workspace.InspectorPanel
 {
-    internal sealed class InspectorPanelController
+    internal sealed class PanelController
     {
-        private readonly InspectorPanelState _inspectorPanelState;
-        private readonly InspectorPanelView _view;
-        private readonly InspectorTargetSyncService _targetSyncService;
+        private readonly PanelState _inspectorPanelState;
+        private readonly PanelView _view;
+        private readonly TargetSyncService _targetSyncService;
         private readonly System.Action<System.Action> _scheduleDeferredCall;
         private readonly System.Action<System.Action> _unscheduleDeferredCall;
-        private IInspectorPanelHost _host;
+        private IPanelHost _host;
         private bool _isRefreshScheduled;
         private bool _hasPendingRefresh;
         private SvgDocumentModel _pendingDocumentModel;
@@ -21,18 +21,18 @@ namespace SvgEditor.Workspace.InspectorPanel
         private bool _hasPendingFrameRectApply;
         private bool _isTransformApplyScheduled;
         private bool _hasPendingTransformApply;
-        private InspectorPanelView.TransformHelperChange _pendingTransformHelperChange;
+        private PanelView.TransformHelperChange _pendingTransformHelperChange;
 
-        public InspectorPanelController(
-            InspectorPanelState inspectorPanelState,
+        public PanelController(
+            PanelState inspectorPanelState,
             System.Action<System.Action> scheduleDeferredCall = null,
             System.Action<System.Action> unscheduleDeferredCall = null)
         {
             _inspectorPanelState = inspectorPanelState;
             _scheduleDeferredCall = scheduleDeferredCall ?? ScheduleDeferredCall;
             _unscheduleDeferredCall = unscheduleDeferredCall ?? UnscheduleDeferredCall;
-            _view = new InspectorPanelView();
-            _targetSyncService = new InspectorTargetSyncService(
+            _view = new PanelView();
+            _targetSyncService = new TargetSyncService(
                 inspectorPanelState,
                 _view,
                 () => _host,
@@ -63,7 +63,7 @@ namespace SvgEditor.Workspace.InspectorPanel
             EditorApplication.delayCall -= callback.Invoke;
         }
 
-        public void Bind(VisualElement root, IInspectorPanelHost host)
+        public void Bind(VisualElement root, IPanelHost host)
         {
             _host = null;
             _view.Bind(root);
@@ -163,11 +163,11 @@ namespace SvgEditor.Workspace.InspectorPanel
             SetEnabledIfNotNull(_view.PositionFlipVerticalControl, hasDocument);
         }
 
-        private void OnImmediateApplyRequested(InspectorPanelView.ImmediateApplyField field) => _targetSyncService.ApplyImmediatePatch(field);
+        private void OnImmediateApplyRequested(PanelView.ImmediateApplyField field) => _targetSyncService.ApplyImmediatePatch(field);
 
         private void OnFrameRectChanged() => QueueFrameRectApply();
 
-        private void OnTransformHelperChanged(InspectorPanelView.TransformHelperChange change)
+        private void OnTransformHelperChanged(PanelView.TransformHelperChange change)
         {
             _pendingTransformHelperChange = change;
             QueueTransformApply();
@@ -177,9 +177,9 @@ namespace SvgEditor.Workspace.InspectorPanel
 
         private void OnRotationDragEnded() => _targetSyncService.EndRotationDrag();
 
-        private void OnPositionActionRequested(InspectorPanelView.PositionAction action) => _targetSyncService.ApplyPositionAction(action);
+        private void OnPositionActionRequested(PanelView.PositionAction action) => _targetSyncService.ApplyPositionAction(action);
 
-        private void OnAttributeActionRequested(InspectorPanelView.AttributeAction action) => _targetSyncService.ApplyAttributeAction(action);
+        private void OnAttributeActionRequested(PanelView.AttributeAction action) => _targetSyncService.ApplyAttributeAction(action);
 
         private static void SetEnabledIfNotNull(VisualElement element, bool enabled)
         {

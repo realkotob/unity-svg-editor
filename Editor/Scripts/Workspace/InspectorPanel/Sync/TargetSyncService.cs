@@ -6,30 +6,30 @@ using SvgEditor;
 
 namespace SvgEditor.Workspace.InspectorPanel
 {
-    internal sealed class InspectorTargetSyncService
+    internal sealed class TargetSyncService
     {
-        private readonly InspectorTargetCatalogService _targetCatalogService;
-        private readonly InspectorTransformActionService _transformActionService;
-        private readonly InspectorPatchApplyService _patchApplyService;
+        private readonly TargetCatalogService _targetCatalogService;
+        private readonly TransformActionService _transformActionService;
+        private readonly PatchApplyService _patchApplyService;
 
-        public InspectorTargetSyncService(
-            InspectorPanelState inspectorPanelState,
-            InspectorPanelView view,
-            Func<IInspectorPanelHost> hostAccessor,
+        public TargetSyncService(
+            PanelState inspectorPanelState,
+            PanelView view,
+            Func<IPanelHost> hostAccessor,
             Action updateInteractivity)
         {
-            _targetCatalogService = new InspectorTargetCatalogService(
+            _targetCatalogService = new TargetCatalogService(
                 inspectorPanelState,
                 view,
                 hostAccessor,
                 updateInteractivity);
-            _transformActionService = new InspectorTransformActionService(
+            _transformActionService = new TransformActionService(
                 inspectorPanelState,
                 view,
                 hostAccessor,
                 _targetCatalogService.ResolveSelectedTargetKey,
                 updateInteractivity);
-            _patchApplyService = new InspectorPatchApplyService(
+            _patchApplyService = new PatchApplyService(
                 inspectorPanelState,
                 view,
                 hostAccessor,
@@ -73,16 +73,16 @@ namespace SvgEditor.Workspace.InspectorPanel
 
         public void ApplyFrameRectFromView() => _transformActionService.ApplyFrameRectFromView();
 
-        public void ApplyTransformFromHelper(InspectorPanelView.TransformHelperChange change) => _transformActionService.ApplyTransformFromHelper(change);
+        public void ApplyTransformFromHelper(PanelView.TransformHelperChange change) => _transformActionService.ApplyTransformFromHelper(change);
 
         public void ApplyPatchToSource() => _patchApplyService.ApplyPatchToSource();
 
         public void ApplyPatchToSource(string successStatus) => _patchApplyService.ApplyPatchToSource(successStatus);
 
-        public void ApplyImmediatePatch(InspectorPanelView.ImmediateApplyField field) => _patchApplyService.ApplyImmediatePatch(field);
+        public void ApplyImmediatePatch(PanelView.ImmediateApplyField field) => _patchApplyService.ApplyImmediatePatch(field);
 
-        public void ApplyAttributeAction(InspectorPanelView.AttributeAction action) => _patchApplyService.ApplyAttributeAction(action);
+        public void ApplyAttributeAction(PanelView.AttributeAction action) => _patchApplyService.ApplyAttributeAction(action);
 
-        public void ApplyPositionAction(InspectorPanelView.PositionAction action) => _transformActionService.ApplyPositionAction(action);
+        public void ApplyPositionAction(PanelView.PositionAction action) => _transformActionService.ApplyPositionAction(action);
     }
 }

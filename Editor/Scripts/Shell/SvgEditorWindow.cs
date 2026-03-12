@@ -22,7 +22,7 @@ using SvgEditor.Document;
 
 namespace SvgEditor.Shell
 {
-    public sealed class SvgEditorWindow : EditorWindow, IEditorWorkspaceHost, IInspectorPanelHost
+    public sealed class SvgEditorWindow : EditorWindow, IEditorWorkspaceHost, IPanelHost
     {
         private static class UssClassName
         {
@@ -52,7 +52,7 @@ namespace SvgEditor.Shell
         private readonly PreviewSnapshotBuilder _previewSnapshotBuilder = new();
         private readonly AssetDatabaseVectorImageSourceProvider _vectorImageSourceProvider = new();
         private readonly AssetLibraryBrowser _assetLibraryBrowser;
-        private readonly InspectorPanelController _inspectorPanelController;
+        private readonly PanelController _inspectorPanelController;
         private readonly DocumentLifecycleController _documentLifecycleController;
 
         private EditorWorkspaceCoordinator _workspaceCoordinator;
@@ -81,7 +81,7 @@ namespace SvgEditor.Shell
         public SvgEditorWindow()
         {
             _assetLibraryBrowser = new AssetLibraryBrowser(_documentRepository, _vectorImageSourceProvider);
-            _inspectorPanelController = new InspectorPanelController(new InspectorPanelState());
+            _inspectorPanelController = new PanelController(new PanelState());
             _documentLifecycleController = new DocumentLifecycleController(
                 _documentRepository,
                 _previewSnapshotBuilder,
@@ -257,18 +257,18 @@ namespace SvgEditor.Shell
 
         void IEditorWorkspaceHost.UpdateSourceStatus(string status) => UpdateSourceStatus(status);
 
-        DocumentSession IInspectorPanelHost.CurrentDocument => _documentLifecycleController.CurrentDocument;
-        bool IInspectorPanelHost.TryApplyPatchRequest(
+        DocumentSession IPanelHost.CurrentDocument => _documentLifecycleController.CurrentDocument;
+        bool IPanelHost.TryApplyPatchRequest(
             AttributePatchRequest request,
             string successStatus,
             HistoryRecordingMode recordingMode) => TryApplyPatchRequest(request, successStatus, recordingMode);
-        bool IInspectorPanelHost.TryApplyTargetFrameRect(
+        bool IPanelHost.TryApplyTargetFrameRect(
             string targetKey,
             Rect targetSceneRect,
             string successStatus,
             HistoryRecordingMode recordingMode) =>
             WorkspaceCoordinator.TryApplyTargetFrameRect(targetKey, targetSceneRect, successStatus, recordingMode);
-        bool IInspectorPanelHost.TryGetTargetSceneRect(string targetKey, out Rect sceneRect)
+        bool IPanelHost.TryGetTargetSceneRect(string targetKey, out Rect sceneRect)
         {
             sceneRect = default;
             var snapshot = _documentLifecycleController.PreviewSnapshot;
@@ -290,7 +290,7 @@ namespace SvgEditor.Shell
 
             return false;
         }
-        bool IInspectorPanelHost.TryGetTargetRotationPivotParentSpace(string targetKey, out Vector2 parentPivot)
+        bool IPanelHost.TryGetTargetRotationPivotParentSpace(string targetKey, out Vector2 parentPivot)
         {
             parentPivot = default;
             var snapshot = _documentLifecycleController.PreviewSnapshot;
@@ -312,7 +312,7 @@ namespace SvgEditor.Shell
 
             return false;
         }
-        bool IInspectorPanelHost.TryGetTargetParentWorldTransform(string targetKey, out Matrix2D parentWorldTransform)
+        bool IPanelHost.TryGetTargetParentWorldTransform(string targetKey, out Matrix2D parentWorldTransform)
         {
             parentWorldTransform = Matrix2D.identity;
             var snapshot = _documentLifecycleController.PreviewSnapshot;
@@ -334,7 +334,7 @@ namespace SvgEditor.Shell
 
             return false;
         }
-        bool IInspectorPanelHost.TryGetCanvasViewportSceneRect(out Rect sceneRect)
+        bool IPanelHost.TryGetCanvasViewportSceneRect(out Rect sceneRect)
         {
             sceneRect = default;
             var snapshot = _documentLifecycleController.PreviewSnapshot;
@@ -344,8 +344,8 @@ namespace SvgEditor.Shell
             sceneRect = snapshot.CanvasViewportRect;
             return sceneRect.width > 0f || sceneRect.height > 0f;
         }
-        void IInspectorPanelHost.SyncSelectionFromInspectorTarget(string targetKey) => WorkspaceCoordinator.SyncSelectionFromInspectorTarget(targetKey);
-        void IInspectorPanelHost.UpdateSourceStatus(string status) => UpdateSourceStatus(status);
+        void IPanelHost.SyncSelectionFromInspectorTarget(string targetKey) => WorkspaceCoordinator.SyncSelectionFromInspectorTarget(targetKey);
+        void IPanelHost.UpdateSourceStatus(string status) => UpdateSourceStatus(status);
 
         private static VisualTreeAsset FindVisualTreeAsset()
         {

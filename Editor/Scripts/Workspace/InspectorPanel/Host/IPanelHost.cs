@@ -6,7 +6,7 @@ using SvgEditor;
 
 namespace SvgEditor.Workspace.InspectorPanel
 {
-    internal interface IInspectorPanelHost
+    internal interface IPanelHost
     {
         DocumentSession CurrentDocument { get; }
 

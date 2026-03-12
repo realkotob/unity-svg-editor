@@ -6,17 +6,17 @@ using SvgEditor;
 
 namespace SvgEditor.Workspace.InspectorPanel
 {
-    internal sealed class InspectorPatchApplyService
+    internal sealed class PatchApplyService
     {
-        private readonly InspectorPanelState _inspectorPanelState;
-        private readonly InspectorPanelView _view;
-        private readonly Func<IInspectorPanelHost> _hostAccessor;
+        private readonly PanelState _inspectorPanelState;
+        private readonly PanelView _view;
+        private readonly Func<IPanelHost> _hostAccessor;
         private readonly Action _updateInteractivity;
 
-        public InspectorPatchApplyService(
-            InspectorPanelState inspectorPanelState,
-            InspectorPanelView view,
-            Func<IInspectorPanelHost> hostAccessor,
+        public PatchApplyService(
+            PanelState inspectorPanelState,
+            PanelView view,
+            Func<IPanelHost> hostAccessor,
             Action updateInteractivity)
         {
             _inspectorPanelState = inspectorPanelState;
@@ -25,7 +25,7 @@ namespace SvgEditor.Workspace.InspectorPanel
             _updateInteractivity = updateInteractivity;
         }
 
-        private IInspectorPanelHost Host => _hostAccessor?.Invoke();
+        private IPanelHost Host => _hostAccessor?.Invoke();
 
         public void ApplyPatchToSource()
         {
@@ -46,7 +46,7 @@ namespace SvgEditor.Workspace.InspectorPanel
                 string.IsNullOrWhiteSpace(successStatus) ? "Patch applied to source." : successStatus);
         }
 
-        public void ApplyImmediatePatch(InspectorPanelView.ImmediateApplyField field)
+        public void ApplyImmediatePatch(PanelView.ImmediateApplyField field)
         {
             if (Host?.CurrentDocument == null || !_view.IsBound)
             {
@@ -58,7 +58,7 @@ namespace SvgEditor.Workspace.InspectorPanel
             Host.TryApplyPatchRequest(request, "Inspector changes applied.", HistoryRecordingMode.Coalesced);
         }
 
-        public void ApplyAttributeAction(InspectorPanelView.AttributeAction action)
+        public void ApplyAttributeAction(PanelView.AttributeAction action)
         {
             if (Host?.CurrentDocument == null || !_view.IsBound)
             {
@@ -69,21 +69,21 @@ namespace SvgEditor.Workspace.InspectorPanel
             string successStatus;
             switch (action)
             {
-                case InspectorPanelView.AttributeAction.AddFill:
+                case PanelView.AttributeAction.AddFill:
                     _inspectorPanelState.FillEnabled = true;
                     successStatus = "Fill added.";
                     break;
-                case InspectorPanelView.AttributeAction.RemoveFill:
+                case PanelView.AttributeAction.RemoveFill:
                     _inspectorPanelState.FillEnabled = false;
                     successStatus = "Fill removed.";
                     break;
-                case InspectorPanelView.AttributeAction.AddStroke:
+                case PanelView.AttributeAction.AddStroke:
                     _inspectorPanelState.StrokeEnabled = true;
                     _inspectorPanelState.StrokeWidthEnabled = true;
                     _inspectorPanelState.StrokeWidth = Mathf.Max(1f, _inspectorPanelState.StrokeWidth);
                     successStatus = "Stroke added.";
                     break;
-                case InspectorPanelView.AttributeAction.RemoveStroke:
+                case PanelView.AttributeAction.RemoveStroke:
                     _inspectorPanelState.StrokeEnabled = false;
                     _inspectorPanelState.StrokeWidthEnabled = false;
                     _inspectorPanelState.DasharrayEnabled = false;

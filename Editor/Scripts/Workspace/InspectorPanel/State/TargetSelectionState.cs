@@ -7,7 +7,7 @@ using SvgEditor;
 
 namespace SvgEditor.Workspace.InspectorPanel
 {
-    internal sealed class InspectorTargetSelectionState
+    internal sealed class TargetSelectionState
     {
         private readonly Dictionary<string, string> _labelsByKey = new(StringComparer.Ordinal);
         public string SelectedTargetKey { get; private set; } = SvgDocumentTargets.RootTargetKey;

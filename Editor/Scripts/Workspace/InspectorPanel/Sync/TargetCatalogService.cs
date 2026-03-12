@@ -8,17 +8,17 @@ using SvgEditor;
 
 namespace SvgEditor.Workspace.InspectorPanel
 {
-    internal sealed class InspectorTargetCatalogService
+    internal sealed class TargetCatalogService
     {
-        private readonly InspectorPanelState _inspectorPanelState;
-        private readonly InspectorPanelView _view;
-        private readonly Func<IInspectorPanelHost> _hostAccessor;
+        private readonly PanelState _inspectorPanelState;
+        private readonly PanelView _view;
+        private readonly Func<IPanelHost> _hostAccessor;
         private readonly Action _updateInteractivity;
 
-        public InspectorTargetCatalogService(
-            InspectorPanelState inspectorPanelState,
-            InspectorPanelView view,
-            Func<IInspectorPanelHost> hostAccessor,
+        public TargetCatalogService(
+            PanelState inspectorPanelState,
+            PanelView view,
+            Func<IPanelHost> hostAccessor,
             Action updateInteractivity)
         {
             _inspectorPanelState = inspectorPanelState;
@@ -27,7 +27,7 @@ namespace SvgEditor.Workspace.InspectorPanel
             _updateInteractivity = updateInteractivity;
         }
 
-        private IInspectorPanelHost Host => _hostAccessor?.Invoke();
+        private IPanelHost Host => _hostAccessor?.Invoke();
 
         public void ApplyCurrentStateToView()
         {
@@ -52,7 +52,7 @@ namespace SvgEditor.Workspace.InspectorPanel
             }
 
             IReadOnlyList<PatchTarget> targets = documentModel != null
-                ? InspectorDocumentModelReader.ExtractTargets(documentModel)
+                ? DocumentModelReader.ExtractTargets(documentModel)
                 : Array.Empty<PatchTarget>();
 
             _inspectorPanelState.SetTargets(targets);
@@ -99,7 +99,7 @@ namespace SvgEditor.Workspace.InspectorPanel
                 : string.Empty;
 
             if (documentModel == null ||
-                !InspectorDocumentModelReader.TryReadAttributes(
+                !DocumentModelReader.TryReadAttributes(
                     documentModel,
                     ResolveSelectedTargetKey(),
                     out Dictionary<string, string> attributes,

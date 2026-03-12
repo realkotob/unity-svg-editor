@@ -10,13 +10,13 @@ using SvgEditor;
 
 namespace SvgEditor.Workspace.InspectorPanel
 {
-    internal static class InspectorPanelStateValueCodec
+    internal static class PanelStateValueCodec
     {
         private const float MissingStrokeWidth = 0f;
         private const float MissingDashLength = 0f;
         private const float MissingDashGap = 0f;
 
-        public static AttributePatchRequest BuildPatchRequest(InspectorPanelState state)
+        public static AttributePatchRequest BuildPatchRequest(PanelState state)
         {
             var request = CreatePatchRequest(state);
             if (state.FillEnabled)
@@ -39,33 +39,33 @@ namespace SvgEditor.Workspace.InspectorPanel
             return request;
         }
 
-        public static AttributePatchRequest BuildPatchRequest(InspectorPanelState state, InspectorPanelView.ImmediateApplyField field)
+        public static AttributePatchRequest BuildPatchRequest(PanelState state, PanelView.ImmediateApplyField field)
         {
             var request = CreatePatchRequest(state);
             switch (field)
             {
-                case InspectorPanelView.ImmediateApplyField.Opacity:
+                case PanelView.ImmediateApplyField.Opacity:
                     request.Opacity = FormatNumber(Mathf.Clamp01(state.Opacity));
                     break;
-                case InspectorPanelView.ImmediateApplyField.CornerRadius:
+                case PanelView.ImmediateApplyField.CornerRadius:
                     ApplyCornerRadius(request, state);
                     break;
-                case InspectorPanelView.ImmediateApplyField.FillColor:
+                case PanelView.ImmediateApplyField.FillColor:
                     ApplyFill(request, state);
                     break;
-                case InspectorPanelView.ImmediateApplyField.StrokeColor:
+                case PanelView.ImmediateApplyField.StrokeColor:
                     ApplyStroke(request, state);
                     break;
-                case InspectorPanelView.ImmediateApplyField.StrokeWidth:
+                case PanelView.ImmediateApplyField.StrokeWidth:
                     request.StrokeWidth = FormatNumber(Mathf.Max(0f, state.StrokeWidth));
                     break;
-                case InspectorPanelView.ImmediateApplyField.StrokeLinecap:
+                case PanelView.ImmediateApplyField.StrokeLinecap:
                     request.StrokeLinecap = state.StrokeLinecap;
                     break;
-                case InspectorPanelView.ImmediateApplyField.StrokeLinejoin:
+                case PanelView.ImmediateApplyField.StrokeLinejoin:
                     request.StrokeLinejoin = state.StrokeLinejoin;
                     break;
-                case InspectorPanelView.ImmediateApplyField.StrokeDasharray:
+                case PanelView.ImmediateApplyField.StrokeDasharray:
                     request.StrokeDasharray = BuildDasharrayValue(state);
                     break;
             }
@@ -73,23 +73,23 @@ namespace SvgEditor.Workspace.InspectorPanel
             return request;
         }
 
-        public static AttributePatchRequest BuildPatchRequest(InspectorPanelState state, InspectorPanelView.AttributeAction action)
+        public static AttributePatchRequest BuildPatchRequest(PanelState state, PanelView.AttributeAction action)
         {
             var request = CreatePatchRequest(state);
             switch (action)
             {
-                case InspectorPanelView.AttributeAction.AddFill:
+                case PanelView.AttributeAction.AddFill:
                     ApplyFill(request, state);
                     break;
-                case InspectorPanelView.AttributeAction.RemoveFill:
+                case PanelView.AttributeAction.RemoveFill:
                     request.Fill = "none";
                     request.FillOpacity = string.Empty;
                     break;
-                case InspectorPanelView.AttributeAction.AddStroke:
+                case PanelView.AttributeAction.AddStroke:
                     ApplyStroke(request, state);
                     request.StrokeWidth = FormatNumber(Mathf.Max(0f, state.StrokeWidth));
                     break;
-                case InspectorPanelView.AttributeAction.RemoveStroke:
+                case PanelView.AttributeAction.RemoveStroke:
                     request.Stroke = "none";
                     request.StrokeOpacity = string.Empty;
                     request.StrokeWidth = string.Empty;
@@ -102,7 +102,7 @@ namespace SvgEditor.Workspace.InspectorPanel
             return request;
         }
 
-        public static string BuildTransformFromHelper(InspectorPanelState state)
+        public static string BuildTransformFromHelper(PanelState state)
         {
             state.Transform = TransformStringBuilder.BuildTransform(
                 state.TranslateX,
@@ -117,7 +117,7 @@ namespace SvgEditor.Workspace.InspectorPanel
             return state.Transform;
         }
 
-        public static void SyncFromAttributes(InspectorPanelState state, IReadOnlyDictionary<string, string> attributes, string tagName)
+        public static void SyncFromAttributes(PanelState state, IReadOnlyDictionary<string, string> attributes, string tagName)
         {
             state.FillEnabled = false;
             state.FillColor = Color.black;
@@ -188,7 +188,7 @@ namespace SvgEditor.Workspace.InspectorPanel
             state.StrokeLinejoin = NormalizeStrokeValue(attributes, SvgAttributeName.STROKE_LINEJOIN, new[] { "miter", "round", "bevel" });
         }
 
-        public static bool TrySyncTransformHelperFromText(InspectorPanelState state)
+        public static bool TrySyncTransformHelperFromText(PanelState state)
         {
             if (!TransformStringBuilder.TryParseSimpleTransform(
                     state.Transform,
@@ -209,14 +209,14 @@ namespace SvgEditor.Workspace.InspectorPanel
             return true;
         }
 
-        private static string BuildDasharrayValue(InspectorPanelState state)
+        private static string BuildDasharrayValue(PanelState state)
         {
             var dash = Mathf.Max(0f, state.DashLength);
             var gap = Mathf.Max(0f, state.DashGap);
             return $"{FormatNumber(dash)} {FormatNumber(gap)}";
         }
 
-        private static AttributePatchRequest CreatePatchRequest(InspectorPanelState state)
+        private static AttributePatchRequest CreatePatchRequest(PanelState state)
         {
             return new AttributePatchRequest
             {
@@ -224,19 +224,19 @@ namespace SvgEditor.Workspace.InspectorPanel
             };
         }
 
-        private static void ApplyFill(AttributePatchRequest request, InspectorPanelState state)
+        private static void ApplyFill(AttributePatchRequest request, PanelState state)
         {
             request.Fill = ColorToRgbHex(state.FillColor);
             request.FillOpacity = FormatAlphaAttribute(state.FillColor.a);
         }
 
-        private static void ApplyStroke(AttributePatchRequest request, InspectorPanelState state)
+        private static void ApplyStroke(AttributePatchRequest request, PanelState state)
         {
             request.Stroke = ColorToRgbHex(state.StrokeColor);
             request.StrokeOpacity = FormatAlphaAttribute(state.StrokeColor.a);
         }
 
-        private static void ApplyCornerRadius(AttributePatchRequest request, InspectorPanelState state)
+        private static void ApplyCornerRadius(AttributePatchRequest request, PanelState state)
         {
             if (!state.CornerRadiusEnabled)
                 return;

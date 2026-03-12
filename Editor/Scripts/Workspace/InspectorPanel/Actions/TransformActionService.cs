@@ -7,11 +7,11 @@ using SvgEditor;
 
 namespace SvgEditor.Workspace.InspectorPanel
 {
-    internal sealed class InspectorTransformActionService
+    internal sealed class TransformActionService
     {
-        private readonly InspectorPanelState _inspectorPanelState;
-        private readonly InspectorPanelView _view;
-        private readonly Func<IInspectorPanelHost> _hostAccessor;
+        private readonly PanelState _inspectorPanelState;
+        private readonly PanelView _view;
+        private readonly Func<IPanelHost> _hostAccessor;
         private readonly Func<string> _selectedTargetKeyAccessor;
         private readonly Action _updateInteractivity;
         private readonly ElementRotationSession _rotationSession = new();
@@ -19,10 +19,10 @@ namespace SvgEditor.Workspace.InspectorPanel
         private string _rotationDragTargetKey = string.Empty;
         private Vector2 _rotationDragParentPivot;
 
-        public InspectorTransformActionService(
-            InspectorPanelState inspectorPanelState,
-            InspectorPanelView view,
-            Func<IInspectorPanelHost> hostAccessor,
+        public TransformActionService(
+            PanelState inspectorPanelState,
+            PanelView view,
+            Func<IPanelHost> hostAccessor,
             Func<string> selectedTargetKeyAccessor,
             Action updateInteractivity)
         {
@@ -33,7 +33,7 @@ namespace SvgEditor.Workspace.InspectorPanel
             _updateInteractivity = updateInteractivity;
         }
 
-        private IInspectorPanelHost Host => _hostAccessor?.Invoke();
+        private IPanelHost Host => _hostAccessor?.Invoke();
 
         public void BeginRotationDrag()
         {
@@ -137,9 +137,9 @@ namespace SvgEditor.Workspace.InspectorPanel
                 HistoryRecordingMode.Coalesced);
         }
 
-        public void ApplyTransformFromHelper(InspectorPanelView.TransformHelperChange change)
+        public void ApplyTransformFromHelper(PanelView.TransformHelperChange change)
         {
-            if (change.Field == InspectorPanelView.TransformHelperField.Rotate)
+            if (change.Field == PanelView.TransformHelperField.Rotate)
             {
                 ApplyRotationFromHelper(change.Delta);
                 return;
@@ -148,7 +148,7 @@ namespace SvgEditor.Workspace.InspectorPanel
             ApplyStandardTransformFromHelper();
         }
 
-        public void ApplyPositionAction(InspectorPanelView.PositionAction action)
+        public void ApplyPositionAction(PanelView.PositionAction action)
         {
             if (Host?.CurrentDocument == null || !_view.IsBound)
             {
@@ -157,21 +157,21 @@ namespace SvgEditor.Workspace.InspectorPanel
 
             switch (action)
             {
-                case InspectorPanelView.PositionAction.AlignLeft:
-                case InspectorPanelView.PositionAction.AlignCenter:
-                case InspectorPanelView.PositionAction.AlignRight:
-                case InspectorPanelView.PositionAction.AlignTop:
-                case InspectorPanelView.PositionAction.AlignMiddle:
-                case InspectorPanelView.PositionAction.AlignBottom:
+                case PanelView.PositionAction.AlignLeft:
+                case PanelView.PositionAction.AlignCenter:
+                case PanelView.PositionAction.AlignRight:
+                case PanelView.PositionAction.AlignTop:
+                case PanelView.PositionAction.AlignMiddle:
+                case PanelView.PositionAction.AlignBottom:
                     ApplyAlignmentAction(action);
                     break;
-                case InspectorPanelView.PositionAction.RotateClockwise90:
+                case PanelView.PositionAction.RotateClockwise90:
                     ApplyRotateClockwiseAction(90f);
                     break;
-                case InspectorPanelView.PositionAction.FlipHorizontal:
+                case PanelView.PositionAction.FlipHorizontal:
                     ApplyFlipAction(new Vector2(1f, -1f), "Flipped horizontally.");
                     break;
-                case InspectorPanelView.PositionAction.FlipVertical:
+                case PanelView.PositionAction.FlipVertical:
                     ApplyFlipAction(new Vector2(-1f, 1f), "Flipped vertically.");
                     break;
             }
@@ -284,7 +284,7 @@ namespace SvgEditor.Workspace.InspectorPanel
                 HistoryRecordingMode.Coalesced);
         }
 
-        private void ApplyAlignmentAction(InspectorPanelView.PositionAction action)
+        private void ApplyAlignmentAction(PanelView.PositionAction action)
         {
             string targetKey = ResolveSelectedTargetKey();
             if (string.IsNullOrWhiteSpace(targetKey) ||
@@ -305,27 +305,27 @@ namespace SvgEditor.Workspace.InspectorPanel
             string successStatus = "Position updated.";
             switch (action)
             {
-                case InspectorPanelView.PositionAction.AlignLeft:
+                case PanelView.PositionAction.AlignLeft:
                     desiredRect.x = canvasRect.xMin;
                     successStatus = "Aligned left.";
                     break;
-                case InspectorPanelView.PositionAction.AlignCenter:
+                case PanelView.PositionAction.AlignCenter:
                     desiredRect.x = canvasRect.center.x - (currentRect.width * 0.5f);
                     successStatus = "Aligned center.";
                     break;
-                case InspectorPanelView.PositionAction.AlignRight:
+                case PanelView.PositionAction.AlignRight:
                     desiredRect.x = canvasRect.xMax - currentRect.width;
                     successStatus = "Aligned right.";
                     break;
-                case InspectorPanelView.PositionAction.AlignTop:
+                case PanelView.PositionAction.AlignTop:
                     desiredRect.y = canvasRect.yMin;
                     successStatus = "Aligned top.";
                     break;
-                case InspectorPanelView.PositionAction.AlignMiddle:
+                case PanelView.PositionAction.AlignMiddle:
                     desiredRect.y = canvasRect.center.y - (currentRect.height * 0.5f);
                     successStatus = "Aligned middle.";
                     break;
-                case InspectorPanelView.PositionAction.AlignBottom:
+                case PanelView.PositionAction.AlignBottom:
                     desiredRect.y = canvasRect.yMax - currentRect.height;
                     successStatus = "Aligned bottom.";
                     break;

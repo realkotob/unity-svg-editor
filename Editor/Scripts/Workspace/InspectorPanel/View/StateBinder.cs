@@ -6,13 +6,13 @@ using SvgEditor;
 
 namespace SvgEditor.Workspace.InspectorPanel
 {
-    internal static class InspectorStateBinder
+    internal static class StateBinder
     {
         private const string RemovePlaceholder = "none";
         private const string LinecapActualDefaultValue = "butt";
         private const string LinejoinActualDefaultValue = "miter";
 
-        public static void CaptureState(InspectorFormControls form, InspectorPanelState inspectorPanelState)
+        public static void CaptureState(FormControls form, PanelState inspectorPanelState)
         {
             if (form == null || inspectorPanelState == null)
                 return;
@@ -52,7 +52,7 @@ namespace SvgEditor.Workspace.InspectorPanel
                 inspectorPanelState.ScaleY = form.ScaleYField.value;
         }
 
-        public static void ApplyState(InspectorFormControls form, InspectorPanelState inspectorPanelState)
+        public static void ApplyState(FormControls form, PanelState inspectorPanelState)
         {
             if (form == null || inspectorPanelState == null)
                 return;

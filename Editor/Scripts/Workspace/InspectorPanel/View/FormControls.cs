@@ -10,7 +10,7 @@ using SvgEditor;
 
 namespace SvgEditor.Workspace.InspectorPanel
 {
-    internal sealed class InspectorFormControls
+    internal sealed class FormControls
     {
         private const string NumericDisplayFormat = "0.##";
         private const string LinecapActualDefaultValue = "butt";

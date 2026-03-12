@@ -8,7 +8,7 @@ using SvgEditor;
 
 namespace SvgEditor.Workspace.InspectorPanel
 {
-    internal static class InspectorDocumentModelReader
+    internal static class DocumentModelReader
     {
         public static IReadOnlyList<PatchTarget> ExtractTargets(SvgDocumentModel documentModel)
         {

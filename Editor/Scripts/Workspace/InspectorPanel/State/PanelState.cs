@@ -7,11 +7,11 @@ using SvgEditor;
 
 namespace SvgEditor.Workspace.InspectorPanel
 {
-    internal sealed class InspectorPanelState
+    internal sealed class PanelState
     {
-        private readonly InspectorTargetSelectionState _targetSelection = new();
+        private readonly TargetSelectionState _targetSelection = new();
 
-        public InspectorPanelState()
+        public PanelState()
         {
             _targetSelection.SetTargets(Array.Empty<PatchTarget>());
             FillColor = Color.black;
@@ -83,32 +83,32 @@ namespace SvgEditor.Workspace.InspectorPanel
 
         public AttributePatchRequest BuildPatchRequest()
         {
-            return InspectorPanelStateValueCodec.BuildPatchRequest(this);
+            return PanelStateValueCodec.BuildPatchRequest(this);
         }
 
-        public AttributePatchRequest BuildPatchRequest(InspectorPanelView.ImmediateApplyField field)
+        public AttributePatchRequest BuildPatchRequest(PanelView.ImmediateApplyField field)
         {
-            return InspectorPanelStateValueCodec.BuildPatchRequest(this, field);
+            return PanelStateValueCodec.BuildPatchRequest(this, field);
         }
 
-        public AttributePatchRequest BuildPatchRequest(InspectorPanelView.AttributeAction action)
+        public AttributePatchRequest BuildPatchRequest(PanelView.AttributeAction action)
         {
-            return InspectorPanelStateValueCodec.BuildPatchRequest(this, action);
+            return PanelStateValueCodec.BuildPatchRequest(this, action);
         }
 
         public string BuildTransformFromHelper()
         {
-            return InspectorPanelStateValueCodec.BuildTransformFromHelper(this);
+            return PanelStateValueCodec.BuildTransformFromHelper(this);
         }
 
         public bool TrySyncTransformHelperFromText()
         {
-            return InspectorPanelStateValueCodec.TrySyncTransformHelperFromText(this);
+            return PanelStateValueCodec.TrySyncTransformHelperFromText(this);
         }
 
         public void SyncFromAttributes(IReadOnlyDictionary<string, string> attributes, string tagName)
         {
-            InspectorPanelStateValueCodec.SyncFromAttributes(this, attributes, tagName);
+            PanelStateValueCodec.SyncFromAttributes(this, attributes, tagName);
         }
     }
 }
