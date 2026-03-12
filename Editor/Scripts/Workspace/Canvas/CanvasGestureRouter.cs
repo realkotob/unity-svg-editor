@@ -18,6 +18,7 @@ namespace UnitySvgEditor.Editor
         private readonly CanvasGestureState _gestureState = new();
         private readonly CanvasViewportGestureHandler _viewportGestureHandler;
         private readonly CanvasElementGestureHandler _elementGestureHandler;
+        private readonly CanvasInteractionSelectionResolver _selectionResolver;
 
         public CanvasGestureRouter(CanvasGestureRouterDependencies dependencies)
         {
@@ -29,6 +30,7 @@ namespace UnitySvgEditor.Editor
             _dragSession = dependencies.dragSession;
             _overlayAccessor = dependencies.overlayAccessor;
             _resetCanvasView = dependencies.resetCanvasView;
+            _selectionResolver = new CanvasInteractionSelectionResolver(dependencies.host, dependencies.sceneProjector);
             _viewportGestureHandler = new CanvasViewportGestureHandler(
                 dependencies.host,
                 dependencies.viewportState,
@@ -51,12 +53,16 @@ namespace UnitySvgEditor.Editor
         public void OnCanvasPointerDown(PointerDownEvent evt)
         {
             if (!_sceneProjector.TryGetCanvasLocalPosition(_overlayAccessor(), evt.position, out Vector2 localPosition))
+            {
                 return;
+            }
 
             _overlayAccessor()?.Focus();
 
             if (TryHandleCanvasReset(evt, localPosition))
+            {
                 return;
+            }
 
             if (_toolController.IsPanGesture(evt))
             {
@@ -66,10 +72,14 @@ namespace UnitySvgEditor.Editor
             }
 
             if (_toolController.ActiveTool != CanvasTool.Move || evt.button != (int)MouseButton.LeftMouse)
+            {
                 return;
+            }
 
             if (TryHandleSelectionHandle(evt, localPosition))
+            {
                 return;
+            }
 
             HandleCanvasSelection(evt, localPosition);
         }
@@ -77,34 +87,13 @@ namespace UnitySvgEditor.Editor
         public void OnCanvasPointerMove(PointerMoveEvent evt)
         {
             if (!_sceneProjector.TryGetCanvasLocalPosition(_overlayAccessor(), evt.position, out Vector2 localPosition))
+            {
                 return;
+            }
 
             if (!_dragSession.Matches(evt.pointerId))
             {
-                if (_toolController.ActiveTool != CanvasTool.Move || _host.PreviewSnapshot == null)
-                {
-                    _overlayController.ResetInteractionCursor();
-                    _host.ClearHover();
-                    return;
-                }
-
-                _overlayController.UpdateInteractionCursor(localPosition);
-
-                if (_overlayController.IsFrameLabelTarget(evt.target))
-                {
-                    _host.SetHoveredElement(CanvasInteractionController.FrameHoverSentinel);
-                    return;
-                }
-
-                if (TryResolveInteractionElement(localPosition, evt.modifiers, out _, out string hoveredElementKey))
-                {
-                    _host.SetHoveredElement(hoveredElementKey);
-                }
-                else
-                {
-                    _host.ClearHover();
-                }
-
+                HandleHover(localPosition, evt);
                 return;
             }
 
@@ -131,7 +120,9 @@ namespace UnitySvgEditor.Editor
         public void OnCanvasPointerUp(PointerUpEvent evt)
         {
             if (!_dragSession.Matches(evt.pointerId))
+            {
                 return;
+            }
 
             bool hasLocalPosition = _sceneProjector.TryGetCanvasLocalPosition(_overlayAccessor(), evt.position, out Vector2 localPosition);
             Vector2 canvasDelta = hasLocalPosition
@@ -184,20 +175,57 @@ namespace UnitySvgEditor.Editor
             EndCanvasDrag();
 
             if (shouldRefreshPreview)
+            {
                 _host.RefreshLivePreview(keepExistingPreviewOnFailure: true);
+            }
 
             _gestureState.Reset();
             _host.UpdateCanvasVisualState();
         }
 
+        private void HandleHover(Vector2 localPosition, PointerMoveEvent evt)
+        {
+            if (_toolController.ActiveTool != CanvasTool.Move || _host.PreviewSnapshot == null)
+            {
+                _overlayController.ResetInteractionCursor();
+                _host.ClearHover();
+                return;
+            }
+
+            _overlayController.UpdateInteractionCursor(localPosition);
+
+            if (_overlayController.IsFrameLabelTarget(evt.target))
+            {
+                _host.SetHoveredElement(CanvasInteractionController.FrameHoverSentinel);
+                return;
+            }
+
+            if (_selectionResolver.TryResolveInteractionElement(localPosition, evt.modifiers, out _, out string hoveredElementKey))
+            {
+                _host.SetHoveredElement(hoveredElementKey);
+            }
+            else
+            {
+                _host.ClearHover();
+            }
+        }
+
         private bool TryHandleCanvasReset(PointerDownEvent evt, Vector2 localPosition)
         {
             if (evt.clickCount != 2 || evt.button != (int)MouseButton.LeftMouse)
+            {
                 return false;
+            }
+
             if (_sceneProjector.TryHitTestPreviewElement(_host.PreviewSnapshot, localPosition, out _))
+            {
                 return false;
+            }
+
             if (_sceneProjector.TryHitTestFrameChrome(_host.PreviewSnapshot, localPosition, out _))
+            {
                 return false;
+            }
 
             _resetCanvasView?.Invoke();
             evt.StopPropagation();
@@ -207,7 +235,9 @@ namespace UnitySvgEditor.Editor
         private bool TryHandleSelectionHandle(PointerDownEvent evt, Vector2 localPosition)
         {
             if (!_overlayController.TryHitTestHandle(localPosition, out CanvasHandle handle))
+            {
                 return false;
+            }
 
             if (handle == CanvasHandle.Rotate)
             {
@@ -269,7 +299,7 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            if (!TryResolveInteractionElement(localPosition, evt.modifiers, out PreviewElementGeometry interactionElement, out string interactionElementKey))
+            if (!_selectionResolver.TryResolveInteractionElement(localPosition, evt.modifiers, out PreviewElementGeometry interactionElement, out string interactionElementKey))
             {
                 _host.ClearDefinitionProxySelection();
                 _selectionSyncService.ClearCanvasSelection();
@@ -293,7 +323,7 @@ namespace UnitySvgEditor.Editor
         private bool TryBeginMoveSelectedElement(Vector2 localPosition, int pointerId, EventModifiers modifiers)
         {
             if (_host.HasDefinitionProxySelection ||
-                IsDirectElementSelectionModifier(modifiers) ||
+                _selectionResolver.IsDirectElementSelectionModifier(modifiers) ||
                 _host.SelectionKind != CanvasSelectionKind.Element ||
                 string.IsNullOrWhiteSpace(_host.SelectedElementKey) ||
                 !_sceneProjector.TryResolveSelectedElementSceneRect(_host.PreviewSnapshot, _host.SelectedElementKey, out Rect selectedElementSceneRect) ||
@@ -305,7 +335,9 @@ namespace UnitySvgEditor.Editor
 
             PreviewElementGeometry selectedElement = _sceneProjector.FindPreviewElement(_host.PreviewSnapshot, _host.SelectedElementKey);
             if (selectedElement == null)
+            {
                 return false;
+            }
 
             if (!_sceneProjector.TryHitTestPreviewElement(_host.PreviewSnapshot, localPosition, out PreviewElementGeometry hitElement) ||
                 hitElement == null ||
@@ -322,105 +354,6 @@ namespace UnitySvgEditor.Editor
                 selectedElement.VisualBounds,
                 selectedElement.ParentWorldTransform);
             return true;
-        }
-
-        private bool TryResolveInteractionElement(
-            Vector2 localPosition,
-            EventModifiers modifiers,
-            out PreviewElementGeometry interactionElement,
-            out string interactionElementKey)
-        {
-            interactionElement = null;
-            interactionElementKey = null;
-
-            if (!IsDirectElementSelectionModifier(modifiers) &&
-                TryFindContainingGroupElement(localPosition, out interactionElement))
-            {
-                interactionElementKey = interactionElement.Key;
-                return true;
-            }
-
-            if (!_sceneProjector.TryHitTestPreviewElement(_host.PreviewSnapshot, localPosition, out PreviewElementGeometry hitElement))
-                return false;
-
-            interactionElementKey = ResolveInteractionElementKey(hitElement.Key, modifiers);
-            if (string.IsNullOrWhiteSpace(interactionElementKey))
-                return false;
-
-            interactionElement = string.Equals(interactionElementKey, hitElement.Key, StringComparison.Ordinal)
-                ? hitElement
-                : _sceneProjector.FindPreviewElement(_host.PreviewSnapshot, interactionElementKey);
-            return interactionElement != null;
-        }
-
-        private string ResolveInteractionElementKey(string elementKey, EventModifiers modifiers)
-        {
-            if (string.IsNullOrWhiteSpace(elementKey) || IsDirectElementSelectionModifier(modifiers))
-                return elementKey;
-
-            StructureNode currentNode = _host.FindStructureNode(elementKey);
-            while (currentNode != null)
-            {
-                if (string.Equals(currentNode.TagName, "g", StringComparison.Ordinal))
-                    return currentNode.Key;
-
-                if (string.IsNullOrWhiteSpace(currentNode.ParentKey))
-                    break;
-
-                currentNode = _host.FindStructureNode(currentNode.ParentKey);
-            }
-
-            return elementKey;
-        }
-
-        private static bool IsDirectElementSelectionModifier(EventModifiers modifiers)
-        {
-            return (modifiers & (EventModifiers.Command | EventModifiers.Control)) != 0;
-        }
-
-        private bool TryFindContainingGroupElement(Vector2 localPosition, out PreviewElementGeometry groupElement)
-        {
-            groupElement = null;
-            PreviewSnapshot previewSnapshot = _host.PreviewSnapshot;
-            if (previewSnapshot?.Elements == null ||
-                !_sceneProjector.TryViewportPointToScenePoint(previewSnapshot, localPosition, out Vector2 scenePoint))
-            {
-                return false;
-            }
-
-            float bestArea = float.MaxValue;
-            int bestDrawOrder = int.MinValue;
-
-            for (int index = 0; index < previewSnapshot.Elements.Count; index++)
-            {
-                PreviewElementGeometry candidate = previewSnapshot.Elements[index];
-                if (candidate == null ||
-                    !candidate.VisualBounds.Contains(scenePoint))
-                {
-                    continue;
-                }
-
-                StructureNode candidateNode = _host.FindStructureNode(candidate.Key);
-                if (candidateNode == null ||
-                    !string.Equals(candidateNode.TagName, "g", StringComparison.Ordinal))
-                {
-                    continue;
-                }
-
-                float area = candidate.VisualBounds.width * candidate.VisualBounds.height;
-                bool isBetter =
-                    groupElement == null ||
-                    area < bestArea ||
-                    (Mathf.Approximately(area, bestArea) && candidate.DrawOrder > bestDrawOrder);
-                if (!isBetter)
-                    continue;
-
-                groupElement = candidate;
-                bestArea = area;
-                bestDrawOrder = candidate.DrawOrder;
-            }
-
-            return groupElement != null;
         }
     }
 
