@@ -38,22 +38,22 @@ namespace UnitySvgEditor.Editor
 
         public Rect GetCanvasBounds(VisualElement canvasOverlay)
         {
-            return CanvasProjectionMath.GetCanvasBounds(canvasOverlay);
+            return CanvasViewportLayoutUtility.GetCanvasBounds(canvasOverlay);
         }
 
         public Rect GetPreviewSceneRect(PreviewSnapshot previewSnapshot)
         {
-            return CanvasProjectionMath.GetPreviewSceneRect(previewSnapshot);
+            return CanvasViewportLayoutUtility.GetPreviewSceneRect(previewSnapshot);
         }
 
         public bool TryGetFrameViewportRect(out Rect frameViewportRect)
         {
-            return CanvasProjectionMath.TryGetFrameViewportRect(_viewportState, out frameViewportRect);
+            return CanvasViewportLayoutUtility.TryGetFrameViewportRect(_viewportState, out frameViewportRect);
         }
 
         public bool TryGetFrameContentViewportRect(PreviewSnapshot previewSnapshot, out Rect contentViewportRect)
         {
-            return CanvasProjectionMath.TryGetFrameContentViewportRect(
+            return CanvasViewportLayoutUtility.TryGetFrameContentViewportRect(
                 _viewportState,
                 previewSnapshot,
                 _framePadding,
@@ -63,7 +63,7 @@ namespace UnitySvgEditor.Editor
 
         public bool TryGetFrameVisibleViewportRect(PreviewSnapshot previewSnapshot, out Rect visibleViewportRect)
         {
-            return CanvasProjectionMath.TryGetFrameVisibleViewportRect(
+            return CanvasViewportLayoutUtility.TryGetFrameVisibleViewportRect(
                 _viewportState,
                 previewSnapshot,
                 _framePadding,
@@ -73,7 +73,7 @@ namespace UnitySvgEditor.Editor
 
         public bool TryGetFrameContentViewportRect(Rect projectionSceneRect, out Rect contentViewportRect)
         {
-            return CanvasProjectionMath.TryGetFrameContentViewportRect(
+            return CanvasViewportLayoutUtility.TryGetFrameContentViewportRect(
                 _viewportState,
                 projectionSceneRect,
                 _framePadding,
@@ -86,7 +86,7 @@ namespace UnitySvgEditor.Editor
             SvgPreserveAspectRatioMode preserveAspectRatioMode,
             out Rect contentViewportRect)
         {
-            return CanvasProjectionMath.TryGetFrameContentViewportRect(
+            return CanvasViewportLayoutUtility.TryGetFrameContentViewportRect(
                 _viewportState,
                 projectionSceneRect,
                 preserveAspectRatioMode,
@@ -97,7 +97,7 @@ namespace UnitySvgEditor.Editor
 
         public bool TrySceneRectToViewportRect(PreviewSnapshot previewSnapshot, Rect sceneRect, out Rect viewportRect)
         {
-            return CanvasProjectionMath.TrySceneRectToViewportRect(
+            return CanvasViewportLayoutUtility.TrySceneRectToViewportRect(
                 _viewportState,
                 previewSnapshot,
                 _framePadding,
@@ -108,7 +108,7 @@ namespace UnitySvgEditor.Editor
 
         public bool TryConvertViewportDeltaToSceneDelta(PreviewSnapshot previewSnapshot, Vector2 viewportDelta, out Vector2 sceneDelta)
         {
-            return CanvasProjectionMath.TryConvertViewportDeltaToSceneDelta(
+            return CanvasViewportLayoutUtility.TryConvertViewportDeltaToSceneDelta(
                 _viewportState,
                 previewSnapshot,
                 _framePadding,
@@ -119,7 +119,7 @@ namespace UnitySvgEditor.Editor
 
         public bool TryConvertViewportDeltaToSceneDelta(Rect projectionSceneRect, Vector2 viewportDelta, out Vector2 sceneDelta)
         {
-            return CanvasProjectionMath.TryConvertViewportDeltaToSceneDelta(
+            return CanvasViewportLayoutUtility.TryConvertViewportDeltaToSceneDelta(
                 _viewportState,
                 projectionSceneRect,
                 _framePadding,
@@ -134,7 +134,7 @@ namespace UnitySvgEditor.Editor
             Vector2 viewportDelta,
             out Vector2 sceneDelta)
         {
-            return CanvasProjectionMath.TryConvertViewportDeltaToSceneDelta(
+            return CanvasViewportLayoutUtility.TryConvertViewportDeltaToSceneDelta(
                 _viewportState,
                 projectionSceneRect,
                 preserveAspectRatioMode,
@@ -146,7 +146,7 @@ namespace UnitySvgEditor.Editor
 
         public bool TryViewportPointToScenePoint(PreviewSnapshot previewSnapshot, Vector2 viewportPoint, out Vector2 scenePoint)
         {
-            return CanvasProjectionMath.TryViewportPointToScenePoint(
+            return CanvasViewportLayoutUtility.TryViewportPointToScenePoint(
                 _viewportState,
                 previewSnapshot,
                 _framePadding,
@@ -157,7 +157,7 @@ namespace UnitySvgEditor.Editor
 
         public bool TryScenePointToViewportPoint(PreviewSnapshot previewSnapshot, Vector2 scenePoint, out Vector2 viewportPoint)
         {
-            return CanvasProjectionMath.TryScenePointToViewportPoint(
+            return CanvasViewportLayoutUtility.TryScenePointToViewportPoint(
                 _viewportState,
                 previewSnapshot,
                 _framePadding,
@@ -168,7 +168,7 @@ namespace UnitySvgEditor.Editor
 
         public bool TryGetDisplayedZoomScale(PreviewSnapshot previewSnapshot, out float displayedZoomScale)
         {
-            return CanvasProjectionMath.TryGetDisplayedZoomScale(
+            return CanvasViewportLayoutUtility.TryGetDisplayedZoomScale(
                 _viewportState,
                 previewSnapshot,
                 _framePadding,
@@ -356,12 +356,12 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            if (!CanvasProjectionMath.TryGetFrameContentLayout(
+            if (!CanvasViewportLayoutUtility.TryGetFrameContentLayout(
                     _viewportState,
                     previewSnapshot,
                     _framePadding,
                     _frameHeaderHeight,
-                    out CanvasProjectionMath.FrameContentLayout layout))
+                    out CanvasViewportLayoutUtility.FrameContentLayout layout))
             {
                 overlayController.ClearFrame();
                 return;

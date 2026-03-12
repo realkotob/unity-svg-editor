@@ -50,7 +50,7 @@ namespace UnitySvgEditor.Editor
 
         public bool TryHitTestFrame(CanvasViewportState viewportState, Vector2 canvasLocalPoint, out Rect frameViewportRect)
         {
-            if (!CanvasProjectionMath.TryGetFrameViewportRect(viewportState, out frameViewportRect))
+            if (!CanvasViewportLayoutUtility.TryGetFrameViewportRect(viewportState, out frameViewportRect))
                 return false;
 
             return frameViewportRect.Contains(canvasLocalPoint);
@@ -64,13 +64,13 @@ namespace UnitySvgEditor.Editor
             Vector2 canvasLocalPoint,
             out Rect frameViewportRect)
         {
-            if (!CanvasProjectionMath.TryGetFrameViewportRect(viewportState, out frameViewportRect) ||
+            if (!CanvasViewportLayoutUtility.TryGetFrameViewportRect(viewportState, out frameViewportRect) ||
                 !frameViewportRect.Contains(canvasLocalPoint))
             {
                 return false;
             }
 
-            if (!CanvasProjectionMath.TryGetFrameVisibleViewportRect(
+            if (!CanvasViewportLayoutUtility.TryGetFrameVisibleViewportRect(
                     viewportState,
                     previewSnapshot,
                     framePadding,
@@ -95,7 +95,7 @@ namespace UnitySvgEditor.Editor
             if (previewSnapshot?.Elements == null)
                 return false;
 
-            if (!CanvasProjectionMath.TryViewportPointToScenePoint(
+            if (!CanvasViewportLayoutUtility.TryViewportPointToScenePoint(
                     viewportState,
                     previewSnapshot,
                     framePadding,
@@ -107,7 +107,7 @@ namespace UnitySvgEditor.Editor
             }
 
             float sceneHitRadius = 0f;
-            if (CanvasProjectionMath.TryConvertViewportDeltaToSceneDelta(
+            if (CanvasViewportLayoutUtility.TryConvertViewportDeltaToSceneDelta(
                     viewportState,
                     previewSnapshot,
                     framePadding,
@@ -147,9 +147,9 @@ namespace UnitySvgEditor.Editor
             selectionViewportRect = default;
             return selectionKind switch
             {
-                CanvasSelectionKind.Frame => CanvasProjectionMath.TryGetFrameViewportRect(viewportState, out selectionViewportRect),
+                CanvasSelectionKind.Frame => CanvasViewportLayoutUtility.TryGetFrameViewportRect(viewportState, out selectionViewportRect),
                 CanvasSelectionKind.Element => TryResolveSelectedElementSceneRect(previewSnapshot, selectedElementKey, out Rect sceneRect) &&
-                                              CanvasProjectionMath.TrySceneRectToViewportRect(
+                                              CanvasViewportLayoutUtility.TrySceneRectToViewportRect(
                                                   viewportState,
                                                   previewSnapshot,
                                                   framePadding,
