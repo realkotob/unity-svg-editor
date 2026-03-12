@@ -263,6 +263,11 @@ namespace UnitySvgEditor.Editor
 
         public void UpdateSelectionVisual() => _canvasWorkspaceController.UpdateSelectionVisual();
 
+        public bool TryCancelActiveDrag()
+        {
+            return _canvasWorkspaceController.TryCancelActiveDrag();
+        }
+
         private void OnStructureElementSelectionChanged(StructureNode selected)
         {
             if (_isUpdatingStructureSelection)

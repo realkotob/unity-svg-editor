@@ -112,6 +112,12 @@ namespace UnitySvgEditor.Editor
             if (currentEvent == null || currentEvent.type != EventType.KeyDown)
                 return;
 
+            if (TryHandleCancelActiveDrag(currentEvent.keyCode))
+            {
+                currentEvent.Use();
+                return;
+            }
+
             if (!TryHandleShortcut(currentEvent.keyCode, currentEvent.modifiers))
                 return;
 
@@ -142,6 +148,7 @@ namespace UnitySvgEditor.Editor
             if (canvasStageView != null)
             {
                 canvasStageView.PrepareRuntime();
+                canvasStageView.DocumentResetRequested += _documentLifecycleController.ReloadCurrentDocument;
                 WorkspaceCoordinator.Bind(canvasStageView, rootVisualElement.Q<Toggle>("tool-move"));
             }
             _inspectorPanelController.Bind(rootVisualElement, this);
@@ -410,10 +417,22 @@ namespace UnitySvgEditor.Editor
 
         private void OnRootKeyDown(KeyDownEvent evt)
         {
+            if (TryHandleCancelActiveDrag(evt.keyCode))
+            {
+                evt.StopPropagation();
+                return;
+            }
+
             if (!TryHandleShortcut(evt.keyCode, evt.modifiers))
                 return;
 
             evt.StopPropagation();
+        }
+
+        private bool TryHandleCancelActiveDrag(KeyCode keyCode)
+        {
+            return keyCode == KeyCode.Escape &&
+                   WorkspaceCoordinator.TryCancelActiveDrag();
         }
 
         private bool TryHandleShortcut(KeyCode keyCode, EventModifiers modifiers)

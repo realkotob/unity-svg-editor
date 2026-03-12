@@ -38,6 +38,11 @@ namespace UnitySvgEditor.Editor
             _interactionController.Dispose();
         }
 
+        public bool TryCancelActiveDrag()
+        {
+            return _interactionController.TryCancelActiveDrag();
+        }
+
         public void SetSelectionKind(CanvasSelectionKind selectionKind)
         {
             _interactionController.SetSelectionKind(selectionKind);

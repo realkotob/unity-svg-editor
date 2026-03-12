@@ -14,6 +14,8 @@ namespace UnitySvgEditor.Editor
             public const string STAGE = "canvas-stage";
             public const string FRAME = "canvas-frame";
             public const string PREVIEW_IMAGE = "preview-image";
+            public const string EDIT_HUD = "canvas-edit-hud";
+            public const string DOCUMENT_RESET_BUTTON = "canvas-document-reset-button";
             public const string ZOOM_HUD = "canvas-zoom-hud";
             public const string ZOOM_LABEL = "canvas-zoom-label";
             public const string ZOOM_RESET_BUTTON = "canvas-zoom-reset-button";
@@ -28,6 +30,8 @@ namespace UnitySvgEditor.Editor
             public const string STAGE = "svg-editor__canvas-stage";
             public const string FRAME = "svg-editor__canvas-frame";
             public const string PREVIEW_IMAGE = "svg-editor__preview-canvas";
+            public const string EDIT_HUD = "svg-editor__canvas-edit-hud";
+            public const string DOCUMENT_RESET_BUTTON = "svg-editor__canvas-document-reset-button";
             public const string ZOOM_HUD = "svg-editor__canvas-zoom-hud";
             public const string ZOOM_LABEL = "svg-editor__canvas-zoom-label";
             public const string ZOOM_RESET_BUTTON = "svg-editor__canvas-zoom-reset-button";
@@ -41,6 +45,8 @@ namespace UnitySvgEditor.Editor
         private readonly VisualElement _stageElement;
         private readonly VisualElement _frameElement;
         private readonly Image _previewImageElement;
+        private VisualElement _editHudElement;
+        private Button _documentResetButton;
         private VisualElement _zoomHudElement;
         private Label _zoomLabelElement;
         private Button _zoomResetButton;
@@ -51,6 +57,7 @@ namespace UnitySvgEditor.Editor
         internal VisualElement StageElement => _stageElement;
         internal VisualElement FrameElement => _frameElement;
         internal Image PreviewImageElement => _previewImageElement;
+        internal event Action DocumentResetRequested;
         internal event Action ResetRequested;
         #endregion Properties
 
@@ -107,12 +114,17 @@ namespace UnitySvgEditor.Editor
         internal void SetDirtyBadgeVisible(bool visible)
         {
             EnsureHudElements();
-            if (_dirtyBadgeElement == null)
+            if (_editHudElement == null)
                 return;
 
-            _dirtyBadgeElement.style.display = visible
+            _editHudElement.style.display = visible
                 ? DisplayStyle.Flex
                 : DisplayStyle.None;
+        }
+
+        private void HandleDocumentResetButtonClicked()
+        {
+            DocumentResetRequested?.Invoke();
         }
 
         private void HandleResetButtonClicked()
@@ -122,10 +134,19 @@ namespace UnitySvgEditor.Editor
 
         private void EnsureHudElements()
         {
+            _editHudElement ??= this.Q<VisualElement>(ElementName.EDIT_HUD);
+            _documentResetButton ??= this.Q<Button>(ElementName.DOCUMENT_RESET_BUTTON);
             _zoomHudElement ??= this.Q<VisualElement>(ElementName.ZOOM_HUD);
             _zoomLabelElement ??= this.Q<Label>(ElementName.ZOOM_LABEL);
             _zoomResetButton ??= this.Q<Button>(ElementName.ZOOM_RESET_BUTTON);
             _dirtyBadgeElement ??= this.Q<VisualElement>(ElementName.DIRTY_BADGE);
+
+            if (_documentResetButton != null)
+            {
+                _documentResetButton.tooltip = "Discard unsaved edits and reload the SVG";
+                _documentResetButton.clicked -= HandleDocumentResetButtonClicked;
+                _documentResetButton.clicked += HandleDocumentResetButtonClicked;
+            }
 
             if (_zoomResetButton != null)
             {

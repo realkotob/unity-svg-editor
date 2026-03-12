@@ -14,14 +14,19 @@
     background-color: var(--editor-canvas-stage-bg);
 }
 
-.svg-editor__canvas-hud-stack {
+.svg-editor__canvas-edit-hud {
     position: absolute;
-    bottom: var(--space-3);
+    top: var(--space-3);
     right: var(--space-3);
-    align-items: flex-end;
+    flex-direction: row;
+    align-items: center;
+    display: flex;
 }
 
 .svg-editor__canvas-zoom-hud {
+    position: absolute;
+    bottom: var(--space-3);
+    right: var(--space-3);
     flex-direction: row;
     align-items: center;
     padding: 6px 8px;
@@ -34,8 +39,25 @@
     align-items: center;
     padding: 6px 12px;
     border-radius: 6px;
-    margin-bottom: 6px;
     background-color: var(--editor-frame-label-bg);
+}
+
+.svg-editor__canvas-document-reset-button {
+    height: 26px;
+    margin-right: 6px;
+    padding: 0 10px;
+    border-radius: 9px;
+    border-width: 0;
+    color: var(--foreground);
+    background-color: var(--editor-surface-soft);
+}
+
+.svg-editor__canvas-document-reset-button:hover:enabled {
+    background-color: var(--editor-surface-soft-strong);
+}
+
+.svg-editor__canvas-document-reset-button:disabled {
+    opacity: 0.45;
 }
 
 .svg-editor__canvas-dirty-dot {
@@ -71,7 +93,9 @@
     color: var(--foreground);
     background-color: var(--editor-surface-soft);
 }
-
+.svg-editor__canvas-zoom-reset-button:hover:enabled {
+    background-color: var(--editor-surface-soft-strong);
+}
 .svg-editor__canvas-zoom-reset-button:disabled {
     opacity: 0.45;
 }

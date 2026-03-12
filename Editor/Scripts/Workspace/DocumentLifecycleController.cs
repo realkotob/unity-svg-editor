@@ -128,6 +128,16 @@ namespace UnitySvgEditor.Editor
             return true;
         }
 
+        public void ReloadCurrentDocument()
+        {
+            if (CurrentDocument == null || string.IsNullOrWhiteSpace(CurrentDocument.AssetPath))
+            {
+                return;
+            }
+
+            LoadAsset(CurrentDocument.AssetPath);
+        }
+
         public void SaveCurrentDocument()
         {
             OnSaveClicked();

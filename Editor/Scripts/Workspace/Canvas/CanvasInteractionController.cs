@@ -56,6 +56,11 @@ namespace UnitySvgEditor.Editor
             _canvasStageView = null;
         }
 
+        public bool TryCancelActiveDrag()
+        {
+            return _pointerDragController.TryCancelActiveDrag();
+        }
+
         public void SetSelectionKind(CanvasSelectionKind selectionKind)
         {
             _selectionKind = selectionKind;

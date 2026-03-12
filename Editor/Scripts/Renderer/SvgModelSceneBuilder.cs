@@ -649,7 +649,7 @@ namespace UnitySvgEditor.Editor
         {
             Shape shape = new();
             shape.Fill = BuildFill(documentModel, node, nodesByXmlId, allowDefaultFill);
-            shape.PathProps = BuildPathProperties(node);
+            shape.PathProps = BuildPathProperties(documentModel, node);
             shape.FillTransform = Matrix2D.identity;
             return shape;
         }
@@ -660,7 +660,7 @@ namespace UnitySvgEditor.Editor
             IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
             bool allowDefaultFill)
         {
-            if (TryGetAttribute(node.RawAttributes, "fill", out string fillValue))
+            if (TryGetInheritedAttribute(documentModel, node, "fill", out string fillValue))
             {
                 if (string.Equals(fillValue, "none", StringComparison.OrdinalIgnoreCase))
                     return null;
@@ -678,8 +678,8 @@ namespace UnitySvgEditor.Editor
                     return new SolidFill
                     {
                         Color = color,
-                        Opacity = ResolveFillOpacity(node),
-                        Mode = ResolveFillMode(node)
+                        Opacity = ResolveFillOpacity(documentModel, node),
+                        Mode = ResolveFillMode(documentModel, node)
                     };
                 }
             }
@@ -690,8 +690,8 @@ namespace UnitySvgEditor.Editor
             return new SolidFill
             {
                 Color = Color.black,
-                Opacity = ResolveFillOpacity(node),
-                Mode = ResolveFillMode(node)
+                Opacity = ResolveFillOpacity(documentModel, node),
+                Mode = ResolveFillMode(documentModel, node)
             };
         }
 
@@ -752,28 +752,28 @@ namespace UnitySvgEditor.Editor
             {
                 Type = gradientType,
                 Stops = stops.ToArray(),
-                Mode = ResolveFillMode(consumerNode),
-                Opacity = ResolveFillOpacity(consumerNode),
+                Mode = ResolveFillMode(documentModel, consumerNode),
+                Opacity = ResolveFillOpacity(documentModel, consumerNode),
                 Addressing = AddressMode.Clamp
             };
             return true;
         }
 
-        private PathProperties BuildPathProperties(SvgNodeModel node)
+        private PathProperties BuildPathProperties(SvgDocumentModel documentModel, SvgNodeModel node)
         {
-            Stroke stroke = BuildStroke(node);
+            Stroke stroke = BuildStroke(documentModel, node);
             return new PathProperties
             {
                 Stroke = stroke,
-                Head = ResolvePathEnding(node.RawAttributes, "stroke-linecap"),
-                Tail = ResolvePathEnding(node.RawAttributes, "stroke-linecap"),
-                Corners = ResolvePathCorner(node.RawAttributes, "stroke-linejoin")
+                Head = ResolvePathEnding(documentModel, node, "stroke-linecap"),
+                Tail = ResolvePathEnding(documentModel, node, "stroke-linecap"),
+                Corners = ResolvePathCorner(documentModel, node, "stroke-linejoin")
             };
         }
 
-        private Stroke BuildStroke(SvgNodeModel node)
+        private Stroke BuildStroke(SvgDocumentModel documentModel, SvgNodeModel node)
         {
-            if (!TryGetAttribute(node.RawAttributes, "stroke", out string strokeValue) ||
+            if (!TryGetInheritedAttribute(documentModel, node, "stroke", out string strokeValue) ||
                 string.Equals(strokeValue, "none", StringComparison.OrdinalIgnoreCase) ||
                 strokeValue.Contains("url(", StringComparison.OrdinalIgnoreCase) ||
                 !TryParseColor(strokeValue, out Color strokeColor))
@@ -782,8 +782,8 @@ namespace UnitySvgEditor.Editor
             }
 
             float strokeWidth = 1f;
-            TryGetFloat(node.RawAttributes, "stroke-width", out strokeWidth);
-            float[] pattern = TryParseDasharray(node.RawAttributes, out float[] dashPattern)
+            TryGetInheritedFloat(documentModel, node, "stroke-width", out strokeWidth);
+            float[] pattern = TryParseDasharray(documentModel, node, out float[] dashPattern)
                 ? dashPattern
                 : null;
 
@@ -792,7 +792,7 @@ namespace UnitySvgEditor.Editor
                 Fill = new SolidFill
                 {
                     Color = strokeColor,
-                    Opacity = ResolveStrokeOpacity(node),
+                    Opacity = ResolveStrokeOpacity(documentModel, node),
                     Mode = FillMode.NonZero
                 },
                 HalfThickness = Mathf.Max(0f, strokeWidth) * 0.5f,
@@ -1384,10 +1384,13 @@ namespace UnitySvgEditor.Editor
             return Matrix2D.Translate(pivot) * rotation * Matrix2D.Translate(-pivot);
         }
 
-        private static bool TryParseDasharray(IReadOnlyDictionary<string, string> attributes, out float[] pattern)
+        private static bool TryParseDasharray(
+            SvgDocumentModel documentModel,
+            SvgNodeModel node,
+            out float[] pattern)
         {
             pattern = null;
-            if (!TryGetAttribute(attributes, "stroke-dasharray", out string dasharray) ||
+            if (!TryGetInheritedAttribute(documentModel, node, "stroke-dasharray", out string dasharray) ||
                 string.IsNullOrWhiteSpace(dasharray))
             {
                 return false;
@@ -1407,9 +1410,12 @@ namespace UnitySvgEditor.Editor
             return pattern != null;
         }
 
-        private static PathEnding ResolvePathEnding(IReadOnlyDictionary<string, string> attributes, string attributeName)
+        private static PathEnding ResolvePathEnding(
+            SvgDocumentModel documentModel,
+            SvgNodeModel node,
+            string attributeName)
         {
-            if (!TryGetAttribute(attributes, attributeName, out string value))
+            if (!TryGetInheritedAttribute(documentModel, node, attributeName, out string value))
                 return PathEnding.Chop;
 
             return value switch
@@ -1420,9 +1426,12 @@ namespace UnitySvgEditor.Editor
             };
         }
 
-        private static PathCorner ResolvePathCorner(IReadOnlyDictionary<string, string> attributes, string attributeName)
+        private static PathCorner ResolvePathCorner(
+            SvgDocumentModel documentModel,
+            SvgNodeModel node,
+            string attributeName)
         {
-            if (!TryGetAttribute(attributes, attributeName, out string value))
+            if (!TryGetInheritedAttribute(documentModel, node, attributeName, out string value))
                 return PathCorner.Tipped;
 
             return value switch
@@ -1433,28 +1442,31 @@ namespace UnitySvgEditor.Editor
             };
         }
 
-        private static FillMode ResolveFillMode(SvgNodeModel node)
+        private static FillMode ResolveFillMode(SvgDocumentModel documentModel, SvgNodeModel node)
         {
-            return TryGetAttribute(node?.RawAttributes, "fill-rule", out string fillRule) &&
+            return TryGetInheritedAttribute(documentModel, node, "fill-rule", out string fillRule) &&
                    string.Equals(fillRule, "evenodd", StringComparison.OrdinalIgnoreCase)
                 ? FillMode.OddEven
                 : FillMode.NonZero;
         }
 
-        private static float ResolveFillOpacity(SvgNodeModel node)
+        private static float ResolveFillOpacity(SvgDocumentModel documentModel, SvgNodeModel node)
         {
-            return ResolveOpacity(node?.RawAttributes, "fill-opacity");
+            return ResolveOpacity(documentModel, node, "fill-opacity");
         }
 
-        private static float ResolveStrokeOpacity(SvgNodeModel node)
+        private static float ResolveStrokeOpacity(SvgDocumentModel documentModel, SvgNodeModel node)
         {
-            return ResolveOpacity(node?.RawAttributes, "stroke-opacity");
+            return ResolveOpacity(documentModel, node, "stroke-opacity");
         }
 
-        private static float ResolveOpacity(IReadOnlyDictionary<string, string> attributes, string attributeName)
+        private static float ResolveOpacity(
+            SvgDocumentModel documentModel,
+            SvgNodeModel node,
+            string attributeName)
         {
             float value = 1f;
-            if (TryGetFloat(attributes, attributeName, out float resolved))
+            if (TryGetInheritedFloat(documentModel, node, attributeName, out float resolved))
                 value *= Mathf.Clamp01(resolved);
 
             return Mathf.Clamp01(value);
@@ -1583,7 +1595,9 @@ namespace UnitySvgEditor.Editor
             if (!TryParseColor(fillValue, out Color color))
                 return false;
 
-            float opacity = ResolveOpacity(node?.RawAttributes, "fill-opacity");
+            float opacity = 1f;
+            if (TryGetFloat(node?.RawAttributes, "fill-opacity", out float resolvedOpacity))
+                opacity = Mathf.Clamp01(resolvedOpacity);
             float luminance = (color.r * 0.2126f) + (color.g * 0.7152f) + (color.b * 0.0722f);
             return opacity > 0.5f && luminance > 0.5f;
         }
@@ -1594,6 +1608,44 @@ namespace UnitySvgEditor.Editor
             return attributes != null &&
                    attributes.TryGetValue(name, out value) &&
                    !string.IsNullOrWhiteSpace(value);
+        }
+
+        private static bool TryGetInheritedAttribute(
+            SvgDocumentModel documentModel,
+            SvgNodeModel node,
+            string name,
+            out string value)
+        {
+            value = string.Empty;
+            SvgNodeModel current = node;
+            while (current != null)
+            {
+                if (TryGetAttribute(current.RawAttributes, name, out value))
+                {
+                    if (!string.Equals(value, "inherit", StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+
+                if (documentModel == null || current.Id.IsRoot)
+                    break;
+
+                if (!documentModel.TryGetNode(current.ParentId, out current))
+                    break;
+            }
+
+            value = string.Empty;
+            return false;
+        }
+
+        private static bool TryGetInheritedFloat(
+            SvgDocumentModel documentModel,
+            SvgNodeModel node,
+            string name,
+            out float value)
+        {
+            value = 0f;
+            return TryGetInheritedAttribute(documentModel, node, name, out string text) &&
+                   TryParseFloat(text, out value);
         }
 
         private static bool TryGetFloat(IReadOnlyDictionary<string, string> attributes, string name, out float value)

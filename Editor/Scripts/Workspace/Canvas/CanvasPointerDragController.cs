@@ -78,6 +78,17 @@ namespace UnitySvgEditor.Editor
                 out updatedSource);
         }
 
+        public bool TryCancelActiveDrag()
+        {
+            if (!IsDraggingSelectionPreview)
+            {
+                return false;
+            }
+
+            _gestureRouter.CancelCanvasDragPreview();
+            return true;
+        }
+
         public void ResetViewportToFit()
         {
             _viewportState.ResetToFit(
@@ -220,6 +231,12 @@ namespace UnitySvgEditor.Editor
 
         private void OnCanvasKeyDown(KeyDownEvent evt)
         {
+            if (evt.keyCode == KeyCode.Escape && TryCancelActiveDrag())
+            {
+                evt.StopPropagation();
+                return;
+            }
+
             _toolController.HandleKeyDown(
                 evt,
                 _canvasOverlay,

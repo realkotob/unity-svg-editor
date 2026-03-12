@@ -31,7 +31,7 @@
 
 아래 구분은 “현재 editor preview / interaction 기준”입니다.
 
-### Direct Preview / Edit
+### Editor Preview / Interaction Support
 
 - `rect`
 - `circle`
@@ -48,7 +48,7 @@
 - `clipPath`
 - basic `mask`
 - `text`
-  - 표시
+  - editor overlay로 표시
   - 선택
   - move / resize commit
 
@@ -70,6 +70,9 @@
 - `filter`
 - `image`
 - `style`
+- `text`
+  - Unity `VectorImage` native 렌더링 대상이라고 보지 않는다
+  - 현재는 model 기반 text overlay preview로 다룬다
 - `textPath`
 - `tspan` 개별 편집
 
@@ -77,6 +80,11 @@
 
 - Unity `VectorImage`와 일관되게 갈 수 있는 SVG feature까지만 direct 지원
 - 그 외는 fallback 또는 편집 제한으로 명시
+
+주의:
+
+- 현재 `text`는 editor preview에서 다룰 수 있지만, 이를 Unity `VectorImage` 자체 text 지원으로 간주하지 않는다.
+- 즉 `text`는 “VectorImage native feature”가 아니라 “editor overlay-backed feature”로 취급한다.
 
 ## Fixture-First Rule
 
@@ -89,10 +97,8 @@ fixture 위치:
 현재 renderer 검증 fixture 예시:
 
 - `defs-use-basic.svg`
-- `use-gradient-transform.svg`
 - `path-relative-commands.svg`
 - `path-curves-basic.svg`
-- `text-basic.svg`
 - `text-tspan-basic.svg`
 - `clippath-basic.svg`
 - `mask-basic.svg`
@@ -130,4 +136,9 @@ fixture 위치:
 
 - unsupported feature 진단 / fallback 메시지 정리
 - `tspan` / `text-anchor` 세부 정밀도 개선 여부 판단
+- `text`를 overlay 유지 대상으로 둘지, 더 축소할지 판단
 - 추가 fixture 기반 renderer coverage 확장
+
+## 추가 문서
+
+- Unity `VectorImage` 지원 범위 정리: `docs/unity-vectorimage-support.md`
