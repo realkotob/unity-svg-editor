@@ -127,6 +127,7 @@ namespace UnitySvgEditor.Editor
         {
             ApplyToolbarIcons();
             ApplyPositionIcons();
+            ApplyInspectorAttributeIcons();
 
             _assetLibraryBrowser.Bind(
                 rootVisualElement,
@@ -476,6 +477,14 @@ namespace UnitySvgEditor.Editor
             ApplyButtonIcon("position-rotate-clockwise-90", SvgEditorIconClass.POSITION_ROTATE_CLOCKWISE_90);
             ApplyButtonIcon("position-flip-horizontal", SvgEditorIconClass.POSITION_FLIP_HORIZONTAL);
             ApplyButtonIcon("position-flip-vertical", SvgEditorIconClass.POSITION_FLIP_VERTICAL);
+        }
+
+        private void ApplyInspectorAttributeIcons()
+        {
+            ApplyButtonIcon("fill-add-button", SvgEditorIconClass.ATTRIBUTE_ADD);
+            ApplyButtonIcon("fill-remove-button", SvgEditorIconClass.ATTRIBUTE_REMOVE);
+            ApplyButtonIcon("stroke-add-button", SvgEditorIconClass.ATTRIBUTE_ADD);
+            ApplyButtonIcon("stroke-remove-button", SvgEditorIconClass.ATTRIBUTE_REMOVE);
         }
 
         private void ApplyToggleIcon(string toggleName, string resourcePath)

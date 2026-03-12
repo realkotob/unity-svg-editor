@@ -33,6 +33,16 @@
     font-size: 12px;
 }
 
+.svg-editor__subsection-header {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: var(--space-2);
+}
+
+.svg-editor__subsection-header > .svg-editor__subsection-title {
+    margin-bottom: 0;
+}
+
 .svg-editor__inspector-meta-label {
     margin-top: 0;
     margin-bottom: var(--space-1-5);
@@ -73,6 +83,25 @@
 
 .svg-editor__inspector-field--last,
 .svg-editor__inspector-btn--last{
+    margin-right: 0;
+}
+
+.svg-editor__attribute-button {
+    align-self: center;
+    width: 30px;
+    min-width: 30px;
+    height: 30px;
+}
+
+.icon-plus {
+    background-image: resource("Icons/lucide/plus");
+}
+
+.svg-editor__attribute-button--header {
+    margin-left: auto;
+}
+
+.svg-editor__attribute-button--last {
     margin-right: 0;
 }
 

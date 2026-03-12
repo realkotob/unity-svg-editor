@@ -41,6 +41,7 @@ namespace UnitySvgEditor.Editor
             _view.RotationDragStarted += OnRotationDragStarted;
             _view.RotationDragEnded += OnRotationDragEnded;
             _view.PositionActionRequested += OnPositionActionRequested;
+            _view.AttributeActionRequested += OnAttributeActionRequested;
         }
 
         private static void ScheduleDeferredCall(System.Action callback)
@@ -126,19 +127,23 @@ namespace UnitySvgEditor.Editor
 
         public void UpdateInteractivity(bool hasDocument)
         {
-            SetEnabledIfNotNull(_view.FillColorControl, hasDocument);
-            SetEnabledIfNotNull(_view.StrokeColorControl, hasDocument);
-            SetEnabledIfNotNull(_view.StrokeWidthControl, hasDocument);
+            SetEnabledIfNotNull(_view.FillAddControl, hasDocument);
+            SetEnabledIfNotNull(_view.FillRemoveControl, hasDocument);
+            SetEnabledIfNotNull(_view.FillColorControl, hasDocument && _inspectorPanelState.FillEnabled);
+            SetEnabledIfNotNull(_view.StrokeAddControl, hasDocument);
+            SetEnabledIfNotNull(_view.StrokeRemoveControl, hasDocument);
+            SetEnabledIfNotNull(_view.StrokeColorControl, hasDocument && _inspectorPanelState.StrokeEnabled);
+            SetEnabledIfNotNull(_view.StrokeWidthControl, hasDocument && _inspectorPanelState.StrokeEnabled);
             SetEnabledIfNotNull(_view.OpacityControl, hasDocument);
             SetEnabledIfNotNull(_view.CornerRadiusControl, hasDocument && _inspectorPanelState.CornerRadiusEnabled);
-            SetEnabledIfNotNull(_view.DashLengthControl, hasDocument);
-            SetEnabledIfNotNull(_view.DashGapControl, hasDocument);
+            SetEnabledIfNotNull(_view.DashLengthControl, hasDocument && _inspectorPanelState.StrokeEnabled);
+            SetEnabledIfNotNull(_view.DashGapControl, hasDocument && _inspectorPanelState.StrokeEnabled);
             SetEnabledIfNotNull(_view.FrameXControl, hasDocument);
             SetEnabledIfNotNull(_view.FrameYControl, hasDocument);
             SetEnabledIfNotNull(_view.FrameWidthControl, hasDocument);
             SetEnabledIfNotNull(_view.FrameHeightControl, hasDocument);
-            SetEnabledIfNotNull(_view.LinecapControl, hasDocument);
-            SetEnabledIfNotNull(_view.LinejoinControl, hasDocument);
+            SetEnabledIfNotNull(_view.LinecapControl, hasDocument && _inspectorPanelState.StrokeEnabled);
+            SetEnabledIfNotNull(_view.LinejoinControl, hasDocument && _inspectorPanelState.StrokeEnabled);
             SetEnabledIfNotNull(_view.TranslateXControl, hasDocument);
             SetEnabledIfNotNull(_view.TranslateYControl, hasDocument);
             SetEnabledIfNotNull(_view.RotateControl, hasDocument);
@@ -170,6 +175,8 @@ namespace UnitySvgEditor.Editor
         private void OnRotationDragEnded() => _targetSyncService.EndRotationDrag();
 
         private void OnPositionActionRequested(InspectorPanelView.PositionAction action) => _targetSyncService.ApplyPositionAction(action);
+
+        private void OnAttributeActionRequested(InspectorPanelView.AttributeAction action) => _targetSyncService.ApplyAttributeAction(action);
 
         private static void SetEnabledIfNotNull(VisualElement element, bool enabled)
         {

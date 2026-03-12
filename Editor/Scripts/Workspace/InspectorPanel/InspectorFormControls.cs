@@ -16,9 +16,19 @@ namespace UnitySvgEditor.Editor
         private const string LinejoinActualDefaultValue = "miter";
         private const string LinejoinDisplayDefaultValue = "none";
         private VisualElement _root;
+        private bool _isFillVisible = true;
+        private bool _isStrokeVisible = true;
 
+        public VisualElement FillColorRow { get; private set; }
+        public Button FillAddButton { get; private set; }
+        public Button FillRemoveButton { get; private set; }
         public ColorPercentField FillColorField { get; private set; }
         public ColorField FillColorLegacyField { get; private set; }
+        public VisualElement StrokeColorRow { get; private set; }
+        public VisualElement StrokeMetricsRow { get; private set; }
+        public VisualElement StrokeLineStyleRow { get; private set; }
+        public Button StrokeAddButton { get; private set; }
+        public Button StrokeRemoveButton { get; private set; }
         public ColorPercentField StrokeColorField { get; private set; }
         public ColorField StrokeColorLegacyField { get; private set; }
         public FloatField StrokeWidthField { get; private set; }
@@ -65,8 +75,8 @@ namespace UnitySvgEditor.Editor
             TransformField != null ||
             FrameXField != null;
 
-        public bool FillEnabled => FillColorControl != null;
-        public bool StrokeEnabled => StrokeColorControl != null;
+        public bool FillEnabled => FillColorControl != null && _isFillVisible;
+        public bool StrokeEnabled => StrokeColorControl != null && _isStrokeVisible;
         public bool StrokeWidthEnabled => StrokeWidthField != null;
         public bool OpacityEnabled => OpacityField != null;
         public bool DasharrayEnabled => DashLengthField != null && DashGapField != null;
@@ -80,9 +90,17 @@ namespace UnitySvgEditor.Editor
                 return;
 
             _root = root;
+            FillColorRow = root.Q<VisualElement>("fill-color-row");
+            FillAddButton = root.Q<Button>("fill-add-button");
+            FillRemoveButton = root.Q<Button>("fill-remove-button");
             VisualElement fillColorElement = root.Q<VisualElement>("inspector-fill-color");
             FillColorField = fillColorElement as ColorPercentField;
             FillColorLegacyField = fillColorElement as ColorField;
+            StrokeColorRow = root.Q<VisualElement>("stroke-color-row");
+            StrokeMetricsRow = root.Q<VisualElement>("stroke-metrics-row");
+            StrokeLineStyleRow = root.Q<VisualElement>("stroke-line-style-row");
+            StrokeAddButton = root.Q<Button>("stroke-add-button");
+            StrokeRemoveButton = root.Q<Button>("stroke-remove-button");
             VisualElement strokeColorElement = root.Q<VisualElement>("inspector-stroke-color");
             StrokeColorField = strokeColorElement as ColorPercentField;
             StrokeColorLegacyField = strokeColorElement as ColorField;
@@ -134,16 +152,27 @@ namespace UnitySvgEditor.Editor
             ConfigureNumericFieldFormat(RotateField);
             ConfigureNumericFieldFormat(ScaleXField);
             ConfigureNumericFieldFormat(ScaleYField);
-
+            SetFillVisible(FillColorRow != null && FillColorRow.resolvedStyle.display != DisplayStyle.None);
+            SetStrokeVisible(StrokeColorRow != null && StrokeColorRow.resolvedStyle.display != DisplayStyle.None);
         }
 
         public void Unbind()
         {
+            FillColorRow = null;
+            FillAddButton = null;
+            FillRemoveButton = null;
             FillColorField = null;
             FillColorLegacyField = null;
+            StrokeColorRow = null;
+            StrokeMetricsRow = null;
+            StrokeLineStyleRow = null;
+            StrokeAddButton = null;
+            StrokeRemoveButton = null;
             StrokeColorField = null;
             StrokeColorLegacyField = null;
             _root = null;
+            _isFillVisible = true;
+            _isStrokeVisible = true;
             StrokeWidthField = null;
             OpacityField = null;
             CornerRadiusField = null;
@@ -199,6 +228,22 @@ namespace UnitySvgEditor.Editor
         public void SetTransformText(string transform)
         {
             TransformField?.SetValueWithoutNotify(transform ?? string.Empty);
+        }
+
+        public void SetFillVisible(bool visible)
+        {
+            _isFillVisible = visible;
+            SetDisplay(FillColorRow, visible);
+            SetDisplay(FillAddButton, !visible);
+        }
+
+        public void SetStrokeVisible(bool visible)
+        {
+            _isStrokeVisible = visible;
+            SetDisplay(StrokeColorRow, visible);
+            SetDisplay(StrokeMetricsRow, visible);
+            SetDisplay(StrokeLineStyleRow, visible);
+            SetDisplay(StrokeAddButton, !visible);
         }
 
         private static void ConfigureNumericFieldFormat(FloatField field)
@@ -275,6 +320,14 @@ namespace UnitySvgEditor.Editor
         private BaseField<float> ResolveOpacityField()
         {
             return OpacityField ?? _root?.Q<VisualElement>("inspector-opacity") as BaseField<float>;
+        }
+
+        private static void SetDisplay(VisualElement element, bool visible)
+        {
+            if (element == null)
+                return;
+
+            element.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
         }
     }
 }

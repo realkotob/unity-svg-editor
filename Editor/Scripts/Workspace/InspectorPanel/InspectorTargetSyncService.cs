@@ -356,6 +356,49 @@ namespace UnitySvgEditor.Editor
             Host.TryApplyPatchRequest(request, "Inspector changes applied.", HistoryRecordingMode.Coalesced);
         }
 
+        public void ApplyAttributeAction(InspectorPanelView.AttributeAction action)
+        {
+            if (Host?.CurrentDocument == null || !_view.IsBound)
+            {
+                return;
+            }
+
+            _view.CaptureState(_inspectorPanelState);
+            string successStatus;
+            switch (action)
+            {
+                case InspectorPanelView.AttributeAction.AddFill:
+                    _inspectorPanelState.FillEnabled = true;
+                    successStatus = "Fill added.";
+                    break;
+                case InspectorPanelView.AttributeAction.RemoveFill:
+                    _inspectorPanelState.FillEnabled = false;
+                    successStatus = "Fill removed.";
+                    break;
+                case InspectorPanelView.AttributeAction.AddStroke:
+                    _inspectorPanelState.StrokeEnabled = true;
+                    _inspectorPanelState.StrokeWidthEnabled = true;
+                    _inspectorPanelState.StrokeWidth = Mathf.Max(1f, _inspectorPanelState.StrokeWidth);
+                    successStatus = "Stroke added.";
+                    break;
+                case InspectorPanelView.AttributeAction.RemoveStroke:
+                    _inspectorPanelState.StrokeEnabled = false;
+                    _inspectorPanelState.StrokeWidthEnabled = false;
+                    _inspectorPanelState.DasharrayEnabled = false;
+                    _inspectorPanelState.StrokeLinecap = string.Empty;
+                    _inspectorPanelState.StrokeLinejoin = string.Empty;
+                    successStatus = "Stroke removed.";
+                    break;
+                default:
+                    return;
+            }
+
+            _view.ApplyState(_inspectorPanelState);
+            _updateInteractivity?.Invoke();
+            var request = _inspectorPanelState.BuildPatchRequest(action);
+            Host.TryApplyPatchRequest(request, successStatus, HistoryRecordingMode.Coalesced);
+        }
+
         public void ApplyPositionAction(InspectorPanelView.PositionAction action)
         {
             if (Host?.CurrentDocument == null || !_view.IsBound)

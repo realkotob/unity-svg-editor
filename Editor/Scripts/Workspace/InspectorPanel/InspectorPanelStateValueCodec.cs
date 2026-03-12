@@ -69,6 +69,35 @@ namespace UnitySvgEditor.Editor
             return request;
         }
 
+        public static AttributePatchRequest BuildPatchRequest(InspectorPanelState state, InspectorPanelView.AttributeAction action)
+        {
+            var request = CreatePatchRequest(state);
+            switch (action)
+            {
+                case InspectorPanelView.AttributeAction.AddFill:
+                    ApplyFill(request, state);
+                    break;
+                case InspectorPanelView.AttributeAction.RemoveFill:
+                    request.Fill = "none";
+                    request.FillOpacity = string.Empty;
+                    break;
+                case InspectorPanelView.AttributeAction.AddStroke:
+                    ApplyStroke(request, state);
+                    request.StrokeWidth = FormatNumber(Mathf.Max(0f, state.StrokeWidth));
+                    break;
+                case InspectorPanelView.AttributeAction.RemoveStroke:
+                    request.Stroke = "none";
+                    request.StrokeOpacity = string.Empty;
+                    request.StrokeWidth = string.Empty;
+                    request.StrokeLinecap = string.Empty;
+                    request.StrokeLinejoin = string.Empty;
+                    request.StrokeDasharray = string.Empty;
+                    break;
+            }
+
+            return request;
+        }
+
         public static string BuildTransformFromHelper(InspectorPanelState state)
         {
             state.Transform = TransformStringBuilder.BuildTransform(
@@ -109,13 +138,13 @@ namespace UnitySvgEditor.Editor
             state.StrokeLinecap = string.Empty;
             state.StrokeLinejoin = string.Empty;
 
-            state.FillEnabled = TryGetNonEmpty(attributes, "fill", out var fillRaw);
+            state.FillEnabled = TryGetNonEmpty(attributes, "fill", out var fillRaw) && !IsDisabledPaintValue(fillRaw);
             if (state.FillEnabled && ColorUtility.TryParseHtmlString(fillRaw.Trim(), out var fillColor))
                 state.FillColor = fillColor;
             if (TryGetFloat(attributes, "fill-opacity", out var fillOpacity))
                 state.FillColor = WithCombinedAlpha(state.FillColor, fillOpacity);
 
-            state.StrokeEnabled = TryGetNonEmpty(attributes, "stroke", out var strokeRaw);
+            state.StrokeEnabled = TryGetNonEmpty(attributes, "stroke", out var strokeRaw) && !IsDisabledPaintValue(strokeRaw);
             if (state.StrokeEnabled && ColorUtility.TryParseHtmlString(strokeRaw.Trim(), out var strokeColor))
                 state.StrokeColor = strokeColor;
             if (TryGetFloat(attributes, "stroke-opacity", out var strokeOpacity))
@@ -270,6 +299,11 @@ namespace UnitySvgEditor.Editor
 
             value = found;
             return true;
+        }
+
+        private static bool IsDisabledPaintValue(string value)
+        {
+            return string.Equals(value?.Trim(), "none", StringComparison.OrdinalIgnoreCase);
         }
 
         private static string FormatNumber(float value)

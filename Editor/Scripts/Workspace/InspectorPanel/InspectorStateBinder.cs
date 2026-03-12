@@ -19,7 +19,7 @@ namespace UnitySvgEditor.Editor
             inspectorPanelState.FillColor = form.FillColorValue;
             inspectorPanelState.StrokeEnabled = form.StrokeEnabled;
             inspectorPanelState.StrokeColor = form.StrokeColorValue;
-            inspectorPanelState.StrokeWidthEnabled = form.StrokeWidthField != null;
+            inspectorPanelState.StrokeWidthEnabled = form.StrokeEnabled && form.StrokeWidthField != null;
             inspectorPanelState.StrokeWidth = form.StrokeWidthField?.value ?? 1f;
             inspectorPanelState.OpacityEnabled = form.OpacityControl != null;
             float opacityValue = form.OpacityValue;
@@ -29,7 +29,7 @@ namespace UnitySvgEditor.Editor
             inspectorPanelState.CornerRadius = Mathf.Max(0f, form.CornerRadiusField?.value ?? 0f);
             inspectorPanelState.StrokeLinecap = NormalizeLinecapValue(form.LinecapPopup?.Value ?? form.LinecapLegacyPopup?.value);
             inspectorPanelState.StrokeLinejoin = NormalizeLinejoinValue(form.LinejoinPopup?.Value ?? form.LinejoinLegacyPopup?.value);
-            inspectorPanelState.DasharrayEnabled = form.DashLengthField != null || form.DashGapField != null;
+            inspectorPanelState.DasharrayEnabled = form.StrokeEnabled && (form.DashLengthField != null || form.DashGapField != null);
             inspectorPanelState.DashLength = form.DashLengthField?.value ?? 4f;
             inspectorPanelState.DashGap = form.DashGapField?.value ?? 2f;
             inspectorPanelState.TransformEnabled = form.TransformField != null;
@@ -55,6 +55,8 @@ namespace UnitySvgEditor.Editor
             if (form == null || inspectorPanelState == null)
                 return;
 
+            form.SetFillVisible(inspectorPanelState.FillEnabled);
+            form.SetStrokeVisible(inspectorPanelState.StrokeEnabled);
             form.SetFillColorWithoutNotify(inspectorPanelState.FillColor);
             form.SetStrokeColorWithoutNotify(inspectorPanelState.StrokeColor);
             form.StrokeWidthField?.SetValueWithoutNotify(inspectorPanelState.StrokeWidth);

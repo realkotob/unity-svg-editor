@@ -34,6 +34,8 @@ namespace UnitySvgEditor.Editor
         public const string POSITION_ROTATE_CLOCKWISE_90 = IconClass.ROTATE_90;
         public const string POSITION_FLIP_HORIZONTAL = IconClass.FLIP_HORIZONTAL;
         public const string POSITION_FLIP_VERTICAL = IconClass.FLIP_VERTICAL;
+        public const string ATTRIBUTE_ADD = "icon-plus";
+        public const string ATTRIBUTE_REMOVE = IconClass.MINUS;
 
         internal static string ResolveHierarchyIcon(IconKind iconKind)
         {

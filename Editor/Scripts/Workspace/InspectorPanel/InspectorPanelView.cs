@@ -24,6 +24,14 @@ namespace UnitySvgEditor.Editor
             StrokeDasharray
         }
 
+        internal enum AttributeAction
+        {
+            AddFill,
+            RemoveFill,
+            AddStroke,
+            RemoveStroke
+        }
+
         internal enum PositionAction
         {
             AlignLeft,
@@ -66,6 +74,7 @@ namespace UnitySvgEditor.Editor
         public event Action RotationDragStarted;
         public event Action RotationDragEnded;
         public event Action<PositionAction> PositionActionRequested;
+        public event Action<AttributeAction> AttributeActionRequested;
 
         private bool _isRotationDragging;
         private float _rotationDragStartValue;
@@ -78,7 +87,11 @@ namespace UnitySvgEditor.Editor
         public bool DasharrayEnabled => _form.DasharrayEnabled;
 
         public VisualElement FillColorControl => _form.FillColorControl;
+        public VisualElement FillAddControl => _form.FillAddButton;
+        public VisualElement FillRemoveControl => _form.FillRemoveButton;
         public VisualElement StrokeColorControl => _form.StrokeColorControl;
+        public VisualElement StrokeAddControl => _form.StrokeAddButton;
+        public VisualElement StrokeRemoveControl => _form.StrokeRemoveButton;
         public VisualElement StrokeWidthControl => _form.StrokeWidthField;
         public VisualElement OpacityControl => _form.OpacityControl;
         public VisualElement CornerRadiusControl => _form.CornerRadiusField;
@@ -141,8 +154,12 @@ namespace UnitySvgEditor.Editor
         {
             RegisterImmediateApplyCallback(_form.FillColorField, OnFillColorChanged);
             RegisterImmediateApplyCallback(_form.FillColorLegacyField, OnFillColorChanged);
+            RegisterButtonClicked(_form.FillAddButton, OnFillAddRequested);
+            RegisterButtonClicked(_form.FillRemoveButton, OnFillRemoveRequested);
             RegisterImmediateApplyCallback(_form.StrokeColorField, OnStrokeColorChanged);
             RegisterImmediateApplyCallback(_form.StrokeColorLegacyField, OnStrokeColorChanged);
+            RegisterButtonClicked(_form.StrokeAddButton, OnStrokeAddRequested);
+            RegisterButtonClicked(_form.StrokeRemoveButton, OnStrokeRemoveRequested);
             RegisterImmediateApplyCallback(_form.StrokeWidthField, OnStrokeWidthChanged);
             RegisterImmediateApplyCallback(_form.OpacityField, OnOpacityChanged);
             RegisterImmediateApplyCallback(_form.CornerRadiusField, OnCornerRadiusChanged);
@@ -177,8 +194,12 @@ namespace UnitySvgEditor.Editor
         {
             UnregisterImmediateApplyCallback(_form.FillColorField, OnFillColorChanged);
             UnregisterImmediateApplyCallback(_form.FillColorLegacyField, OnFillColorChanged);
+            UnregisterButtonClicked(_form.FillAddButton, OnFillAddRequested);
+            UnregisterButtonClicked(_form.FillRemoveButton, OnFillRemoveRequested);
             UnregisterImmediateApplyCallback(_form.StrokeColorField, OnStrokeColorChanged);
             UnregisterImmediateApplyCallback(_form.StrokeColorLegacyField, OnStrokeColorChanged);
+            UnregisterButtonClicked(_form.StrokeAddButton, OnStrokeAddRequested);
+            UnregisterButtonClicked(_form.StrokeRemoveButton, OnStrokeRemoveRequested);
             UnregisterImmediateApplyCallback(_form.StrokeWidthField, OnStrokeWidthChanged);
             UnregisterImmediateApplyCallback(_form.OpacityField, OnOpacityChanged);
             UnregisterImmediateApplyCallback(_form.CornerRadiusField, OnCornerRadiusChanged);
@@ -211,7 +232,15 @@ namespace UnitySvgEditor.Editor
 
         private void OnFillColorChanged(ChangeEvent<Color> evt) => ImmediateApplyRequested?.Invoke(ImmediateApplyField.FillColor);
 
+        private void OnFillAddRequested() => AttributeActionRequested?.Invoke(AttributeAction.AddFill);
+
+        private void OnFillRemoveRequested() => AttributeActionRequested?.Invoke(AttributeAction.RemoveFill);
+
         private void OnStrokeColorChanged(ChangeEvent<Color> evt) => ImmediateApplyRequested?.Invoke(ImmediateApplyField.StrokeColor);
+
+        private void OnStrokeAddRequested() => AttributeActionRequested?.Invoke(AttributeAction.AddStroke);
+
+        private void OnStrokeRemoveRequested() => AttributeActionRequested?.Invoke(AttributeAction.RemoveStroke);
 
         private void OnStrokeWidthChanged(ChangeEvent<float> evt) => ImmediateApplyRequested?.Invoke(ImmediateApplyField.StrokeWidth);
 

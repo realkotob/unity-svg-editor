@@ -88,6 +88,11 @@ namespace UnitySvgEditor.Editor
             return InspectorPanelStateValueCodec.BuildPatchRequest(this, field);
         }
 
+        public AttributePatchRequest BuildPatchRequest(InspectorPanelView.AttributeAction action)
+        {
+            return InspectorPanelStateValueCodec.BuildPatchRequest(this, action);
+        }
+
         public string BuildTransformFromHelper()
         {
             return InspectorPanelStateValueCodec.BuildTransformFromHelper(this);
