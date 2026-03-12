@@ -13,7 +13,7 @@ namespace UnitySvgEditor.Editor
         private readonly SvgDocumentModelMutationService _documentModelMutationService = new();
         private readonly StructurePanelState _structurePanelState = new();
         private readonly CanvasWorkspaceController _canvasWorkspaceController;
-        private readonly StructureHierarchyController _structureHierarchyController;
+        private readonly StructureHierarchyInteractionController _structureHierarchyInteractionController = new();
         private readonly EditorWorkspaceShellBinder _shellBinder = new();
 
         private bool _isUpdatingStructureSelection;
@@ -25,25 +25,22 @@ namespace UnitySvgEditor.Editor
         {
             _host = host;
             _canvasWorkspaceController = new CanvasWorkspaceController(this);
-            _structureHierarchyController = new StructureHierarchyController();
         }
 
         public void Bind(CanvasStageView canvasStageView, Toggle moveToolToggle)
         {
             Dispose();
             _canvasWorkspaceController.Bind(canvasStageView, moveToolToggle);
-            _shellBinder.Bind(
-                RootVisualElement,
-                _structureHierarchyController,
-                this,
-                OnStructureElementSelectionChanged);
-            _structureHierarchyController.SetItems(_structurePanelState.HierarchyItems);
+            _shellBinder.Bind(RootVisualElement);
+            HierarchyListView?.BindRuntime(this, _structureHierarchyInteractionController, OnStructureElementSelectionChanged);
+            HierarchyListView?.SetHierarchyItems(_structurePanelState.HierarchyItems);
             UpdateStructureInteractivity(CurrentDocument != null);
         }
 
         public void Dispose()
         {
-            _shellBinder.Unbind(_structureHierarchyController);
+            HierarchyListView?.UnbindRuntime();
+            _shellBinder.Unbind();
             _canvasWorkspaceController.Dispose();
         }
 
@@ -55,7 +52,7 @@ namespace UnitySvgEditor.Editor
             if (CurrentDocument == null)
             {
                 _structurePanelState.Clear();
-                _structureHierarchyController.SetItems(_structurePanelState.HierarchyItems);
+                HierarchyListView?.SetHierarchyItems(_structurePanelState.HierarchyItems);
                 UpdateStructureInteractivity(false);
                 UpdateSelectionVisual();
                 return;
@@ -64,7 +61,7 @@ namespace UnitySvgEditor.Editor
             if (!TryBuildStructureSnapshot(CurrentDocument, out StructureOutline snapshot, out string error))
             {
                 _structurePanelState.Clear();
-                _structureHierarchyController.SetItems(_structurePanelState.HierarchyItems);
+                HierarchyListView?.SetHierarchyItems(_structurePanelState.HierarchyItems);
                 UpdateStructureInteractivity(true);
                 UpdateSelectionVisual();
                 return;
@@ -74,7 +71,7 @@ namespace UnitySvgEditor.Editor
             string selectedTargetKey = _host.ResolveSelectedPatchTargetKey();
 
             _structurePanelState.SetStructure(snapshot, selectedElementKey);
-            _structureHierarchyController.SetItems(_structurePanelState.HierarchyItems);
+            HierarchyListView?.SetHierarchyItems(_structurePanelState.HierarchyItems);
 
             if (TryResolveSelection(_structurePanelState.Elements, selectedElementKey, selectedTargetKey, out StructureNode selectedItem, out CanvasSelectionKind selectionKind))
             {
@@ -113,7 +110,7 @@ namespace UnitySvgEditor.Editor
 
         public void UpdateStructureInteractivity(bool hasDocument)
         {
-            _structureHierarchyController.SetEnabled(hasDocument);
+            HierarchyListView?.SetEnabled(hasDocument);
         }
 
         public bool TryApplyPatchRequest(
@@ -282,7 +279,7 @@ namespace UnitySvgEditor.Editor
         private void SelectStructureElementByKey(string elementKey)
         {
             _isUpdatingStructureSelection = true;
-            _structureHierarchyController.SelectElementByKey(elementKey, _structurePanelState.HierarchyItems);
+            HierarchyListView?.SelectElementByKey(elementKey);
             _isUpdatingStructureSelection = false;
         }
 
@@ -418,5 +415,7 @@ namespace UnitySvgEditor.Editor
         {
             return parentWorldTransform.Inverse().MultiplyPoint(worldPoint);
         }
+
+        private AssetHierarchyListView HierarchyListView => _shellBinder.HierarchyListView;
     }
 }

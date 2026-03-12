@@ -9,24 +9,17 @@ namespace UnitySvgEditor.Editor
 
         public bool IsBound => HierarchyListView != null;
 
-        public void Bind(
-            VisualElement root,
-            StructureHierarchyController hierarchyController,
-            IStructureHierarchyHost hierarchyHost,
-            Action<StructureNode> onSelectionChanged)
+        public void Bind(VisualElement root)
         {
-            Unbind(hierarchyController);
+            Unbind();
             if (root == null)
                 return;
 
             HierarchyListView = root.Q<AssetHierarchyListView>("asset-hierarchy-list");
-
-            hierarchyController.Bind(HierarchyListView, hierarchyHost, onSelectionChanged);
         }
 
-        public void Unbind(StructureHierarchyController hierarchyController)
+        public void Unbind()
         {
-            hierarchyController?.Unbind();
             HierarchyListView = null;
         }
     }
