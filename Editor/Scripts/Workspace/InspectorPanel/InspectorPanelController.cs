@@ -18,6 +18,7 @@ namespace UnitySvgEditor.Editor
         private bool _hasPendingFrameRectApply;
         private bool _isTransformApplyScheduled;
         private bool _hasPendingTransformApply;
+        private InspectorPanelView.TransformHelperChange _pendingTransformHelperChange;
 
         public InspectorPanelController(
             InspectorPanelState inspectorPanelState,
@@ -37,6 +38,8 @@ namespace UnitySvgEditor.Editor
             _view.ImmediateApplyRequested += OnImmediateApplyRequested;
             _view.FrameRectChanged += OnFrameRectChanged;
             _view.TransformHelperChanged += OnTransformHelperChanged;
+            _view.RotationDragStarted += OnRotationDragStarted;
+            _view.RotationDragEnded += OnRotationDragEnded;
             _view.PositionActionRequested += OnPositionActionRequested;
         }
 
@@ -156,10 +159,15 @@ namespace UnitySvgEditor.Editor
 
         private void OnFrameRectChanged() => QueueFrameRectApply();
 
-        private void OnTransformHelperChanged()
+        private void OnTransformHelperChanged(InspectorPanelView.TransformHelperChange change)
         {
+            _pendingTransformHelperChange = change;
             QueueTransformApply();
         }
+
+        private void OnRotationDragStarted() => _targetSyncService.BeginRotationDrag();
+
+        private void OnRotationDragEnded() => _targetSyncService.EndRotationDrag();
 
         private void OnPositionActionRequested(InspectorPanelView.PositionAction action) => _targetSyncService.ApplyPositionAction(action);
 
@@ -275,7 +283,7 @@ namespace UnitySvgEditor.Editor
             }
 
             _hasPendingTransformApply = false;
-            _targetSyncService.ApplyTransformFromHelper();
+            _targetSyncService.ApplyTransformFromHelper(_pendingTransformHelperChange);
         }
 
         private void ClearPendingTransformApply()

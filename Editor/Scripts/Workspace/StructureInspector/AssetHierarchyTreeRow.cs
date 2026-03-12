@@ -53,16 +53,19 @@ namespace UnitySvgEditor.Editor
                 .SetName(ElementName.HIERARCHY_EXPANDER)
                 .AddClass(UssClassName.EXPANDER)
                 .AddClass(SvgEditorIconClass.HIERARCHY_EXPANDER);
+            Expander.pickingMode = PickingMode.Position;
             Add(Expander);
 
             Icon = new VisualElement()
                 .SetName(ElementName.HIERARCHY_ICON)
                 .AddClass(UssClassName.ICON);
+            Icon.pickingMode = PickingMode.Ignore;
             Add(Icon);
 
             TextLabel = new Label()
                 .SetName(ElementName.HIERARCHY_TEXT)
                 .AddClass(UssClassName.TEXT);
+            TextLabel.pickingMode = PickingMode.Ignore;
             Add(TextLabel);
         }
 
@@ -76,12 +79,11 @@ namespace UnitySvgEditor.Editor
             style.paddingLeft = AssetHierarchyListView.Layout.ROW_PADDING_LEFT +
                 (hierarchyNode.Depth * AssetHierarchyListView.Layout.ROW_DEPTH_OFFSET);
             userData = hierarchyNode.Key;
-            tooltip = hierarchyNode.CanUseAsTarget
-                ? $"#{hierarchyNode.TargetKey} <{hierarchyNode.TagName}>"
-                : $"<{hierarchyNode.TagName}>";
+            tooltip = null;
 
             Expander.style.display = DisplayStyle.Flex;
             Expander.userData = hasChildren ? hierarchyNode.Key : null;
+            Expander.pickingMode = hasChildren ? PickingMode.Position : PickingMode.Ignore;
             Expander
                 .EnableClass(UssClassName.EXPANDER_PLACEHOLDER, !hasChildren)
                 .EnableClass(UssClassName.EXPANDER_EXPANDED, hasChildren && isExpanded);
@@ -102,6 +104,7 @@ namespace UnitySvgEditor.Editor
 
             Expander.style.display = DisplayStyle.Flex;
             Expander.userData = null;
+            Expander.pickingMode = PickingMode.Ignore;
             Expander
                 .EnableClass(UssClassName.EXPANDER_PLACEHOLDER, true)
                 .EnableClass(UssClassName.EXPANDER_EXPANDED, false);

@@ -12,5 +12,7 @@ namespace UnitySvgEditor.Editor
         public float VerticalGuideX { get; set; }
         public bool ShowHorizontalGuide { get; set; }
         public float HorizontalGuideY { get; set; }
+        public bool HasRotationPivot { get; set; }
+        public Vector2 RotationPivotViewport { get; set; }
     }
 }

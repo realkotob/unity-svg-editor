@@ -75,6 +75,9 @@ namespace UnitySvgEditor.Editor
 
             PreviewElementGeometry selectedGeometry = _sceneProjector.FindPreviewElement(_host.PreviewSnapshot, _host.SelectedElementKey);
             Matrix2D parentWorldTransform = selectedGeometry?.ParentWorldTransform ?? Matrix2D.identity;
+            Vector2 rotationPivotWorld = selectedGeometry?.RotationPivotWorld ?? selectedElementSceneRect.center;
+            Vector2 rotationPivotParentSpace = selectedGeometry?.RotationPivotParentSpace ??
+                                              ElementRotationUtility.ToParentSpacePoint(parentWorldTransform, selectedElementSceneRect.center);
             state.Begin(CanvasDragMode.RotateElement, CanvasHandle.Rotate, default, default);
             _elementDragController.BeginRotate(
                 _host.CurrentDocument,
@@ -82,7 +85,9 @@ namespace UnitySvgEditor.Editor
                 _host.SelectedElementKey,
                 localPosition,
                 selectedElementSceneRect,
-                parentWorldTransform);
+                parentWorldTransform,
+                rotationPivotWorld,
+                rotationPivotParentSpace);
             _dragSession.Begin(_overlayAccessor(), pointerId, localPosition);
             return true;
         }
@@ -116,7 +121,10 @@ namespace UnitySvgEditor.Editor
                     _elementDragController.TryUpdateResizeTransientState(_host, state.ActiveHandle, snapEnabled);
                     break;
                 case CanvasDragMode.RotateElement:
-                    _elementDragController.TryUpdateRotateTransientState(_host, localPosition, snapEnabled);
+                    if (_elementDragController.TryUpdateRotateTransientState(_host, localPosition, snapEnabled))
+                    {
+                        _host.UpdateSelectionVisual();
+                    }
                     break;
             }
         }

@@ -9,6 +9,7 @@ namespace UnitySvgEditor.Editor
         private readonly CanvasSceneProjector _sceneProjector;
         private readonly ElementMoveSession _moveSession = new();
         private readonly CanvasTransientDocumentModelSession _transientDocumentModelSession = new();
+        private readonly ElementRotationSession _rotationSession = new();
 
         private Rect _dragStartSelectionViewportRect;
         private Rect _dragCurrentSelectionViewportRect;
@@ -18,6 +19,7 @@ namespace UnitySvgEditor.Editor
         private bool _dragResizeCenterAnchor;
         private string _dragElementKey = string.Empty;
         private Matrix2D _dragStartParentWorldTransform = Matrix2D.identity;
+        private Vector2 _dragStartRotationPivotViewport;
         private Vector2 _dragStartRotateVector;
         private float _dragCurrentRotationAngle;
 
@@ -81,7 +83,9 @@ namespace UnitySvgEditor.Editor
             string elementKey,
             Vector2 localPosition,
             Rect elementSceneRect,
-            Matrix2D parentWorldTransform)
+            Matrix2D parentWorldTransform,
+            Vector2 rotationPivotWorld,
+            Vector2 rotationPivotParentSpace)
         {
             _dragElementKey = elementKey;
             _dragStartParentWorldTransform = parentWorldTransform;
@@ -92,9 +96,12 @@ namespace UnitySvgEditor.Editor
                 : default;
             _dragCurrentSelectionViewportRect = _dragStartSelectionViewportRect;
             _dragStartElementSceneRect = elementSceneRect;
-            _dragStartRotateVector = localPosition - _dragStartSelectionViewportRect.center;
+            _dragStartRotationPivotViewport = _sceneProjector.TryScenePointToViewportPoint(previewSnapshot, rotationPivotWorld, out Vector2 pivotViewport)
+                ? pivotViewport
+                : _dragStartSelectionViewportRect.center;
+            _dragStartRotateVector = localPosition - _dragStartRotationPivotViewport;
             _dragCurrentRotationAngle = 0f;
-            _transientDocumentModelSession.TryBegin(currentDocument, elementKey);
+            _rotationSession.TryBegin(currentDocument, elementKey, rotationPivotParentSpace);
         }
 
         public Vector2 UpdateMove(Vector2 localPosition)
@@ -137,9 +144,11 @@ namespace UnitySvgEditor.Editor
             _dragStartPreserveAspectRatioMode = SvgPreserveAspectRatioMode.Meet;
             _dragResizeCenterAnchor = false;
             _dragStartParentWorldTransform = Matrix2D.identity;
+            _dragStartRotationPivotViewport = Vector2.zero;
             _dragStartRotateVector = Vector2.zero;
             _dragCurrentRotationAngle = 0f;
             _transientDocumentModelSession.End();
+            _rotationSession.End();
             _moveSession.End();
         }
 
@@ -211,7 +220,7 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
-            Vector2 currentRotateVector = localPosition - _dragStartSelectionViewportRect.center;
+            Vector2 currentRotateVector = localPosition - _dragStartRotationPivotViewport;
             if (currentRotateVector.sqrMagnitude <= Mathf.Epsilon)
             {
                 return false;
@@ -222,9 +231,10 @@ namespace UnitySvgEditor.Editor
                 ? EditorSnapUtility.SnapAngle(rotationAngle)
                 : rotationAngle;
 
-            Vector2 svgPivot = ToParentSpacePoint(_dragStartElementSceneRect.center);
-            if (!_transientDocumentModelSession.TryApplyRotation(_dragCurrentRotationAngle, svgPivot) ||
-                !_transientDocumentModelSession.TryBuildPreviewDocumentModel(out SvgDocumentModel previewDocumentModel, out _) ||
+            if (!_rotationSession.TryBuildPreview(
+                    _dragCurrentRotationAngle,
+                    out SvgDocumentModel previewDocumentModel,
+                    out _) ||
                 !host.TryRefreshTransientPreview(previewDocumentModel))
             {
                 return false;
@@ -271,7 +281,7 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
-            Vector2 svgPivot = ToParentSpacePoint(pivot);
+            Vector2 svgPivot = ElementRotationUtility.ToParentSpacePoint(_dragStartParentWorldTransform, pivot);
             if (!_transientDocumentModelSession.TryApplyScale(scale, svgPivot) ||
                 !_transientDocumentModelSession.TryBuildPreviewDocumentModel(out SvgDocumentModel previewDocumentModel, out _) ||
                 !host.TryRefreshTransientPreview(previewDocumentModel))
@@ -325,7 +335,10 @@ namespace UnitySvgEditor.Editor
 
             string updatedSource;
             string error;
-            if (!_transientDocumentModelSession.TryBuildCommittedSource(out updatedSource, out error))
+            bool builtSource = dragMode == CanvasDragMode.RotateElement
+                ? _rotationSession.TryBuildCommittedSource(out updatedSource, out error)
+                : _transientDocumentModelSession.TryBuildCommittedSource(out updatedSource, out error);
+            if (!builtSource)
             {
                 host.UpdateSourceStatus(
                     string.IsNullOrWhiteSpace(error)
@@ -379,10 +392,5 @@ namespace UnitySvgEditor.Editor
             return _dragStartParentWorldTransform.Inverse().MultiplyVector(worldDelta);
         }
 
-        // Converts a world-space point (e.g., scale pivot) to the element's SVG parent coordinate space.
-        private Vector2 ToParentSpacePoint(Vector2 worldPoint)
-        {
-            return _dragStartParentWorldTransform.Inverse().MultiplyPoint(worldPoint);
-        }
     }
 }

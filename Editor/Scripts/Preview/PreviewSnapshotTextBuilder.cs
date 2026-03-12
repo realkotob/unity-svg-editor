@@ -53,6 +53,8 @@ namespace UnitySvgEditor.Editor
                     BoundsQuality = BoundsQuality.Fallback,
                     WorldTransform = Matrix2D.identity,
                     ParentWorldTransform = Matrix2D.identity,
+                    RotationPivotWorld = bounds.center,
+                    RotationPivotParentSpace = bounds.center,
                     IsTextOverlay = true
                 });
             }

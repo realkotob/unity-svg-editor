@@ -21,12 +21,27 @@ namespace UnitySvgEditor.Editor
             public const string SELECTION_BOX_FRAME = SELECTION_BOX + "--frame";
             public const string SELECTION_SIZE_BADGE = Prefix + "selection-size-badge";
             public const string SELECTION_HANDLE = Prefix + "selection-handle";
+            public const string SELECTION_HANDLE_TOP_LEFT = SELECTION_HANDLE + "--top-left";
+            public const string SELECTION_HANDLE_TOP = SELECTION_HANDLE + "--top";
+            public const string SELECTION_HANDLE_TOP_RIGHT = SELECTION_HANDLE + "--top-right";
+            public const string SELECTION_HANDLE_RIGHT = SELECTION_HANDLE + "--right";
+            public const string SELECTION_HANDLE_BOTTOM_RIGHT = SELECTION_HANDLE + "--bottom-right";
+            public const string SELECTION_HANDLE_BOTTOM = SELECTION_HANDLE + "--bottom";
+            public const string SELECTION_HANDLE_BOTTOM_LEFT = SELECTION_HANDLE + "--bottom-left";
+            public const string SELECTION_HANDLE_LEFT = SELECTION_HANDLE + "--left";
+            public const string EDGE_ZONE = Prefix + "edge-zone";
+            public const string EDGE_ZONE_VERTICAL = EDGE_ZONE + "--vertical";
+            public const string EDGE_ZONE_HORIZONTAL = EDGE_ZONE + "--horizontal";
+            public const string ROTATION_ZONE = Prefix + "rotation-zone";
         }
 
         private const float HANDLE_HALF_SIZE = 4f;
-        private const float ROTATE_HANDLE_OFFSET = 24f;
+        private const float EDGE_ZONE_THICKNESS = 12f;
+        private const float ROTATE_ZONE_HALF_SIZE = 18f;
 
         private readonly Dictionary<CanvasHandle, VisualElement> _handles = new();
+        private readonly Dictionary<CanvasHandle, VisualElement> _edgeZones = new();
+        private readonly List<VisualElement> _rotationZones = new();
         private VisualElement _overlay;
         private VisualElement _frameElement;
         private Label _frameLabel;
@@ -95,15 +110,17 @@ namespace UnitySvgEditor.Editor
             _overlay.Add(_sizeBadge);
 
             CreateHandle(CanvasHandle.TopLeft);
-            CreateHandle(CanvasHandle.Top);
             CreateHandle(CanvasHandle.TopRight);
-            CreateHandle(CanvasHandle.Right);
             CreateHandle(CanvasHandle.BottomRight);
-            CreateHandle(CanvasHandle.Bottom);
             CreateHandle(CanvasHandle.BottomLeft);
-            CreateHandle(CanvasHandle.Left);
-            CreateHandle(CanvasHandle.Rotate);
-
+            CreateEdgeZone(CanvasHandle.Top);
+            CreateEdgeZone(CanvasHandle.Right);
+            CreateEdgeZone(CanvasHandle.Bottom);
+            CreateEdgeZone(CanvasHandle.Left);
+            for (int index = 0; index < 4; index++)
+            {
+                CreateRotationZone();
+            }
             ClearFrame();
             ClearSelection();
         }
@@ -116,6 +133,18 @@ namespace UnitySvgEditor.Editor
             }
 
             _handles.Clear();
+            foreach (var edgeZone in _edgeZones.Values)
+            {
+                edgeZone?.RemoveFromHierarchy();
+            }
+
+            _edgeZones.Clear();
+            foreach (VisualElement rotationZone in _rotationZones)
+            {
+                rotationZone?.RemoveFromHierarchy();
+            }
+
+            _rotationZones.Clear();
             _sizeBadge?.RemoveFromHierarchy();
             _selectionBox?.RemoveFromHierarchy();
             _hoverBox?.RemoveFromHierarchy();
@@ -265,6 +294,16 @@ namespace UnitySvgEditor.Editor
             {
                 handle.style.display = DisplayStyle.None;
             }
+
+            foreach (var edgeZone in _edgeZones.Values)
+            {
+                edgeZone.style.display = DisplayStyle.None;
+            }
+
+            foreach (VisualElement rotationZone in _rotationZones)
+            {
+                rotationZone.style.display = DisplayStyle.None;
+            }
         }
 
         public void ClearHover()
@@ -335,15 +374,17 @@ namespace UnitySvgEditor.Editor
                 pair.Value.style.display = selection.ShowHandles ? DisplayStyle.Flex : DisplayStyle.None;
             }
 
+            foreach (var pair in _edgeZones)
+            {
+                pair.Value.style.display = selection.ShowHandles ? DisplayStyle.Flex : DisplayStyle.None;
+            }
+
             PositionHandle(CanvasHandle.TopLeft, selection.Rect.xMin, selection.Rect.yMin);
-            PositionHandle(CanvasHandle.Top, selection.Rect.center.x, selection.Rect.yMin);
             PositionHandle(CanvasHandle.TopRight, selection.Rect.xMax, selection.Rect.yMin);
-            PositionHandle(CanvasHandle.Right, selection.Rect.xMax, selection.Rect.center.y);
             PositionHandle(CanvasHandle.BottomRight, selection.Rect.xMax, selection.Rect.yMax);
-            PositionHandle(CanvasHandle.Bottom, selection.Rect.center.x, selection.Rect.yMax);
             PositionHandle(CanvasHandle.BottomLeft, selection.Rect.xMin, selection.Rect.yMax);
-            PositionHandle(CanvasHandle.Left, selection.Rect.xMin, selection.Rect.center.y);
-            PositionHandle(CanvasHandle.Rotate, selection.Rect.center.x, selection.Rect.yMin - ROTATE_HANDLE_OFFSET);
+            PositionEdgeZones(selection.Rect, selection.ShowHandles);
+            PositionRotationZones(selection.Rect, selection.ShowHandles);
         }
 
         public bool TryHitTestHandle(Vector2 localPoint, out CanvasHandle handle)
@@ -375,16 +416,62 @@ namespace UnitySvgEditor.Editor
                 }
             }
 
-            return false;
+            foreach (var pair in _edgeZones)
+            {
+                Rect zoneRect = new(
+                    pair.Value.resolvedStyle.left,
+                    pair.Value.resolvedStyle.top,
+                    pair.Value.resolvedStyle.width,
+                    pair.Value.resolvedStyle.height);
+                if (zoneRect.Contains(localPoint))
+                {
+                    handle = pair.Key;
+                    return true;
+                }
+            }
+
+            return TryHitTestRotationZone(localPoint, out handle);
+        }
+
+        public void UpdateInteractionCursor(Vector2 localPoint)
+        {
+        }
+
+        public void ResetInteractionCursor()
+        {
         }
 
         private void CreateHandle(CanvasHandle handle)
         {
             var element = new VisualElement();
             element.AddClass(UssClassName.SELECTION_HANDLE);
-            element.pickingMode = PickingMode.Ignore;
+            element.AddClass(ResolveHandleCursorClass(handle));
+            element.pickingMode = PickingMode.Position;
             _overlay.Add(element);
             _handles[handle] = element;
+        }
+
+        private void CreateEdgeZone(CanvasHandle handle)
+        {
+            VisualElement element = new();
+            element.AddClass(UssClassName.EDGE_ZONE);
+            element.AddClass(handle is CanvasHandle.Top or CanvasHandle.Bottom
+                ? UssClassName.EDGE_ZONE_VERTICAL
+                : UssClassName.EDGE_ZONE_HORIZONTAL);
+            element.pickingMode = PickingMode.Position;
+            element.style.display = DisplayStyle.None;
+            _overlay.Add(element);
+            _edgeZones[handle] = element;
+        }
+
+        private void CreateRotationZone()
+        {
+            VisualElement element = new();
+            element.AddClass(UssClassName.ROTATION_ZONE);
+            element.pickingMode = PickingMode.Position;
+            element.style.display = DisplayStyle.None;
+            _overlay.Add(element);
+            _rotationZones.Add(element);
         }
 
         private void PositionHandle(CanvasHandle handle, float x, float y)
@@ -396,6 +483,110 @@ namespace UnitySvgEditor.Editor
 
             element.style.left = x - HANDLE_HALF_SIZE;
             element.style.top = y - HANDLE_HALF_SIZE;
+        }
+
+        private void PositionEdgeZones(Rect selectionRect, bool visible)
+        {
+            PositionEdgeZone(CanvasHandle.Top, selectionRect.xMin + HANDLE_HALF_SIZE, selectionRect.yMin - (EDGE_ZONE_THICKNESS * 0.5f), Mathf.Max(0f, selectionRect.width - (HANDLE_HALF_SIZE * 2f)), EDGE_ZONE_THICKNESS, visible);
+            PositionEdgeZone(CanvasHandle.Right, selectionRect.xMax - (EDGE_ZONE_THICKNESS * 0.5f), selectionRect.yMin + HANDLE_HALF_SIZE, EDGE_ZONE_THICKNESS, Mathf.Max(0f, selectionRect.height - (HANDLE_HALF_SIZE * 2f)), visible);
+            PositionEdgeZone(CanvasHandle.Bottom, selectionRect.xMin + HANDLE_HALF_SIZE, selectionRect.yMax - (EDGE_ZONE_THICKNESS * 0.5f), Mathf.Max(0f, selectionRect.width - (HANDLE_HALF_SIZE * 2f)), EDGE_ZONE_THICKNESS, visible);
+            PositionEdgeZone(CanvasHandle.Left, selectionRect.xMin - (EDGE_ZONE_THICKNESS * 0.5f), selectionRect.yMin + HANDLE_HALF_SIZE, EDGE_ZONE_THICKNESS, Mathf.Max(0f, selectionRect.height - (HANDLE_HALF_SIZE * 2f)), visible);
+        }
+
+        private void PositionEdgeZone(CanvasHandle handle, float left, float top, float width, float height, bool visible)
+        {
+            if (!_edgeZones.TryGetValue(handle, out VisualElement element))
+            {
+                return;
+            }
+
+            element.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+            element.style.left = left;
+            element.style.top = top;
+            element.style.width = width;
+            element.style.height = height;
+        }
+
+        private void PositionRotationZones(Rect selectionRect, bool showHandles)
+        {
+            if (_rotationZones.Count < 4)
+            {
+                return;
+            }
+
+            PositionRotationZone(_rotationZones[0], selectionRect.min, new Vector2(-ROTATE_ZONE_HALF_SIZE, -ROTATE_ZONE_HALF_SIZE), showHandles);
+            PositionRotationZone(_rotationZones[1], new Vector2(selectionRect.xMax, selectionRect.yMin), new Vector2(0f, -ROTATE_ZONE_HALF_SIZE), showHandles);
+            PositionRotationZone(_rotationZones[2], selectionRect.max, Vector2.zero, showHandles);
+            PositionRotationZone(_rotationZones[3], new Vector2(selectionRect.xMin, selectionRect.yMax), new Vector2(-ROTATE_ZONE_HALF_SIZE, 0f), showHandles);
+        }
+
+        private static void PositionRotationZone(VisualElement element, Vector2 corner, Vector2 offset, bool visible)
+        {
+            if (element == null)
+            {
+                return;
+            }
+
+            element.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+            element.style.left = corner.x + offset.x;
+            element.style.top = corner.y + offset.y;
+            element.style.width = ROTATE_ZONE_HALF_SIZE;
+            element.style.height = ROTATE_ZONE_HALF_SIZE;
+        }
+
+        private static string ResolveHandleCursorClass(CanvasHandle handle)
+        {
+            return handle switch
+            {
+                CanvasHandle.TopLeft => UssClassName.SELECTION_HANDLE_TOP_LEFT,
+                CanvasHandle.Top => UssClassName.SELECTION_HANDLE_TOP,
+                CanvasHandle.TopRight => UssClassName.SELECTION_HANDLE_TOP_RIGHT,
+                CanvasHandle.Right => UssClassName.SELECTION_HANDLE_RIGHT,
+                CanvasHandle.BottomRight => UssClassName.SELECTION_HANDLE_BOTTOM_RIGHT,
+                CanvasHandle.Bottom => UssClassName.SELECTION_HANDLE_BOTTOM,
+                CanvasHandle.BottomLeft => UssClassName.SELECTION_HANDLE_BOTTOM_LEFT,
+                CanvasHandle.Left => UssClassName.SELECTION_HANDLE_LEFT,
+                _ => string.Empty
+            };
+        }
+
+        private bool TryHitTestRotationZone(Vector2 localPoint, out CanvasHandle handle)
+        {
+            handle = CanvasHandle.None;
+            if (_currentSelection == null || !_currentSelection.ShowHandles)
+            {
+                return false;
+            }
+
+            Rect selectionRect = _currentSelection.Rect;
+            if (TryHitCornerRotationZone(localPoint, selectionRect.min, point => point.x <= selectionRect.xMin && point.y <= selectionRect.yMin) ||
+                TryHitCornerRotationZone(localPoint, new Vector2(selectionRect.xMax, selectionRect.yMin), point => point.x >= selectionRect.xMax && point.y <= selectionRect.yMin) ||
+                TryHitCornerRotationZone(localPoint, selectionRect.max, point => point.x >= selectionRect.xMax && point.y >= selectionRect.yMax) ||
+                TryHitCornerRotationZone(localPoint, new Vector2(selectionRect.xMin, selectionRect.yMax), point => point.x <= selectionRect.xMin && point.y >= selectionRect.yMax))
+            {
+                handle = CanvasHandle.Rotate;
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool TryHitCornerRotationZone(Vector2 localPoint, Vector2 corner, System.Func<Vector2, bool> diagonalPredicate)
+        {
+            Rect outerZone = new(
+                corner.x - ROTATE_ZONE_HALF_SIZE,
+                corner.y - ROTATE_ZONE_HALF_SIZE,
+                ROTATE_ZONE_HALF_SIZE * 2f,
+                ROTATE_ZONE_HALF_SIZE * 2f);
+            Rect resizeZone = new(
+                corner.x - HANDLE_HALF_SIZE,
+                corner.y - HANDLE_HALF_SIZE,
+                HANDLE_HALF_SIZE * 2f,
+                HANDLE_HALF_SIZE * 2f);
+
+            return outerZone.Contains(localPoint) &&
+                   !resizeZone.Contains(localPoint) &&
+                   diagonalPredicate(localPoint);
         }
     }
 }

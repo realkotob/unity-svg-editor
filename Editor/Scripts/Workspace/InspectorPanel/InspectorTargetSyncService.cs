@@ -10,7 +10,10 @@ namespace UnitySvgEditor.Editor
         private readonly InspectorPanelView _view;
         private readonly Func<IInspectorPanelHost> _hostAccessor;
         private readonly Action _updateInteractivity;
-        private readonly CanvasTransientDocumentModelSession _rotationSession = new();
+        private readonly ElementRotationSession _rotationSession = new();
+        private bool _isRotationDragActive;
+        private string _rotationDragTargetKey = string.Empty;
+        private Vector2 _rotationDragParentPivot;
         private bool _suppressSelectionSync;
 
         public InspectorTargetSyncService(
@@ -74,6 +77,37 @@ namespace UnitySvgEditor.Editor
         }
 
         public string ResolveSelectedTargetKey() => _inspectorPanelState.ResolveSelectedTargetKey();
+
+        public void BeginRotationDrag()
+        {
+            EndRotationDrag();
+
+            string targetKey = ResolveSelectedTargetKey();
+            if (Host?.CurrentDocument == null ||
+                string.IsNullOrWhiteSpace(targetKey) ||
+                string.Equals(targetKey, SvgDocumentTargets.RootTargetKey, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            if (!Host.TryGetTargetRotationPivotParentSpace(targetKey, out _rotationDragParentPivot) ||
+                !_rotationSession.TryBegin(Host.CurrentDocument, targetKey, _rotationDragParentPivot))
+            {
+                _rotationSession.End();
+                return;
+            }
+
+            _rotationDragTargetKey = targetKey;
+            _isRotationDragActive = true;
+        }
+
+        public void EndRotationDrag()
+        {
+            _isRotationDragActive = false;
+            _rotationDragTargetKey = string.Empty;
+            _rotationDragParentPivot = default;
+            _rotationSession.End();
+        }
 
         public void ReadSelectedTargetAttributes()
         {
@@ -180,7 +214,18 @@ namespace UnitySvgEditor.Editor
                 HistoryRecordingMode.Coalesced);
         }
 
-        public void ApplyTransformFromHelper()
+        public void ApplyTransformFromHelper(InspectorPanelView.TransformHelperChange change)
+        {
+            if (change.Field == InspectorPanelView.TransformHelperField.Rotate)
+            {
+                ApplyRotationFromHelper(change.Delta);
+                return;
+            }
+
+            ApplyStandardTransformFromHelper();
+        }
+
+        private void ApplyStandardTransformFromHelper()
         {
             if (Host?.CurrentDocument == null || !_view.IsBound)
             {
@@ -205,6 +250,78 @@ namespace UnitySvgEditor.Editor
                     Transform = transform
                 },
                 "Transform updated.",
+                HistoryRecordingMode.Coalesced);
+        }
+
+        private void ApplyRotationFromHelper(float deltaDegrees)
+        {
+            if (Host?.CurrentDocument == null || !_view.IsBound)
+            {
+                return;
+            }
+
+            string targetKey = ResolveSelectedTargetKey();
+            if (string.IsNullOrWhiteSpace(targetKey) ||
+                string.Equals(targetKey, SvgDocumentTargets.RootTargetKey, StringComparison.Ordinal))
+            {
+                Host?.UpdateSourceStatus("Rotation requires a non-root target.");
+                return;
+            }
+
+            if (Mathf.Approximately(deltaDegrees, 0f))
+            {
+                return;
+            }
+
+            _view.CaptureState(_inspectorPanelState);
+            string transform = string.Empty;
+            string error = string.Empty;
+
+            bool useDragSession = _isRotationDragActive &&
+                                  string.Equals(_rotationDragTargetKey, targetKey, StringComparison.Ordinal);
+            if (!useDragSession)
+            {
+                if (!Host.TryGetTargetRotationPivotParentSpace(targetKey, out _rotationDragParentPivot))
+                {
+                    Host?.UpdateSourceStatus("Rotation failed: stable pivot is unavailable.");
+                    return;
+                }
+
+                if (!_rotationSession.TryBegin(Host.CurrentDocument, targetKey, _rotationDragParentPivot))
+                {
+                    Host?.UpdateSourceStatus("Rotation failed: transform update could not be prepared.");
+                    return;
+                }
+            }
+
+            if (!_rotationSession.TryBuildTransform(deltaDegrees, out transform, out error))
+            {
+                Host?.UpdateSourceStatus(
+                    string.IsNullOrWhiteSpace(error)
+                        ? "Rotation failed: transform update could not be prepared."
+                        : $"Rotation failed: {error}");
+                if (!useDragSession)
+                {
+                    _rotationSession.End();
+                }
+                return;
+            }
+
+            _inspectorPanelState.Transform = transform;
+            _inspectorPanelState.TransformEnabled = true;
+            _inspectorPanelState.TrySyncTransformHelperFromText();
+            _view.ApplyState(_inspectorPanelState);
+            if (!useDragSession)
+            {
+                _rotationSession.End();
+            }
+            Host.TryApplyPatchRequest(
+                new AttributePatchRequest
+                {
+                    TargetKey = targetKey,
+                    Transform = transform
+                },
+                "Rotation updated.",
                 HistoryRecordingMode.Coalesced);
         }
 
@@ -350,23 +467,10 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            if (!Host.TryGetTargetSceneRect(targetKey, out Rect sceneRect))
-            {
-                Host?.UpdateSourceStatus("Rotation failed: preview bounds are unavailable.");
-                return;
-            }
-
-            if (!Host.TryGetTargetParentWorldTransform(targetKey, out var parentWorldTransform))
-            {
-                Host?.UpdateSourceStatus("Rotation failed: parent transform is unavailable.");
-                return;
-            }
-
             _view.CaptureState(_inspectorPanelState);
-            Vector2 parentPivot = ToParentSpacePoint(parentWorldTransform, sceneRect.center);
-            if (!_rotationSession.TryBegin(Host.CurrentDocument, targetKey) ||
-                !_rotationSession.TryApplyRotation(deltaDegrees, parentPivot) ||
-                !_rotationSession.TryGetCurrentTransform(out string transform))
+            if (!Host.TryGetTargetRotationPivotParentSpace(targetKey, out Vector2 parentPivot) ||
+                !_rotationSession.TryBegin(Host.CurrentDocument, targetKey, parentPivot) ||
+                !_rotationSession.TryBuildTransform(deltaDegrees, out string transform, out _))
             {
                 Host?.UpdateSourceStatus("Rotation failed: transform update could not be prepared.");
                 _rotationSession.End();
@@ -410,7 +514,7 @@ namespace UnitySvgEditor.Editor
             }
 
             _view.CaptureState(_inspectorPanelState);
-            Vector2 parentPivot = ToParentSpacePoint(parentWorldTransform, sceneRect.center);
+            Vector2 parentPivot = ElementRotationUtility.ToParentSpacePoint(parentWorldTransform, sceneRect.center);
             string existingTransform = _inspectorPanelState.Transform ?? string.Empty;
             string transform = PrependTransform(
                 existingTransform,
@@ -425,11 +529,6 @@ namespace UnitySvgEditor.Editor
                     Transform = transform
                 },
                 successStatus);
-        }
-
-        private static Vector2 ToParentSpacePoint(Unity.VectorGraphics.Matrix2D parentWorldTransform, Vector2 worldPoint)
-        {
-            return parentWorldTransform.Inverse().MultiplyPoint(worldPoint);
         }
 
         private static string PrependTransform(string existingTransform, string transformSegment)

@@ -17,6 +17,7 @@ namespace UnitySvgEditor.Editor
             string successStatus,
             HistoryRecordingMode recordingMode = HistoryRecordingMode.Immediate);
         bool TryGetTargetSceneRect(string targetKey, out Rect sceneRect);
+        bool TryGetTargetRotationPivotParentSpace(string targetKey, out Vector2 parentPivot);
         bool TryGetTargetParentWorldTransform(string targetKey, out Matrix2D parentWorldTransform);
         bool TryGetCanvasViewportSceneRect(out Rect sceneRect);
         void SyncSelectionFromInspectorTarget(string targetKey);

@@ -120,6 +120,28 @@ namespace UnitySvgEditor.Editor
 
             if (_pointerDragController.IsDraggingSelectionPreview)
             {
+                if (_pointerDragController.DragMode == CanvasDragMode.RotateElement &&
+                    _sceneProjector.TryResolveSelectedElementSceneRect(PreviewSnapshot, _host.SelectedElementKey, out Rect rotatedElementSceneRect) &&
+                    _sceneProjector.TrySceneRectToViewportRect(PreviewSnapshot, rotatedElementSceneRect, out Rect rotatedElementViewportRect))
+                {
+                    CanvasSelectionVisual rotatedSelectionVisual = _sceneProjector.BuildSelectionVisual(
+                        PreviewSnapshot,
+                        CanvasSelectionKind.Element,
+                        rotatedElementViewportRect,
+                        rotatedElementSceneRect.size,
+                        false);
+                    PreviewElementGeometry rotatedGeometry = _sceneProjector.FindPreviewElement(PreviewSnapshot, _host.SelectedElementKey);
+                    if (rotatedGeometry != null &&
+                        _sceneProjector.TryScenePointToViewportPoint(PreviewSnapshot, rotatedGeometry.RotationPivotWorld, out Vector2 rotationPivotViewport))
+                    {
+                        rotatedSelectionVisual.HasRotationPivot = true;
+                        rotatedSelectionVisual.RotationPivotViewport = rotationPivotViewport;
+                    }
+
+                    _overlayController.SetSelection(rotatedSelectionVisual);
+                    return;
+                }
+
                 Rect sourceRect = _pointerDragController.DragMode == CanvasDragMode.ResizeElement
                     ? _sceneProjector.BuildScaledSceneRect(
                         _pointerDragController.DragStartSelectionViewportRect,
@@ -159,12 +181,21 @@ namespace UnitySvgEditor.Editor
                 _sceneProjector.TrySceneRectToViewportRect(PreviewSnapshot, selectedElementSceneRect, out Rect elementViewportRect))
             {
                 bool showHandles = !IsResizeUnsupported(_host.SelectedElementKey);
-                _overlayController.SetSelection(_sceneProjector.BuildSelectionVisual(
+                CanvasSelectionVisual selectionVisual = _sceneProjector.BuildSelectionVisual(
                     PreviewSnapshot,
                     CanvasSelectionKind.Element,
                     elementViewportRect,
                     selectedElementSceneRect.size,
-                    showHandles));
+                    showHandles);
+                PreviewElementGeometry selectedGeometry = _sceneProjector.FindPreviewElement(PreviewSnapshot, _host.SelectedElementKey);
+                if (selectedGeometry != null &&
+                    _sceneProjector.TryScenePointToViewportPoint(PreviewSnapshot, selectedGeometry.RotationPivotWorld, out Vector2 rotationPivotViewport))
+                {
+                    selectionVisual.HasRotationPivot = true;
+                    selectionVisual.RotationPivotViewport = rotationPivotViewport;
+                }
+
+                _overlayController.SetSelection(selectionVisual);
                 return;
             }
 

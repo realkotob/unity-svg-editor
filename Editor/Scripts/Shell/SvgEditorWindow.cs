@@ -313,6 +313,28 @@ namespace UnitySvgEditor.Editor
 
             return false;
         }
+        bool IInspectorPanelHost.TryGetTargetRotationPivotParentSpace(string targetKey, out Vector2 parentPivot)
+        {
+            parentPivot = default;
+            var snapshot = _documentLifecycleController.PreviewSnapshot;
+            if (snapshot?.Elements == null || string.IsNullOrWhiteSpace(targetKey))
+                return false;
+
+            for (var i = 0; i < snapshot.Elements.Count; i++)
+            {
+                var element = snapshot.Elements[i];
+                if (element == null)
+                    continue;
+
+                if (!string.Equals(element.TargetKey, targetKey, StringComparison.Ordinal))
+                    continue;
+
+                parentPivot = element.RotationPivotParentSpace;
+                return true;
+            }
+
+            return false;
+        }
         bool IInspectorPanelHost.TryGetTargetParentWorldTransform(string targetKey, out Matrix2D parentWorldTransform)
         {
             parentWorldTransform = Matrix2D.identity;

@@ -84,6 +84,7 @@ namespace UnitySvgEditor.Editor
                 // This is the transform from SVG parent coordinate space to world space,
                 // needed to convert world-space deltas/pivots back to SVG parent space for transform attributes.
                 Matrix2D parentWorldTransform = resolvedWorldTransform * pair.Value.Transform.Inverse();
+                ResolveRotationPivot(pair.Value, resolvedWorldTransform, hitGeometry, visualBounds, out Vector2 rotationPivotWorld, out Vector2 rotationPivotParentSpace);
 
                 elements.Add(new PreviewElementGeometry
                 {
@@ -98,7 +99,9 @@ namespace UnitySvgEditor.Editor
                             ? BoundsQuality.Fallback
                             : BoundsQuality.Unknown),
                     WorldTransform = resolvedWorldTransform,
-                    ParentWorldTransform = parentWorldTransform
+                    ParentWorldTransform = parentWorldTransform,
+                    RotationPivotWorld = rotationPivotWorld,
+                    RotationPivotParentSpace = rotationPivotParentSpace
                 });
             }
 
@@ -136,6 +139,7 @@ namespace UnitySvgEditor.Editor
                     ? wt
                     : pair.Key.Transform;
                 Matrix2D parentWorldTransform = resolvedWorldTransform * pair.Key.Transform.Inverse();
+                ResolveRotationPivot(pair.Key, resolvedWorldTransform, hitGeometry, visualBounds, out Vector2 rotationPivotWorld, out Vector2 rotationPivotParentSpace);
 
                 elements.Add(new PreviewElementGeometry
                 {
@@ -150,7 +154,9 @@ namespace UnitySvgEditor.Editor
                             ? BoundsQuality.Fallback
                             : BoundsQuality.Unknown),
                     WorldTransform = resolvedWorldTransform,
-                    ParentWorldTransform = parentWorldTransform
+                    ParentWorldTransform = parentWorldTransform,
+                    RotationPivotWorld = rotationPivotWorld,
+                    RotationPivotParentSpace = rotationPivotParentSpace
                 });
             }
 
@@ -398,6 +404,75 @@ namespace UnitySvgEditor.Editor
                 Mathf.Min(topLeft.y, topRight.y, bottomRight.y, bottomLeft.y),
                 Mathf.Max(topLeft.x, topRight.x, bottomRight.x, bottomLeft.x),
                 Mathf.Max(topLeft.y, topRight.y, bottomRight.y, bottomLeft.y));
+            return true;
+        }
+
+        private static void ResolveRotationPivot(
+            SceneNode node,
+            Matrix2D resolvedWorldTransform,
+            IReadOnlyList<Vector2[]> hitGeometry,
+            Rect fallbackWorldBounds,
+            out Vector2 rotationPivotWorld,
+            out Vector2 rotationPivotParentSpace)
+        {
+            rotationPivotWorld = Vector2.zero;
+            rotationPivotParentSpace = Vector2.zero;
+            if (node == null)
+            {
+                return;
+            }
+
+            if (TryBuildLocalBoundsFromWorldGeometry(hitGeometry, resolvedWorldTransform, out Rect localBounds))
+            {
+                Vector2 localCenter = localBounds.center;
+                rotationPivotWorld = resolvedWorldTransform.MultiplyPoint(localCenter);
+                rotationPivotParentSpace = node.Transform.MultiplyPoint(localCenter);
+                return;
+            }
+
+            rotationPivotWorld = fallbackWorldBounds.center;
+            rotationPivotParentSpace = (resolvedWorldTransform * node.Transform.Inverse()).Inverse().MultiplyPoint(rotationPivotWorld);
+        }
+
+        private static bool TryBuildLocalBoundsFromWorldGeometry(
+            IReadOnlyList<Vector2[]> worldGeometry,
+            Matrix2D resolvedWorldTransform,
+            out Rect localBounds)
+        {
+            localBounds = default;
+            if (worldGeometry == null || worldGeometry.Count == 0)
+            {
+                return false;
+            }
+
+            Matrix2D inverseWorldTransform = resolvedWorldTransform.Inverse();
+            Vector2 min = new(float.MaxValue, float.MaxValue);
+            Vector2 max = new(float.MinValue, float.MinValue);
+            bool hasPoint = false;
+
+            for (int triangleIndex = 0; triangleIndex < worldGeometry.Count; triangleIndex++)
+            {
+                Vector2[] triangle = worldGeometry[triangleIndex];
+                if (triangle == null)
+                {
+                    continue;
+                }
+
+                for (int vertexIndex = 0; vertexIndex < triangle.Length; vertexIndex++)
+                {
+                    Vector2 localPoint = inverseWorldTransform.MultiplyPoint(triangle[vertexIndex]);
+                    min = Vector2.Min(min, localPoint);
+                    max = Vector2.Max(max, localPoint);
+                    hasPoint = true;
+                }
+            }
+
+            if (!hasPoint)
+            {
+                return false;
+            }
+
+            localBounds = Rect.MinMaxRect(min.x, min.y, max.x, max.y);
             return true;
         }
     }

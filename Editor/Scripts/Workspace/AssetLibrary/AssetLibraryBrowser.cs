@@ -32,9 +32,8 @@ namespace UnitySvgEditor.Editor
         private readonly HashSet<string> _fixtureAssetPaths = new(StringComparer.Ordinal);
         private readonly HashSet<string> _filteredAssetPaths = new(StringComparer.Ordinal);
 
-        private VisualElement _assetLibraryFilterBarHost;
         private VisualElement _fixtureLibrarySection;
-        private FilterBadgeBar _assetLibraryFilterBar;
+        private Button _assetLibraryRefreshButton;
         private AssetLibraryGridView _fixtureGridView;
         private AssetLibraryGridView _assetGridView;
         private bool _isProgrammaticSelection;
@@ -62,7 +61,7 @@ namespace UnitySvgEditor.Editor
             _loadAsset = loadAsset;
             _getCurrentAssetPath = getCurrentAssetPath;
             _canSwitchDocument = canSwitchDocument;
-            _assetLibraryFilterBarHost = root.Q<VisualElement>("asset-library-filter-bar");
+            _assetLibraryRefreshButton = root.Q<Button>("asset-library-refresh-button");
             _fixtureLibrarySection = root.Q<VisualElement>("fixture-library-section");
             _fixtureGridView = root.Q<AssetLibraryGridView>("fixture-grid-view");
             _assetGridView = root.Q<AssetLibraryGridView>("asset-grid-view");
@@ -72,11 +71,10 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            if (_assetLibraryFilterBarHost != null)
+            if (_assetLibraryRefreshButton != null)
             {
-                _assetLibraryFilterBar = new FilterBadgeBar();
-                _assetLibraryFilterBar.Bind(Array.Empty<FilterBadgeOption>(), string.Empty, null);
-                _assetLibraryFilterBarHost.Add(_assetLibraryFilterBar);
+                _assetLibraryRefreshButton.clicked -= OnRefreshButtonClicked;
+                _assetLibraryRefreshButton.clicked += OnRefreshButtonClicked;
             }
 
             _fixtureGridView.BindRuntime(OnFixtureGridItemSelected, OnFixtureGridSelectionChanged);
@@ -89,12 +87,15 @@ namespace UnitySvgEditor.Editor
         {
             _fixtureGridView?.UnbindRuntime();
             _assetGridView?.UnbindRuntime();
+            if (_assetLibraryRefreshButton != null)
+            {
+                _assetLibraryRefreshButton.clicked -= OnRefreshButtonClicked;
+            }
+
             _fixtureGridView = null;
             _assetGridView = null;
             _fixtureLibrarySection = null;
-            _assetLibraryFilterBar?.RemoveFromHierarchy();
-            _assetLibraryFilterBar = null;
-            _assetLibraryFilterBarHost = null;
+            _assetLibraryRefreshButton = null;
             _loadAsset = null;
             _getCurrentAssetPath = null;
             _canSwitchDocument = null;
@@ -134,7 +135,6 @@ namespace UnitySvgEditor.Editor
             _fixtureAssetItems.Sort(FixtureEntryComparison);
             _allAssetItems.Sort(AssetEntryComparison);
 
-            RebuildAssetLibraryFilters();
             ApplyAssetFilter(selectFirst);
         }
 
@@ -242,17 +242,9 @@ namespace UnitySvgEditor.Editor
             }
         }
 
-        private void RebuildAssetLibraryFilters()
+        private void OnRefreshButtonClicked()
         {
-            if (_assetLibraryFilterBar == null)
-            {
-                return;
-            }
-
-            Button refreshButton = new RefreshActionButton(
-                () => RefreshAssetList(selectFirst: false),
-                "Rescan local assets");
-            _assetLibraryFilterBar.SetActions(refreshButton);
+            RefreshAssetList(selectFirst: false);
         }
 
         private void OnAssetGridSelectionChanged(List<GridViewItem> selectedItems)

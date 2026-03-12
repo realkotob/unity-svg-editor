@@ -143,6 +143,47 @@
     background-color: var(--white);
 }
 
+.svg-editor__selection-handle--top-left,
+.svg-editor__selection-handle--bottom-right {
+    cursor: resize-up-left;
+}
+
+.svg-editor__selection-handle--top-right,
+.svg-editor__selection-handle--bottom-left {
+    cursor: resize-up-right;
+}
+
+.svg-editor__selection-handle--top,
+.svg-editor__selection-handle--bottom {
+    cursor: resize-vertical;
+}
+
+.svg-editor__selection-handle--left,
+.svg-editor__selection-handle--right {
+    cursor: resize-horizontal;
+}
+
+.svg-editor__edge-zone {
+    position: absolute;
+    display: none;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.svg-editor__edge-zone--vertical {
+    cursor: resize-vertical;
+}
+
+.svg-editor__edge-zone--horizontal {
+    cursor: resize-horizontal;
+}
+
+.svg-editor__rotation-zone {
+    position: absolute;
+    display: none;
+    background-color: rgba(0, 0, 0, 0);
+    cursor: rotate-arrow;
+}
+
 .svg-editor__selection-size-badge {
     position: absolute;
     display: none;

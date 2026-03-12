@@ -100,6 +100,47 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
+            if (!TryFindNodeByLegacyElementKey(documentModel, elementKey, out SvgNodeModel movedNode))
+            {
+                error = $"Could not find element '{elementKey}'.";
+                return false;
+            }
+
+            if (!documentModel.TryGetNode(movedNode.ParentId, out SvgNodeModel parentNode) || parentNode == null)
+            {
+                error = "Moved element does not have a parent node.";
+                return false;
+            }
+
+            return TryMoveElement(
+                documentModel,
+                elementKey,
+                parentNode.LegacyElementKey,
+                targetChildIndex,
+                out updatedDocumentModel,
+                out updatedSourceText,
+                out error);
+        }
+
+        public bool TryMoveElement(
+            SvgDocumentModel documentModel,
+            string elementKey,
+            string targetParentKey,
+            int targetChildIndex,
+            out SvgDocumentModel updatedDocumentModel,
+            out string updatedSourceText,
+            out string error)
+        {
+            updatedDocumentModel = null;
+            updatedSourceText = string.Empty;
+            error = string.Empty;
+
+            if (documentModel?.Root == null)
+            {
+                error = "Document model is unavailable.";
+                return false;
+            }
+
             updatedDocumentModel = CloneDocumentModel(documentModel);
             if (!TryFindNodeByLegacyElementKey(updatedDocumentModel, elementKey, out SvgNodeModel movedNode))
             {
@@ -107,35 +148,66 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
-            if (!updatedDocumentModel.TryGetNode(movedNode.ParentId, out SvgNodeModel parentNode) || parentNode == null)
+            if (!updatedDocumentModel.TryGetNode(movedNode.ParentId, out SvgNodeModel sourceParentNode) || sourceParentNode == null)
             {
                 error = "Moved element does not have a parent node.";
                 return false;
             }
 
-            List<SvgNodeId> reorderedChildren = new(parentNode.Children ?? Array.Empty<SvgNodeId>());
-            int sourceIndex = reorderedChildren.IndexOf(movedNode.Id);
+            if (!TryFindNodeByLegacyElementKey(updatedDocumentModel, targetParentKey, out SvgNodeModel targetParentNode))
+            {
+                error = $"Could not find target parent '{targetParentKey}'.";
+                return false;
+            }
+
+            if (targetParentNode.Id == movedNode.Id || IsSameOrDescendantOf(updatedDocumentModel, targetParentNode, movedNode.Id))
+            {
+                error = "Cannot move an element into itself or its descendant.";
+                return false;
+            }
+
+            bool movingWithinSameParent = sourceParentNode.Id == targetParentNode.Id;
+            List<SvgNodeId> sourceChildren = new(sourceParentNode.Children ?? Array.Empty<SvgNodeId>());
+            int sourceIndex = sourceChildren.IndexOf(movedNode.Id);
             if (sourceIndex < 0)
             {
                 error = "Could not resolve the moved element index.";
                 return false;
             }
 
-            int clampedTargetIndex = Math.Clamp(targetChildIndex, 0, reorderedChildren.Count);
-            if (sourceIndex < clampedTargetIndex)
-                clampedTargetIndex--;
-
-            if (clampedTargetIndex == sourceIndex)
+            if (movingWithinSameParent)
             {
-                updatedSourceText = documentModel.SourceText;
-                updatedDocumentModel.SourceText = updatedSourceText;
-                return true;
-            }
+                int clampedTargetIndex = Math.Clamp(targetChildIndex, 0, sourceChildren.Count);
+                if (sourceIndex < clampedTargetIndex)
+                    clampedTargetIndex--;
 
-            reorderedChildren.RemoveAt(sourceIndex);
-            reorderedChildren.Insert(clampedTargetIndex, movedNode.Id);
-            parentNode.Children = reorderedChildren;
-            RefreshSiblingOrder(updatedDocumentModel, parentNode);
+                if (clampedTargetIndex == sourceIndex)
+                {
+                    updatedSourceText = documentModel.SourceText;
+                    updatedDocumentModel.SourceText = updatedSourceText;
+                    return true;
+                }
+
+                sourceChildren.RemoveAt(sourceIndex);
+                sourceChildren.Insert(clampedTargetIndex, movedNode.Id);
+                sourceParentNode.Children = sourceChildren;
+                RefreshSiblingOrder(updatedDocumentModel, sourceParentNode);
+            }
+            else
+            {
+                List<SvgNodeId> targetChildren = new(targetParentNode.Children ?? Array.Empty<SvgNodeId>());
+                int clampedTargetIndex = Math.Clamp(targetChildIndex, 0, targetChildren.Count);
+
+                sourceChildren.RemoveAt(sourceIndex);
+                targetChildren.Insert(clampedTargetIndex, movedNode.Id);
+
+                sourceParentNode.Children = sourceChildren;
+                targetParentNode.Children = targetChildren;
+                movedNode.ParentId = targetParentNode.Id;
+
+                RefreshSiblingOrder(updatedDocumentModel, sourceParentNode);
+                RefreshSiblingOrder(updatedDocumentModel, targetParentNode);
+            }
 
             if (!_serializer.TrySerialize(updatedDocumentModel, out updatedSourceText, out error))
                 return false;
@@ -479,6 +551,20 @@ namespace UnitySvgEditor.Editor
 
                 childNode.SiblingIndex = index;
             }
+        }
+
+        private static bool IsSameOrDescendantOf(SvgDocumentModel documentModel, SvgNodeModel node, SvgNodeId ancestorId)
+        {
+            for (SvgNodeModel current = node; current != null;)
+            {
+                if (current.Id == ancestorId)
+                    return true;
+
+                if (current.ParentId == default || !documentModel.TryGetNode(current.ParentId, out current))
+                    break;
+            }
+
+            return false;
         }
     }
 }

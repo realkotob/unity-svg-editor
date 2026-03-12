@@ -36,6 +36,12 @@
     align-items: center;
 }
 
+.svg-editor__asset-refresh-button {
+    margin-left: auto;
+    --button-size: var(--height-button-sm);
+    --icon-size: 14px;
+}
+
 .svg-editor__asset-section-title {
     color: var(--muted-foreground);
     -unity-font-style: bold;

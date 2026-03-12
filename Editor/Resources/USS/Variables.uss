@@ -16,8 +16,8 @@
     --editor-accent-solid: rgba(98, 176, 255, 0.82);
     --editor-accent-solid-strong: rgba(98, 176, 255, 0.85);
 
-    --editor-canvas-stage-bg: rgb(34, 37, 41);
-    --editor-preview-panel-bg: rgb(26, 28, 31);
+    --editor-canvas-stage-bg: rgb(36, 36, 39);
+    --editor-preview-panel-bg: var(--secondary);
     --editor-frame-border: rgba(255, 255, 255, 0.14);
     --editor-frame-label-bg: rgba(17, 18, 21, 0.86);
     --editor-selection-fill: rgba(24, 160, 251, 0.1);

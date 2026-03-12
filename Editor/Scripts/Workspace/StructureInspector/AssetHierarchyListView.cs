@@ -151,7 +151,6 @@ namespace UnitySvgEditor.Editor
             hierarchyItemRow.RegisterCallback<PointerDownEvent>(OnHierarchyRowPointerDown, TrickleDown.TrickleDown);
             hierarchyItemRow.RegisterCallback<ClickEvent>(OnHierarchyRowClicked);
             hierarchyItemRow.Expander.RegisterCallback<PointerDownEvent>(OnHierarchyExpanderPointerDown, TrickleDown.TrickleDown);
-            hierarchyItemRow.Expander.RegisterCallback<ClickEvent>(OnHierarchyExpanderClicked);
             return hierarchyItemRow;
         }
 
@@ -265,24 +264,21 @@ namespace UnitySvgEditor.Editor
                 return;
             }
 
-            hierarchyExpander.GetFirstAncestorOfType<AssetHierarchyListView>()?._interactionController?.CancelPendingPress();
-            evt.StopPropagation();
-        }
-
-        private static void OnHierarchyExpanderClicked(ClickEvent evt)
-        {
-            if (evt.currentTarget is not VisualElement hierarchyExpander || hierarchyExpander.userData is not string elementKey)
+            AssetHierarchyListView hierarchyListView = hierarchyExpander.GetFirstAncestorOfType<AssetHierarchyListView>();
+            hierarchyListView?._interactionController?.CancelPendingPress();
+            if (hierarchyExpander.userData is not string elementKey)
             {
+                evt.StopImmediatePropagation();
                 return;
             }
 
-            hierarchyExpander.GetFirstAncestorOfType<AssetHierarchyListView>()?.ToggleHierarchyItemExpansion(elementKey);
-            evt.StopPropagation();
+            hierarchyListView?.ToggleHierarchyItemExpansion(elementKey);
+            evt.StopImmediatePropagation();
         }
 
         private static void OnHierarchyRowClicked(ClickEvent evt)
         {
-            if (evt.currentTarget is not AssetHierarchyTreeRow hierarchyItemRow || hierarchyItemRow.ElementKey is not string elementKey)
+            if (evt.currentTarget is not AssetHierarchyTreeRow hierarchyItemRow)
             {
                 return;
             }
@@ -296,15 +292,7 @@ namespace UnitySvgEditor.Editor
             if (hierarchyListView._interactionController?.TryConsumeSuppressedRowClick() == true)
             {
                 evt.StopPropagation();
-                return;
             }
-
-            if (!hierarchyItemRow.HasExpandableChildren)
-            {
-                return;
-            }
-
-            hierarchyListView.ToggleHierarchyItemExpansion(elementKey);
         }
         #endregion Help Methods
     }

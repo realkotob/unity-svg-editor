@@ -10,9 +10,11 @@
                         <svg:AssetHierarchyListView name="asset-hierarchy-list" show-preview="true" class="svg-editor__asset-hierarchy-list"/>
                     </ui:VisualElement>
                     <ui:VisualElement name="asset-panel-bottom" class="svg-editor__asset-panel-bottom icon-tab">
-                        <ui:VisualElement class="svg-editor__asset-section-header editor__panel-header">
+                        <ui:VisualElement class="svg-editor__asset-section-header editor__panel-header" style="padding-top: 0; padding-bottom: 0; padding-right: 0;">
                             <ui:Label text="Assets" class="svg-editor__asset-section-title"/>
-                            <ui:VisualElement name="asset-library-filter-bar" class="svg-editor__asset-section-actions"/>
+                            <ui:VisualElement class="svg-editor__asset-section-actions">
+                                <button:Button name="asset-library-refresh-button" variant="Ghost" size="Icon" tooltip="Rescan local assets" icon="project://database/Packages/com.newmassmedia.unity-uitoolkit-foundation/Runtime/Resources/Icons/lucide/refresh-ccw.svg?fileID=7388822144124034973&amp;guid=7f9b62e9253a412fa97bb5b5ff804416&amp;type=3#refresh-ccw" class="svg-editor__asset-refresh-button"/>
+                            </ui:VisualElement>
                         </ui:VisualElement>
                         <ui:VisualElement name="fixture-library-section" class="svg-editor__asset-subsection">
                             <svg:AssetLibraryGridView name="fixture-grid-view" show-preview="true" class="svg-editor__asset-grid-view svg-editor__asset-grid-view--fixtures"/>
