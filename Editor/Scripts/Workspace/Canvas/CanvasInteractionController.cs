@@ -148,25 +148,10 @@ namespace UnitySvgEditor.Editor
                     return;
                 }
 
-                if (_pointerDragController.DragMode == CanvasDragMode.RotateElement &&
-                    _sceneProjector.TryResolveSelectedElementSceneRect(PreviewSnapshot, _host.SelectedElementKey, out Rect rotatedElementSceneRect) &&
-                    _sceneProjector.TrySceneRectToViewportRect(PreviewSnapshot, rotatedElementSceneRect, out Rect rotatedElementViewportRect))
+                if (TryBuildDraggedSelectionVisual(out CanvasSelectionVisual draggedSelectionVisual))
                 {
-                    CanvasSelectionVisual rotatedSelectionVisual = _sceneProjector.BuildSelectionVisual(
-                        PreviewSnapshot,
-                        CanvasSelectionKind.Element,
-                        rotatedElementViewportRect,
-                        rotatedElementSceneRect.size,
-                        false);
-                    PreviewElementGeometry rotatedGeometry = _sceneProjector.FindPreviewElement(PreviewSnapshot, _host.SelectedElementKey);
-                    if (rotatedGeometry != null &&
-                        _sceneProjector.TryScenePointToViewportPoint(PreviewSnapshot, rotatedGeometry.RotationPivotWorld, out Vector2 rotationPivotViewport))
-                    {
-                        rotatedSelectionVisual.HasRotationPivot = true;
-                        rotatedSelectionVisual.RotationPivotViewport = rotationPivotViewport;
-                    }
-
-                    _overlayController.SetSelection(rotatedSelectionVisual);
+                    _overlayController.SetSelection(draggedSelectionVisual);
+                    _overlayController.SetDefinitionOverlays(BuildDraggedDefinitionOverlays());
                     return;
                 }
 
@@ -485,6 +470,12 @@ namespace UnitySvgEditor.Editor
 
         private IReadOnlyList<CanvasDefinitionOverlayVisual> BuildDraggedDefinitionOverlays()
         {
+            if (CanUseLiveDraggedPreview() &&
+                TryBuildLiveDraggedDefinitionOverlays(out IReadOnlyList<CanvasDefinitionOverlayVisual> liveOverlays))
+            {
+                return liveOverlays;
+            }
+
             Vector2 viewportDelta =
                 _pointerDragController.DragCurrentSelectionViewportRect.position -
                 _pointerDragController.DragStartSelectionViewportRect.position;
@@ -502,6 +493,96 @@ namespace UnitySvgEditor.Editor
             }
 
             return shifted;
+        }
+
+        private bool TryBuildDraggedSelectionVisual(out CanvasSelectionVisual selectionVisual)
+        {
+            selectionVisual = null;
+
+            if (PreviewSnapshot == null ||
+                string.IsNullOrWhiteSpace(_host.SelectedElementKey) ||
+                !_sceneProjector.TryResolveSelectedElementSceneRect(PreviewSnapshot, _host.SelectedElementKey, out Rect selectedElementSceneRect) ||
+                !_sceneProjector.TrySceneRectToViewportRect(PreviewSnapshot, selectedElementSceneRect, out Rect selectedElementViewportRect))
+            {
+                return false;
+            }
+
+            if (!IsLiveDraggedPreviewReady(selectedElementViewportRect))
+            {
+                return false;
+            }
+
+            bool showHandles = _pointerDragController.DragMode != CanvasDragMode.RotateElement;
+            selectionVisual = _sceneProjector.BuildSelectionVisual(
+                PreviewSnapshot,
+                CanvasSelectionKind.Element,
+                selectedElementViewportRect,
+                selectedElementSceneRect.size,
+                showHandles);
+
+            PreviewElementGeometry selectedGeometry = _sceneProjector.FindPreviewElement(PreviewSnapshot, _host.SelectedElementKey);
+            if (selectedGeometry != null &&
+                _sceneProjector.TryScenePointToViewportPoint(PreviewSnapshot, selectedGeometry.RotationPivotWorld, out Vector2 rotationPivotViewport))
+            {
+                selectionVisual.HasRotationPivot = true;
+                selectionVisual.RotationPivotViewport = rotationPivotViewport;
+            }
+
+            return true;
+        }
+
+        private bool TryBuildLiveDraggedDefinitionOverlays(out IReadOnlyList<CanvasDefinitionOverlayVisual> overlays)
+        {
+            overlays = System.Array.Empty<CanvasDefinitionOverlayVisual>();
+
+            DocumentSession currentDocument = _host.CurrentDocument;
+            return currentDocument?.DocumentModel != null &&
+                   PreviewSnapshot != null &&
+                   !string.IsNullOrWhiteSpace(_host.SelectedElementKey) &&
+                   _definitionOverlayBuilder.TryBuild(
+                       currentDocument.DocumentModel,
+                       _host.SelectedElementKey,
+                       PreviewSnapshot,
+                       _sceneProjector,
+                       out overlays,
+                       out _);
+        }
+
+        private bool CanUseLiveDraggedPreview()
+        {
+            if (PreviewSnapshot == null ||
+                string.IsNullOrWhiteSpace(_host.SelectedElementKey) ||
+                !_sceneProjector.TryResolveSelectedElementSceneRect(PreviewSnapshot, _host.SelectedElementKey, out Rect liveSceneRect) ||
+                !_sceneProjector.TrySceneRectToViewportRect(PreviewSnapshot, liveSceneRect, out Rect liveViewportRect))
+            {
+                return false;
+            }
+
+            return IsLiveDraggedPreviewReady(liveViewportRect);
+        }
+
+        private bool IsLiveDraggedPreviewReady(Rect liveViewportRect)
+        {
+            if (_pointerDragController.DragMode == CanvasDragMode.RotateElement)
+            {
+                return true;
+            }
+
+            return RectsApproximatelyEqual(
+                       _pointerDragController.DragCurrentSelectionViewportRect,
+                       _pointerDragController.DragStartSelectionViewportRect) ||
+                   !RectsApproximatelyEqual(
+                       liveViewportRect,
+                       _pointerDragController.DragStartSelectionViewportRect);
+        }
+
+        private static bool RectsApproximatelyEqual(Rect left, Rect right)
+        {
+            const float epsilon = 0.01f;
+            return Mathf.Abs(left.xMin - right.xMin) <= epsilon &&
+                   Mathf.Abs(left.yMin - right.yMin) <= epsilon &&
+                   Mathf.Abs(left.width - right.width) <= epsilon &&
+                   Mathf.Abs(left.height - right.height) <= epsilon;
         }
 
         private static CanvasDefinitionOverlayVisual OffsetDefinitionOverlay(CanvasDefinitionOverlayVisual overlay, Vector2 viewportDelta)

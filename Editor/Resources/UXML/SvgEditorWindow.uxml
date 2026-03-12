@@ -27,11 +27,11 @@
                 <ui:VisualElement name="preview-panel" class="svg-editor__preview-panel">
                     <svg:CanvasStageView name="canvas-stage-view">
                         <ui:VisualElement name="canvas-edit-hud" class="svg-editor__canvas-edit-hud">
-                            <ui:Button name="canvas-document-reset-button" text="Reset" class="svg-editor__canvas-document-reset-button"/>
                             <ui:VisualElement name="canvas-dirty-badge" class="svg-editor__canvas-dirty-badge">
                                 <ui:VisualElement name="canvas-dirty-dot" class="svg-editor__canvas-dirty-dot"/>
                                 <ui:Label name="canvas-dirty-label" text="Edited" class="svg-editor__canvas-dirty-label"/>
                             </ui:VisualElement>
+                            <ui:Button name="canvas-document-reset-button" text="Reset" class="svg-editor__canvas-document-reset-button"/>
                         </ui:VisualElement>
                         <ui:VisualElement name="canvas-zoom-hud" class="svg-editor__canvas-zoom-hud">
                             <ui:Label name="canvas-zoom-label" text="100%" class="svg-editor__canvas-zoom-label"/>

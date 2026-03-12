@@ -115,12 +115,18 @@ namespace UnitySvgEditor.Editor
                 case CanvasDragMode.MoveElement:
                     _elementDragController.UpdateMove(localPosition);
                     _host.UpdateSelectionVisual();
-                    _elementDragController.TryUpdateMoveTransientState(_host, viewportDelta, axisLock, snapEnabled);
+                    if (_elementDragController.TryUpdateMoveTransientState(_host, viewportDelta, axisLock, snapEnabled))
+                    {
+                        _host.UpdateSelectionVisual();
+                    }
                     break;
                 case CanvasDragMode.ResizeElement:
                     _elementDragController.UpdateResize(viewportDelta, state.ActiveHandle, uniformScale, centerAnchor);
                     _host.UpdateSelectionVisual();
-                    _elementDragController.TryUpdateResizeTransientState(_host, state.ActiveHandle, snapEnabled);
+                    if (_elementDragController.TryUpdateResizeTransientState(_host, state.ActiveHandle, snapEnabled))
+                    {
+                        _host.UpdateSelectionVisual();
+                    }
                     break;
                 case CanvasDragMode.RotateElement:
                     if (_elementDragController.TryUpdateRotateTransientState(_host, localPosition, snapEnabled))

@@ -7,6 +7,7 @@
   - 현재 제품 상태 기록
   - 완료 범위와 남은 우선순위 정리
   - 구현 원칙과 다음 세션 시작 규칙 고정
+  - README / 지원 범위 문서와의 기준선 유지
 - 통합 범위:
   - model-driven 전환 계획
   - inspector 레이아웃 후속 메모
@@ -17,6 +18,7 @@
 
 완료된 큰 축:
 
+- workspace asset library / `.svg` 검색 / document open flow 정리
 - edit-time source-of-truth를 `SvgDocumentModel`로 통일
 - edit-time XML patch 흐름 제거
 - inspector / structure / canvas interaction model-driven 전환
@@ -24,12 +26,13 @@
 - model mutation 기반 `Undo/Redo` 도입
 - `Cmd/Ctrl+S` save shortcut 도입
 - save success toast 도입
+- feature scan / renderer fallback diagnostics 도입
 - canvas move / resize / rotate interaction 정리
 - direct renderer scene path 도입 및 coverage 확장
 
 현재 남은 큰 축:
 
-- unsupported feature 진단 문구와 fallback 노출 정리
+- unsupported feature 진단 문구와 status / inspector 노출 정리
 - text 계열 세부 편집 정책 정밀화 여부 판단
 - renderer invalidation / rebuild 비용 추가 최적화 여부 판단
 - inspector transform helper와 직접 입력 UX 충돌 정리
@@ -40,6 +43,7 @@
 
 핵심 목표:
 
+- 프로젝트 내 `.svg` 자산을 탐색하고 빠르게 연다
 - SVG 자산을 열고 구조를 이해한다
 - preview와 원본 구조 차이를 진단한다
 - canvas에서 선택 / 이동 / 크기 변경 / 회전을 수행한다
@@ -84,7 +88,14 @@
 
 ## 5. 현재 완료 범위
 
-### 5.1 Document / Editing Flow
+### 5.1 Workspace / Document Lifecycle
+
+- 프로젝트 내 `.svg` asset library / 검색
+- document open / save / reimport flow
+- save success toast
+- feature scan / renderer fallback diagnostics
+
+### 5.2 Document / Editing Flow
 
 - document model / loader / serializer
 - raw attribute / reference 보존
@@ -93,22 +104,21 @@
 - style / reorder / save path model 전환
 - save 후 history 유지
 - `Cmd/Ctrl+Z`, `Cmd/Ctrl+Shift+Z`, `Cmd/Ctrl+S` shortcut
-- save success toast
 
-### 5.2 Canvas Interaction
+### 5.3 Canvas Interaction
 
 - selection / hover sync
 - move / resize commit
 - rotate handle / transient preview / commit
 - drag / resize snap modifier
 
-### 5.3 Runtime Cleanup
+### 5.4 Runtime Cleanup
 
 - legacy edit-time XML patch 경로 제거
 - `AttributePatcher*` 제거
 - preview live/transient refresh의 model contract 정리
 
-### 5.4 Editor Preview / Interaction Support
+### 5.5 Editor Preview / Interaction Support
 
 현재 editor preview / interaction 기준 지원:
 
@@ -131,7 +141,7 @@
   - 선택
   - move / resize commit
 
-### 5.5 Preview Works, Editing Is Limited
+### 5.6 Preview Works, Editing Is Limited
 
 - `path`
   - 현재 direct `d` / anchor / control point editing 대상은 아님
@@ -155,7 +165,7 @@
 
 우선순위는 아래 순서를 기본으로 잡는다.
 
-1. fallback / unsupported feature 진단 문구 정리
+1. fallback / unsupported feature 진단 문구와 노출 위치 정리
 2. rotate / snap UX polish
 3. inspector transform helper와 직접 입력 규칙 정리
 4. `tspan` / `text-anchor` 세부 정밀도 개선 여부 판단
@@ -264,3 +274,4 @@
 
 - 상태 설명과 사용자용 요약은 `README.md`를 따른다.
 - Unity `VectorImage` 지원 경계는 `docs/unity-vectorimage-support.md`를 따른다.
+- support 분류나 fallback 정책이 바뀌면 `README.md`와 이 문서를 같은 변경 단위에서 함께 갱신한다.

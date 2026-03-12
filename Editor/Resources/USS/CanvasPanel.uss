@@ -16,8 +16,8 @@
 
 .svg-editor__canvas-edit-hud {
     position: absolute;
-    top: var(--space-3);
-    right: var(--space-3);
+    bottom: var(--space-3);
+    left: var(--space-3);
     flex-direction: row;
     align-items: center;
     display: flex;
@@ -183,22 +183,22 @@
 
 .svg-editor__selection-handle--top-left,
 .svg-editor__selection-handle--bottom-right {
-    cursor: resize-up-left;
+    cursor: var(--cursor-nwse-resize);
 }
 
 .svg-editor__selection-handle--top-right,
 .svg-editor__selection-handle--bottom-left {
-    cursor: resize-up-right;
+    cursor: var(--cursor-nesw-resize);
 }
 
 .svg-editor__selection-handle--top,
 .svg-editor__selection-handle--bottom {
-    cursor: resize-vertical;
+    cursor: var(--cursor-ns-resize);
 }
 
 .svg-editor__selection-handle--left,
 .svg-editor__selection-handle--right {
-    cursor: resize-horizontal;
+    cursor: var(--cursor-ew-resize);
 }
 
 .svg-editor__edge-zone {
@@ -208,18 +208,18 @@
 }
 
 .svg-editor__edge-zone--vertical {
-    cursor: resize-vertical;
+    cursor: var(--cursor-ns-resize);
 }
 
 .svg-editor__edge-zone--horizontal {
-    cursor: resize-horizontal;
+    cursor: var(--cursor-ew-resize);
 }
 
 .svg-editor__rotation-zone {
     position: absolute;
     display: none;
     background-color: rgba(0, 0, 0, 0);
-    cursor: rotate-arrow;
+    cursor: var(--cursor-rotate);
 }
 
 .svg-editor__selection-size-badge {

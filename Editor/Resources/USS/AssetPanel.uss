@@ -383,7 +383,7 @@
     border-color: var(--transparent);
     border-width: 1px;
     background-color: var(--transparent);
-    cursor: link;
+    cursor: var(--cursor-link);
 }
 
 .tooling-grid--compact .tooling-grid__cell {
