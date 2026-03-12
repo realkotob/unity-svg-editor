@@ -7,7 +7,7 @@ using SvgEditor.Preview;
 
 namespace SvgEditor.Preview.Geometry
 {
-    internal static class PreviewGeometryBoundsUtility
+    internal static class GeometryBoundsUtility
     {
         public static bool TryBuildVisualContentBounds(
             IReadOnlyList<PreviewElementGeometry> elements,

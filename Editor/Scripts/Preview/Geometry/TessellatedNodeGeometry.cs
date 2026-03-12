@@ -4,9 +4,9 @@ using UnityEngine;
 
 namespace SvgEditor.Preview.Geometry
 {
-    internal readonly struct PreviewTessellatedNodeGeometry
+    internal readonly struct TessellatedNodeGeometry
     {
-        public PreviewTessellatedNodeGeometry(IReadOnlyList<Vector2[]> triangles, Rect bounds, bool hasBounds)
+        public TessellatedNodeGeometry(IReadOnlyList<Vector2[]> triangles, Rect bounds, bool hasBounds)
         {
             Triangles = triangles ?? Array.Empty<Vector2[]>();
             Bounds = bounds;

@@ -68,7 +68,7 @@ namespace SvgEditor.Workspace.Canvas
             float frameHeaderHeight,
             out Rect visibleViewportRect)
         {
-            return CanvasViewportFrameLayoutCalculator.TryGetFrameVisibleViewportRect(
+            return ViewportFrameLayoutCalculator.TryGetFrameVisibleViewportRect(
                 viewportState,
                 previewSnapshot,
                 framePadding,
@@ -84,7 +84,7 @@ namespace SvgEditor.Workspace.Canvas
             float frameHeaderHeight,
             out Rect visibleViewportRect)
         {
-            return CanvasViewportFrameLayoutCalculator.TryGetFrameVisibleViewportRect(
+            return ViewportFrameLayoutCalculator.TryGetFrameVisibleViewportRect(
                 viewportState,
                 projectionSceneRect,
                 preserveAspectRatioMode,
@@ -100,7 +100,7 @@ namespace SvgEditor.Workspace.Canvas
             float frameHeaderHeight,
             out Rect contentViewportRect)
         {
-            return CanvasViewportFrameLayoutCalculator.TryGetFrameContentViewportRect(
+            return ViewportFrameLayoutCalculator.TryGetFrameContentViewportRect(
                 viewportState,
                 previewSnapshot,
                 framePadding,
@@ -115,7 +115,7 @@ namespace SvgEditor.Workspace.Canvas
             float frameHeaderHeight,
             out Rect contentViewportRect)
         {
-            return CanvasViewportFrameLayoutCalculator.TryGetFrameContentViewportRect(
+            return ViewportFrameLayoutCalculator.TryGetFrameContentViewportRect(
                 viewportState,
                 projectionSceneRect,
                 framePadding,
@@ -131,7 +131,7 @@ namespace SvgEditor.Workspace.Canvas
             float frameHeaderHeight,
             out Rect contentViewportRect)
         {
-            return CanvasViewportFrameLayoutCalculator.TryGetFrameContentViewportRect(
+            return ViewportFrameLayoutCalculator.TryGetFrameContentViewportRect(
                 viewportState,
                 projectionSceneRect,
                 preserveAspectRatioMode,
@@ -148,7 +148,7 @@ namespace SvgEditor.Workspace.Canvas
             Rect sceneRect,
             out Rect viewportRect)
         {
-            return CanvasSceneViewportMappingUtility.TrySceneRectToViewportRect(
+            return SceneViewportMappingUtility.TrySceneRectToViewportRect(
                 viewportState,
                 previewSnapshot,
                 framePadding,
@@ -165,7 +165,7 @@ namespace SvgEditor.Workspace.Canvas
             Vector2 scenePoint,
             out Vector2 viewportPoint)
         {
-            return CanvasSceneViewportMappingUtility.TryScenePointToViewportPoint(
+            return SceneViewportMappingUtility.TryScenePointToViewportPoint(
                 viewportState,
                 previewSnapshot,
                 framePadding,
@@ -182,7 +182,7 @@ namespace SvgEditor.Workspace.Canvas
             Vector2 viewportDelta,
             out Vector2 sceneDelta)
         {
-            return CanvasSceneViewportMappingUtility.TryConvertViewportDeltaToSceneDelta(
+            return SceneViewportMappingUtility.TryConvertViewportDeltaToSceneDelta(
                 viewportState,
                 previewSnapshot,
                 framePadding,
@@ -199,7 +199,7 @@ namespace SvgEditor.Workspace.Canvas
             Vector2 viewportDelta,
             out Vector2 sceneDelta)
         {
-            return CanvasSceneViewportMappingUtility.TryConvertViewportDeltaToSceneDelta(
+            return SceneViewportMappingUtility.TryConvertViewportDeltaToSceneDelta(
                 viewportState,
                 projectionSceneRect,
                 framePadding,
@@ -217,7 +217,7 @@ namespace SvgEditor.Workspace.Canvas
             Vector2 viewportDelta,
             out Vector2 sceneDelta)
         {
-            return CanvasSceneViewportMappingUtility.TryConvertViewportDeltaToSceneDelta(
+            return SceneViewportMappingUtility.TryConvertViewportDeltaToSceneDelta(
                 viewportState,
                 projectionSceneRect,
                 preserveAspectRatioMode,
@@ -235,7 +235,7 @@ namespace SvgEditor.Workspace.Canvas
             Vector2 viewportPoint,
             out Vector2 scenePoint)
         {
-            return CanvasSceneViewportMappingUtility.TryViewportPointToScenePoint(
+            return SceneViewportMappingUtility.TryViewportPointToScenePoint(
                 viewportState,
                 previewSnapshot,
                 framePadding,
@@ -251,7 +251,7 @@ namespace SvgEditor.Workspace.Canvas
             float frameHeaderHeight,
             out float displayedZoomScale)
         {
-            return CanvasSceneViewportMappingUtility.TryGetDisplayedZoomScale(
+            return SceneViewportMappingUtility.TryGetDisplayedZoomScale(
                 viewportState,
                 previewSnapshot,
                 framePadding,
@@ -266,7 +266,7 @@ namespace SvgEditor.Workspace.Canvas
             float frameHeaderHeight,
             out FrameContentLayout layout)
         {
-            return CanvasViewportFrameLayoutCalculator.TryGetFrameContentLayout(
+            return ViewportFrameLayoutCalculator.TryGetFrameContentLayout(
                 viewportState,
                 previewSnapshot,
                 framePadding,
@@ -282,7 +282,7 @@ namespace SvgEditor.Workspace.Canvas
             float frameHeaderHeight,
             out FrameContentLayout layout)
         {
-            return CanvasViewportFrameLayoutCalculator.TryGetFrameContentLayout(
+            return ViewportFrameLayoutCalculator.TryGetFrameContentLayout(
                 viewportState,
                 projectionSceneRect,
                 preserveAspectRatioMode,

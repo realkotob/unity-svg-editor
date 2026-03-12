@@ -14,14 +14,14 @@ namespace SvgEditor.Preview.Geometry
             IReadOnlyList<PreviewElementGeometry> elements,
             out Rect visualContentBounds)
         {
-            return PreviewGeometryBoundsUtility.TryBuildVisualContentBounds(elements, out visualContentBounds);
+            return GeometryBoundsUtility.TryBuildVisualContentBounds(elements, out visualContentBounds);
         }
 
         public static IReadOnlyList<PreviewElementGeometry> BuildElementBounds(
             SVGParser.SceneInfo sceneInfo,
             IReadOnlyDictionary<string, (string Key, string TargetKey)> keyByNodeId)
         {
-            PreviewGeometryWorldContext context = PreviewGeometryWorldContextBuilder.Build(sceneInfo);
+            GeometryWorldContext context = GeometryWorldContextBuilder.Build(sceneInfo);
             List<(SceneNode Node, string Key, string TargetKey)> mappedNodes = new();
 
             foreach (var pair in sceneInfo.NodeIDs)
@@ -47,7 +47,7 @@ namespace SvgEditor.Preview.Geometry
             if (scene?.Root == null || keyByNode == null || keyByNode.Count == 0)
                 return Array.Empty<PreviewElementGeometry>();
 
-            PreviewGeometryWorldContext context = PreviewGeometryWorldContextBuilder.Build(scene, nodeOpacity);
+            GeometryWorldContext context = GeometryWorldContextBuilder.Build(scene, nodeOpacity);
             List<(SceneNode Node, string Key, string TargetKey)> mappedNodes = new(keyByNode.Count);
 
             foreach (KeyValuePair<SceneNode, (string Key, string TargetKey)> pair in keyByNode)
@@ -77,17 +77,17 @@ namespace SvgEditor.Preview.Geometry
                 Root = overlayRoot
             };
 
-            PreviewGeometryWorldContext context = PreviewGeometryWorldContextBuilder.Build(
+            GeometryWorldContext context = GeometryWorldContextBuilder.Build(
                 scene,
                 nodeOpacity ?? new Dictionary<SceneNode, float>());
-            hitGeometry = PreviewGeometryWorldContextBuilder.BuildHitTriangles(
+            hitGeometry = GeometryWorldContextBuilder.BuildHitTriangles(
                 overlayRoot,
                 context.WorldGeometryByNode,
                 out visualBounds,
                 out bool hasBounds);
             if (!hasBounds)
             {
-                hasBounds = PreviewGeometryBoundsUtility.TryBuildFallbackBounds(
+                hasBounds = GeometryBoundsUtility.TryBuildFallbackBounds(
                     overlayRoot,
                     context.WorldTransformByNode,
                     out visualBounds);
@@ -102,8 +102,8 @@ namespace SvgEditor.Preview.Geometry
             if (sceneInfo.Scene?.Root == null)
                 return false;
 
-            PreviewGeometryWorldContext context = PreviewGeometryWorldContextBuilder.Build(sceneInfo);
-            return PreviewGeometryBoundsUtility.TryBuildFallbackBounds(
+            GeometryWorldContext context = GeometryWorldContextBuilder.Build(sceneInfo);
+            return GeometryBoundsUtility.TryBuildFallbackBounds(
                 sceneInfo.Scene.Root,
                 context.WorldTransformByNode,
                 out worldBounds);
@@ -118,8 +118,8 @@ namespace SvgEditor.Preview.Geometry
             if (scene?.Root == null)
                 return false;
 
-            PreviewGeometryWorldContext context = PreviewGeometryWorldContextBuilder.Build(scene, nodeOpacity);
-            return PreviewGeometryBoundsUtility.TryBuildFallbackBounds(
+            GeometryWorldContext context = GeometryWorldContextBuilder.Build(scene, nodeOpacity);
+            return GeometryBoundsUtility.TryBuildFallbackBounds(
                 scene.Root,
                 context.WorldTransformByNode,
                 out worldBounds);
@@ -127,7 +127,7 @@ namespace SvgEditor.Preview.Geometry
 
         private static IReadOnlyList<PreviewElementGeometry> BuildElementBounds(
             IReadOnlyList<(SceneNode Node, string Key, string TargetKey)> mappedNodes,
-            PreviewGeometryWorldContext context)
+            GeometryWorldContext context)
         {
             List<PreviewElementGeometry> elements = new();
 
@@ -148,16 +148,16 @@ namespace SvgEditor.Preview.Geometry
             SceneNode node,
             string key,
             string targetKey,
-            PreviewGeometryWorldContext context)
+            GeometryWorldContext context)
         {
-            IReadOnlyList<Vector2[]> hitGeometry = PreviewGeometryWorldContextBuilder.BuildHitTriangles(
+            IReadOnlyList<Vector2[]> hitGeometry = GeometryWorldContextBuilder.BuildHitTriangles(
                 node,
                 context.WorldGeometryByNode,
                 out Rect visualBounds,
                 out bool hasExactBounds);
             if (!hasExactBounds)
             {
-                hasExactBounds = PreviewGeometryBoundsUtility.TryBuildFallbackBounds(
+                hasExactBounds = GeometryBoundsUtility.TryBuildFallbackBounds(
                     node,
                     context.WorldTransformByNode,
                     out visualBounds);
@@ -167,7 +167,7 @@ namespace SvgEditor.Preview.Geometry
                 ? worldTransform
                 : node.Transform;
             Matrix2D parentWorldTransform = resolvedWorldTransform * node.Transform.Inverse();
-            PreviewGeometryBoundsUtility.ResolveRotationPivot(
+            GeometryBoundsUtility.ResolveRotationPivot(
                 node,
                 resolvedWorldTransform,
                 visualBounds,

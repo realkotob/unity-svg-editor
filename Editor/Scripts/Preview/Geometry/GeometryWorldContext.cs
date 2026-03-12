@@ -3,12 +3,12 @@ using Unity.VectorGraphics;
 
 namespace SvgEditor.Preview.Geometry
 {
-    internal readonly struct PreviewGeometryWorldContext
+    internal readonly struct GeometryWorldContext
     {
-        public PreviewGeometryWorldContext(
+        public GeometryWorldContext(
             IReadOnlyDictionary<SceneNode, int> drawOrderByNode,
             IReadOnlyDictionary<SceneNode, Matrix2D> worldTransformByNode,
-            IReadOnlyDictionary<SceneNode, PreviewTessellatedNodeGeometry> worldGeometryByNode)
+            IReadOnlyDictionary<SceneNode, TessellatedNodeGeometry> worldGeometryByNode)
         {
             DrawOrderByNode = drawOrderByNode;
             WorldTransformByNode = worldTransformByNode;
@@ -17,6 +17,6 @@ namespace SvgEditor.Preview.Geometry
 
         public IReadOnlyDictionary<SceneNode, int> DrawOrderByNode { get; }
         public IReadOnlyDictionary<SceneNode, Matrix2D> WorldTransformByNode { get; }
-        public IReadOnlyDictionary<SceneNode, PreviewTessellatedNodeGeometry> WorldGeometryByNode { get; }
+        public IReadOnlyDictionary<SceneNode, TessellatedNodeGeometry> WorldGeometryByNode { get; }
     }
 }

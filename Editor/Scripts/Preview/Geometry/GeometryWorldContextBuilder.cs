@@ -7,31 +7,31 @@ using SvgEditor.Preview.Build;
 
 namespace SvgEditor.Preview.Geometry
 {
-    internal static class PreviewGeometryWorldContextBuilder
+    internal static class GeometryWorldContextBuilder
     {
-        public static PreviewGeometryWorldContext Build(SVGParser.SceneInfo sceneInfo)
+        public static GeometryWorldContext Build(SVGParser.SceneInfo sceneInfo)
         {
             Dictionary<SceneNode, int> drawOrderByNode = BuildDrawOrderLookup(sceneInfo.Scene.Root);
             Dictionary<SceneNode, Matrix2D> worldTransformByNode = BuildWorldTransformLookup(sceneInfo);
-            Dictionary<SceneNode, PreviewTessellatedNodeGeometry> worldGeometryByNode = BuildWorldGeometryLookup(
+            Dictionary<SceneNode, TessellatedNodeGeometry> worldGeometryByNode = BuildWorldGeometryLookup(
                 sceneInfo.Scene.Root,
                 worldTransformByNode);
-            return new PreviewGeometryWorldContext(drawOrderByNode, worldTransformByNode, worldGeometryByNode);
+            return new GeometryWorldContext(drawOrderByNode, worldTransformByNode, worldGeometryByNode);
         }
 
-        public static PreviewGeometryWorldContext Build(Scene scene, Dictionary<SceneNode, float> nodeOpacity)
+        public static GeometryWorldContext Build(Scene scene, Dictionary<SceneNode, float> nodeOpacity)
         {
             Dictionary<SceneNode, int> drawOrderByNode = BuildDrawOrderLookup(scene.Root);
             Dictionary<SceneNode, Matrix2D> worldTransformByNode = BuildWorldTransformLookup(scene, nodeOpacity);
-            Dictionary<SceneNode, PreviewTessellatedNodeGeometry> worldGeometryByNode = BuildWorldGeometryLookup(
+            Dictionary<SceneNode, TessellatedNodeGeometry> worldGeometryByNode = BuildWorldGeometryLookup(
                 scene.Root,
                 worldTransformByNode);
-            return new PreviewGeometryWorldContext(drawOrderByNode, worldTransformByNode, worldGeometryByNode);
+            return new GeometryWorldContext(drawOrderByNode, worldTransformByNode, worldGeometryByNode);
         }
 
         public static IReadOnlyList<Vector2[]> BuildHitTriangles(
             SceneNode node,
-            IReadOnlyDictionary<SceneNode, PreviewTessellatedNodeGeometry> worldGeometryByNode,
+            IReadOnlyDictionary<SceneNode, TessellatedNodeGeometry> worldGeometryByNode,
             out Rect bounds,
             out bool hasBounds)
         {
@@ -44,7 +44,7 @@ namespace SvgEditor.Preview.Geometry
 
             foreach (SceneNode descendant in VectorUtils.SceneNodes(node))
             {
-                if (!worldGeometryByNode.TryGetValue(descendant, out PreviewTessellatedNodeGeometry geometry) ||
+                if (!worldGeometryByNode.TryGetValue(descendant, out TessellatedNodeGeometry geometry) ||
                     geometry.Triangles.Count == 0)
                 {
                     continue;
@@ -54,7 +54,7 @@ namespace SvgEditor.Preview.Geometry
                 AddTriangles(triangles, geometry.Triangles);
                 if (geometry.HasBounds)
                 {
-                    PreviewGeometryBoundsUtility.AccumulateBounds(ref hasBounds, ref bounds, geometry.Bounds);
+                    GeometryBoundsUtility.AccumulateBounds(ref hasBounds, ref bounds, geometry.Bounds);
                 }
             }
 
@@ -106,19 +106,19 @@ namespace SvgEditor.Preview.Geometry
             return lookup;
         }
 
-        private static Dictionary<SceneNode, PreviewTessellatedNodeGeometry> BuildWorldGeometryLookup(
+        private static Dictionary<SceneNode, TessellatedNodeGeometry> BuildWorldGeometryLookup(
             SceneNode root,
             IReadOnlyDictionary<SceneNode, Matrix2D> worldTransformByNode)
         {
-            Dictionary<SceneNode, PreviewTessellatedNodeGeometry> lookup = new();
+            Dictionary<SceneNode, TessellatedNodeGeometry> lookup = new();
             foreach (SceneNode node in VectorUtils.SceneNodes(root))
             {
                 if (node?.Shapes == null || node.Shapes.Count == 0)
                     continue;
 
                 IReadOnlyList<Vector2[]> triangles = TessellateNodeToWorldTriangles(node, worldTransformByNode);
-                bool hasBounds = PreviewGeometryBoundsUtility.TryBuildTriangleBounds(triangles, out Rect bounds);
-                lookup[node] = new PreviewTessellatedNodeGeometry(triangles, bounds, hasBounds);
+                bool hasBounds = GeometryBoundsUtility.TryBuildTriangleBounds(triangles, out Rect bounds);
+                lookup[node] = new TessellatedNodeGeometry(triangles, bounds, hasBounds);
             }
 
             return lookup;
