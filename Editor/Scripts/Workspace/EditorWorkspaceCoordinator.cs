@@ -17,7 +17,7 @@ namespace SvgEditor.Workspace
         private readonly IEditorWorkspaceHost _host;
         private readonly SvgDocumentModelMutationService _documentModelMutationService = new();
         private readonly StructurePanelState _structurePanelState = new();
-        private readonly CanvasWorkspaceController _canvasWorkspaceController;
+        private readonly WorkspaceController _canvasWorkspaceController;
         private readonly StructureHierarchyInteractionController _structureHierarchyInteractionController = new();
         private readonly EditorWorkspaceShellBinder _shellBinder = new();
 
@@ -29,7 +29,7 @@ namespace SvgEditor.Workspace
         public EditorWorkspaceCoordinator(IEditorWorkspaceHost host)
         {
             _host = host;
-            _canvasWorkspaceController = new CanvasWorkspaceController(this);
+            _canvasWorkspaceController = new WorkspaceController(this);
         }
 
         public void Bind(CanvasStageView canvasStageView, Toggle moveToolToggle)
@@ -78,13 +78,13 @@ namespace SvgEditor.Workspace
             _structurePanelState.SetStructure(snapshot, selectedElementKey);
             HierarchyListView?.SetHierarchyItems(_structurePanelState.HierarchyItems);
 
-            if (TryResolveSelection(_structurePanelState.Elements, selectedElementKey, selectedTargetKey, out StructureNode selectedItem, out CanvasSelectionKind selectionKind))
+            if (TryResolveSelection(_structurePanelState.Elements, selectedElementKey, selectedTargetKey, out StructureNode selectedItem, out SelectionKind selectionKind))
             {
                 ApplySelectionState(selectedItem, selectionKind, syncPatchTarget: false);
                 return;
             }
 
-            ApplySelectionState(null, CanvasSelectionKind.None, syncPatchTarget: false);
+            ApplySelectionState(null, SelectionKind.None, syncPatchTarget: false);
         }
 
         private bool TryBuildStructureSnapshot(DocumentSession document, out StructureOutline snapshot, out string error)
@@ -277,7 +277,7 @@ namespace SvgEditor.Workspace
 
             ApplySelectionState(
                 selected,
-                selected != null ? CanvasSelectionKind.Element : CanvasSelectionKind.None,
+                selected != null ? SelectionKind.Element : SelectionKind.None,
                 syncPatchTarget: true);
         }
 
@@ -309,7 +309,7 @@ namespace SvgEditor.Workspace
             return _structurePanelState.SelectedElementKey;
         }
 
-        private void ApplySelectionState(StructureNode selectedItem, CanvasSelectionKind selectionKind, bool syncPatchTarget)
+        private void ApplySelectionState(StructureNode selectedItem, SelectionKind selectionKind, bool syncPatchTarget)
         {
             _structurePanelState.SelectElement(selectedItem?.Key);
             _structurePanelState.SelectLayer(selectedItem?.LayerKey);
@@ -328,19 +328,19 @@ namespace SvgEditor.Workspace
             string selectedElementKey,
             string selectedTargetKey,
             out StructureNode selectedItem,
-            out CanvasSelectionKind selectionKind)
+            out SelectionKind selectionKind)
         {
             selectedItem = elements?.FirstOrDefault(item =>
                 string.Equals(item.Key, selectedElementKey, StringComparison.Ordinal));
             if (selectedItem != null)
             {
-                selectionKind = CanvasSelectionKind.Element;
+                selectionKind = SelectionKind.Element;
                 return true;
             }
 
             if (string.Equals(selectedTargetKey, SvgDocumentTargets.RootTargetKey, StringComparison.Ordinal))
             {
-                selectionKind = CanvasSelectionKind.Frame;
+                selectionKind = SelectionKind.Frame;
                 return true;
             }
 
@@ -348,11 +348,11 @@ namespace SvgEditor.Workspace
                 string.Equals(item.TargetKey, selectedTargetKey, StringComparison.Ordinal));
             if (selectedItem != null)
             {
-                selectionKind = CanvasSelectionKind.Element;
+                selectionKind = SelectionKind.Element;
                 return true;
             }
 
-            selectionKind = CanvasSelectionKind.None;
+            selectionKind = SelectionKind.None;
             return false;
         }
 
@@ -379,12 +379,12 @@ namespace SvgEditor.Workspace
 
         void ICanvasWorkspaceHost.ClearStructureSelectionFromCanvas()
         {
-            ApplySelectionState(null, CanvasSelectionKind.None, syncPatchTarget: false);
+            ApplySelectionState(null, SelectionKind.None, syncPatchTarget: false);
         }
 
         void ICanvasWorkspaceHost.SelectFrameFromCanvas()
         {
-            ApplySelectionState(null, CanvasSelectionKind.Frame, syncPatchTarget: false);
+            ApplySelectionState(null, SelectionKind.Frame, syncPatchTarget: false);
         }
 
         void ICanvasWorkspaceHost.SelectStructureElementFromCanvas(string elementKey, bool syncPatchTarget)
@@ -392,7 +392,7 @@ namespace SvgEditor.Workspace
             var selectedItem = FindStructureNode(elementKey);
             ApplySelectionState(
                 selectedItem,
-                selectedItem != null ? CanvasSelectionKind.Element : CanvasSelectionKind.None,
+                selectedItem != null ? SelectionKind.Element : SelectionKind.None,
                 syncPatchTarget);
         }
 
@@ -400,14 +400,14 @@ namespace SvgEditor.Workspace
         {
             if (string.Equals(targetKey, SvgDocumentTargets.RootTargetKey, StringComparison.Ordinal))
             {
-                ApplySelectionState(null, CanvasSelectionKind.Frame, syncPatchTarget: false);
+                ApplySelectionState(null, SelectionKind.Frame, syncPatchTarget: false);
                 return;
             }
 
             var selectedItem = FindStructureNodeByTargetKey(targetKey);
             ApplySelectionState(
                 selectedItem,
-                selectedItem != null ? CanvasSelectionKind.Element : CanvasSelectionKind.None,
+                selectedItem != null ? SelectionKind.Element : SelectionKind.None,
                 syncPatchTarget: false);
         }
 

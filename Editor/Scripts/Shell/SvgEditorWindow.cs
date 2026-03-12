@@ -56,7 +56,7 @@ namespace SvgEditor.Shell
         private readonly DocumentLifecycleController _documentLifecycleController;
 
         private EditorWorkspaceCoordinator _workspaceCoordinator;
-        private double _lastShortcutHandledAt;
+        private double _lastShortcutSelectionHandledAt;
         private KeyCode _lastShortcutKey = KeyCode.None;
         private EventModifiers _lastShortcutModifiers;
 
@@ -127,13 +127,13 @@ namespace SvgEditor.Shell
             if (currentEvent == null || currentEvent.type != EventType.KeyDown)
                 return;
 
-            if (TryHandleCancelActiveDrag(currentEvent.keyCode))
+            if (TrySelectionHandleCancelActiveDrag(currentEvent.keyCode))
             {
                 currentEvent.Use();
                 return;
             }
 
-            if (!TryHandleShortcut(currentEvent.keyCode, currentEvent.modifiers))
+            if (!TrySelectionHandleShortcut(currentEvent.keyCode, currentEvent.modifiers))
                 return;
 
             currentEvent.Use();
@@ -364,25 +364,25 @@ namespace SvgEditor.Shell
 
         private void OnRootKeyDown(KeyDownEvent evt)
         {
-            if (TryHandleCancelActiveDrag(evt.keyCode))
+            if (TrySelectionHandleCancelActiveDrag(evt.keyCode))
             {
                 evt.StopPropagation();
                 return;
             }
 
-            if (!TryHandleShortcut(evt.keyCode, evt.modifiers))
+            if (!TrySelectionHandleShortcut(evt.keyCode, evt.modifiers))
                 return;
 
             evt.StopPropagation();
         }
 
-        private bool TryHandleCancelActiveDrag(KeyCode keyCode)
+        private bool TrySelectionHandleCancelActiveDrag(KeyCode keyCode)
         {
             return keyCode == KeyCode.Escape &&
                    WorkspaceCoordinator.TryCancelActiveDrag();
         }
 
-        private bool TryHandleShortcut(KeyCode keyCode, EventModifiers modifiers)
+        private bool TrySelectionHandleShortcut(KeyCode keyCode, EventModifiers modifiers)
         {
             if (_documentLifecycleController.CurrentDocument == null)
                 return false;
@@ -408,7 +408,7 @@ namespace SvgEditor.Shell
             }
 
             if (handled)
-                RememberHandledShortcut(keyCode, normalizedModifiers);
+                RememberSelectionHandledShortcut(keyCode, normalizedModifiers);
 
             return handled;
         }
@@ -417,12 +417,12 @@ namespace SvgEditor.Shell
         {
             return keyCode == _lastShortcutKey &&
                    modifiers == _lastShortcutModifiers &&
-                   EditorApplication.timeSinceStartup - _lastShortcutHandledAt <= ShortcutDedupSeconds;
+                   EditorApplication.timeSinceStartup - _lastShortcutSelectionHandledAt <= ShortcutDedupSeconds;
         }
 
-        private void RememberHandledShortcut(KeyCode keyCode, EventModifiers modifiers)
+        private void RememberSelectionHandledShortcut(KeyCode keyCode, EventModifiers modifiers)
         {
-            _lastShortcutHandledAt = EditorApplication.timeSinceStartup;
+            _lastShortcutSelectionHandledAt = EditorApplication.timeSinceStartup;
             _lastShortcutKey = keyCode;
             _lastShortcutModifiers = modifiers;
         }

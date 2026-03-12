@@ -86,7 +86,7 @@ namespace SvgEditor.Workspace
             {
                 CurrentDocument = null;
                 _previewService.ClearPreview();
-                _workspaceSyncService.HandleLoadFailure(error);
+                _workspaceSyncService.SelectionHandleLoadFailure(error);
                 return;
             }
 
@@ -94,7 +94,7 @@ namespace SvgEditor.Workspace
             _editHistory.Reset(document);
             _previewService.ResetPreviewState();
             _workspaceSyncService.ResetSelection();
-            _workspaceSyncService.HandleDocumentLoaded();
+            _workspaceSyncService.SelectionHandleDocumentLoaded();
         }
 
         public void ApplyUpdatedSource(string updatedSource, string successStatus)
@@ -199,7 +199,7 @@ namespace SvgEditor.Workspace
             }
 
             _editHistory.SyncCurrent(CurrentDocument.WorkingSourceText);
-            _workspaceSyncService.HandleSaveSucceeded();
+            _workspaceSyncService.SelectionHandleSaveSucceeded();
         }
     }
 }

@@ -42,13 +42,13 @@ namespace SvgEditor.Workspace.Document
             WorkspaceCoordinator?.ResetSelection();
         }
 
-        public void HandleLoadFailure(string error)
+        public void SelectionHandleLoadFailure(string error)
         {
             _view.ShowLoadFailure(error);
             _updateEditorInteractivity?.Invoke();
         }
 
-        public void HandleDocumentLoaded()
+        public void SelectionHandleDocumentLoaded()
         {
             if (CurrentDocument == null)
             {
@@ -73,7 +73,7 @@ namespace SvgEditor.Workspace.Document
             _view.SetStatus(status);
         }
 
-        public void HandleSaveSucceeded()
+        public void SelectionHandleSaveSucceeded()
         {
             _previewService.ResetPreviewState();
             RefreshDocumentState("Saved SVG and reimported asset.", keepExistingPreviewOnFailure: false);
