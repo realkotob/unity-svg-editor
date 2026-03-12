@@ -4,7 +4,9 @@ using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace UnitySvgEditor.Editor
+using SvgEditor;
+
+namespace SvgEditor.Preview
 {
     internal sealed class PreviewSnapshot : IDisposable
     {

@@ -2,7 +2,7 @@ using System;
 using Unity.VectorGraphics;
 using UnityEngine;
 
-namespace UnitySvgEditor.Editor
+namespace SvgEditor
 {
     internal static class SvgInheritedAttributeResolver
     {

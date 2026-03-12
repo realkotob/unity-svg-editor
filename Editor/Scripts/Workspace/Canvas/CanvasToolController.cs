@@ -4,7 +4,10 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using Core.UI.Foundation;
 
-namespace UnitySvgEditor.Editor.Workspace.Canvas
+using SvgEditor;
+using SvgEditor.Preview;
+
+namespace SvgEditor.Workspace.Canvas
 {
     internal sealed class CanvasToolController
     {

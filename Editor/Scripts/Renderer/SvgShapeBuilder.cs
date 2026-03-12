@@ -1,7 +1,10 @@
 using System.Collections.Generic;
 using Unity.VectorGraphics;
 
-namespace UnitySvgEditor.Editor
+using SvgEditor;
+using SvgEditor.Preview;
+
+namespace SvgEditor.Renderer
 {
     internal sealed class SvgShapeBuilder
     {

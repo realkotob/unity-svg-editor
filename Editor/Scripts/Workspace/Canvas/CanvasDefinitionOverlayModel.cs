@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using Unity.VectorGraphics;
 using UnityEngine;
 
-namespace UnitySvgEditor.Editor.Workspace.Canvas
+using SvgEditor;
+using SvgEditor.Preview;
+
+namespace SvgEditor.Workspace.Canvas
 {
     internal enum CanvasDefinitionOverlayKind
     {

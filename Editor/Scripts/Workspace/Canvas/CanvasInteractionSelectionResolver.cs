@@ -1,7 +1,10 @@
 using System;
 using UnityEngine;
 
-namespace UnitySvgEditor.Editor.Workspace.Canvas
+using SvgEditor;
+using SvgEditor.Preview;
+
+namespace SvgEditor.Workspace.Canvas
 {
     internal sealed class CanvasInteractionSelectionResolver
     {

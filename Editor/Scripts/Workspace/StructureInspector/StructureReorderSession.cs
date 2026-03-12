@@ -2,7 +2,7 @@ using Core.UI.Foundation;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace UnitySvgEditor.Editor
+namespace SvgEditor
 {
     internal sealed class StructureReorderSession
     {

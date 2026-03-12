@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using Unity.VectorGraphics;
 using UnityEngine;
 
-namespace UnitySvgEditor.Editor
+using SvgEditor;
+
+namespace SvgEditor.Preview
 {
     internal sealed class PreviewElementGeometry
     {

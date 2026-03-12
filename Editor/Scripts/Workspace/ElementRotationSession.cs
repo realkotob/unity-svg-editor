@@ -1,7 +1,7 @@
 using UnityEngine;
-using UnitySvgEditor.Editor.Workspace.Canvas;
+using SvgEditor.Workspace.Canvas;
 
-namespace UnitySvgEditor.Editor
+namespace SvgEditor
 {
     internal sealed class ElementRotationSession
     {

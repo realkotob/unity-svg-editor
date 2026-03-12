@@ -6,7 +6,9 @@ using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace UnitySvgEditor.Editor
+using SvgEditor;
+
+namespace SvgEditor.Preview
 {
     internal static class PreviewSnapshotSceneImportService
     {

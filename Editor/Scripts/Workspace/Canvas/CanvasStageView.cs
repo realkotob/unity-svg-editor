@@ -3,7 +3,10 @@ using Core.UI.Foundation;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace UnitySvgEditor.Editor
+using SvgEditor;
+using SvgEditor.Preview;
+
+namespace SvgEditor.Workspace.Canvas
 {
     [UxmlElement]
     public partial class CanvasStageView : VisualElement

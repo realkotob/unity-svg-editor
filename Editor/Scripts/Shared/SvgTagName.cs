@@ -1,4 +1,4 @@
-namespace UnitySvgEditor.Editor
+namespace SvgEditor
 {
     internal static class SvgTagName
     {

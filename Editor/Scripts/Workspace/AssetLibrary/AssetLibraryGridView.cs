@@ -4,7 +4,7 @@ using Core.UI.Foundation;
 using Core.UI.Foundation.Tooling;
 using UnityEngine.UIElements;
 
-namespace UnitySvgEditor.Editor
+namespace SvgEditor
 {
     [UxmlElement]
     public partial class AssetLibraryGridView : VisualElement

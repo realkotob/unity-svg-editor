@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace UnitySvgEditor.Editor
+using SvgEditor;
+
+namespace SvgEditor.Preview
 {
     internal sealed class PreviewElementHitTester
     {

@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 
-namespace UnitySvgEditor.Editor
+namespace SvgEditor
 {
     internal static class VectorImageAssetPresentationUtility
     {

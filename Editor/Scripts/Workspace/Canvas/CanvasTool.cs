@@ -1,4 +1,7 @@
-namespace UnitySvgEditor.Editor.Workspace.Canvas
+using SvgEditor;
+using SvgEditor.Preview;
+
+namespace SvgEditor.Workspace.Canvas
 {
     internal enum CanvasTool
     {

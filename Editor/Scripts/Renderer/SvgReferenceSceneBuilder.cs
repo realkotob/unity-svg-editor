@@ -2,9 +2,12 @@ using System;
 using System.Collections.Generic;
 using Unity.VectorGraphics;
 using UnityEngine;
-using UnitySvgEditor.Editor.Workspace.Canvas;
+using SvgEditor.Workspace.Canvas;
 
-namespace UnitySvgEditor.Editor
+using SvgEditor;
+using SvgEditor.Preview;
+
+namespace SvgEditor.Renderer
 {
     internal sealed class SvgReferenceSceneBuilder
     {

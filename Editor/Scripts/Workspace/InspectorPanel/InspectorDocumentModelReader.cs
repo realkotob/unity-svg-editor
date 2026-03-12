@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace UnitySvgEditor.Editor
+using SvgEditor;
+
+namespace SvgEditor.Workspace.InspectorPanel
 {
     internal static class InspectorDocumentModelReader
     {

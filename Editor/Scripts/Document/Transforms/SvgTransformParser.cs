@@ -4,7 +4,7 @@ using System.Globalization;
 using Unity.VectorGraphics;
 using UnityEngine;
 
-namespace UnitySvgEditor.Editor
+namespace SvgEditor
 {
     internal static class SvgTransformParser
     {

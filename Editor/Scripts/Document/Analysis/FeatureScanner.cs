@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-namespace UnitySvgEditor.Editor
+namespace SvgEditor
 {
     internal static class FeatureScanner
     {

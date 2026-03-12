@@ -1,4 +1,4 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:toggle="Core.UI.Foundation.Components.Toggle" xmlns:togglegroup="Core.UI.Foundation.Components.ToggleGroup" xmlns:button="Core.UI.Foundation.Components.Button" xmlns:drag="Core.UI.Foundation.Components.DragNumberField" xmlns:colorpercent="Core.UI.Foundation.Components.ColorPercentField" xmlns:select="Core.UI.Foundation.Components.Select" xmlns:acc="Core.UI.Foundation.Components.Accordion" xmlns:svg="UnitySvgEditor.Editor" editor-extension-mode="True">
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:toggle="Core.UI.Foundation.Components.Toggle" xmlns:togglegroup="Core.UI.Foundation.Components.ToggleGroup" xmlns:button="Core.UI.Foundation.Components.Button" xmlns:drag="Core.UI.Foundation.Components.DragNumberField" xmlns:colorpercent="Core.UI.Foundation.Components.ColorPercentField" xmlns:select="Core.UI.Foundation.Components.Select" xmlns:acc="Core.UI.Foundation.Components.Accordion" xmlns:svg="SvgEditor" xmlns:canvas="SvgEditor.Workspace.Canvas" editor-extension-mode="True">
     <ui:VisualElement class="svg-editor">
         <ui:TwoPaneSplitView name="main-split" fixed-pane-index="0" fixed-pane-initial-dimension="240" orientation="Horizontal" class="svg-editor__main-split">
             <ui:VisualElement name="asset-panel" class="svg-editor__asset-panel">
@@ -27,7 +27,7 @@
             </ui:VisualElement>
             <ui:VisualElement name="workspace-split" class="svg-editor__workspace-split">
                 <ui:VisualElement name="preview-panel" class="svg-editor__preview-panel">
-                    <svg:CanvasStageView name="canvas-stage-view">
+                    <canvas:CanvasStageView name="canvas-stage-view">
                         <ui:VisualElement name="canvas-edit-hud" class="svg-editor__canvas-edit-hud">
                             <ui:VisualElement name="canvas-dirty-badge" class="svg-editor__canvas-dirty-badge">
                                 <ui:VisualElement name="canvas-dirty-dot" class="svg-editor__canvas-dirty-dot"/>
@@ -39,7 +39,7 @@
                             <ui:Label name="canvas-zoom-label" text="100%" class="svg-editor__canvas-zoom-label"/>
                             <ui:Button name="canvas-zoom-reset-button" text="1:1" class="svg-editor__canvas-zoom-reset-button"/>
                         </ui:VisualElement>
-                    </svg:CanvasStageView>
+                    </canvas:CanvasStageView>
                 </ui:VisualElement>
                 <ui:ScrollView name="inspector-panel" mode="Vertical" vertical-scroller-visibility="Hidden" horizontal-scroller-visibility="Hidden" class="svg-editor__inspector-panel">
                     <ui:VisualElement name="design-inspector" class="svg-editor__inspector-mode">

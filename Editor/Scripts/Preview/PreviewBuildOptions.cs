@@ -1,6 +1,8 @@
 using Unity.VectorGraphics;
 
-namespace UnitySvgEditor.Editor
+using SvgEditor;
+
+namespace SvgEditor.Preview
 {
     internal static class PreviewBuildOptions
     {

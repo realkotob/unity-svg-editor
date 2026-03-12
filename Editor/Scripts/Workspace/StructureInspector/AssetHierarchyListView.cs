@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine.UIElements;
 using Core.UI.Foundation;
 
-namespace UnitySvgEditor.Editor
+namespace SvgEditor
 {
     [UxmlElement]
     public partial class AssetHierarchyListView : VisualElement

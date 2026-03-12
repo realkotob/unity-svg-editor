@@ -1,8 +1,10 @@
 using System;
 using UnityEditor;
 using UnityEngine.UIElements;
+using SvgEditor.Preview;
+using SvgEditor.Workspace.InspectorPanel;
 
-namespace UnitySvgEditor.Editor
+namespace SvgEditor
 {
     internal sealed class DocumentLifecycleController
     {

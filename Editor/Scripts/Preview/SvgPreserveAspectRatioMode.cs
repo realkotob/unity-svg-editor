@@ -1,6 +1,8 @@
 using System;
 
-namespace UnitySvgEditor.Editor
+using SvgEditor;
+
+namespace SvgEditor.Preview
 {
     internal enum SvgPreserveAspectRatioScaleMode
     {

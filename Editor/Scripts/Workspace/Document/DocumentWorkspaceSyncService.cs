@@ -1,6 +1,7 @@
 using System;
+using SvgEditor.Workspace.InspectorPanel;
 
-namespace UnitySvgEditor.Editor
+namespace SvgEditor
 {
     internal sealed class DocumentWorkspaceSyncService
     {

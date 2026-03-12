@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Xml;
 
-namespace UnitySvgEditor.Editor
+namespace SvgEditor
 {
     internal static class SvgDocumentXmlUtility
     {

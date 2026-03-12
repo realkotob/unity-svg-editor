@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine.UIElements;
-using UnitySvgEditor.Editor.Workspace.Canvas;
+using SvgEditor.Workspace.Canvas;
 
-namespace UnitySvgEditor.Editor
+namespace SvgEditor
 {
     internal static class StructureDocumentModelReader
     {

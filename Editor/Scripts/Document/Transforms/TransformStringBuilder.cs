@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using UnityEngine;
 
-namespace UnitySvgEditor.Editor
+namespace SvgEditor
 {
     internal static class TransformStringBuilder
     {

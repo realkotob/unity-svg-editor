@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 
-namespace UnitySvgEditor.Editor
+namespace SvgEditor
 {
     internal sealed class SvgDocumentModelSerializer
     {

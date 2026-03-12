@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace UnitySvgEditor.Editor
+using SvgEditor;
+
+namespace SvgEditor.Workspace.InspectorPanel
 {
     internal sealed class InspectorTargetCatalogService
     {

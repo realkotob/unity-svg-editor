@@ -1,4 +1,6 @@
-namespace UnitySvgEditor.Editor
+using SvgEditor;
+
+namespace SvgEditor.Workspace.InspectorPanel
 {
     internal sealed class InspectorTargetOption
     {

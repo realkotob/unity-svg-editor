@@ -2,7 +2,9 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using SelectElement = Core.UI.Foundation.Components.Select.Select;
 
-namespace UnitySvgEditor.Editor
+using SvgEditor;
+
+namespace SvgEditor.Workspace.InspectorPanel
 {
     internal static class InspectorStateBinder
     {

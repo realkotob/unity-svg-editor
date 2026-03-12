@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using UnityEngine.UIElements;
 using Core.UI.Foundation;
-using UnitySvgEditor.Editor.Workspace.Canvas;
+using SvgEditor.Workspace.Canvas;
 
-namespace UnitySvgEditor.Editor
+namespace SvgEditor
 {
     internal sealed class AssetHierarchyTreeRow : VisualElement
     {

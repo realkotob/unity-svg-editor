@@ -4,9 +4,10 @@ using System.Linq;
 using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.UIElements;
-using UnitySvgEditor.Editor.Workspace.Canvas;
+using SvgEditor.Preview;
+using SvgEditor.Workspace.Canvas;
 
-namespace UnitySvgEditor.Editor
+namespace SvgEditor
 {
     internal sealed class EditorWorkspaceCoordinator : ICanvasWorkspaceHost, IStructureHierarchyHost
     {

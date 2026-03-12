@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Xml;
 
-namespace UnitySvgEditor.Editor
+namespace SvgEditor
 {
     internal static class SvgSafeMaskArtifactSanitizer
     {

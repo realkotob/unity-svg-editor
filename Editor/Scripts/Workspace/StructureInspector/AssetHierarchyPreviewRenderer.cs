@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Core.UI.Foundation;
 using UnityEngine.UIElements;
 
-namespace UnitySvgEditor.Editor
+namespace SvgEditor
 {
     internal sealed class AssetHierarchyPreviewRenderer
     {

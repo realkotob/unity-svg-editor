@@ -1,6 +1,9 @@
 using UnityEngine.UIElements;
 
-namespace UnitySvgEditor.Editor.Workspace.Canvas
+using SvgEditor;
+using SvgEditor.Preview;
+
+namespace SvgEditor.Workspace.Canvas
 {
     internal interface ICanvasWorkspaceHost
     {

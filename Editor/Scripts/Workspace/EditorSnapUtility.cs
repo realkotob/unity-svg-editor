@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace UnitySvgEditor.Editor
+namespace SvgEditor
 {
     internal static class EditorSnapUtility
     {

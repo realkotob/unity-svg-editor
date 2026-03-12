@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Xml;
 
-namespace UnitySvgEditor.Editor
+using SvgEditor;
+
+namespace SvgEditor.Preview
 {
     internal static class PreviewSnapshotDocumentPreparation
     {

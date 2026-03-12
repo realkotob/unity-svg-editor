@@ -1,7 +1,9 @@
 using System;
 using UnityEngine;
 
-namespace UnitySvgEditor.Editor
+using SvgEditor;
+
+namespace SvgEditor.Workspace.InspectorPanel
 {
     internal sealed class InspectorPatchApplyService
     {

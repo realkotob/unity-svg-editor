@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Xml;
 using UnityEngine.UIElements;
 
-namespace UnitySvgEditor.Editor
+namespace SvgEditor
 {
     internal static class StructureOutlineBuilder
     {

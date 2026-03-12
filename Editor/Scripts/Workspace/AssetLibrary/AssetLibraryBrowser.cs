@@ -5,7 +5,7 @@ using Core.UI.Foundation.Components.Accordion;
 using Core.UI.Foundation.Tooling;
 using UnityEngine.UIElements;
 
-namespace UnitySvgEditor.Editor
+namespace SvgEditor
 {
     internal sealed class AssetLibraryBrowser
     {

@@ -1,7 +1,10 @@
 using Core.UI.Foundation.Tooling;
 using UnityEngine;
 
-namespace UnitySvgEditor.Editor.Workspace.Canvas
+using SvgEditor;
+using SvgEditor.Preview;
+
+namespace SvgEditor.Workspace.Canvas
 {
     internal sealed class CanvasViewportState : ViewportFrameState
     {
@@ -23,7 +26,11 @@ namespace UnitySvgEditor.Editor.Workspace.Canvas
 
         public void ResizeFrame(CanvasHandle handle, UnityEngine.Vector2 viewportDelta, float minSize)
         {
-            SetFrameRect(RectResizeUtility.ResizeRect(FrameRect, handle, ViewportToCanvasDelta(viewportDelta), minSize));
+            SetFrameRect(SvgEditor.RectResizeUtility.ResizeRect(
+                FrameRect,
+                handle,
+                ViewportToCanvasDelta(viewportDelta),
+                minSize));
         }
     }
 }

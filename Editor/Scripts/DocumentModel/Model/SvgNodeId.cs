@@ -1,6 +1,6 @@
 using System;
 
-namespace UnitySvgEditor.Editor
+namespace SvgEditor
 {
     internal readonly struct SvgNodeId : IEquatable<SvgNodeId>
     {

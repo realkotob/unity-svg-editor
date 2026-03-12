@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEditor;
 
-namespace UnitySvgEditor.Editor
+namespace SvgEditor
 {
     internal enum HistoryRecordingMode
     {

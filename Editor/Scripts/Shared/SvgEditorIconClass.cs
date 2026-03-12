@@ -1,6 +1,6 @@
 using Core.UI.Foundation;
 
-namespace UnitySvgEditor.Editor
+namespace SvgEditor
 {
     internal enum IconKind
     {
