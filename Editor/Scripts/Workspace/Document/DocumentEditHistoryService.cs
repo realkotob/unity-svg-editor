@@ -2,14 +2,8 @@ using System.Collections.Generic;
 using UnityEditor;
 using SvgEditor.Document;
 
-namespace SvgEditor.Workspace
+namespace SvgEditor.Workspace.Document
 {
-    internal enum HistoryRecordingMode
-    {
-        Immediate,
-        Coalesced
-    }
-
     internal sealed class DocumentEditHistoryService
     {
         private const int MaxHistoryEntries = 100;

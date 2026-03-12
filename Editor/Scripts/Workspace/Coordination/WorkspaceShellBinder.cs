@@ -4,7 +4,7 @@ using SvgEditor.Workspace.HierarchyPanel;
 
 namespace SvgEditor.Workspace
 {
-    internal sealed class EditorWorkspaceShellBinder
+    internal sealed class WorkspaceShellBinder
     {
         public HierarchyListView HierarchyListView { get; private set; }
 

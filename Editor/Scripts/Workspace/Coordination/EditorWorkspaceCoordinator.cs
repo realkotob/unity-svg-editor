@@ -14,7 +14,7 @@ namespace SvgEditor.Workspace
     {
         private readonly IEditorWorkspaceHost _host;
         private readonly WorkspaceController _canvasWorkspaceController;
-        private readonly EditorWorkspaceShellBinder _shellBinder = new();
+        private readonly WorkspaceShellBinder _shellBinder = new();
         private readonly WorkspaceMutationCoordinator _mutationCoordinator;
         private readonly WorkspaceSelectionCoordinator _selectionCoordinator;
 

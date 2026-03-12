@@ -12,7 +12,7 @@ namespace SvgEditor.Workspace
     {
         private readonly IEditorWorkspaceHost _host;
         private readonly WorkspaceController _canvasWorkspaceController;
-        private readonly EditorWorkspaceShellBinder _shellBinder;
+        private readonly WorkspaceShellBinder _shellBinder;
         private readonly Func<DocumentSession> _currentDocumentAccessor;
         private readonly HierarchyState _structurePanelState = new();
         private readonly HierarchyInteractionController _structureHierarchyInteractionController = new();
@@ -22,7 +22,7 @@ namespace SvgEditor.Workspace
         public WorkspaceSelectionCoordinator(
             IEditorWorkspaceHost host,
             WorkspaceController canvasWorkspaceController,
-            EditorWorkspaceShellBinder shellBinder,
+            WorkspaceShellBinder shellBinder,
             Func<DocumentSession> currentDocumentAccessor)
         {
             _host = host;

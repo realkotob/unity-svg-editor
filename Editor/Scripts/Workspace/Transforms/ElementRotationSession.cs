@@ -3,7 +3,7 @@ using SvgEditor.Workspace.Canvas;
 using SvgEditor.DocumentModel;
 using SvgEditor.Document;
 
-namespace SvgEditor.Workspace
+namespace SvgEditor.Workspace.Transforms
 {
     internal sealed class ElementRotationSession
     {

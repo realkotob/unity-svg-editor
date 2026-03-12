@@ -1,8 +1,8 @@
 using UnityEngine;
 
-namespace SvgEditor.Workspace
+namespace SvgEditor.Workspace.Canvas
 {
-    internal static class EditorSnapUtility
+    internal static class SnapUtility
     {
         public const float PositionIncrement = 1f;
         public const float SizeIncrement = 1f;

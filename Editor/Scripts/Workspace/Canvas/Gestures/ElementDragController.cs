@@ -4,6 +4,7 @@ using UnityEngine.UIElements;
 using SvgEditor.DocumentModel;
 using SvgEditor.Shared;
 using SvgEditor.Document;
+using SvgEditor.Workspace.Transforms;
 
 using SvgEditor;
 using SvgEditor.Preview;
@@ -192,7 +193,7 @@ namespace SvgEditor.Workspace.Canvas
                 _dragStartElementSceneRect.height);
             if (snapEnabled)
             {
-                movedSceneRect = EditorSnapUtility.SnapRect(movedSceneRect, snapPosition: true, snapSize: false);
+                movedSceneRect = SnapUtility.SnapRect(movedSceneRect, snapPosition: true, snapSize: false);
                 sceneDelta = movedSceneRect.position - _dragStartElementSceneRect.position;
             }
 
@@ -234,7 +235,7 @@ namespace SvgEditor.Workspace.Canvas
 
             float rotationAngle = Vector2.SignedAngle(_dragStartRotateVector, currentRotateVector);
             _dragCurrentRotationAngle = snapEnabled
-                ? EditorSnapUtility.SnapAngle(rotationAngle)
+                ? SnapUtility.SnapAngle(rotationAngle)
                 : rotationAngle;
 
             if (!_rotationSession.TryBuildPreview(
@@ -267,7 +268,7 @@ namespace SvgEditor.Workspace.Canvas
             bool hasScaleTransform;
             if (snapEnabled && host.PreviewSnapshot != null)
             {
-                Rect snappedSceneRect = EditorSnapUtility.SnapRect(
+                Rect snappedSceneRect = SnapUtility.SnapRect(
                     _sceneProjector.BuildScaledSceneRect(
                         _dragStartSelectionViewportRect,
                         _dragStartElementSceneRect,
