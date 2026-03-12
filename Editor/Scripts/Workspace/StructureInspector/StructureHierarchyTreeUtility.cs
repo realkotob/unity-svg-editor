@@ -20,14 +20,14 @@ namespace UnitySvgEditor.Editor
 
         private static readonly string[] FoundationHierarchyIconClasses =
         {
-            SvgEditorIconClass.HIERARCHY_SQUARE,
-            SvgEditorIconClass.HIERARCHY_CIRCLE,
-            SvgEditorIconClass.HIERARCHY_FILE_TEXT,
-            SvgEditorIconClass.HIERARCHY_MINUS,
-            SvgEditorIconClass.HIERARCHY_PEN,
-            SvgEditorIconClass.HIERARCHY_MASK,
-            SvgEditorIconClass.HIERARCHY_FOLDER,
-            SvgEditorIconClass.HIERARCHY_FILE
+            IconClass.SQUARE,
+            IconClass.CIRCLE,
+            IconClass.FILE_TEXT,
+            IconClass.MINUS,
+            IconClass.PEN,
+            IconClass.MASK,
+            IconClass.FOLDER,
+            IconClass.FILE
         };
 
         public static void SelectElementByKey(

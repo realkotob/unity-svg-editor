@@ -10,9 +10,9 @@ namespace UnitySvgEditor.Editor
     {
         private static readonly string[] PREVIEW_RESOURCE_PATHS =
         {
-            "Icons/file-text",
-            "Icons/pen",
-            "Icons/circle"
+            SvgEditorIconClass.RESOURCE_FILE_TEXT,
+            SvgEditorIconClass.RESOURCE_PEN,
+            SvgEditorIconClass.RESOURCE_CIRCLE
         };
 
         private List<GridViewItem> _previewGridItems;

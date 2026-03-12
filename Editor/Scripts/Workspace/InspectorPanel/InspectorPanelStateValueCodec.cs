@@ -153,6 +153,8 @@ namespace UnitySvgEditor.Editor
             state.StrokeWidthEnabled = TryGetFloat(attributes, "stroke-width", out var strokeWidth);
             if (state.StrokeWidthEnabled)
                 state.StrokeWidth = Mathf.Max(0f, strokeWidth);
+            else if (state.StrokeEnabled)
+                state.StrokeWidth = 1f;
 
             state.OpacityEnabled = TryGetFloat(attributes, "opacity", out var opacity);
             if (state.OpacityEnabled)

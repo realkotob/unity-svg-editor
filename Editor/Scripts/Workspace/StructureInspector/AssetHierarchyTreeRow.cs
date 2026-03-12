@@ -68,7 +68,7 @@ namespace UnitySvgEditor.Editor
             Expander = new VisualElement()
                 .SetName(ElementName.HIERARCHY_EXPANDER)
                 .AddClass(UssClassName.EXPANDER)
-                .AddClass(SvgEditorIconClass.HIERARCHY_EXPANDER);
+                .AddClass(IconClass.CHEVRON_RIGHT);
             Expander.pickingMode = PickingMode.Position;
             Add(Expander);
 

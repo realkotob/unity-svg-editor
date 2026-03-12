@@ -412,7 +412,7 @@ namespace UnitySvgEditor.Editor
 
         private void ApplyToolbarIcons()
         {
-            ApplyToggleIcon("tool-move", "Icons/move");
+            ApplyToggleIcon("tool-move", SvgEditorIconClass.RESOURCE_MOVE);
         }
 
         private void OnRootKeyDown(KeyDownEvent evt)
@@ -487,23 +487,23 @@ namespace UnitySvgEditor.Editor
 
         private void ApplyPositionIcons()
         {
-            ApplyButtonIcon("position-align-left", SvgEditorIconClass.POSITION_ALIGN_LEFT);
-            ApplyButtonIcon("position-align-center", SvgEditorIconClass.POSITION_ALIGN_CENTER);
-            ApplyButtonIcon("position-align-right", SvgEditorIconClass.POSITION_ALIGN_RIGHT);
-            ApplyButtonIcon("position-align-top", SvgEditorIconClass.POSITION_ALIGN_TOP);
-            ApplyButtonIcon("position-align-middle", SvgEditorIconClass.POSITION_ALIGN_MIDDLE);
-            ApplyButtonIcon("position-align-bottom", SvgEditorIconClass.POSITION_ALIGN_BOTTOM);
-            ApplyButtonIcon("position-rotate-clockwise-90", SvgEditorIconClass.POSITION_ROTATE_CLOCKWISE_90);
-            ApplyButtonIcon("position-flip-horizontal", SvgEditorIconClass.POSITION_FLIP_HORIZONTAL);
-            ApplyButtonIcon("position-flip-vertical", SvgEditorIconClass.POSITION_FLIP_VERTICAL);
+            ApplyButtonIcon("position-align-left", IconClass.ALIGN_HORIZONTAL_LEFT);
+            ApplyButtonIcon("position-align-center", IconClass.ALIGN_HORIZONTAL_CENTER);
+            ApplyButtonIcon("position-align-right", IconClass.ALIGN_HORIZONTAL_RIGHT);
+            ApplyButtonIcon("position-align-top", IconClass.ALIGN_VERTICAL_TOP);
+            ApplyButtonIcon("position-align-middle", IconClass.ALIGN_VERTICAL_CENTER);
+            ApplyButtonIcon("position-align-bottom", IconClass.ALIGN_VERTICAL_BOTTOM);
+            ApplyButtonIcon("position-rotate-clockwise-90", IconClass.ROTATE_90);
+            ApplyButtonIcon("position-flip-horizontal", IconClass.FLIP_HORIZONTAL);
+            ApplyButtonIcon("position-flip-vertical", IconClass.FLIP_VERTICAL);
         }
 
         private void ApplyInspectorAttributeIcons()
         {
-            ApplyButtonIcon("fill-add-button", SvgEditorIconClass.ATTRIBUTE_ADD);
-            ApplyButtonIcon("fill-remove-button", SvgEditorIconClass.ATTRIBUTE_REMOVE);
-            ApplyButtonIcon("stroke-add-button", SvgEditorIconClass.ATTRIBUTE_ADD);
-            ApplyButtonIcon("stroke-remove-button", SvgEditorIconClass.ATTRIBUTE_REMOVE);
+            ApplyButtonIcon("fill-add-button", IconClass.PLUS);
+            ApplyButtonIcon("fill-remove-button", IconClass.MINUS);
+            ApplyButtonIcon("stroke-add-button", IconClass.PLUS);
+            ApplyButtonIcon("stroke-remove-button", IconClass.MINUS);
         }
 
         private void ApplyToggleIcon(string toggleName, string resourcePath)

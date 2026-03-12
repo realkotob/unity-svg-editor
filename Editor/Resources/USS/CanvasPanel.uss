@@ -52,6 +52,10 @@
     background-color: var(--editor-surface-soft);
 }
 
+.svg-editor__canvas-document-reset-button:enabled {
+    cursor: var(--cursor-link);
+}
+
 .svg-editor__canvas-document-reset-button:hover:enabled {
     background-color: var(--editor-surface-soft-strong);
 }
@@ -93,6 +97,11 @@
     color: var(--foreground);
     background-color: var(--editor-surface-soft);
 }
+
+.svg-editor__canvas-zoom-reset-button:enabled {
+    cursor: var(--cursor-link);
+}
+
 .svg-editor__canvas-zoom-reset-button:hover:enabled {
     background-color: var(--editor-surface-soft-strong);
 }

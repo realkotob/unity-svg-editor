@@ -62,16 +62,8 @@ namespace UnitySvgEditor.Editor
 
             tagName = node.TagName ?? string.Empty;
 
-            if (node.RawAttributes == null)
-                return true;
-
-            foreach (var pair in node.RawAttributes)
-            {
-                if (string.IsNullOrWhiteSpace(pair.Key))
-                    continue;
-
-                attributes[pair.Key] = pair.Value ?? string.Empty;
-            }
+            CopyAttributes(node.RawAttributes, attributes);
+            ResolvePresentationAttributes(documentModel, node, attributes);
 
             return true;
         }
@@ -105,6 +97,96 @@ namespace UnitySvgEditor.Editor
             return node.HasXmlId
                 ? $"#{node.XmlId}  <{node.TagName}>"
                 : $"{node.TagName}  [{node.SiblingIndex + 1}]";
+        }
+
+        private static void CopyAttributes(
+            IReadOnlyDictionary<string, string> source,
+            IDictionary<string, string> destination)
+        {
+            if (source == null || destination == null)
+                return;
+
+            foreach (var pair in source)
+            {
+                if (string.IsNullOrWhiteSpace(pair.Key))
+                    continue;
+
+                destination[pair.Key] = pair.Value ?? string.Empty;
+            }
+        }
+
+        private static void ResolvePresentationAttributes(
+            SvgDocumentModel documentModel,
+            SvgNodeModel node,
+            IDictionary<string, string> attributes)
+        {
+            if (documentModel == null || node == null || attributes == null)
+                return;
+
+            string[] presentationAttributes =
+            {
+                "fill",
+                "fill-opacity",
+                "stroke",
+                "stroke-opacity",
+                "stroke-width",
+                "stroke-linecap",
+                "stroke-linejoin",
+                "stroke-dasharray"
+            };
+
+            foreach (string attributeName in presentationAttributes)
+            {
+                if (attributes.ContainsKey(attributeName))
+                    continue;
+
+                if (TryGetInheritedAttribute(documentModel, node, attributeName, out string resolvedValue))
+                    attributes[attributeName] = resolvedValue;
+            }
+
+            if (string.Equals(node.TagName, SvgTagName.Path, StringComparison.OrdinalIgnoreCase) &&
+                !attributes.ContainsKey("fill"))
+            {
+                attributes["fill"] = "#000000";
+            }
+        }
+
+        private static bool TryGetInheritedAttribute(
+            SvgDocumentModel documentModel,
+            SvgNodeModel node,
+            string attributeName,
+            out string value)
+        {
+            value = string.Empty;
+            SvgNodeModel current = node;
+            while (current != null)
+            {
+                if (TryGetAttribute(current.RawAttributes, attributeName, out value) &&
+                    !string.Equals(value, "inherit", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                if (documentModel == null || current.Id.IsRoot)
+                    break;
+
+                if (!documentModel.TryGetNode(current.ParentId, out current))
+                    break;
+            }
+
+            value = string.Empty;
+            return false;
+        }
+
+        private static bool TryGetAttribute(
+            IReadOnlyDictionary<string, string> attributes,
+            string attributeName,
+            out string value)
+        {
+            value = string.Empty;
+            return attributes != null &&
+                   attributes.TryGetValue(attributeName, out value) &&
+                   !string.IsNullOrWhiteSpace(value);
         }
     }
 }
