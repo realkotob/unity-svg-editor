@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace UnitySvgEditor.Editor
@@ -7,14 +6,11 @@ namespace UnitySvgEditor.Editor
     internal sealed class InspectorTargetSyncService
     {
         private readonly InspectorTargetCatalogService _targetCatalogService;
+        private readonly InspectorTransformActionService _transformActionService;
         private readonly InspectorPanelState _inspectorPanelState;
         private readonly InspectorPanelView _view;
         private readonly Func<IInspectorPanelHost> _hostAccessor;
         private readonly Action _updateInteractivity;
-        private readonly ElementRotationSession _rotationSession = new();
-        private bool _isRotationDragActive;
-        private string _rotationDragTargetKey = string.Empty;
-        private Vector2 _rotationDragParentPivot;
 
         public InspectorTargetSyncService(
             InspectorPanelState inspectorPanelState,
@@ -30,6 +26,12 @@ namespace UnitySvgEditor.Editor
                 inspectorPanelState,
                 view,
                 hostAccessor,
+                updateInteractivity);
+            _transformActionService = new InspectorTransformActionService(
+                inspectorPanelState,
+                view,
+                hostAccessor,
+                _targetCatalogService.ResolveSelectedTargetKey,
                 updateInteractivity);
         }
 
@@ -55,220 +57,24 @@ namespace UnitySvgEditor.Editor
             return _targetCatalogService.TrySelectTargetByKey(targetKey, out label);
         }
 
-        public string ResolveSelectedTargetKey() => _targetCatalogService.ResolveSelectedTargetKey();
-
-        public void BeginRotationDrag()
+        public string ResolveSelectedTargetKey()
         {
-            EndRotationDrag();
-
-            string targetKey = ResolveSelectedTargetKey();
-            if (Host?.CurrentDocument == null ||
-                string.IsNullOrWhiteSpace(targetKey) ||
-                string.Equals(targetKey, SvgDocumentTargets.RootTargetKey, StringComparison.Ordinal))
-            {
-                return;
-            }
-
-            if (!Host.TryGetTargetRotationPivotParentSpace(targetKey, out _rotationDragParentPivot) ||
-                !_rotationSession.TryBegin(Host.CurrentDocument, targetKey, _rotationDragParentPivot))
-            {
-                _rotationSession.End();
-                return;
-            }
-
-            _rotationDragTargetKey = targetKey;
-            _isRotationDragActive = true;
+            return _targetCatalogService.ResolveSelectedTargetKey();
         }
 
-        public void EndRotationDrag()
-        {
-            _isRotationDragActive = false;
-            _rotationDragTargetKey = string.Empty;
-            _rotationDragParentPivot = default;
-            _rotationSession.End();
-        }
+        public void BeginRotationDrag() => _transformActionService.BeginRotationDrag();
 
-        public void BuildTransformFromHelper()
-        {
-            var transform = SyncTransformTextFromHelper();
+        public void EndRotationDrag() => _transformActionService.EndRotationDrag();
 
-            Host?.UpdateSourceStatus(string.IsNullOrWhiteSpace(transform)
-                ? "Transform helper produced an empty value."
-                : "Transform string updated.");
-            _updateInteractivity?.Invoke();
-        }
+        public void BuildTransformFromHelper() => _transformActionService.BuildTransformFromHelper();
 
-        public string SyncTransformTextFromHelper()
-        {
-            if (!_view.IsBound)
-            {
-                return string.Empty;
-            }
+        public string SyncTransformTextFromHelper() => _transformActionService.SyncTransformTextFromHelper();
 
-            _view.CaptureState(_inspectorPanelState);
-            var transform = _inspectorPanelState.BuildTransformFromHelper();
-            _inspectorPanelState.Transform = transform;
-            _view.ApplyState(_inspectorPanelState);
-            return transform;
-        }
+        public bool SyncTransformHelperFromText() => _transformActionService.SyncTransformHelperFromText();
 
-        public bool SyncTransformHelperFromText()
-        {
-            if (!_view.IsBound)
-            {
-                return false;
-            }
+        public void ApplyFrameRectFromView() => _transformActionService.ApplyFrameRectFromView();
 
-            _view.CaptureState(_inspectorPanelState);
-            if (!_inspectorPanelState.TrySyncTransformHelperFromText())
-            {
-                return false;
-            }
-
-            _inspectorPanelState.Transform = _inspectorPanelState.BuildTransformFromHelper();
-            _view.ApplyState(_inspectorPanelState);
-            return true;
-        }
-
-        public void ApplyFrameRectFromView()
-        {
-            if (Host?.CurrentDocument == null || !_view.IsBound)
-            {
-                return;
-            }
-
-            var targetKey = ResolveSelectedTargetKey();
-            if (string.IsNullOrWhiteSpace(targetKey) ||
-                string.Equals(targetKey, SvgDocumentTargets.RootTargetKey, StringComparison.Ordinal) ||
-                !Host.TryGetTargetSceneRect(targetKey, out _))
-            {
-                return;
-            }
-
-            _view.CaptureState(_inspectorPanelState);
-            var desiredSceneRect = new UnityEngine.Rect(
-                _inspectorPanelState.FrameX,
-                _inspectorPanelState.FrameY,
-                Math.Max(0f, _inspectorPanelState.FrameWidth),
-                Math.Max(0f, _inspectorPanelState.FrameHeight));
-
-            Host.TryApplyTargetFrameRect(
-                targetKey,
-                desiredSceneRect,
-                "Frame rect updated.",
-                HistoryRecordingMode.Coalesced);
-        }
-
-        public void ApplyTransformFromHelper(InspectorPanelView.TransformHelperChange change)
-        {
-            if (change.Field == InspectorPanelView.TransformHelperField.Rotate)
-            {
-                ApplyRotationFromHelper(change.Delta);
-                return;
-            }
-
-            ApplyStandardTransformFromHelper();
-        }
-
-        private void ApplyStandardTransformFromHelper()
-        {
-            if (Host?.CurrentDocument == null || !_view.IsBound)
-            {
-                return;
-            }
-
-            string targetKey = ResolveSelectedTargetKey();
-            if (string.IsNullOrWhiteSpace(targetKey))
-            {
-                return;
-            }
-
-            _view.CaptureState(_inspectorPanelState);
-            string transform = _inspectorPanelState.BuildTransformFromHelper();
-            _inspectorPanelState.Transform = transform;
-            _inspectorPanelState.TransformEnabled = true;
-            _view.ApplyState(_inspectorPanelState);
-            Host.TryApplyPatchRequest(
-                new AttributePatchRequest
-                {
-                    TargetKey = targetKey,
-                    Transform = transform
-                },
-                "Transform updated.",
-                HistoryRecordingMode.Coalesced);
-        }
-
-        private void ApplyRotationFromHelper(float deltaDegrees)
-        {
-            if (Host?.CurrentDocument == null || !_view.IsBound)
-            {
-                return;
-            }
-
-            string targetKey = ResolveSelectedTargetKey();
-            if (string.IsNullOrWhiteSpace(targetKey) ||
-                string.Equals(targetKey, SvgDocumentTargets.RootTargetKey, StringComparison.Ordinal))
-            {
-                Host?.UpdateSourceStatus("Rotation requires a non-root target.");
-                return;
-            }
-
-            if (Mathf.Approximately(deltaDegrees, 0f))
-            {
-                return;
-            }
-
-            _view.CaptureState(_inspectorPanelState);
-            string transform = string.Empty;
-            string error = string.Empty;
-
-            bool useDragSession = _isRotationDragActive &&
-                                  string.Equals(_rotationDragTargetKey, targetKey, StringComparison.Ordinal);
-            if (!useDragSession)
-            {
-                if (!Host.TryGetTargetRotationPivotParentSpace(targetKey, out _rotationDragParentPivot))
-                {
-                    Host?.UpdateSourceStatus("Rotation failed: stable pivot is unavailable.");
-                    return;
-                }
-
-                if (!_rotationSession.TryBegin(Host.CurrentDocument, targetKey, _rotationDragParentPivot))
-                {
-                    Host?.UpdateSourceStatus("Rotation failed: transform update could not be prepared.");
-                    return;
-                }
-            }
-
-            if (!_rotationSession.TryBuildTransform(deltaDegrees, out transform, out error))
-            {
-                Host?.UpdateSourceStatus(
-                    string.IsNullOrWhiteSpace(error)
-                        ? "Rotation failed: transform update could not be prepared."
-                        : $"Rotation failed: {error}");
-                if (!useDragSession)
-                {
-                    _rotationSession.End();
-                }
-                return;
-            }
-
-            _inspectorPanelState.Transform = transform;
-            _inspectorPanelState.TransformEnabled = true;
-            _inspectorPanelState.TrySyncTransformHelperFromText();
-            _view.ApplyState(_inspectorPanelState);
-            if (!useDragSession)
-            {
-                _rotationSession.End();
-            }
-            Host.TryApplyPatchRequest(
-                new AttributePatchRequest
-                {
-                    TargetKey = targetKey,
-                    Transform = transform
-                },
-                "Rotation updated.",
-                HistoryRecordingMode.Coalesced);
-        }
+        public void ApplyTransformFromHelper(InspectorPanelView.TransformHelperChange change) => _transformActionService.ApplyTransformFromHelper(change);
 
         public void ApplyPatchToSource()
         {
@@ -283,7 +89,7 @@ namespace UnitySvgEditor.Editor
             }
 
             _view.CaptureState(_inspectorPanelState);
-            var request = _inspectorPanelState.BuildPatchRequest();
+            AttributePatchRequest request = _inspectorPanelState.BuildPatchRequest();
             Host.TryApplyPatchRequest(
                 request,
                 string.IsNullOrWhiteSpace(successStatus) ? "Patch applied to source." : successStatus);
@@ -297,7 +103,7 @@ namespace UnitySvgEditor.Editor
             }
 
             _view.CaptureState(_inspectorPanelState);
-            var request = _inspectorPanelState.BuildPatchRequest(field);
+            AttributePatchRequest request = _inspectorPanelState.BuildPatchRequest(field);
             Host.TryApplyPatchRequest(request, "Inspector changes applied.", HistoryRecordingMode.Coalesced);
         }
 
@@ -340,177 +146,10 @@ namespace UnitySvgEditor.Editor
 
             _view.ApplyState(_inspectorPanelState);
             _updateInteractivity?.Invoke();
-            var request = _inspectorPanelState.BuildPatchRequest(action);
+            AttributePatchRequest request = _inspectorPanelState.BuildPatchRequest(action);
             Host.TryApplyPatchRequest(request, successStatus, HistoryRecordingMode.Coalesced);
         }
 
-        public void ApplyPositionAction(InspectorPanelView.PositionAction action)
-        {
-            if (Host?.CurrentDocument == null || !_view.IsBound)
-            {
-                return;
-            }
-
-            switch (action)
-            {
-                case InspectorPanelView.PositionAction.AlignLeft:
-                case InspectorPanelView.PositionAction.AlignCenter:
-                case InspectorPanelView.PositionAction.AlignRight:
-                case InspectorPanelView.PositionAction.AlignTop:
-                case InspectorPanelView.PositionAction.AlignMiddle:
-                case InspectorPanelView.PositionAction.AlignBottom:
-                    ApplyAlignmentAction(action);
-                    break;
-                case InspectorPanelView.PositionAction.RotateClockwise90:
-                    ApplyRotateClockwiseAction(90f);
-                    break;
-                case InspectorPanelView.PositionAction.FlipHorizontal:
-                    ApplyFlipAction(new Vector2(1f, -1f), "Flipped horizontally.");
-                    break;
-                case InspectorPanelView.PositionAction.FlipVertical:
-                    ApplyFlipAction(new Vector2(-1f, 1f), "Flipped vertically.");
-                    break;
-            }
-        }
-
-        private void ApplyAlignmentAction(InspectorPanelView.PositionAction action)
-        {
-            var targetKey = ResolveSelectedTargetKey();
-            if (string.IsNullOrWhiteSpace(targetKey) ||
-                string.Equals(targetKey, SvgDocumentTargets.RootTargetKey, StringComparison.Ordinal))
-            {
-                Host?.UpdateSourceStatus("Alignment requires a non-root target.");
-                return;
-            }
-
-            if (!Host.TryGetTargetSceneRect(targetKey, out Rect currentRect) ||
-                !Host.TryGetCanvasViewportSceneRect(out Rect canvasRect))
-            {
-                Host?.UpdateSourceStatus("Alignment failed: preview bounds are unavailable.");
-                return;
-            }
-
-            Rect desiredRect = currentRect;
-            string successStatus = "Position updated.";
-            switch (action)
-            {
-                case InspectorPanelView.PositionAction.AlignLeft:
-                    desiredRect.x = canvasRect.xMin;
-                    successStatus = "Aligned left.";
-                    break;
-                case InspectorPanelView.PositionAction.AlignCenter:
-                    desiredRect.x = canvasRect.center.x - (currentRect.width * 0.5f);
-                    successStatus = "Aligned center.";
-                    break;
-                case InspectorPanelView.PositionAction.AlignRight:
-                    desiredRect.x = canvasRect.xMax - currentRect.width;
-                    successStatus = "Aligned right.";
-                    break;
-                case InspectorPanelView.PositionAction.AlignTop:
-                    desiredRect.y = canvasRect.yMin;
-                    successStatus = "Aligned top.";
-                    break;
-                case InspectorPanelView.PositionAction.AlignMiddle:
-                    desiredRect.y = canvasRect.center.y - (currentRect.height * 0.5f);
-                    successStatus = "Aligned middle.";
-                    break;
-                case InspectorPanelView.PositionAction.AlignBottom:
-                    desiredRect.y = canvasRect.yMax - currentRect.height;
-                    successStatus = "Aligned bottom.";
-                    break;
-            }
-
-            Host.TryApplyTargetFrameRect(targetKey, desiredRect, successStatus);
-        }
-
-        private void ApplyRotateClockwiseAction(float deltaDegrees)
-        {
-            var targetKey = ResolveSelectedTargetKey();
-            if (string.IsNullOrWhiteSpace(targetKey) ||
-                string.Equals(targetKey, SvgDocumentTargets.RootTargetKey, StringComparison.Ordinal))
-            {
-                Host?.UpdateSourceStatus("Rotation requires a non-root target.");
-                return;
-            }
-
-            _view.CaptureState(_inspectorPanelState);
-            if (!Host.TryGetTargetRotationPivotParentSpace(targetKey, out Vector2 parentPivot) ||
-                !_rotationSession.TryBegin(Host.CurrentDocument, targetKey, parentPivot) ||
-                !_rotationSession.TryBuildTransform(deltaDegrees, out string transform, out _))
-            {
-                Host?.UpdateSourceStatus("Rotation failed: transform update could not be prepared.");
-                _rotationSession.End();
-                return;
-            }
-
-            _inspectorPanelState.Transform = transform;
-            _inspectorPanelState.TransformEnabled = true;
-            _inspectorPanelState.TrySyncTransformHelperFromText();
-            _view.ApplyState(_inspectorPanelState);
-            _rotationSession.End();
-            Host.TryApplyPatchRequest(
-                new AttributePatchRequest
-                {
-                    TargetKey = targetKey,
-                    Transform = transform
-                },
-                $"Rotated {deltaDegrees:+0;-0}°.");
-        }
-
-        private void ApplyFlipAction(Vector2 scale, string successStatus)
-        {
-            var targetKey = ResolveSelectedTargetKey();
-            if (string.IsNullOrWhiteSpace(targetKey) ||
-                string.Equals(targetKey, SvgDocumentTargets.RootTargetKey, StringComparison.Ordinal))
-            {
-                Host?.UpdateSourceStatus("Flip requires a non-root target.");
-                return;
-            }
-
-            if (!Host.TryGetTargetSceneRect(targetKey, out Rect sceneRect))
-            {
-                Host?.UpdateSourceStatus("Flip failed: preview bounds are unavailable.");
-                return;
-            }
-
-            if (!Host.TryGetTargetParentWorldTransform(targetKey, out var parentWorldTransform))
-            {
-                Host?.UpdateSourceStatus("Flip failed: parent transform is unavailable.");
-                return;
-            }
-
-            _view.CaptureState(_inspectorPanelState);
-            Vector2 parentPivot = ElementRotationUtility.ToParentSpacePoint(parentWorldTransform, sceneRect.center);
-            string existingTransform = _inspectorPanelState.Transform ?? string.Empty;
-            string transform = PrependTransform(
-                existingTransform,
-                TransformStringBuilder.BuildScaleAround(scale, parentPivot));
-            _inspectorPanelState.Transform = transform;
-            _inspectorPanelState.TransformEnabled = true;
-            _view.ApplyState(_inspectorPanelState);
-            Host.TryApplyPatchRequest(
-                new AttributePatchRequest
-                {
-                    TargetKey = targetKey,
-                    Transform = transform
-                },
-                successStatus);
-        }
-
-        private static string PrependTransform(string existingTransform, string transformSegment)
-        {
-            if (string.IsNullOrWhiteSpace(transformSegment))
-            {
-                return existingTransform ?? string.Empty;
-            }
-
-            if (string.IsNullOrWhiteSpace(existingTransform))
-            {
-                return transformSegment;
-            }
-
-            return $"{transformSegment} {existingTransform}";
-        }
-
+        public void ApplyPositionAction(InspectorPanelView.PositionAction action) => _transformActionService.ApplyPositionAction(action);
     }
 }
