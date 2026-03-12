@@ -20,11 +20,11 @@ namespace UnitySvgEditor.Editor
             if (documentModel?.Root == null || string.IsNullOrWhiteSpace(elementKey))
                 return true;
 
-            if (!TryFindNodeByLegacyElementKey(documentModel, elementKey, out SvgNodeModel node) || node == null)
+            if (!SvgNodeLookupUtility.TryFindNodeByLegacyElementKey(documentModel, elementKey, out var node) || node == null)
                 return true;
 
-            Dictionary<string, SvgNodeModel> nodesByXmlId = BuildNodeLookupByXmlId(documentModel);
-            List<CanvasDefinitionOverlayScene> resolved = new();
+            var nodesByXmlId = SvgNodeLookupUtility.BuildNodeLookupByXmlId(documentModel);
+            var resolved = new List<CanvasDefinitionOverlayScene>();
 
             if (!TryBuildReferenceOverlayScene(documentModel, nodesByXmlId, node, CanvasDefinitionOverlayKind.Mask, out CanvasDefinitionOverlayScene maskOverlay, out error))
                 return false;
@@ -68,7 +68,7 @@ namespace UnitySvgEditor.Editor
             result.DocumentViewportRect = ResolveDocumentViewport(documentModel);
             result.PreserveAspectRatioMode = SvgPreserveAspectRatioMode.Parse(documentModel.PreserveAspectRatio);
 
-            Dictionary<string, SvgNodeModel> nodesByXmlId = BuildNodeLookupByXmlId(documentModel);
+            var nodesByXmlId = SvgNodeLookupUtility.BuildNodeLookupByXmlId(documentModel);
 
             if (!TryBuildChildren(documentModel, nodesByXmlId, documentModel.Root, rootSceneNode, result, out error))
                 return false;
@@ -157,9 +157,9 @@ namespace UnitySvgEditor.Editor
             if (!SvgAttributeUtility.TryGetAttribute(node?.RawAttributes, "mask", out var maskValue))
                 return true;
 
-            if (!TryExtractFragmentId(maskValue, out string fragmentId) ||
+            if (!SvgNodeLookupUtility.TryExtractFragmentId(maskValue, out var fragmentId) ||
                 nodesByXmlId == null ||
-                !nodesByXmlId.TryGetValue(fragmentId, out SvgNodeModel maskNode) ||
+                !nodesByXmlId.TryGetValue(fragmentId, out var maskNode) ||
                 !string.Equals(maskNode.TagName, "mask", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
@@ -188,8 +188,8 @@ namespace UnitySvgEditor.Editor
             string attributeName = kind == CanvasDefinitionOverlayKind.Mask ? "mask" : "clip-path";
             string expectedTag = kind == CanvasDefinitionOverlayKind.Mask ? "mask" : "clipPath";
             if (!SvgAttributeUtility.TryGetAttribute(node.RawAttributes, attributeName, out var rawValue) ||
-                !TryExtractFragmentId(rawValue, out string fragmentId) ||
-                !nodesByXmlId.TryGetValue(fragmentId, out SvgNodeModel referenceNode) ||
+                !SvgNodeLookupUtility.TryExtractFragmentId(rawValue, out var fragmentId) ||
+                !nodesByXmlId.TryGetValue(fragmentId, out var referenceNode) ||
                 !string.Equals(referenceNode.TagName, expectedTag, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
@@ -390,7 +390,7 @@ namespace UnitySvgEditor.Editor
                 return false;
             }
 
-            if (!TryParsePathContours(pathData, out BezierContour[] contours))
+            if (!SvgPathGeometryParser.TryParsePathContours(pathData, out BezierContour[] contours))
             {
                 error = $"Direct renderer does not yet support path data on '{node.LegacyElementKey}'.";
                 return false;
@@ -413,7 +413,7 @@ namespace UnitySvgEditor.Editor
         {
             error = string.Empty;
             if (!SvgAttributeUtility.TryGetAttribute(node.RawAttributes, "points", out var pointsText) ||
-                !TryParsePoints(pointsText, out List<Vector2> points) ||
+                !SvgPathGeometryParser.TryParsePoints(pointsText, out List<Vector2> points) ||
                 points.Count < 2)
             {
                 error = $"Polyline data on '{node.LegacyElementKey}' was invalid.";
@@ -451,7 +451,7 @@ namespace UnitySvgEditor.Editor
             out string error)
         {
             error = string.Empty;
-            if (!TryResolveUseReference(useNode, nodesByXmlId, out SvgNodeModel referencedNode))
+            if (!SvgNodeLookupUtility.TryResolveUseReference(useNode, nodesByXmlId, out var referencedNode))
             {
                 error = $"Direct renderer could not resolve <use> target for '{useNode.LegacyElementKey}'.";
                 return false;
@@ -532,9 +532,9 @@ namespace UnitySvgEditor.Editor
             if (!SvgAttributeUtility.TryGetAttribute(node?.RawAttributes, "clip-path", out var clipPathValue))
                 return true;
 
-            if (!TryExtractFragmentId(clipPathValue, out string fragmentId) ||
+            if (!SvgNodeLookupUtility.TryExtractFragmentId(clipPathValue, out var fragmentId) ||
                 nodesByXmlId == null ||
-                !nodesByXmlId.TryGetValue(fragmentId, out SvgNodeModel clipNode) ||
+                !nodesByXmlId.TryGetValue(fragmentId, out var clipNode) ||
                 !string.Equals(clipNode.TagName, "clipPath", StringComparison.OrdinalIgnoreCase))
             {
                 error = $"Direct renderer could not resolve clipPath for '{node?.LegacyElementKey}'.";
@@ -703,9 +703,9 @@ namespace UnitySvgEditor.Editor
             out IFill fill)
         {
             fill = null;
-            if (!TryExtractFragmentId(fillValue, out string fragmentId) ||
+            if (!SvgNodeLookupUtility.TryExtractFragmentId(fillValue, out var fragmentId) ||
                 nodesByXmlId == null ||
-                !nodesByXmlId.TryGetValue(fragmentId, out SvgNodeModel gradientNode) ||
+                !nodesByXmlId.TryGetValue(fragmentId, out var gradientNode) ||
                 !(string.Equals(gradientNode.TagName, "linearGradient", StringComparison.OrdinalIgnoreCase) ||
                   string.Equals(gradientNode.TagName, "radialGradient", StringComparison.OrdinalIgnoreCase)))
             {
@@ -761,13 +761,13 @@ namespace UnitySvgEditor.Editor
 
         private PathProperties BuildPathProperties(SvgDocumentModel documentModel, SvgNodeModel node)
         {
-            Stroke stroke = BuildStroke(documentModel, node);
+            var stroke = BuildStroke(documentModel, node);
             return new PathProperties
             {
                 Stroke = stroke,
-                Head = ResolvePathEnding(documentModel, node, "stroke-linecap"),
-                Tail = ResolvePathEnding(documentModel, node, "stroke-linecap"),
-                Corners = ResolvePathCorner(documentModel, node, "stroke-linejoin")
+                Head = SvgInheritedAttributeResolver.ResolvePathEnding(documentModel, node, "stroke-linecap"),
+                Tail = SvgInheritedAttributeResolver.ResolvePathEnding(documentModel, node, "stroke-linecap"),
+                Corners = SvgInheritedAttributeResolver.ResolvePathCorner(documentModel, node, "stroke-linejoin")
             };
         }
 
@@ -848,422 +848,6 @@ namespace UnitySvgEditor.Editor
                 : 0f;
         }
 
-        private static bool TryParsePathContours(string pathData, out BezierContour[] contours)
-        {
-            contours = Array.Empty<BezierContour>();
-            if (string.IsNullOrWhiteSpace(pathData))
-                return false;
-
-            List<BezierContour> builtContours = new();
-            List<BezierSegment> currentSegments = null;
-            Vector2 currentPoint = Vector2.zero;
-            Vector2 subpathStart = Vector2.zero;
-            Vector2 lastCubicControl = Vector2.zero;
-            Vector2 lastQuadraticControl = Vector2.zero;
-            bool hasLastCubicControl = false;
-            bool hasLastQuadraticControl = false;
-            char currentCommand = '\0';
-            int index = 0;
-
-            while (index < pathData.Length)
-            {
-                SkipPathSeparators(pathData, ref index);
-                if (index >= pathData.Length)
-                    break;
-
-                char token = pathData[index];
-                if (char.IsLetter(token))
-                {
-                    currentCommand = token;
-                    index++;
-                }
-                else if (currentCommand == '\0')
-                {
-                    return false;
-                }
-
-                switch (currentCommand)
-                {
-                    case 'M':
-                    case 'm':
-                    {
-                        if (!TryReadPoint(pathData, ref index, currentCommand == 'm', currentPoint, out Vector2 movePoint))
-                            return false;
-
-                        if (!TryFinalizeContour(currentSegments, closed: false, builtContours, ref currentPoint, subpathStart))
-                            return false;
-
-                        currentSegments = new List<BezierSegment>();
-                        currentPoint = movePoint;
-                        subpathStart = movePoint;
-                        hasLastCubicControl = false;
-                        hasLastQuadraticControl = false;
-                        currentCommand = currentCommand == 'm' ? 'l' : 'L';
-
-                        while (TryReadPoint(pathData, ref index, currentCommand == 'l', currentPoint, out Vector2 implicitLinePoint))
-                        {
-                            currentSegments.Add(VectorUtils.MakeLine(currentPoint, implicitLinePoint));
-                            currentPoint = implicitLinePoint;
-                        }
-                        break;
-                    }
-                    case 'L':
-                    case 'l':
-                    {
-                        if (!TryEnsurePathStarted(currentSegments, subpathStart, ref currentPoint))
-                            return false;
-
-                        while (TryReadPoint(pathData, ref index, currentCommand == 'l', currentPoint, out Vector2 linePoint))
-                        {
-                            currentSegments.Add(VectorUtils.MakeLine(currentPoint, linePoint));
-                            currentPoint = linePoint;
-                        }
-                        hasLastCubicControl = false;
-                        hasLastQuadraticControl = false;
-                        break;
-                    }
-                    case 'H':
-                    case 'h':
-                    {
-                        if (!TryEnsurePathStarted(currentSegments, subpathStart, ref currentPoint))
-                            return false;
-
-                        while (TryReadFloatToken(pathData, ref index, out float xValue))
-                        {
-                            Vector2 nextPoint = new(
-                                currentCommand == 'h' ? currentPoint.x + xValue : xValue,
-                                currentPoint.y);
-                            currentSegments.Add(VectorUtils.MakeLine(currentPoint, nextPoint));
-                            currentPoint = nextPoint;
-                        }
-                        hasLastCubicControl = false;
-                        hasLastQuadraticControl = false;
-                        break;
-                    }
-                    case 'V':
-                    case 'v':
-                    {
-                        if (!TryEnsurePathStarted(currentSegments, subpathStart, ref currentPoint))
-                            return false;
-
-                        while (TryReadFloatToken(pathData, ref index, out float yValue))
-                        {
-                            Vector2 nextPoint = new(
-                                currentPoint.x,
-                                currentCommand == 'v' ? currentPoint.y + yValue : yValue);
-                            currentSegments.Add(VectorUtils.MakeLine(currentPoint, nextPoint));
-                            currentPoint = nextPoint;
-                        }
-                        hasLastCubicControl = false;
-                        hasLastQuadraticControl = false;
-                        break;
-                    }
-                    case 'C':
-                    case 'c':
-                    {
-                        if (!TryEnsurePathStarted(currentSegments, subpathStart, ref currentPoint))
-                            return false;
-
-                        while (TryReadCurvePoints(pathData, ref index, currentCommand == 'c', currentPoint, out Vector2 c1, out Vector2 c2, out Vector2 endPoint))
-                        {
-                            currentSegments.Add(new BezierSegment
-                            {
-                                P0 = currentPoint,
-                                P1 = c1,
-                                P2 = c2,
-                                P3 = endPoint
-                            });
-                            currentPoint = endPoint;
-                            lastCubicControl = c2;
-                            hasLastCubicControl = true;
-                            hasLastQuadraticControl = false;
-                        }
-                        break;
-                    }
-                    case 'S':
-                    case 's':
-                    {
-                        if (!TryEnsurePathStarted(currentSegments, subpathStart, ref currentPoint))
-                            return false;
-
-                        while (TryReadSmoothCurvePoints(pathData, ref index, currentCommand == 's', currentPoint, out Vector2 c2, out Vector2 endPoint))
-                        {
-                            Vector2 c1 = hasLastCubicControl
-                                ? (currentPoint * 2f) - lastCubicControl
-                                : currentPoint;
-                            currentSegments.Add(new BezierSegment
-                            {
-                                P0 = currentPoint,
-                                P1 = c1,
-                                P2 = c2,
-                                P3 = endPoint
-                            });
-                            currentPoint = endPoint;
-                            lastCubicControl = c2;
-                            hasLastCubicControl = true;
-                            hasLastQuadraticControl = false;
-                        }
-                        break;
-                    }
-                    case 'Q':
-                    case 'q':
-                    {
-                        if (!TryEnsurePathStarted(currentSegments, subpathStart, ref currentPoint))
-                            return false;
-
-                        while (TryReadQuadraticPoints(pathData, ref index, currentCommand == 'q', currentPoint, out Vector2 controlPoint, out Vector2 endPoint))
-                        {
-                            currentSegments.Add(VectorUtils.QuadraticToCubic(currentPoint, controlPoint, endPoint));
-                            currentPoint = endPoint;
-                            lastQuadraticControl = controlPoint;
-                            hasLastQuadraticControl = true;
-                            hasLastCubicControl = false;
-                        }
-                        break;
-                    }
-                    case 'T':
-                    case 't':
-                    {
-                        if (!TryEnsurePathStarted(currentSegments, subpathStart, ref currentPoint))
-                            return false;
-
-                        while (TryReadPoint(pathData, ref index, currentCommand == 't', currentPoint, out Vector2 endPoint))
-                        {
-                            Vector2 controlPoint = hasLastQuadraticControl
-                                ? (currentPoint * 2f) - lastQuadraticControl
-                                : currentPoint;
-                            currentSegments.Add(VectorUtils.QuadraticToCubic(currentPoint, controlPoint, endPoint));
-                            currentPoint = endPoint;
-                            lastQuadraticControl = controlPoint;
-                            hasLastQuadraticControl = true;
-                            hasLastCubicControl = false;
-                        }
-                        break;
-                    }
-                    case 'Z':
-                    case 'z':
-                    {
-                        if (!TryEnsurePathStarted(currentSegments, subpathStart, ref currentPoint))
-                            return false;
-
-                        if ((currentPoint - subpathStart).sqrMagnitude > Mathf.Epsilon)
-                            currentSegments.Add(VectorUtils.MakeLine(currentPoint, subpathStart));
-
-                        if (!TryFinalizeContour(currentSegments, closed: true, builtContours, ref currentPoint, subpathStart))
-                            return false;
-
-                        currentSegments = null;
-                        currentPoint = subpathStart;
-                        hasLastCubicControl = false;
-                        hasLastQuadraticControl = false;
-                        break;
-                    }
-                    default:
-                        return false;
-                }
-            }
-
-            if (!TryFinalizeContour(currentSegments, closed: false, builtContours, ref currentPoint, subpathStart))
-                return false;
-
-            contours = builtContours.ToArray();
-            return contours.Length > 0;
-        }
-
-        private static bool TryEnsurePathStarted(
-            List<BezierSegment> currentSegments,
-            Vector2 subpathStart,
-            ref Vector2 currentPoint)
-        {
-            if (currentSegments == null)
-                return false;
-
-            if (currentSegments.Count == 0)
-                currentPoint = subpathStart;
-
-            return true;
-        }
-
-        private static bool TryFinalizeContour(
-            List<BezierSegment> currentSegments,
-            bool closed,
-            List<BezierContour> builtContours,
-            ref Vector2 currentPoint,
-            Vector2 subpathStart)
-        {
-            if (currentSegments == null)
-                return true;
-
-            if (currentSegments.Count == 0)
-            {
-                currentPoint = subpathStart;
-                return true;
-            }
-
-            builtContours.Add(new BezierContour
-            {
-                Segments = VectorUtils.BezierSegmentsToPath(currentSegments.ToArray()),
-                Closed = closed
-            });
-            currentPoint = subpathStart;
-            return true;
-        }
-
-        private static bool TryReadPoint(
-            string pathData,
-            ref int index,
-            bool relative,
-            Vector2 origin,
-            out Vector2 point)
-        {
-            point = Vector2.zero;
-            if (!TryReadFloatToken(pathData, ref index, out float x) ||
-                !TryReadFloatToken(pathData, ref index, out float y))
-            {
-                return false;
-            }
-
-            point = relative ? origin + new Vector2(x, y) : new Vector2(x, y);
-            return true;
-        }
-
-        private static bool TryReadCurvePoints(
-            string pathData,
-            ref int index,
-            bool relative,
-            Vector2 origin,
-            out Vector2 c1,
-            out Vector2 c2,
-            out Vector2 endPoint)
-        {
-            c1 = Vector2.zero;
-            c2 = Vector2.zero;
-            endPoint = Vector2.zero;
-
-            if (!TryReadPoint(pathData, ref index, relative, origin, out c1) ||
-                !TryReadPoint(pathData, ref index, relative, origin, out c2) ||
-                !TryReadPoint(pathData, ref index, relative, origin, out endPoint))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        private static bool TryReadSmoothCurvePoints(
-            string pathData,
-            ref int index,
-            bool relative,
-            Vector2 origin,
-            out Vector2 c2,
-            out Vector2 endPoint)
-        {
-            c2 = Vector2.zero;
-            endPoint = Vector2.zero;
-
-            if (!TryReadPoint(pathData, ref index, relative, origin, out c2) ||
-                !TryReadPoint(pathData, ref index, relative, origin, out endPoint))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        private static bool TryReadQuadraticPoints(
-            string pathData,
-            ref int index,
-            bool relative,
-            Vector2 origin,
-            out Vector2 controlPoint,
-            out Vector2 endPoint)
-        {
-            controlPoint = Vector2.zero;
-            endPoint = Vector2.zero;
-
-            if (!TryReadPoint(pathData, ref index, relative, origin, out controlPoint) ||
-                !TryReadPoint(pathData, ref index, relative, origin, out endPoint))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        private static void SkipPathSeparators(string pathData, ref int index)
-        {
-            while (index < pathData.Length &&
-                   (char.IsWhiteSpace(pathData[index]) || pathData[index] == ','))
-            {
-                index++;
-            }
-        }
-
-        private static bool TryReadFloatToken(string text, ref int index, out float value)
-        {
-            value = 0f;
-            SkipPathSeparators(text, ref index);
-            if (index >= text.Length)
-                return false;
-
-            int start = index;
-            bool hasExponent = false;
-            bool hasDecimal = false;
-
-            if (text[index] == '+' || text[index] == '-')
-                index++;
-
-            while (index < text.Length)
-            {
-                char ch = text[index];
-                if (char.IsDigit(ch))
-                {
-                    index++;
-                    continue;
-                }
-
-                if (ch == '.' && !hasDecimal)
-                {
-                    hasDecimal = true;
-                    index++;
-                    continue;
-                }
-
-                if ((ch == 'e' || ch == 'E') && !hasExponent)
-                {
-                    hasExponent = true;
-                    index++;
-                    if (index < text.Length && (text[index] == '+' || text[index] == '-'))
-                        index++;
-                    continue;
-                }
-
-                break;
-            }
-
-            return index > start &&
-                   TryParseFloat(text.Substring(start, index - start), out value);
-        }
-
-        private static bool TryParsePoints(string pointsText, out List<Vector2> points)
-        {
-            points = new List<Vector2>();
-            if (string.IsNullOrWhiteSpace(pointsText))
-                return false;
-
-            int index = 0;
-            while (index < pointsText.Length)
-            {
-                if (!TryReadFloatToken(pointsText, ref index, out float x))
-                    break;
-                if (!TryReadFloatToken(pointsText, ref index, out float y))
-                    return false;
-
-                points.Add(new Vector2(x, y));
-            }
-
-            return points.Count >= 2;
-        }
 
         private static bool TryParseDasharray(
             SvgDocumentModel documentModel,
@@ -1271,15 +855,15 @@ namespace UnitySvgEditor.Editor
             out float[] pattern)
         {
             pattern = null;
-            if (!TryGetInheritedAttribute(documentModel, node, "stroke-dasharray", out string dasharray) ||
+            if (!SvgInheritedAttributeResolver.TryGetInheritedAttribute(documentModel, node, "stroke-dasharray", out var dasharray) ||
                 string.IsNullOrWhiteSpace(dasharray))
             {
                 return false;
             }
 
-            string[] tokens = dasharray.Split(new[] { ' ', ',', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            List<float> values = new(tokens.Length);
-            for (int index = 0; index < tokens.Length; index++)
+            var tokens = dasharray.Split(new[] { ' ', ',', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            var values = new List<float>(tokens.Length);
+            for (var index = 0; index < tokens.Length; index++)
             {
                 if (!SvgAttributeUtility.TryParseFloat(tokens[index], out var value))
                     return false;
@@ -1289,122 +873,6 @@ namespace UnitySvgEditor.Editor
 
             pattern = values.Count > 0 ? values.ToArray() : null;
             return pattern != null;
-        }
-
-        private static PathEnding ResolvePathEnding(
-            SvgDocumentModel documentModel,
-            SvgNodeModel node,
-            string attributeName)
-        {
-            return SvgInheritedAttributeResolver.ResolvePathEnding(documentModel, node, attributeName);
-        }
-
-        private static PathCorner ResolvePathCorner(
-            SvgDocumentModel documentModel,
-            SvgNodeModel node,
-            string attributeName)
-        {
-            return SvgInheritedAttributeResolver.ResolvePathCorner(documentModel, node, attributeName);
-        }
-
-        private static FillMode ResolveFillMode(SvgDocumentModel documentModel, SvgNodeModel node)
-        {
-            return SvgInheritedAttributeResolver.ResolveFillMode(documentModel, node);
-        }
-
-        private static float ResolveFillOpacity(SvgDocumentModel documentModel, SvgNodeModel node)
-        {
-            return SvgInheritedAttributeResolver.ResolveFillOpacity(documentModel, node);
-        }
-
-        private static float ResolveStrokeOpacity(SvgDocumentModel documentModel, SvgNodeModel node)
-        {
-            return SvgInheritedAttributeResolver.ResolveStrokeOpacity(documentModel, node);
-        }
-
-        private static bool TryGetOpacity(IReadOnlyDictionary<string, string> attributes, out float opacity)
-        {
-            return SvgAttributeUtility.TryGetOpacity(attributes, out opacity);
-        }
-
-        private static bool TryResolveUseReference(
-            SvgNodeModel useNode,
-            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
-            out SvgNodeModel referencedNode)
-        {
-            referencedNode = null;
-            if (useNode?.References == null || nodesByXmlId == null)
-                return false;
-
-            for (int index = 0; index < useNode.References.Count; index++)
-            {
-                SvgNodeReference reference = useNode.References[index];
-                if (string.IsNullOrWhiteSpace(reference?.FragmentId))
-                    continue;
-
-                if (nodesByXmlId.TryGetValue(reference.FragmentId, out referencedNode))
-                    return referencedNode != null;
-            }
-
-            return false;
-        }
-
-        private static Dictionary<string, SvgNodeModel> BuildNodeLookupByXmlId(SvgDocumentModel documentModel)
-        {
-            Dictionary<string, SvgNodeModel> lookup = new(StringComparer.Ordinal);
-            if (documentModel?.NodeIdsByXmlId == null)
-                return lookup;
-
-            foreach (KeyValuePair<string, SvgNodeId> pair in documentModel.NodeIdsByXmlId)
-            {
-                if (string.IsNullOrWhiteSpace(pair.Key) ||
-                    !documentModel.TryGetNode(pair.Value, out SvgNodeModel node) ||
-                    node == null)
-                {
-                    continue;
-                }
-
-                lookup[pair.Key] = node;
-            }
-
-            return lookup;
-        }
-
-        private static bool TryFindNodeByLegacyElementKey(SvgDocumentModel documentModel, string elementKey, out SvgNodeModel node)
-        {
-            node = null;
-            if (documentModel?.NodeOrder == null || string.IsNullOrWhiteSpace(elementKey))
-                return false;
-
-            for (int index = 0; index < documentModel.NodeOrder.Count; index++)
-            {
-                SvgNodeId nodeId = documentModel.NodeOrder[index];
-                if (!documentModel.TryGetNode(nodeId, out SvgNodeModel candidate) || candidate == null)
-                    continue;
-
-                if (string.Equals(candidate.LegacyElementKey, elementKey, StringComparison.Ordinal))
-                {
-                    node = candidate;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private static bool TryExtractFragmentId(string fillValue, out string fragmentId)
-        {
-            fragmentId = string.Empty;
-            if (string.IsNullOrWhiteSpace(fillValue))
-                return false;
-
-            int hashIndex = fillValue.IndexOf('#');
-            int closeIndex = fillValue.IndexOf(')', hashIndex + 1);
-            if (hashIndex < 0 || closeIndex <= hashIndex)
-                return false;
-
-            fragmentId = fillValue.Substring(hashIndex + 1, closeIndex - hashIndex - 1).Trim();
-            return !string.IsNullOrWhiteSpace(fragmentId);
         }
 
         private static bool TryParseOffset(string offsetText, out float offset)
@@ -1451,27 +919,9 @@ namespace UnitySvgEditor.Editor
             return opacity > 0.5f && luminance > 0.5f;
         }
 
-        private static bool TryGetAttribute(IReadOnlyDictionary<string, string> attributes, string name, out string value)
+        private static FillMode ResolveFillMode(SvgDocumentModel documentModel, SvgNodeModel node)
         {
-            return SvgAttributeUtility.TryGetAttribute(attributes, name, out value);
-        }
-
-        private static bool TryGetInheritedAttribute(
-            SvgDocumentModel documentModel,
-            SvgNodeModel node,
-            string name,
-            out string value)
-        {
-            return SvgInheritedAttributeResolver.TryGetInheritedAttribute(documentModel, node, name, out value);
-        }
-
-        private static bool TryGetInheritedFloat(
-            SvgDocumentModel documentModel,
-            SvgNodeModel node,
-            string name,
-            out float value)
-        {
-            return SvgInheritedAttributeResolver.TryGetInheritedFloat(documentModel, node, name, out value);
+            return SvgInheritedAttributeResolver.ResolveFillMode(documentModel, node);
         }
 
         private static bool TryGetFloat(IReadOnlyDictionary<string, string> attributes, string name, out float value)
@@ -1484,9 +934,5 @@ namespace UnitySvgEditor.Editor
             return SvgAttributeUtility.TryParseFloat(text, out value);
         }
 
-        private static bool TryParseColor(string text, out Color color)
-        {
-            return SvgAttributeUtility.TryParseColor(text, out color);
-        }
     }
 }
