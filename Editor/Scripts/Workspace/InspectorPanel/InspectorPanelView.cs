@@ -152,82 +152,22 @@ namespace UnitySvgEditor.Editor
 
         private void RegisterCallbacks()
         {
-            RegisterImmediateApplyCallback(_form.FillColorField, OnFillColorChanged);
-            RegisterImmediateApplyCallback(_form.FillColorLegacyField, OnFillColorChanged);
-            RegisterButtonClicked(_form.FillAddButton, OnFillAddRequested);
-            RegisterButtonClicked(_form.FillRemoveButton, OnFillRemoveRequested);
-            RegisterImmediateApplyCallback(_form.StrokeColorField, OnStrokeColorChanged);
-            RegisterImmediateApplyCallback(_form.StrokeColorLegacyField, OnStrokeColorChanged);
-            RegisterButtonClicked(_form.StrokeAddButton, OnStrokeAddRequested);
-            RegisterButtonClicked(_form.StrokeRemoveButton, OnStrokeRemoveRequested);
-            RegisterImmediateApplyCallback(_form.StrokeWidthField, OnStrokeWidthChanged);
-            RegisterImmediateApplyCallback(_form.OpacityField, OnOpacityChanged);
-            RegisterImmediateApplyCallback(_form.CornerRadiusField, OnCornerRadiusChanged);
-            RegisterImmediateApplyCallback(_form.DashLengthField, OnStrokeDasharrayChanged);
-            RegisterImmediateApplyCallback(_form.DashGapField, OnStrokeDasharrayChanged);
-            RegisterImmediateApplyCallback(_form.LinecapPopup, OnStrokeLinecapChanged);
-            RegisterImmediateApplyCallback(_form.LinecapLegacyPopup, OnStrokeLinecapChanged);
-            RegisterImmediateApplyCallback(_form.LinejoinPopup, OnStrokeLinejoinChanged);
-            RegisterImmediateApplyCallback(_form.LinejoinLegacyPopup, OnStrokeLinejoinChanged);
-            RegisterFrameRectCallback(_form.FrameXField, OnFrameRectChanged);
-            RegisterFrameRectCallback(_form.FrameYField, OnFrameRectChanged);
-            RegisterFrameRectCallback(_form.FrameWidthField, OnFrameRectChanged);
-            RegisterFrameRectCallback(_form.FrameHeightField, OnFrameRectChanged);
-            RegisterTransformHelperCallback(_form.TranslateXField, OnTranslateXChanged);
-            RegisterTransformHelperCallback(_form.TranslateYField, OnTranslateYChanged);
-            RegisterTransformHelperCallback(_form.RotateField, OnRotateChanged);
+            ToggleImmediateApplyCallbacks(register: true);
+            ToggleAttributeActionCallbacks(register: true);
+            ToggleFrameRectCallbacks(register: true);
+            ToggleTransformHelperCallbacks(register: true);
             RegisterRotateDragCallbacks();
-            RegisterTransformHelperCallback(_form.ScaleXField, OnScaleXChanged);
-            RegisterTransformHelperCallback(_form.ScaleYField, OnScaleYChanged);
-            RegisterButtonClicked(_form.PositionAlignLeftButton, OnPositionAlignLeftRequested);
-            RegisterButtonClicked(_form.PositionAlignCenterButton, OnPositionAlignCenterRequested);
-            RegisterButtonClicked(_form.PositionAlignRightButton, OnPositionAlignRightRequested);
-            RegisterButtonClicked(_form.PositionAlignTopButton, OnPositionAlignTopRequested);
-            RegisterButtonClicked(_form.PositionAlignMiddleButton, OnPositionAlignMiddleRequested);
-            RegisterButtonClicked(_form.PositionAlignBottomButton, OnPositionAlignBottomRequested);
-            RegisterButtonClicked(_form.PositionRotateClockwise90Button, OnPositionRotateClockwise90Requested);
-            RegisterButtonClicked(_form.PositionFlipHorizontalButton, OnPositionFlipHorizontalRequested);
-            RegisterButtonClicked(_form.PositionFlipVerticalButton, OnPositionFlipVerticalRequested);
+            TogglePositionActionCallbacks(register: true);
         }
 
         private void UnregisterCallbacks()
         {
-            UnregisterImmediateApplyCallback(_form.FillColorField, OnFillColorChanged);
-            UnregisterImmediateApplyCallback(_form.FillColorLegacyField, OnFillColorChanged);
-            UnregisterButtonClicked(_form.FillAddButton, OnFillAddRequested);
-            UnregisterButtonClicked(_form.FillRemoveButton, OnFillRemoveRequested);
-            UnregisterImmediateApplyCallback(_form.StrokeColorField, OnStrokeColorChanged);
-            UnregisterImmediateApplyCallback(_form.StrokeColorLegacyField, OnStrokeColorChanged);
-            UnregisterButtonClicked(_form.StrokeAddButton, OnStrokeAddRequested);
-            UnregisterButtonClicked(_form.StrokeRemoveButton, OnStrokeRemoveRequested);
-            UnregisterImmediateApplyCallback(_form.StrokeWidthField, OnStrokeWidthChanged);
-            UnregisterImmediateApplyCallback(_form.OpacityField, OnOpacityChanged);
-            UnregisterImmediateApplyCallback(_form.CornerRadiusField, OnCornerRadiusChanged);
-            UnregisterImmediateApplyCallback(_form.DashLengthField, OnStrokeDasharrayChanged);
-            UnregisterImmediateApplyCallback(_form.DashGapField, OnStrokeDasharrayChanged);
-            UnregisterImmediateApplyCallback(_form.LinecapPopup, OnStrokeLinecapChanged);
-            UnregisterImmediateApplyCallback(_form.LinecapLegacyPopup, OnStrokeLinecapChanged);
-            UnregisterImmediateApplyCallback(_form.LinejoinPopup, OnStrokeLinejoinChanged);
-            UnregisterImmediateApplyCallback(_form.LinejoinLegacyPopup, OnStrokeLinejoinChanged);
-            UnregisterFrameRectCallback(_form.FrameXField, OnFrameRectChanged);
-            UnregisterFrameRectCallback(_form.FrameYField, OnFrameRectChanged);
-            UnregisterFrameRectCallback(_form.FrameWidthField, OnFrameRectChanged);
-            UnregisterFrameRectCallback(_form.FrameHeightField, OnFrameRectChanged);
-            UnregisterTransformHelperCallback(_form.TranslateXField, OnTranslateXChanged);
-            UnregisterTransformHelperCallback(_form.TranslateYField, OnTranslateYChanged);
-            UnregisterTransformHelperCallback(_form.RotateField, OnRotateChanged);
+            ToggleImmediateApplyCallbacks(register: false);
+            ToggleAttributeActionCallbacks(register: false);
+            ToggleFrameRectCallbacks(register: false);
+            ToggleTransformHelperCallbacks(register: false);
             UnregisterRotateDragCallbacks();
-            UnregisterTransformHelperCallback(_form.ScaleXField, OnScaleXChanged);
-            UnregisterTransformHelperCallback(_form.ScaleYField, OnScaleYChanged);
-            UnregisterButtonClicked(_form.PositionAlignLeftButton, OnPositionAlignLeftRequested);
-            UnregisterButtonClicked(_form.PositionAlignCenterButton, OnPositionAlignCenterRequested);
-            UnregisterButtonClicked(_form.PositionAlignRightButton, OnPositionAlignRightRequested);
-            UnregisterButtonClicked(_form.PositionAlignTopButton, OnPositionAlignTopRequested);
-            UnregisterButtonClicked(_form.PositionAlignMiddleButton, OnPositionAlignMiddleRequested);
-            UnregisterButtonClicked(_form.PositionAlignBottomButton, OnPositionAlignBottomRequested);
-            UnregisterButtonClicked(_form.PositionRotateClockwise90Button, OnPositionRotateClockwise90Requested);
-            UnregisterButtonClicked(_form.PositionFlipHorizontalButton, OnPositionFlipHorizontalRequested);
-            UnregisterButtonClicked(_form.PositionFlipVerticalButton, OnPositionFlipVerticalRequested);
+            TogglePositionActionCallbacks(register: false);
         }
 
         private void OnFillColorChanged(ChangeEvent<Color> evt) => ImmediateApplyRequested?.Invoke(ImmediateApplyField.FillColor);
@@ -358,189 +298,176 @@ namespace UnitySvgEditor.Editor
 
         private void OnPositionFlipVerticalRequested() => PositionActionRequested?.Invoke(PositionAction.FlipVertical);
 
-        private static void RegisterButtonClicked(Button button, Action callback)
+        private void ToggleImmediateApplyCallbacks(bool register)
+        {
+            ToggleImmediateApplyCallback(_form.FillColorField, OnFillColorChanged, register);
+            ToggleImmediateApplyCallback(_form.FillColorLegacyField, OnFillColorChanged, register);
+            ToggleImmediateApplyCallback(_form.StrokeColorField, OnStrokeColorChanged, register);
+            ToggleImmediateApplyCallback(_form.StrokeColorLegacyField, OnStrokeColorChanged, register);
+            ToggleImmediateApplyCallback(_form.StrokeWidthField, OnStrokeWidthChanged, register);
+            ToggleImmediateApplyCallback(_form.OpacityField, OnOpacityChanged, register);
+            ToggleImmediateApplyCallback(_form.CornerRadiusField, OnCornerRadiusChanged, register);
+            ToggleImmediateApplyCallback(_form.DashLengthField, OnStrokeDasharrayChanged, register);
+            ToggleImmediateApplyCallback(_form.DashGapField, OnStrokeDasharrayChanged, register);
+            ToggleImmediateApplyCallback(_form.LinecapPopup, OnStrokeLinecapChanged, register);
+            ToggleImmediateApplyCallback(_form.LinecapLegacyPopup, OnStrokeLinecapChanged, register);
+            ToggleImmediateApplyCallback(_form.LinejoinPopup, OnStrokeLinejoinChanged, register);
+            ToggleImmediateApplyCallback(_form.LinejoinLegacyPopup, OnStrokeLinejoinChanged, register);
+        }
+
+        private void ToggleAttributeActionCallbacks(bool register)
+        {
+            ToggleButtonClicked(_form.FillAddButton, OnFillAddRequested, register);
+            ToggleButtonClicked(_form.FillRemoveButton, OnFillRemoveRequested, register);
+            ToggleButtonClicked(_form.StrokeAddButton, OnStrokeAddRequested, register);
+            ToggleButtonClicked(_form.StrokeRemoveButton, OnStrokeRemoveRequested, register);
+        }
+
+        private void ToggleFrameRectCallbacks(bool register)
+        {
+            ToggleFrameRectCallback(_form.FrameXField, OnFrameRectChanged, register);
+            ToggleFrameRectCallback(_form.FrameYField, OnFrameRectChanged, register);
+            ToggleFrameRectCallback(_form.FrameWidthField, OnFrameRectChanged, register);
+            ToggleFrameRectCallback(_form.FrameHeightField, OnFrameRectChanged, register);
+        }
+
+        private void ToggleTransformHelperCallbacks(bool register)
+        {
+            ToggleTransformHelperCallback(_form.TranslateXField, OnTranslateXChanged, register);
+            ToggleTransformHelperCallback(_form.TranslateYField, OnTranslateYChanged, register);
+            ToggleTransformHelperCallback(_form.RotateField, OnRotateChanged, register);
+            ToggleTransformHelperCallback(_form.ScaleXField, OnScaleXChanged, register);
+            ToggleTransformHelperCallback(_form.ScaleYField, OnScaleYChanged, register);
+        }
+
+        private void TogglePositionActionCallbacks(bool register)
+        {
+            ToggleButtonClicked(_form.PositionAlignLeftButton, OnPositionAlignLeftRequested, register);
+            ToggleButtonClicked(_form.PositionAlignCenterButton, OnPositionAlignCenterRequested, register);
+            ToggleButtonClicked(_form.PositionAlignRightButton, OnPositionAlignRightRequested, register);
+            ToggleButtonClicked(_form.PositionAlignTopButton, OnPositionAlignTopRequested, register);
+            ToggleButtonClicked(_form.PositionAlignMiddleButton, OnPositionAlignMiddleRequested, register);
+            ToggleButtonClicked(_form.PositionAlignBottomButton, OnPositionAlignBottomRequested, register);
+            ToggleButtonClicked(_form.PositionRotateClockwise90Button, OnPositionRotateClockwise90Requested, register);
+            ToggleButtonClicked(_form.PositionFlipHorizontalButton, OnPositionFlipHorizontalRequested, register);
+            ToggleButtonClicked(_form.PositionFlipVerticalButton, OnPositionFlipVerticalRequested, register);
+        }
+
+        private static void ToggleButtonClicked(Button button, Action callback, bool register)
         {
             if (button == null || callback == null)
                 return;
 
             button.clicked -= callback;
-            button.clicked += callback;
+            if (register)
+            {
+                button.clicked += callback;
+            }
         }
 
-        private static void UnregisterButtonClicked(Button button, Action callback)
-        {
-            if (button == null || callback == null)
-                return;
-
-            button.clicked -= callback;
-        }
-
-        private static void RegisterImmediateApplyCallback(
+        private static void ToggleImmediateApplyCallback(
             ColorPercentField field,
-            EventCallback<ChangeEvent<Color>> callback)
+            EventCallback<ChangeEvent<Color>> callback,
+            bool register)
         {
             if (field == null)
                 return;
 
             field.UnregisterCallback(callback);
-            field.RegisterCallback(callback);
+            if (register)
+            {
+                field.RegisterCallback(callback);
+            }
         }
 
-        private static void RegisterImmediateApplyCallback(
+        private static void ToggleImmediateApplyCallback(
             ColorField field,
-            EventCallback<ChangeEvent<Color>> callback)
+            EventCallback<ChangeEvent<Color>> callback,
+            bool register)
         {
             if (field == null)
                 return;
 
             field.UnregisterValueChangedCallback(callback);
-            field.RegisterValueChangedCallback(callback);
+            if (register)
+            {
+                field.RegisterValueChangedCallback(callback);
+            }
         }
 
-        private static void RegisterImmediateApplyCallback(
+        private static void ToggleImmediateApplyCallback(
             BaseField<float> field,
-            EventCallback<ChangeEvent<float>> callback)
+            EventCallback<ChangeEvent<float>> callback,
+            bool register)
         {
             if (field == null)
                 return;
 
             field.UnregisterValueChangedCallback(callback);
-            field.RegisterValueChangedCallback(callback);
+            if (register)
+            {
+                field.RegisterValueChangedCallback(callback);
+            }
         }
 
-        private static void RegisterImmediateApplyCallback(
+        private static void ToggleImmediateApplyCallback(
             SelectElement field,
-            EventCallback<ChangeEvent<string>> callback)
+            EventCallback<ChangeEvent<string>> callback,
+            bool register)
         {
             if (field == null)
                 return;
 
             field.UnregisterCallback(callback);
-            field.RegisterCallback(callback);
+            if (register)
+            {
+                field.RegisterCallback(callback);
+            }
         }
 
-        private static void RegisterImmediateApplyCallback(
+        private static void ToggleImmediateApplyCallback(
             DropdownField field,
-            EventCallback<ChangeEvent<string>> callback)
+            EventCallback<ChangeEvent<string>> callback,
+            bool register)
         {
             if (field == null)
                 return;
 
             field.UnregisterValueChangedCallback(callback);
-            field.RegisterValueChangedCallback(callback);
+            if (register)
+            {
+                field.RegisterValueChangedCallback(callback);
+            }
         }
 
-        private static void UnregisterImmediateApplyCallback(
-            ColorPercentField field,
-            EventCallback<ChangeEvent<Color>> callback)
-        {
-            if (field == null)
-                return;
-
-            field.UnregisterCallback(callback);
-        }
-
-        private static void UnregisterImmediateApplyCallback(
-            ColorField field,
-            EventCallback<ChangeEvent<Color>> callback)
-        {
-            if (field == null)
-                return;
-
-            field.UnregisterValueChangedCallback(callback);
-        }
-
-        private static void UnregisterImmediateApplyCallback(
+        private static void ToggleFrameRectCallback(
             BaseField<float> field,
-            EventCallback<ChangeEvent<float>> callback)
+            EventCallback<ChangeEvent<float>> callback,
+            bool register)
         {
             if (field == null)
                 return;
 
             field.UnregisterValueChangedCallback(callback);
+            if (register)
+            {
+                field.RegisterValueChangedCallback(callback);
+            }
         }
 
-        private static void UnregisterImmediateApplyCallback(
-            SelectElement field,
-            EventCallback<ChangeEvent<string>> callback)
-        {
-            if (field == null)
-                return;
-
-            field.UnregisterCallback(callback);
-        }
-
-        private static void UnregisterImmediateApplyCallback(
-            DropdownField field,
-            EventCallback<ChangeEvent<string>> callback)
-        {
-            if (field == null)
-                return;
-
-            field.UnregisterValueChangedCallback(callback);
-        }
-
-        private static void RegisterFrameRectCallback(
+        private static void ToggleTransformHelperCallback(
             BaseField<float> field,
-            EventCallback<ChangeEvent<float>> callback)
+            EventCallback<ChangeEvent<float>> callback,
+            bool register)
         {
             if (field == null)
                 return;
 
             field.UnregisterValueChangedCallback(callback);
-            field.RegisterValueChangedCallback(callback);
-        }
-
-        private static void UnregisterFrameRectCallback(
-            BaseField<float> field,
-            EventCallback<ChangeEvent<float>> callback)
-        {
-            if (field == null)
-                return;
-
-            field.UnregisterValueChangedCallback(callback);
-        }
-
-        private static void RegisterTransformHelperCallback(
-            BaseField<float> field,
-            EventCallback<ChangeEvent<float>> callback)
-        {
-            if (field == null)
-                return;
-
-            field.UnregisterValueChangedCallback(callback);
-            field.RegisterValueChangedCallback(callback);
-        }
-
-        private static void UnregisterTransformHelperCallback(
-            BaseField<float> field,
-            EventCallback<ChangeEvent<float>> callback)
-        {
-            if (field == null)
-                return;
-
-            field.UnregisterValueChangedCallback(callback);
-        }
-
-        private static void RegisterTransformTextCallback(
-            TextField field,
-            EventCallback<ChangeEvent<string>> callback)
-        {
-            if (field == null)
-                return;
-
-            field.UnregisterValueChangedCallback(callback);
-            field.RegisterValueChangedCallback(callback);
-        }
-
-        private static void UnregisterTransformTextCallback(
-            TextField field,
-            EventCallback<ChangeEvent<string>> callback)
-        {
-            if (field == null)
-                return;
-
-            field.UnregisterValueChangedCallback(callback);
+            if (register)
+            {
+                field.RegisterValueChangedCallback(callback);
+            }
         }
     }
 }
