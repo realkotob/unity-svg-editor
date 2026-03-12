@@ -1,0 +1,138 @@
+.svg-editor__canvas-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.svg-editor__definition-overlay-bounds {
+    border-radius: 6px;
+    border-color: var(--editor-definition-bound-border);
+    background-color: var(--transparent);
+}
+
+.svg-editor__definition-overlay-bounds--mask {
+    border-color: var(--editor-definition-mask-border);
+}
+
+.svg-editor__definition-overlay-bounds--clip {
+    border-color: var(--editor-definition-clip-border);
+}
+
+.svg-editor__canvas-overlay--readonly {
+    opacity: 0.9;
+}
+
+.svg-editor__canvas-overlay--pan-armed,
+.svg-editor__canvas-overlay--pan-armed .svg-editor__canvas-frame-label,
+.svg-editor__canvas-overlay--pan-armed .svg-editor__selection-handle,
+.svg-editor__canvas-overlay--pan-armed .svg-editor__edge-zone,
+.svg-editor__canvas-overlay--pan-armed .svg-editor__rotation-zone {
+    cursor: pan;
+}
+
+.svg-editor__canvas-frame-label,
+.svg-editor__selection-size-badge {
+    position: absolute;
+    border-radius: 4px;
+    font-size: 11px;
+    -unity-font-style: bold;
+}
+
+.svg-editor__canvas-frame-label {
+    padding: 2px 6px;
+    color: var(--foreground);
+    background-color: var(--editor-frame-label-bg);
+}
+
+.svg-editor__selection-box,
+.svg-editor__hover-box,
+.svg-editor__selection-handle,
+.svg-editor__edge-zone,
+.svg-editor__rotation-zone,
+.svg-editor__selection-size-badge,
+.svg-editor__alignment-guide {
+    position: absolute;
+    display: none;
+}
+
+.svg-editor__selection-box,
+.svg-editor__hover-box {
+    border-width: 1px;
+}
+
+.svg-editor__selection-box {
+    border-color: var(--info);
+    background-color: var(--editor-selection-fill);
+}
+
+.svg-editor__selection-box--frame {
+    background-color: var(--editor-selection-frame-fill);
+}
+
+.svg-editor__hover-box {
+    border-color: var(--editor-hover-border);
+    background-color: var(--editor-surface-soft);
+}
+
+.svg-editor__selection-handle {
+    width: var(--size-selection-handle);
+    height: var(--size-selection-handle);
+    border-color: var(--info);
+    border-width: 1px;
+    background-color: var(--white);
+}
+
+.svg-editor__selection-handle--top-left,
+.svg-editor__selection-handle--bottom-right {
+    cursor: var(--cursor-nwse-resize);
+}
+
+.svg-editor__selection-handle--top-right,
+.svg-editor__selection-handle--bottom-left {
+    cursor: var(--cursor-nesw-resize);
+}
+
+.svg-editor__selection-handle--top,
+.svg-editor__selection-handle--bottom,
+.svg-editor__edge-zone--vertical {
+    cursor: var(--cursor-ns-resize);
+}
+
+.svg-editor__selection-handle--left,
+.svg-editor__selection-handle--right,
+.svg-editor__edge-zone--horizontal {
+    cursor: var(--cursor-ew-resize);
+}
+
+.svg-editor__edge-zone,
+.svg-editor__rotation-zone {
+    background-color: var(--transparent);
+}
+
+.svg-editor__rotation-zone {
+    cursor: var(--cursor-rotate);
+}
+
+.svg-editor__selection-size-badge {
+    padding: 2px 6px;
+    color: var(--white);
+    background-color: var(--info);
+}
+
+.svg-editor__alignment-guide {
+    background-color: var(--editor-guide-color);
+}
+
+.svg-editor__alignment-guide--vertical {
+    top: 0;
+    bottom: 0;
+    width: 1px;
+}
+
+.svg-editor__alignment-guide--horizontal {
+    left: 0;
+    right: 0;
+    height: 1px;
+}

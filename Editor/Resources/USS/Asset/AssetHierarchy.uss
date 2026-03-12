@@ -1,0 +1,135 @@
+.svg-editor__asset-hierarchy__tree {
+    flex-grow: 1;
+    min-height: 120px;
+    background-color: var(--transparent);
+}
+
+.svg-editor__asset-hierarchy-list .unity-tree-view__item {
+    height: 28px;
+}
+
+.svg-editor__asset-hierarchy-list .unity-tree-view__item:hover {
+    background-color: var(--editor-surface-soft);
+}
+
+.unity-collection-view:focus:enabled .unity-collection-view__item--selected,
+.svg-editor__asset-hierarchy-list .unity-tree-view__item:checked {
+    background-color: var(--primary-20);
+}
+
+.svg-editor__asset-hierarchy-list .unity-tree-view__item-toggle {
+    display: none;
+    min-width: 0;
+    width: 0;
+    margin-right: 0;
+}
+
+.svg-editor__asset-hierarchy-list #unity-tree-view__item-indent {
+    min-width: 0;
+    width: 0;
+}
+
+.svg-editor__asset-hierarchy__item {
+    --asset-hierarchy-fg: var(--muted-foreground);
+    --asset-hierarchy-icon-tint: var(--muted-foreground);
+    flex-direction: row;
+    align-items: center;
+    height: 28px;
+    padding-right: var(--space-1-5);
+    border-radius: var(--radius-sm);
+}
+
+.svg-editor__asset-hierarchy__icon,
+.svg-editor__asset-hierarchy__expander {
+    width: 16px;
+    min-width: 16px;
+    height: 16px;
+    align-self: center;
+    -unity-background-image-tint-color: var(--asset-hierarchy-icon-tint);
+}
+
+.svg-editor__asset-hierarchy__icon {
+    margin-right: var(--space-1-5);
+}
+
+.svg-editor__asset-hierarchy__expander {
+    display: none;
+    margin-right: var(--space-1);
+}
+
+.svg-editor__asset-hierarchy__expander--expanded {
+    rotate: 90deg;
+}
+
+.svg-editor__asset-hierarchy__expander--placeholder {
+    opacity: 0;
+}
+
+.svg-editor__asset-hierarchy__text {
+    flex-grow: 1;
+    height: 28px;
+    margin: 0;
+    padding: 0;
+    align-self: center;
+    color: var(--asset-hierarchy-fg);
+    font-size: var(--font-size-xs);
+    white-space: normal;
+    -unity-text-align: middle-left;
+}
+
+.svg-editor__asset-hierarchy__badge-container {
+    flex-direction: row;
+    align-items: center;
+    margin-left: auto;
+    padding-left: var(--space-1-5);
+}
+
+.svg-editor__asset-hierarchy__badge {
+    min-width: 16px;
+    height: 16px;
+    padding: 0 var(--space-1);
+    border-radius: var(--radius-full);
+    border-width: 1px;
+    border-color: var(--input-50);
+    background-color: var(--input-30);
+    color: var(--muted-foreground);
+    font-size: 9px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.svg-editor__asset-hierarchy__badge--mask {
+    color: var(--editor-proxy-mask-color);
+}
+
+.svg-editor__asset-hierarchy__badge--clip {
+    color: var(--editor-proxy-clip-color);
+}
+
+.svg-editor__asset-hierarchy__item--group,
+.svg-editor__asset-hierarchy__item--text {
+    --asset-hierarchy-fg: var(--editor-layer-group-color);
+    --asset-hierarchy-icon-tint: var(--editor-layer-group-color);
+}
+
+.svg-editor__asset-hierarchy__item--proxy-mask {
+    --asset-hierarchy-fg: var(--editor-proxy-mask-color);
+    --asset-hierarchy-icon-tint: var(--editor-proxy-mask-color);
+}
+
+.svg-editor__asset-hierarchy__item--proxy-clip {
+    --asset-hierarchy-fg: var(--editor-proxy-clip-color);
+    --asset-hierarchy-icon-tint: var(--editor-proxy-clip-color);
+}
+
+.svg-editor__asset-hierarchy-list .unity-collection-view__item--selected .svg-editor__asset-hierarchy__item {
+    --asset-hierarchy-fg: var(--foreground);
+    --asset-hierarchy-icon-tint: var(--foreground);
+}
+
+.svg-editor__hierarchy-insert-indicator {
+    position: absolute;
+    height: 2px;
+    border-radius: var(--radius-full);
+    background-color: var(--info);
+}

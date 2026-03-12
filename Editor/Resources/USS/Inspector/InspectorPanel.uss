@@ -1,0 +1,94 @@
+.svg-editor__inspector-panel {
+    width: var(--inspector-panel-width);
+    min-width: var(--inspector-panel-width);
+    max-width: var(--inspector-panel-width);
+    border-radius: 0;
+    border-left-color: var(--border);
+    border-left-width: 1px;
+    background-color: var(--editor-panel-bg);
+}
+
+.svg-editor__inspector-panel .unity-scroll-view__content-viewport {
+    margin: 0;
+}
+
+.svg-editor__inspector-mode {
+    flex-direction: column;
+}
+
+.svg-editor__inspector-card {
+    padding: var(--space-2) var(--space-2-5);
+}
+
+.svg-editor__inspector-card--accent {
+    border-top-color: var(--editor-accent-border);
+    border-top-width: 2px;
+    background-color: var(--editor-accent-soft);
+}
+
+.svg-editor__subsection-title {
+    margin-bottom: var(--space-2);
+    color: var(--foreground);
+    -unity-font-style: bold;
+    font-size: 12px;
+}
+
+.svg-editor__subsection-header {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: var(--space-2);
+}
+
+.svg-editor__subsection-header > .svg-editor__subsection-title {
+    margin-bottom: 0;
+}
+
+.svg-editor__inspector-meta-label {
+    margin-top: 0;
+    margin-bottom: var(--space-1-5);
+    color: var(--editor-label-muted);
+    font-size: 10px;
+}
+
+.svg-editor__inspector-row {
+    flex-direction: row;
+    align-items: stretch;
+    margin-bottom: var(--space-2-5);
+}
+
+.svg-editor__position-action-row,
+.svg-editor__inspector-row--center {
+    align-items: center;
+}
+
+.svg-editor__inspector-field,
+.svg-editor__position-button-group {
+    flex-basis: 0;
+    flex-grow: 1;
+    margin-right: var(--space-1-5);
+}
+
+.svg-editor__position-button-group--last,
+.svg-editor__inspector-field--last,
+.svg-editor__attribute-button--last {
+    margin-right: 0;
+}
+
+.svg-editor__attribute-button {
+    align-self: center;
+    width: 30px;
+    min-width: 30px;
+    height: 30px;
+}
+
+.svg-editor__attribute-button--header {
+    margin-left: auto;
+}
+
+.svg-editor__inspector-separator {
+    margin-bottom: var(--space-2);
+}
+
+.svg-editor__inspector-color-field {
+    width: 100%;
+}
