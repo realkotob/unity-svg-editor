@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using SvgEditor.Document;
+using SvgEditor.Document.Structure.Hierarchy;
 
 using SvgEditor;
 using SvgEditor.Preview;

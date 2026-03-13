@@ -6,6 +6,8 @@ using SvgEditor.Workspace.Canvas;
 using SvgEditor.DocumentModel;
 using SvgEditor.Shared;
 using SvgEditor.Document;
+using SvgEditor.Document.Structure.Hierarchy;
+using SvgEditor.Document.Structure.Lookup;
 
 using SvgEditor;
 using SvgEditor.Preview;

@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Xml;
 using UnityEngine.UIElements;
 using SvgEditor.Shared;
+using SvgEditor.Document.Structure.Xml;
 
-namespace SvgEditor.Document
+namespace SvgEditor.Document.Structure.Hierarchy
 {
     internal static class HierarchyOutlineBuilder
     {

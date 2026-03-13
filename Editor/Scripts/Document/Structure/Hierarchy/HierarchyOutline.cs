@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine.UIElements;
 
-namespace SvgEditor.Document
+namespace SvgEditor.Document.Structure.Hierarchy
 {
     internal sealed class HierarchyOutline
     {

@@ -5,6 +5,7 @@ using Core.UI.Foundation;
 using SvgEditor.Workspace.Canvas;
 using SvgEditor.Shared;
 using SvgEditor.Document;
+using SvgEditor.Document.Structure.Hierarchy;
 
 namespace SvgEditor.Workspace.HierarchyPanel
 {

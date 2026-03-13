@@ -2,18 +2,13 @@ using System;
 using System.Collections.Generic;
 using Unity.VectorGraphics;
 using UnityEngine;
+using SvgEditor.Document.Structure.Hierarchy;
 
 using SvgEditor;
 using SvgEditor.Preview;
 
 namespace SvgEditor.Workspace.Canvas
 {
-    internal enum CanvasDefinitionOverlayKind
-    {
-        ClipPath,
-        Mask
-    }
-
     internal readonly struct CanvasLineSegment
     {
         public CanvasLineSegment(Vector2 start, Vector2 end)

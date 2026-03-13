@@ -1,4 +1,4 @@
-namespace SvgEditor.Document
+namespace SvgEditor.Document.Structure.Hierarchy
 {
     internal sealed class LayerSummary
     {

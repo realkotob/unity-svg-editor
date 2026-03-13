@@ -9,6 +9,7 @@ using SvgEditor.Workspace.Document;
 using SvgEditor.Workspace.Host;
 using SvgEditor.DocumentModel;
 using SvgEditor.Document;
+using SvgEditor.Document.Structure.Hierarchy;
 
 namespace SvgEditor.Workspace.Coordination
 {

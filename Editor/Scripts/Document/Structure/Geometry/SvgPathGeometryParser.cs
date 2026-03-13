@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using Unity.VectorGraphics;
 using UnityEngine;
+using SvgEditor.Document.Structure.Lookup;
 
-namespace SvgEditor.Document
+namespace SvgEditor.Document.Structure.Geometry
 {
     internal static class SvgPathGeometryParser
     {

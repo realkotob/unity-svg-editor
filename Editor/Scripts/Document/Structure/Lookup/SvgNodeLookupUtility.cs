@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using SvgEditor.DocumentModel;
 
-namespace SvgEditor.Document
+namespace SvgEditor.Document.Structure.Lookup
 {
     internal static class SvgNodeLookupUtility
     {

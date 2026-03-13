@@ -5,7 +5,7 @@ using System.Linq;
 using System.Xml;
 using SvgEditor.Shared;
 
-namespace SvgEditor.Document
+namespace SvgEditor.Document.Structure.Xml
 {
     internal static class SvgSafeMaskArtifactSanitizer
     {

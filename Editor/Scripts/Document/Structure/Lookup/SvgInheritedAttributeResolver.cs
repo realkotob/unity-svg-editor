@@ -3,7 +3,7 @@ using Unity.VectorGraphics;
 using UnityEngine;
 using SvgEditor.DocumentModel;
 
-namespace SvgEditor.Document
+namespace SvgEditor.Document.Structure.Lookup
 {
     internal static class SvgInheritedAttributeResolver
     {

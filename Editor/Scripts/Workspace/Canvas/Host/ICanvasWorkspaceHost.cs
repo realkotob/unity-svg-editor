@@ -1,6 +1,7 @@
 using UnityEngine.UIElements;
 using SvgEditor.DocumentModel;
 using SvgEditor.Document;
+using SvgEditor.Document.Structure.Hierarchy;
 
 using SvgEditor;
 using SvgEditor.Preview;

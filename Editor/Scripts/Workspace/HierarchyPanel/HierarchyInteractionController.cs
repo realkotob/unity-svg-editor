@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using SvgEditor.Shared;
 using SvgEditor.Document;
+using SvgEditor.Document.Structure.Hierarchy;
 
 namespace SvgEditor.Workspace.HierarchyPanel
 {

@@ -6,6 +6,7 @@ using SvgEditor.Workspace.Canvas;
 using SvgEditor.Workspace.HierarchyPanel;
 using SvgEditor.Workspace.Host;
 using SvgEditor.Document;
+using SvgEditor.Document.Structure.Hierarchy;
 
 namespace SvgEditor.Workspace.Coordination
 {

@@ -1,5 +1,6 @@
 using System;
 using SvgEditor.DocumentModel;
+using SvgEditor.Document.Structure.Xml;
 
 namespace SvgEditor.Document
 {

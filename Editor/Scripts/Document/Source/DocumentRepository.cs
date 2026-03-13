@@ -6,6 +6,7 @@ using Unity.VectorGraphics;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using SvgEditor.Document.Structure.Xml;
 
 namespace SvgEditor.Document
 {

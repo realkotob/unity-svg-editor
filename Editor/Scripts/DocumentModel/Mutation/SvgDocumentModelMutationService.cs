@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using SvgEditor.Document;
+using SvgEditor.Document.Structure.Lookup;
 using SvgEditor.Shared;
 
 namespace SvgEditor.DocumentModel

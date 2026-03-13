@@ -4,7 +4,7 @@ using System.Globalization;
 using UnityEngine;
 using SvgEditor.Shared;
 
-namespace SvgEditor.Document
+namespace SvgEditor.Document.Structure.Lookup
 {
     internal static class SvgAttributeUtility
     {

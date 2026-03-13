@@ -1,6 +1,4 @@
-using SvgEditor.Workspace.Canvas;
-
-namespace SvgEditor.Document
+namespace SvgEditor.Document.Structure.Hierarchy
 {
     internal sealed class HierarchyNode
     {
