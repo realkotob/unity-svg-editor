@@ -4,6 +4,7 @@ using SelectElement = Core.UI.Foundation.Components.Select.Select;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
+using SvgEditor.Shared;
 
 namespace SvgEditor.Workspace.InspectorPanel
 {
@@ -103,16 +104,7 @@ namespace SvgEditor.Workspace.InspectorPanel
             EventCallback<ChangeEvent<Color>> callback,
             bool register)
         {
-            if (field == null)
-            {
-                return;
-            }
-
-            field.UnregisterCallback(callback);
-            if (register)
-            {
-                field.RegisterCallback(callback);
-            }
+            EditorCallbackBindingUtility.ToggleCallback(field, callback, register);
         }
 
         private static void ToggleImmediateApplyCallback(
@@ -120,16 +112,7 @@ namespace SvgEditor.Workspace.InspectorPanel
             EventCallback<ChangeEvent<Color>> callback,
             bool register)
         {
-            if (field == null)
-            {
-                return;
-            }
-
-            field.UnregisterValueChangedCallback(callback);
-            if (register)
-            {
-                field.RegisterValueChangedCallback(callback);
-            }
+            EditorCallbackBindingUtility.ToggleValueChangedCallback(field, callback, register);
         }
 
         private static void ToggleImmediateApplyCallback(
@@ -145,16 +128,7 @@ namespace SvgEditor.Workspace.InspectorPanel
             EventCallback<ChangeEvent<string>> callback,
             bool register)
         {
-            if (field == null)
-            {
-                return;
-            }
-
-            field.UnregisterCallback(callback);
-            if (register)
-            {
-                field.RegisterCallback(callback);
-            }
+            EditorCallbackBindingUtility.ToggleCallback(field, callback, register);
         }
 
         private static void ToggleImmediateApplyCallback(
@@ -162,16 +136,7 @@ namespace SvgEditor.Workspace.InspectorPanel
             EventCallback<ChangeEvent<string>> callback,
             bool register)
         {
-            if (field == null)
-            {
-                return;
-            }
-
-            field.UnregisterValueChangedCallback(callback);
-            if (register)
-            {
-                field.RegisterValueChangedCallback(callback);
-            }
+            EditorCallbackBindingUtility.ToggleValueChangedCallback(field, callback, register);
         }
 
         private static void ToggleValueChangedCallback(
@@ -179,16 +144,7 @@ namespace SvgEditor.Workspace.InspectorPanel
             EventCallback<ChangeEvent<float>> callback,
             bool register)
         {
-            if (field == null)
-            {
-                return;
-            }
-
-            field.UnregisterValueChangedCallback(callback);
-            if (register)
-            {
-                field.RegisterValueChangedCallback(callback);
-            }
+            EditorCallbackBindingUtility.ToggleValueChangedCallback(field, callback, register);
         }
     }
 }

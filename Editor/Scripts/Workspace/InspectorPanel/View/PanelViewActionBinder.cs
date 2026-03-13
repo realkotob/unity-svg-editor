@@ -1,5 +1,6 @@
 using System;
 using UnityEngine.UIElements;
+using SvgEditor.Shared;
 
 namespace SvgEditor.Workspace.InspectorPanel
 {
@@ -79,16 +80,7 @@ namespace SvgEditor.Workspace.InspectorPanel
 
         private static void ToggleButtonClicked(Button button, Action callback, bool register)
         {
-            if (button == null || callback == null)
-            {
-                return;
-            }
-
-            button.clicked -= callback;
-            if (register)
-            {
-                button.clicked += callback;
-            }
+            EditorCallbackBindingUtility.ToggleButtonClicked(button, callback, register);
         }
     }
 }

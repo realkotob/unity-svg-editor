@@ -1,5 +1,6 @@
 using System;
 using UnityEngine.UIElements;
+using SvgEditor.Shared;
 
 namespace SvgEditor.Workspace.InspectorPanel
 {
@@ -60,10 +61,10 @@ namespace SvgEditor.Workspace.InspectorPanel
                 return;
             }
 
-            _form.RotateField.RegisterCallback<PointerDownEvent>(OnRotatePointerDown, TrickleDown.TrickleDown);
-            _form.RotateField.RegisterCallback<PointerUpEvent>(OnRotatePointerUp, TrickleDown.TrickleDown);
-            _form.RotateField.RegisterCallback<PointerCancelEvent>(OnRotatePointerCancel, TrickleDown.TrickleDown);
-            _form.RotateField.RegisterCallback<PointerCaptureOutEvent>(OnRotatePointerCaptureOut, TrickleDown.TrickleDown);
+            EditorCallbackBindingUtility.ToggleCallback<PointerDownEvent>(_form.RotateField, OnRotatePointerDown, register: true, TrickleDown.TrickleDown);
+            EditorCallbackBindingUtility.ToggleCallback<PointerUpEvent>(_form.RotateField, OnRotatePointerUp, register: true, TrickleDown.TrickleDown);
+            EditorCallbackBindingUtility.ToggleCallback<PointerCancelEvent>(_form.RotateField, OnRotatePointerCancel, register: true, TrickleDown.TrickleDown);
+            EditorCallbackBindingUtility.ToggleCallback<PointerCaptureOutEvent>(_form.RotateField, OnRotatePointerCaptureOut, register: true, TrickleDown.TrickleDown);
         }
 
         private void UnregisterRotateDragCallbacks()
@@ -73,24 +74,15 @@ namespace SvgEditor.Workspace.InspectorPanel
                 return;
             }
 
-            _form.RotateField.UnregisterCallback<PointerDownEvent>(OnRotatePointerDown, TrickleDown.TrickleDown);
-            _form.RotateField.UnregisterCallback<PointerUpEvent>(OnRotatePointerUp, TrickleDown.TrickleDown);
-            _form.RotateField.UnregisterCallback<PointerCancelEvent>(OnRotatePointerCancel, TrickleDown.TrickleDown);
-            _form.RotateField.UnregisterCallback<PointerCaptureOutEvent>(OnRotatePointerCaptureOut, TrickleDown.TrickleDown);
+            EditorCallbackBindingUtility.ToggleCallback<PointerDownEvent>(_form.RotateField, OnRotatePointerDown, register: false, TrickleDown.TrickleDown);
+            EditorCallbackBindingUtility.ToggleCallback<PointerUpEvent>(_form.RotateField, OnRotatePointerUp, register: false, TrickleDown.TrickleDown);
+            EditorCallbackBindingUtility.ToggleCallback<PointerCancelEvent>(_form.RotateField, OnRotatePointerCancel, register: false, TrickleDown.TrickleDown);
+            EditorCallbackBindingUtility.ToggleCallback<PointerCaptureOutEvent>(_form.RotateField, OnRotatePointerCaptureOut, register: false, TrickleDown.TrickleDown);
         }
 
         private void ToggleRotateChangedCallback(bool register)
         {
-            if (_form.RotateField == null)
-            {
-                return;
-            }
-
-            _form.RotateField.UnregisterValueChangedCallback(OnRotateChanged);
-            if (register)
-            {
-                _form.RotateField.RegisterValueChangedCallback(OnRotateChanged);
-            }
+            EditorCallbackBindingUtility.ToggleValueChangedCallback(_form.RotateField, OnRotateChanged, register);
         }
 
         private void OnRotatePointerDown(PointerDownEvent evt)
