@@ -42,7 +42,6 @@ namespace SvgEditor.Workspace.Document
         public event Action SaveRequested;
 
         public Image PreviewImage => _previewImage;
-        public VisualElement SaveButtonControl => _saveButton;
 
         public void Bind(VisualElement root)
         {

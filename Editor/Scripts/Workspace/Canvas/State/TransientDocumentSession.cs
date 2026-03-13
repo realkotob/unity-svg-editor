@@ -26,9 +26,12 @@ namespace SvgEditor.Workspace.Canvas
         public bool TryBegin(DocumentSession document, string elementKey)
         {
             End();
-            if (document?.DocumentModel == null ||
-                !string.IsNullOrWhiteSpace(document.DocumentModelLoadError) ||
-                string.IsNullOrWhiteSpace(elementKey))
+            if (document == null || string.IsNullOrWhiteSpace(elementKey))
+            {
+                return false;
+            }
+
+            if (!document.CanUseDocumentModelForEditing)
             {
                 return false;
             }
@@ -125,10 +128,6 @@ namespace SvgEditor.Workspace.Canvas
                 return false;
             }
 
-            if (!TrySerializeWorkingDocumentModel(out string sourceText, out error))
-                return false;
-
-            _workingDocumentModel.SourceText = sourceText;
             documentModel = _workingDocumentModel;
             return true;
         }

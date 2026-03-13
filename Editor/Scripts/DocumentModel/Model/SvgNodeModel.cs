@@ -8,6 +8,8 @@ namespace SvgEditor.DocumentModel
         public SvgNodeId Id { get; set; } = SvgNodeId.Root;
         public SvgNodeId ParentId { get; set; }
         public string TagName { get; set; } = string.Empty;
+        public string ElementPrefix { get; set; } = string.Empty;
+        public string ElementNamespaceUri { get; set; } = string.Empty;
         public SvgNodeKind Kind { get; set; } = SvgNodeKind.Other;
         public string XmlId { get; set; } = string.Empty;
         public string LegacyElementKey { get; set; } = string.Empty;

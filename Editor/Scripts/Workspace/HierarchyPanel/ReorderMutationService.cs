@@ -7,36 +7,30 @@ namespace SvgEditor.Workspace.HierarchyPanel
     {
         private readonly SvgDocumentModelMutationService _documentModelMutationService = new();
 
-        public void ApplyMove(
-            IHierarchyHost host,
-            string elementKey,
-            string parentKey,
-            int childIndex)
+        public void ApplyMove(IHierarchyHost host, MoveElementRequest request)
         {
             if (host?.CurrentDocument == null ||
-                string.IsNullOrWhiteSpace(elementKey) ||
-                string.IsNullOrWhiteSpace(parentKey) ||
-                childIndex < 0)
+                string.IsNullOrWhiteSpace(request.ElementKey) ||
+                string.IsNullOrWhiteSpace(request.TargetParentKey) ||
+                request.TargetChildIndex < 0)
             {
                 return;
             }
 
-            if (host.CurrentDocument.DocumentModel == null ||
-                !string.IsNullOrWhiteSpace(host.CurrentDocument.DocumentModelLoadError) ||
-                !string.Equals(host.CurrentDocument.DocumentModel.SourceText, host.CurrentDocument.WorkingSourceText, StringComparison.Ordinal))
+            if (!host.CurrentDocument.CanUseDocumentModelForEditing)
             {
-                host.UpdateSourceStatus("Reorder failed: document model is unavailable.");
+                host.UpdateSourceStatus($"Reorder failed: {host.CurrentDocument.ResolveModelEditingFailureReason()}");
                 return;
             }
 
             if (_documentModelMutationService.TryMoveElement(
                     host.CurrentDocument.DocumentModel,
-                    new MoveElementRequest(elementKey, parentKey, childIndex),
+                    request,
                     out MutationResult result))
             {
                 if (!string.Equals(result.UpdatedSourceText, host.CurrentDocument.WorkingSourceText, StringComparison.Ordinal))
                 {
-                    host.ApplyUpdatedSource(result.UpdatedSourceText, $"Moved #{elementKey}.");
+                    host.ApplyUpdatedSource(result.UpdatedSourceText, $"Moved #{request.ElementKey}.");
                 }
 
                 return;

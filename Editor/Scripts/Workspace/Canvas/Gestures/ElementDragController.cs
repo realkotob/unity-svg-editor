@@ -32,26 +32,11 @@ namespace SvgEditor.Workspace.Canvas
             _mutationService = new ElementDragMutationService(sceneProjector);
         }
 
-        public void BeginMove(
-            DocumentSession currentDocument,
-            PreviewSnapshot previewSnapshot,
-            string elementKey,
-            Vector2 localPosition,
-            Rect elementSceneRect,
-            Matrix2D parentWorldTransform)
+        public void BeginMove(ElementDragBeginRequest request)
         {
-            Rect selectionViewportRect = _sceneProjector.TrySceneRectToViewportRect(previewSnapshot, elementSceneRect, out Rect resolvedSelectionViewportRect)
-                ? resolvedSelectionViewportRect
-                : default;
-            _state.BeginSelection(
-                elementKey,
-                previewSnapshot?.CanvasViewportRect ?? default,
-                previewSnapshot?.PreserveAspectRatioMode ?? SvgPreserveAspectRatioMode.Meet,
-                selectionViewportRect,
-                elementSceneRect,
-                parentWorldTransform);
-            _moveSession.Begin(elementKey, localPosition, selectionViewportRect, elementSceneRect);
-            _transientDocumentModelSession.TryBegin(currentDocument, elementKey);
+            Rect selectionViewportRect = BeginSelection(request);
+            _moveSession.Begin(request.ElementKey, request.LocalPosition, selectionViewportRect, request.ElementSceneRect);
+            _transientDocumentModelSession.TryBegin(request.CurrentDocument, request.ElementKey);
         }
 
         public void BeginResize(ResizeBeginRequest request)
@@ -66,31 +51,15 @@ namespace SvgEditor.Workspace.Canvas
             _transientDocumentModelSession.TryBegin(request.CurrentDocument, request.ElementKey);
         }
 
-        public void BeginRotate(
-            DocumentSession currentDocument,
-            PreviewSnapshot previewSnapshot,
-            string elementKey,
-            Vector2 localPosition,
-            Rect elementSceneRect,
-            Matrix2D parentWorldTransform,
-            Vector2 rotationPivotWorld,
-            Vector2 rotationPivotParentSpace)
+        public void BeginRotate(RotateBeginRequest request)
         {
-            Rect selectionViewportRect = _sceneProjector.TrySceneRectToViewportRect(previewSnapshot, elementSceneRect, out Rect resolvedSelectionViewportRect)
-                ? resolvedSelectionViewportRect
-                : default;
-            _state.BeginSelection(
-                elementKey,
-                previewSnapshot?.CanvasViewportRect ?? default,
-                previewSnapshot?.PreserveAspectRatioMode ?? SvgPreserveAspectRatioMode.Meet,
-                selectionViewportRect,
-                elementSceneRect,
-                parentWorldTransform);
-            Vector2 pivotViewport = _sceneProjector.TryScenePointToViewportPoint(previewSnapshot, rotationPivotWorld, out Vector2 resolvedPivotViewport)
+            ElementDragBeginRequest dragBeginRequest = request.DragBeginRequest;
+            Rect selectionViewportRect = BeginSelection(dragBeginRequest);
+            Vector2 pivotViewport = _sceneProjector.TryScenePointToViewportPoint(dragBeginRequest.PreviewSnapshot, request.RotationPivotWorld, out Vector2 resolvedPivotViewport)
                 ? resolvedPivotViewport
                 : selectionViewportRect.center;
-            _state.BeginRotation(pivotViewport, localPosition - pivotViewport);
-            _rotationSession.TryBegin(currentDocument, elementKey, rotationPivotParentSpace);
+            _state.BeginRotation(pivotViewport, dragBeginRequest.LocalPosition - pivotViewport);
+            _rotationSession.TryBegin(dragBeginRequest.CurrentDocument, dragBeginRequest.ElementKey, request.RotationPivotParentSpace);
         }
 
         public Vector2 UpdateMove(Vector2 localPosition)
@@ -178,10 +147,11 @@ namespace SvgEditor.Workspace.Canvas
         public bool TryCommitDrag(CommitDragRequest request)
         {
             return _mutationService.TryCommitDrag(
-                request,
-                _state,
-                _transientDocumentModelSession,
-                _rotationSession);
+                new CommitDragContext(
+                    request,
+                    _state,
+                    _transientDocumentModelSession,
+                    _rotationSession));
         }
 
         public bool TryBuildNudgedSource(
@@ -189,6 +159,21 @@ namespace SvgEditor.Workspace.Canvas
             out string updatedSource)
         {
             return _mutationService.TryBuildNudgedSource(request, out updatedSource);
+        }
+
+        private Rect BeginSelection(ElementDragBeginRequest request)
+        {
+            Rect selectionViewportRect = _sceneProjector.TrySceneRectToViewportRect(request.PreviewSnapshot, request.ElementSceneRect, out Rect resolvedSelectionViewportRect)
+                ? resolvedSelectionViewportRect
+                : default;
+            _state.BeginSelection(
+                request.ElementKey,
+                request.PreviewSnapshot?.CanvasViewportRect ?? default,
+                request.PreviewSnapshot?.PreserveAspectRatioMode ?? SvgPreserveAspectRatioMode.Meet,
+                selectionViewportRect,
+                request.ElementSceneRect,
+                request.ParentWorldTransform);
+            return selectionViewportRect;
         }
     }
 }

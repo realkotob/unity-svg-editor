@@ -9,9 +9,11 @@ namespace SvgEditor.DocumentModel
 {
     internal sealed class SvgDocumentModelSerializer
     {
-        private const string SvgNamespaceUri = "http://www.w3.org/2000/svg";
-        private const string XmlNamespaceDeclarationUri = "http://www.w3.org/2000/xmlns/";
-        private const string XmlNamespaceUri = "http://www.w3.org/XML/1998/namespace";
+        private const string SVG_NAMESPACE_URI = "http://www.w3.org/2000/svg";
+        private const string XMLNS_ATTRIBUTE_NAME = "xmlns";
+        private const string XMLNS_ATTRIBUTE_PREFIX = "xmlns:";
+        private const string XML_NAMESPACE_DECLARATION_URI = "http://www.w3.org/2000/xmlns/";
+        private const string XML_NAMESPACE_URI = "http://www.w3.org/XML/1998/namespace";
 
         public bool TrySerialize(SvgDocumentModel documentModel, out string sourceText, out string error)
         {
@@ -59,13 +61,17 @@ namespace SvgEditor.DocumentModel
             SvgNodeModel node,
             bool isRoot)
         {
-            string namespaceUri = ResolveElementNamespace(documentModel);
-            xmlWriter.WriteStartElement(prefix: null, localName: node.TagName, ns: namespaceUri);
+            string elementPrefix = node?.ElementPrefix ?? string.Empty;
+            string namespaceUri = ResolveElementNamespace(documentModel, node, elementPrefix);
+            xmlWriter.WriteStartElement(
+                string.IsNullOrWhiteSpace(elementPrefix) ? null : elementPrefix,
+                node.TagName,
+                namespaceUri);
 
             if (isRoot)
                 WriteNamespaceDeclarations(xmlWriter, documentModel, namespaceUri);
 
-            WriteAttributes(xmlWriter, documentModel, node.RawAttributes);
+            WriteAttributes(xmlWriter, documentModel, node, node.RawAttributes, includeNamespaceDeclarations: !isRoot);
 
             if (!string.IsNullOrWhiteSpace(node.TextContent))
                 xmlWriter.WriteString(node.TextContent);
@@ -98,23 +104,36 @@ namespace SvgEditor.DocumentModel
                 {
                     if (!string.Equals(pair.Value, rootNamespaceUri, StringComparison.Ordinal))
                     {
-                        xmlWriter.WriteAttributeString("xmlns", localName: null, ns: XmlNamespaceDeclarationUri, value: pair.Value);
+                        xmlWriter.WriteAttributeString(XMLNS_ATTRIBUTE_NAME, localName: null, ns: XML_NAMESPACE_DECLARATION_URI, value: pair.Value);
                     }
 
                     continue;
                 }
 
-                xmlWriter.WriteAttributeString("xmlns", pair.Key, XmlNamespaceDeclarationUri, pair.Value);
+                xmlWriter.WriteAttributeString(XMLNS_ATTRIBUTE_NAME, pair.Key, XML_NAMESPACE_DECLARATION_URI, pair.Value);
             }
         }
 
         private static void WriteAttributes(
             XmlWriter xmlWriter,
             SvgDocumentModel documentModel,
-            IReadOnlyDictionary<string, string> attributes)
+            SvgNodeModel node,
+            IReadOnlyDictionary<string, string> attributes,
+            bool includeNamespaceDeclarations)
         {
             if (attributes == null)
                 return;
+
+            if (includeNamespaceDeclarations)
+            {
+                foreach (var pair in attributes.OrderBy(entry => entry.Key, StringComparer.Ordinal))
+                {
+                    if (!IsNamespaceDeclaration(pair.Key))
+                        continue;
+
+                    WriteNamespaceDeclaration(xmlWriter, pair.Key, pair.Value ?? string.Empty);
+                }
+            }
 
             foreach (var pair in attributes.OrderBy(entry => entry.Key, StringComparer.Ordinal))
             {
@@ -131,13 +150,44 @@ namespace SvgEditor.DocumentModel
 
                 string prefix = pair.Key.Substring(0, separatorIndex);
                 string localName = pair.Key.Substring(separatorIndex + 1);
-                string namespaceUri = ResolveAttributeNamespace(documentModel, prefix);
+                string namespaceUri = ResolveAttributeNamespace(documentModel, node, prefix);
                 xmlWriter.WriteAttributeString(prefix, localName, namespaceUri, value);
             }
         }
 
-        private static string ResolveElementNamespace(SvgDocumentModel documentModel)
+        private static void WriteNamespaceDeclaration(XmlWriter xmlWriter, string attributeName, string value)
         {
+            if (string.Equals(attributeName, XMLNS_ATTRIBUTE_NAME, StringComparison.Ordinal))
+            {
+                xmlWriter.WriteAttributeString(XMLNS_ATTRIBUTE_NAME, localName: null, ns: XML_NAMESPACE_DECLARATION_URI, value: value);
+                return;
+            }
+
+            if (attributeName.StartsWith(XMLNS_ATTRIBUTE_PREFIX, StringComparison.Ordinal))
+            {
+                xmlWriter.WriteAttributeString(
+                    XMLNS_ATTRIBUTE_NAME,
+                    attributeName.Substring(XMLNS_ATTRIBUTE_PREFIX.Length),
+                    XML_NAMESPACE_DECLARATION_URI,
+                    value);
+            }
+        }
+
+        private static string ResolveElementNamespace(SvgDocumentModel documentModel, SvgNodeModel node, string prefix)
+        {
+            if (!string.IsNullOrWhiteSpace(node?.ElementNamespaceUri))
+            {
+                return node.ElementNamespaceUri;
+            }
+
+            if (!string.IsNullOrWhiteSpace(prefix) &&
+                documentModel?.Namespaces != null &&
+                documentModel.Namespaces.TryGetValue(prefix, out string prefixedNamespaceUri) &&
+                !string.IsNullOrWhiteSpace(prefixedNamespaceUri))
+            {
+                return prefixedNamespaceUri;
+            }
+
             if (documentModel?.Namespaces != null &&
                 documentModel.Namespaces.TryGetValue(string.Empty, out string namespaceUri) &&
                 !string.IsNullOrWhiteSpace(namespaceUri))
@@ -145,13 +195,30 @@ namespace SvgEditor.DocumentModel
                 return namespaceUri;
             }
 
-            return SvgNamespaceUri;
+            return SVG_NAMESPACE_URI;
         }
 
-        private static string ResolveAttributeNamespace(SvgDocumentModel documentModel, string prefix)
+        private static string ResolveAttributeNamespace(SvgDocumentModel documentModel, SvgNodeModel node, string prefix)
         {
             if (string.Equals(prefix, "xml", StringComparison.Ordinal))
-                return XmlNamespaceUri;
+                return XML_NAMESPACE_URI;
+
+            string namespaceAttributeName = XMLNS_ATTRIBUTE_PREFIX + prefix;
+            SvgNodeModel currentNode = node;
+            while (currentNode != null)
+            {
+                if (currentNode.RawAttributes != null &&
+                    currentNode.RawAttributes.TryGetValue(namespaceAttributeName, out string scopedNamespaceUri) &&
+                    !string.IsNullOrWhiteSpace(scopedNamespaceUri))
+                {
+                    return scopedNamespaceUri;
+                }
+
+                if (!documentModel.TryGetNode(currentNode.ParentId, out currentNode))
+                {
+                    currentNode = null;
+                }
+            }
 
             if (documentModel?.Namespaces != null &&
                 documentModel.Namespaces.TryGetValue(prefix, out string namespaceUri) &&
@@ -165,8 +232,8 @@ namespace SvgEditor.DocumentModel
 
         private static bool IsNamespaceDeclaration(string attributeName)
         {
-            return string.Equals(attributeName, "xmlns", StringComparison.Ordinal) ||
-                   attributeName.StartsWith("xmlns:", StringComparison.Ordinal);
+            return string.Equals(attributeName, XMLNS_ATTRIBUTE_NAME, StringComparison.Ordinal) ||
+                   attributeName.StartsWith(XMLNS_ATTRIBUTE_PREFIX, StringComparison.Ordinal);
         }
     }
 }

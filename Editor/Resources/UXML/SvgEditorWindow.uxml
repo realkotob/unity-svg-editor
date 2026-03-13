@@ -156,6 +156,10 @@
                     <toggle:Toggle name="tool-move" tooltip="Move" size="Small" variant="Text" value="true" class="svg-editor__tool-icon"/>
                 </togglegroup:ToggleGroup>
             </ui:VisualElement>
+            <ui:VisualElement class="svg-editor__floating-toolbar-right">
+                <ui:VisualElement class="svg-editor__floating-toolbar-divider"/>
+                <ui:Button name="document-save" text="Save"/>
+            </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

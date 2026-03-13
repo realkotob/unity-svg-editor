@@ -82,6 +82,8 @@ namespace SvgEditor.DocumentModel
                 Id = nodeId,
                 ParentId = parentId,
                 TagName = element.LocalName,
+                ElementPrefix = element.Prefix ?? string.Empty,
+                ElementNamespaceUri = element.NamespaceURI ?? string.Empty,
                 Kind = ResolveNodeKind(element),
                 XmlId = xmlId ?? string.Empty,
                 LegacyElementKey = legacyElementKey,

@@ -168,12 +168,10 @@ namespace SvgEditor.Workspace.Canvas
                 session => session.TryApplyScale(unsnappedScale, unsnappedSvgPivot));
         }
 
-        public bool TryCommitDrag(
-            CommitDragRequest request,
-            ElementDragState state,
-            TransientDocumentSession transientDocumentModelSession,
-            ElementRotationSession rotationSession)
+        public bool TryCommitDrag(CommitDragContext context)
         {
+            CommitDragRequest request = context.Request;
+            ElementDragState state = context.State;
             if (string.IsNullOrWhiteSpace(state.ElementKey))
             {
                 return false;
@@ -210,8 +208,8 @@ namespace SvgEditor.Workspace.Canvas
             string updatedSource;
             string error;
             bool builtSource = request.DragMode == DragMode.RotateElement
-                ? rotationSession.TryBuildCommittedSource(out updatedSource, out error)
-                : transientDocumentModelSession.TryBuildCommittedSource(out updatedSource, out error);
+                ? context.RotationSession.TryBuildCommittedSource(out updatedSource, out error)
+                : context.TransientDocumentModelSession.TryBuildCommittedSource(out updatedSource, out error);
             if (!builtSource)
             {
                 request.Host.UpdateSourceStatus(

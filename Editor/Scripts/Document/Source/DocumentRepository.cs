@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using Unity.VectorGraphics;
 using UnityEditor;
 using UnityEngine;
@@ -12,7 +11,6 @@ namespace SvgEditor.Document
 {
     internal sealed class DocumentRepository
     {
-        private static readonly UTF8Encoding _utf8WithoutBom = new(false);
         private readonly SvgAssetPathResolver _assetPathResolver = new();
         private readonly SvgDocumentSourceService _documentSourceService = new();
 
@@ -45,14 +43,8 @@ namespace SvgEditor.Document
                 return false;
             }
 
-            string sourceText;
-            try
+            if (!SvgSourceEncodingUtility.TryReadAllText(absolutePath, out string sourceText, out var sourceEncoding, out error))
             {
-                sourceText = File.ReadAllText(absolutePath, Encoding.UTF8);
-            }
-            catch (Exception ex)
-            {
-                error = $"Failed to read SVG source: {ex.Message}";
                 return false;
             }
 
@@ -64,6 +56,7 @@ namespace SvgEditor.Document
             {
                 AssetPath = assetPath,
                 AbsolutePath = absolutePath,
+                SourceEncoding = sourceEncoding,
                 VectorImageAsset = vectorImageAsset,
                 OriginalSourceText = sourceText,
                 WorkingSourceText = sourceText
@@ -99,7 +92,11 @@ namespace SvgEditor.Document
 
             try
             {
-                File.WriteAllText(absolutePath, sourceTextToPersist, _utf8WithoutBom);
+                if (!SvgSourceEncodingUtility.TryWriteAllText(absolutePath, sourceTextToPersist, document.SourceEncoding, out error))
+                {
+                    return false;
+                }
+
                 AssetDatabase.ImportAsset(document.AssetPath, ImportAssetOptions.ForceUpdate);
                 document.AbsolutePath = absolutePath;
                 document.WorkingSourceText = sourceTextToPersist;

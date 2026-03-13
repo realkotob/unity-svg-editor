@@ -5,26 +5,32 @@ namespace SvgEditor.Workspace.Canvas
 {
     internal static class CanvasNudgeService
     {
-        public static bool TryNudgeSelectedElement(
-            ICanvasWorkspaceHost host,
-            SceneProjector sceneProjector,
-            PointerDragController pointerDragController,
-            DefinitionProxyCoordinator definitionProxyCoordinator,
-            SelectionKind selectionKind,
-            Vector2 sceneDelta)
+        public static bool TryNudgeSelectedElement(CanvasNudgeRequest request)
         {
-            if (host.PreviewSnapshot == null || selectionKind != SelectionKind.Element)
+            ICanvasPointerDragHost host = request.Host;
+            if (host.PreviewSnapshot == null || host.SelectionKind != SelectionKind.Element)
             {
                 return false;
             }
 
-            if (definitionProxyCoordinator.TryGetSelectedDefinitionProxy(host.SelectedElementKey, out CanvasDefinitionOverlayVisual selectedProxy) &&
+            if (host.CurrentDocument?.CanUseDocumentModelForEditing != true)
+            {
+                if (host.CurrentDocument != null)
+                {
+                    host.UpdateSourceStatus($"Move failed: {host.CurrentDocument.ResolveModelEditingFailureReason()}");
+                }
+
+                return false;
+            }
+
+            if (host.TryGetSelectedDefinitionProxy(out CanvasDefinitionOverlayVisual selectedProxy) &&
                 selectedProxy != null &&
-                pointerDragController.TryBuildNudgedSource(
-                    host.CurrentDocument,
-                    selectedProxy.DefinitionElementKey,
-                    sceneDelta,
-                    selectedProxy.ParentWorldTransform,
+                request.PointerDragController.TryBuildNudgedSource(
+                    new NudgeSourceRequest(
+                        host.CurrentDocument,
+                        selectedProxy.DefinitionElementKey,
+                        request.SceneDelta,
+                        selectedProxy.ParentWorldTransform),
                     out string proxyUpdatedSource))
             {
                 host.ApplyUpdatedSource(proxyUpdatedSource, $"Moved <{host.FindHierarchyNode(selectedProxy.DefinitionElementKey)?.TagName ?? "definition"}>.");
@@ -36,13 +42,14 @@ namespace SvgEditor.Workspace.Canvas
                 return false;
             }
 
-            PreviewElementGeometry selectedGeometry = sceneProjector.FindPreviewElement(host.PreviewSnapshot, host.SelectedElementKey);
+            PreviewElementGeometry selectedGeometry = request.SceneProjector.FindPreviewElement(host.PreviewSnapshot, host.SelectedElementKey);
             if (selectedGeometry == null ||
-                !pointerDragController.TryBuildNudgedSource(
-                    host.CurrentDocument,
-                    host.SelectedElementKey,
-                    sceneDelta,
-                    selectedGeometry.ParentWorldTransform,
+                !request.PointerDragController.TryBuildNudgedSource(
+                    new NudgeSourceRequest(
+                        host.CurrentDocument,
+                        host.SelectedElementKey,
+                        request.SceneDelta,
+                        selectedGeometry.ParentWorldTransform),
                     out string updatedSource))
             {
                 return false;

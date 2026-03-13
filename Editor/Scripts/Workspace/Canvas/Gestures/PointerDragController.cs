@@ -66,19 +66,10 @@ namespace SvgEditor.Workspace.Canvas
         public float Zoom => _viewportState.Zoom;
 
         internal bool TryBuildNudgedSource(
-            DocumentSession currentDocument,
-            string elementKey,
-            Vector2 sceneDelta,
-            Matrix2D parentWorldTransform,
+            NudgeSourceRequest request,
             out string updatedSource)
         {
-            return _elementDragController.TryBuildNudgedSource(
-                new NudgeSourceRequest(
-                    currentDocument,
-                    elementKey,
-                    sceneDelta,
-                    parentWorldTransform),
-                out updatedSource);
+            return _elementDragController.TryBuildNudgedSource(request, out updatedSource);
         }
 
         public bool TryCancelActiveDrag()
@@ -291,8 +282,12 @@ namespace SvgEditor.Workspace.Canvas
         {
             return _host.SelectionKind == SelectionKind.Element &&
                    !string.IsNullOrWhiteSpace(_host.SelectedElementKey) &&
-                   _host is InteractionController interactionController &&
-                   interactionController.TryNudgeSelectedElement(delta);
+                   CanvasNudgeService.TryNudgeSelectedElement(
+                       new CanvasNudgeRequest(
+                           _host,
+                           _sceneProjector,
+                           this,
+                           delta));
         }
     }
 }

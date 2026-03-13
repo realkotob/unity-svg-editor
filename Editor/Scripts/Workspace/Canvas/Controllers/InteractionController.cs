@@ -198,12 +198,11 @@ namespace SvgEditor.Workspace.Canvas
         internal bool TryNudgeSelectedElement(Vector2 sceneDelta)
         {
             return CanvasNudgeService.TryNudgeSelectedElement(
-                _host,
-                _sceneProjector,
-                _pointerDragController,
-                _definitionProxyCoordinator,
-                _selectionKind,
-                sceneDelta);
+                new CanvasNudgeRequest(
+                    this,
+                    _sceneProjector,
+                    _pointerDragController,
+                    sceneDelta));
         }
 
         private void SelectDefinitionProxy(CanvasDefinitionOverlayVisual overlay)

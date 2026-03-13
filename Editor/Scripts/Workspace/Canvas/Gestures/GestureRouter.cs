@@ -116,7 +116,9 @@ namespace SvgEditor.Workspace.Canvas
                 bool snapEnabled = _gestureState.Mode == DragMode.RotateElement
                     ? shiftPressed
                     : (evt.modifiers & (EventModifiers.Command | EventModifiers.Control)) != 0;
-                _elementGestureHandler.ApplyElementDelta(_gestureState, localPosition, viewportDelta, uniformScale, centerAnchor, axisLock, snapEnabled);
+                _elementGestureHandler.ApplyElementDelta(
+                    _gestureState,
+                    new ElementDeltaRequest(localPosition, viewportDelta, uniformScale, centerAnchor, axisLock, snapEnabled));
             }
 
             evt.StopPropagation();
@@ -289,11 +291,14 @@ namespace SvgEditor.Workspace.Canvas
             {
                 _elementGestureHandler.BeginMove(
                     _gestureState,
-                    selectedProxy.DefinitionElementKey,
-                    localPosition,
                     evt.pointerId,
-                    selectedProxy.SceneBounds,
-                    selectedProxy.ParentWorldTransform);
+                    new ElementDragBeginRequest(
+                        _host.CurrentDocument,
+                        _host.PreviewSnapshot,
+                        selectedProxy.DefinitionElementKey,
+                        localPosition,
+                        selectedProxy.SceneBounds,
+                        selectedProxy.ParentWorldTransform));
                 evt.StopPropagation();
                 return;
             }
@@ -317,11 +322,14 @@ namespace SvgEditor.Workspace.Canvas
             _selectionSyncService.SelectCanvasElement(interactionElementKey, syncPatchTarget: selectedNode?.CanUseAsTarget == true);
             _elementGestureHandler.BeginMove(
                 _gestureState,
-                interactionElementKey,
-                localPosition,
                 evt.pointerId,
-                interactionElement.VisualBounds,
-                interactionElement.ParentWorldTransform);
+                new ElementDragBeginRequest(
+                    _host.CurrentDocument,
+                    _host.PreviewSnapshot,
+                    interactionElementKey,
+                    localPosition,
+                    interactionElement.VisualBounds,
+                    interactionElement.ParentWorldTransform));
             evt.StopPropagation();
         }
 
@@ -353,11 +361,14 @@ namespace SvgEditor.Workspace.Canvas
 
             _elementGestureHandler.BeginMove(
                 _gestureState,
-                _host.SelectedElementKey,
-                localPosition,
                 pointerId,
-                selectedElement.VisualBounds,
-                selectedElement.ParentWorldTransform);
+                new ElementDragBeginRequest(
+                    _host.CurrentDocument,
+                    _host.PreviewSnapshot,
+                    _host.SelectedElementKey,
+                    localPosition,
+                    selectedElement.VisualBounds,
+                    selectedElement.ParentWorldTransform));
             return true;
         }
     }

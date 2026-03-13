@@ -55,17 +55,23 @@ namespace SvgEditor.Workspace.Document
 
         public void Bind(VisualElement root)
         {
+            _view.SaveRequested -= OnSaveRequested;
             _view.Bind(root);
             if (root == null)
             {
                 return;
             }
 
+            _view.SaveRequested += OnSaveRequested;
             _previewService.ApplyCurrentPreviewState();
             _workspaceSyncService.ApplyBoundState();
         }
 
-        public void Unbind() => _view.Unbind();
+        public void Unbind()
+        {
+            _view.SaveRequested -= OnSaveRequested;
+            _view.Unbind();
+        }
 
         public void Dispose()
         {
@@ -102,5 +108,7 @@ namespace SvgEditor.Workspace.Document
         }
 
         public void UpdateSourceStatus(string status) => _view.SetStatus(status);
+
+        private void OnSaveRequested() => SaveCurrentDocument();
     }
 }

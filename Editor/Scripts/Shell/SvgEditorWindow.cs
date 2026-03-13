@@ -217,9 +217,7 @@ namespace SvgEditor.Shell
             EnsureInitialized();
             DocumentSession currentDocument = _documentLifecycleController.CurrentDocument;
             bool hasDocument = currentDocument != null;
-            bool hasInspectableDocument = currentDocument?.DocumentModel != null &&
-                                          string.IsNullOrWhiteSpace(currentDocument.DocumentModelLoadError) &&
-                                          string.Equals(currentDocument.DocumentModel.SourceText, currentDocument.WorkingSourceText, StringComparison.Ordinal);
+            bool hasInspectableDocument = currentDocument?.CanUseDocumentModelForEditing == true;
 
             _documentLifecycleController.UpdateInteractivity();
             _inspectorPanelController.UpdateInteractivity(hasInspectableDocument);

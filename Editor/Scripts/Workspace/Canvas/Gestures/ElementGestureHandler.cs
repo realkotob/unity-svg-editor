@@ -89,54 +89,49 @@ namespace SvgEditor.Workspace.Canvas
                                               ElementRotationUtility.ToParentSpacePoint(parentWorldTransform, selectedElementSceneRect.center);
             state.Begin(DragMode.RotateElement, SelectionHandle.Rotate, default, default);
             _elementDragController.BeginRotate(
-                _host.CurrentDocument,
-                _host.PreviewSnapshot,
-                _host.SelectedElementKey,
-                localPosition,
-                selectedElementSceneRect,
-                parentWorldTransform,
-                rotationPivotWorld,
-                rotationPivotParentSpace);
+                new RotateBeginRequest(
+                    new ElementDragBeginRequest(
+                        _host.CurrentDocument,
+                        _host.PreviewSnapshot,
+                        _host.SelectedElementKey,
+                        localPosition,
+                        selectedElementSceneRect,
+                        parentWorldTransform),
+                    rotationPivotWorld,
+                    rotationPivotParentSpace));
             _dragSession.Begin(_overlayAccessor(), pointerId, localPosition);
             return true;
         }
 
-        public void BeginMove(GestureState state, string elementKey, Vector2 localPosition, int pointerId, Rect elementSceneRect, Matrix2D parentWorldTransform)
+        public void BeginMove(GestureState state, int pointerId, ElementDragBeginRequest request)
         {
             state.Begin(DragMode.MoveElement, SelectionHandle.None, default, default);
-            _elementDragController.BeginMove(_host.CurrentDocument, _host.PreviewSnapshot, elementKey, localPosition, elementSceneRect, parentWorldTransform);
-            _dragSession.Begin(_overlayAccessor(), pointerId, localPosition);
+            _elementDragController.BeginMove(request);
+            _dragSession.Begin(_overlayAccessor(), pointerId, request.LocalPosition);
         }
 
-        public void ApplyElementDelta(
-            GestureState state,
-            Vector2 localPosition,
-            Vector2 viewportDelta,
-            bool uniformScale,
-            bool centerAnchor,
-            bool axisLock,
-            bool snapEnabled)
+        public void ApplyElementDelta(GestureState state, ElementDeltaRequest request)
         {
             switch (state.Mode)
             {
                 case DragMode.MoveElement:
-                    _elementDragController.UpdateMove(localPosition);
+                    _elementDragController.UpdateMove(request.LocalPosition);
                     _host.UpdateSelectionVisual();
-                    if (_elementDragController.TryUpdateMoveTransientState(_host, viewportDelta, axisLock, snapEnabled))
+                    if (_elementDragController.TryUpdateMoveTransientState(_host, request.ViewportDelta, request.AxisLock, request.SnapEnabled))
                     {
                         _host.UpdateSelectionVisual();
                     }
                     break;
                 case DragMode.ResizeElement:
-                    _elementDragController.UpdateResize(viewportDelta, state.ActiveHandle, uniformScale, centerAnchor);
+                    _elementDragController.UpdateResize(request.ViewportDelta, state.ActiveHandle, request.UniformScale, request.CenterAnchor);
                     _host.UpdateSelectionVisual();
-                    if (_elementDragController.TryUpdateResizeTransientState(_host, state.ActiveHandle, snapEnabled))
+                    if (_elementDragController.TryUpdateResizeTransientState(_host, state.ActiveHandle, request.SnapEnabled))
                     {
                         _host.UpdateSelectionVisual();
                     }
                     break;
                 case DragMode.RotateElement:
-                    if (_elementDragController.TryUpdateRotateTransientState(_host, localPosition, snapEnabled))
+                    if (_elementDragController.TryUpdateRotateTransientState(_host, request.LocalPosition, request.SnapEnabled))
                     {
                         _host.UpdateSelectionVisual();
                     }

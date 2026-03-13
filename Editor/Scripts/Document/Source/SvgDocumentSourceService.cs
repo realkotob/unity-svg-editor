@@ -1,4 +1,5 @@
 using System;
+using System.Xml;
 using SvgEditor.DocumentModel;
 using SvgEditor.Document.Structure.Xml;
 
@@ -8,6 +9,8 @@ namespace SvgEditor.Document
     {
         private readonly SvgDocumentModelLoader _documentModelLoader = new();
         private readonly SvgDocumentModelSerializer _documentModelSerializer = new();
+        private const string TextEditingBlockReason =
+            "Model-based editing is disabled for SVG text content (text, tspan, textPath).";
 
         public bool ValidateXml(string sourceText, out string error)
         {
@@ -39,6 +42,7 @@ namespace SvgEditor.Document
 
             document.DocumentModel = null;
             document.DocumentModelLoadError = string.Empty;
+            document.ModelEditingBlockReason = string.Empty;
 
             if (!_documentModelLoader.TryLoad(sourceText, out SvgDocumentModel documentModel, out string error))
             {
@@ -47,6 +51,12 @@ namespace SvgEditor.Document
             }
 
             document.DocumentModel = documentModel;
+
+            FeatureScanResult featureScan = FeatureScanner.Scan(sourceText);
+            if (featureScan.HasText || featureScan.HasTspan || featureScan.HasTextPath)
+            {
+                document.ModelEditingBlockReason = TextEditingBlockReason;
+            }
         }
 
         public bool TryResolvePersistedSource(DocumentSession document, out string sourceText, out string error)
@@ -60,14 +70,14 @@ namespace SvgEditor.Document
                 return false;
             }
 
-            if (document.DocumentModel != null &&
-                string.IsNullOrWhiteSpace(document.DocumentModelLoadError) &&
-                string.Equals(document.DocumentModel.SourceText, document.WorkingSourceText, StringComparison.Ordinal))
+            if (document.CanUseDocumentModelForEditing)
             {
                 if (!_documentModelSerializer.TrySerialize(document.DocumentModel, out sourceText, out error))
                 {
                     return false;
                 }
+
+                sourceText = RestoreXmlDeclaration(document.WorkingSourceText, sourceText);
             }
 
             if (!SvgSafeMaskArtifactSanitizer.TrySanitize(sourceText, out sourceText, out _, out error))
@@ -76,6 +86,26 @@ namespace SvgEditor.Document
             }
 
             return ValidateXml(sourceText, out error);
+        }
+
+        private static string RestoreXmlDeclaration(string originalSourceText, string serializedSourceText)
+        {
+            if (string.IsNullOrWhiteSpace(originalSourceText) || string.IsNullOrWhiteSpace(serializedSourceText))
+            {
+                return serializedSourceText ?? string.Empty;
+            }
+
+            if (!SvgDocumentXmlUtility.TryLoadDocument(originalSourceText, out XmlDocument document, out _))
+            {
+                return serializedSourceText;
+            }
+
+            if (document.FirstChild is not XmlDeclaration declaration)
+            {
+                return serializedSourceText;
+            }
+
+            return declaration.OuterXml + serializedSourceText;
         }
     }
 }

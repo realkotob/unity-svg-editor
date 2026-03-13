@@ -121,9 +121,7 @@ namespace SvgEditor.Workspace.InspectorPanel
         private bool HasInspectableDocument()
         {
             var currentDocument = _host?.CurrentDocument;
-            return currentDocument?.DocumentModel != null &&
-                   string.IsNullOrWhiteSpace(currentDocument.DocumentModelLoadError) &&
-                   string.Equals(currentDocument.DocumentModel.SourceText, currentDocument.WorkingSourceText, System.StringComparison.Ordinal);
+            return currentDocument?.CanUseDocumentModelForEditing == true;
         }
 
         public void UpdateInteractivity(bool hasDocument)

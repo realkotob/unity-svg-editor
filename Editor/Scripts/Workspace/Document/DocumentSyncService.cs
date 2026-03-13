@@ -71,7 +71,7 @@ namespace SvgEditor.Workspace.Document
             _inspectorPanelController.RefreshTargets();
             WorkspaceCoordinator?.RefreshStructureViews();
             _updateEditorInteractivity?.Invoke();
-            _view.SetStatus(status);
+            _view.SetStatus(BuildStatusMessage(status));
         }
 
         public void HandleSaveSucceeded()
@@ -79,6 +79,21 @@ namespace SvgEditor.Workspace.Document
             _previewService.ResetPreviewState();
             RefreshDocumentState("Saved SVG and reimported asset.", keepExistingPreviewOnFailure: false);
             _view.ShowToast("Saved SVG", DocumentLifecycleView.ToastVariant.Success);
+        }
+
+        private string BuildStatusMessage(string status)
+        {
+            if (CurrentDocument == null || string.IsNullOrWhiteSpace(CurrentDocument.ModelEditingBlockReason))
+            {
+                return status;
+            }
+
+            if (string.IsNullOrWhiteSpace(status))
+            {
+                return CurrentDocument.ModelEditingBlockReason;
+            }
+
+            return $"{status} {CurrentDocument.ModelEditingBlockReason}";
         }
     }
 }

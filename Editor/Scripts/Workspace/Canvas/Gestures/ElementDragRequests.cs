@@ -2,9 +2,53 @@ using Unity.VectorGraphics;
 using UnityEngine;
 using SvgEditor.Document;
 using SvgEditor.Preview;
+using SvgEditor.Workspace.Transforms;
 
 namespace SvgEditor.Workspace.Canvas
 {
+    internal readonly struct ElementDragBeginRequest
+    {
+        public ElementDragBeginRequest(
+            DocumentSession currentDocument,
+            PreviewSnapshot previewSnapshot,
+            string elementKey,
+            Vector2 localPosition,
+            Rect elementSceneRect,
+            Matrix2D parentWorldTransform)
+        {
+            CurrentDocument = currentDocument;
+            PreviewSnapshot = previewSnapshot;
+            ElementKey = elementKey;
+            LocalPosition = localPosition;
+            ElementSceneRect = elementSceneRect;
+            ParentWorldTransform = parentWorldTransform;
+        }
+
+        public DocumentSession CurrentDocument { get; }
+        public PreviewSnapshot PreviewSnapshot { get; }
+        public string ElementKey { get; }
+        public Vector2 LocalPosition { get; }
+        public Rect ElementSceneRect { get; }
+        public Matrix2D ParentWorldTransform { get; }
+    }
+
+    internal readonly struct RotateBeginRequest
+    {
+        public RotateBeginRequest(
+            ElementDragBeginRequest dragBeginRequest,
+            Vector2 rotationPivotWorld,
+            Vector2 rotationPivotParentSpace)
+        {
+            DragBeginRequest = dragBeginRequest;
+            RotationPivotWorld = rotationPivotWorld;
+            RotationPivotParentSpace = rotationPivotParentSpace;
+        }
+
+        public ElementDragBeginRequest DragBeginRequest { get; }
+        public Vector2 RotationPivotWorld { get; }
+        public Vector2 RotationPivotParentSpace { get; }
+    }
+
     internal readonly struct ResizeBeginRequest
     {
         public ResizeBeginRequest(
@@ -49,6 +93,72 @@ namespace SvgEditor.Workspace.Canvas
         public ICanvasPointerDragHost Host { get; }
         public DragMode DragMode { get; }
         public Vector2 CanvasDelta { get; }
+    }
+
+    internal readonly struct ElementDeltaRequest
+    {
+        public ElementDeltaRequest(
+            Vector2 localPosition,
+            Vector2 viewportDelta,
+            bool uniformScale,
+            bool centerAnchor,
+            bool axisLock,
+            bool snapEnabled)
+        {
+            LocalPosition = localPosition;
+            ViewportDelta = viewportDelta;
+            UniformScale = uniformScale;
+            CenterAnchor = centerAnchor;
+            AxisLock = axisLock;
+            SnapEnabled = snapEnabled;
+        }
+
+        public Vector2 LocalPosition { get; }
+        public Vector2 ViewportDelta { get; }
+        public bool UniformScale { get; }
+        public bool CenterAnchor { get; }
+        public bool AxisLock { get; }
+        public bool SnapEnabled { get; }
+    }
+
+    internal readonly struct CommitDragContext
+    {
+        public CommitDragContext(
+            CommitDragRequest request,
+            ElementDragState state,
+            TransientDocumentSession transientDocumentModelSession,
+            ElementRotationSession rotationSession)
+        {
+            Request = request;
+            State = state;
+            TransientDocumentModelSession = transientDocumentModelSession;
+            RotationSession = rotationSession;
+        }
+
+        public CommitDragRequest Request { get; }
+        public ElementDragState State { get; }
+        public TransientDocumentSession TransientDocumentModelSession { get; }
+        public ElementRotationSession RotationSession { get; }
+    }
+
+    internal readonly struct CanvasNudgeRequest
+    {
+        public CanvasNudgeRequest(
+            ICanvasPointerDragHost host,
+            SceneProjector sceneProjector,
+            PointerDragController pointerDragController,
+            Vector2 sceneDelta)
+        {
+            Host = host;
+            SceneProjector = sceneProjector;
+            PointerDragController = pointerDragController;
+            SceneDelta = sceneDelta;
+        }
+
+        public ICanvasPointerDragHost Host { get; }
+        public SceneProjector SceneProjector { get; }
+        public PointerDragController PointerDragController { get; }
+        public Vector2 SceneDelta { get; }
     }
 
     internal readonly struct NudgeSourceRequest

@@ -32,21 +32,10 @@ namespace SvgEditor.Workspace.Coordination
             if (CurrentDocument == null || request == null)
                 return false;
 
-            if (CurrentDocument.DocumentModel == null)
+            string editFailureReason = CurrentDocument.ResolveModelEditingFailureReason();
+            if (!string.IsNullOrWhiteSpace(editFailureReason))
             {
-                _host.UpdateSourceStatus("Patch failed: Document model is unavailable.");
-                return false;
-            }
-
-            if (!string.IsNullOrWhiteSpace(CurrentDocument.DocumentModelLoadError))
-            {
-                _host.UpdateSourceStatus($"Patch failed: {CurrentDocument.DocumentModelLoadError}");
-                return false;
-            }
-
-            if (!string.Equals(CurrentDocument.DocumentModel.SourceText, CurrentDocument.WorkingSourceText, StringComparison.Ordinal))
-            {
-                _host.UpdateSourceStatus("Patch failed: Document model is out of sync with the working source.");
+                _host.UpdateSourceStatus($"Patch failed: {editFailureReason}");
                 return false;
             }
 
@@ -86,10 +75,9 @@ namespace SvgEditor.Workspace.Coordination
                 return false;
 
             Rect currentSceneRect = targetElement.VisualBounds;
-            if (CurrentDocument.DocumentModel == null ||
-                !string.IsNullOrWhiteSpace(CurrentDocument.DocumentModelLoadError) ||
-                !string.Equals(CurrentDocument.DocumentModel.SourceText, CurrentDocument.WorkingSourceText, StringComparison.Ordinal))
+            if (!CurrentDocument.CanUseDocumentModelForEditing)
             {
+                _host.UpdateSourceStatus($"Frame rect update failed: {CurrentDocument.ResolveModelEditingFailureReason()}");
                 return false;
             }
 

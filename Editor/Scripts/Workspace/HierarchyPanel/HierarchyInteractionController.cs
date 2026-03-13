@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using SvgEditor.Shared;
+using SvgEditor.DocumentModel;
 using SvgEditor.Document;
 using SvgEditor.Document.Structure.Hierarchy;
 
@@ -110,9 +111,10 @@ namespace SvgEditor.Workspace.HierarchyPanel
             {
                 _mutationService.ApplyMove(
                     _host,
-                    _reorderSession.PressedHierarchyElementKey,
-                    _reorderSession.PendingHierarchyDropParentKey,
-                    _reorderSession.PendingHierarchyDropChildIndex);
+                    new MoveElementRequest(
+                        _reorderSession.PressedHierarchyElementKey,
+                        _reorderSession.PendingHierarchyDropParentKey,
+                        _reorderSession.PendingHierarchyDropChildIndex));
             }
 
             ResetDragState();
