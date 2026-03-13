@@ -43,7 +43,7 @@ namespace SvgEditor.Workspace.Canvas
 
         public bool TryGetSelectedDefinitionProxy(string selectedElementKey, out CanvasDefinitionOverlayVisual overlay)
         {
-            return TryResolveSelectedDefinitionProxyVisual(selectedElementKey, out overlay);
+            return TryGetSelectedProxyVisual(selectedElementKey, out overlay);
         }
 
         public void UpdateDefinitionOverlayVisual(
@@ -81,8 +81,8 @@ namespace SvgEditor.Workspace.Canvas
 
             _definitionOverlays = overlays ?? Array.Empty<CanvasDefinitionOverlayVisual>();
             overlayController.SetDefinitionOverlays(overlays);
-            SyncDefinitionProxySelectionFromStructure(host.SelectedHierarchyNode);
-            if (HasDefinitionProxySelection && !TryResolveSelectedDefinitionProxyVisual(host.SelectedElementKey, out _))
+            SyncProxySelection(host.SelectedHierarchyNode);
+            if (HasDefinitionProxySelection && !TryGetSelectedProxyVisual(host.SelectedElementKey, out _))
             {
                 ClearSelection();
             }
@@ -94,7 +94,7 @@ namespace SvgEditor.Workspace.Canvas
             SceneProjector sceneProjector)
         {
             if (CanUseLiveDraggedPreview(host, pointerDragController, sceneProjector) &&
-                TryBuildLiveDraggedDefinitionOverlays(host, sceneProjector, out IReadOnlyList<CanvasDefinitionOverlayVisual> liveOverlays))
+                TryBuildLiveDraggedOverlays(host, sceneProjector, out IReadOnlyList<CanvasDefinitionOverlayVisual> liveOverlays))
             {
                 return liveOverlays;
             }
@@ -164,7 +164,7 @@ namespace SvgEditor.Workspace.Canvas
             return true;
         }
 
-        private bool TryResolveSelectedDefinitionProxyVisual(string selectedElementKey, out CanvasDefinitionOverlayVisual overlay)
+        private bool TryGetSelectedProxyVisual(string selectedElementKey, out CanvasDefinitionOverlayVisual overlay)
         {
             overlay = null;
             if (_selectedDefinitionProxy == null ||
@@ -198,7 +198,7 @@ namespace SvgEditor.Workspace.Canvas
             return false;
         }
 
-        private void SyncDefinitionProxySelectionFromStructure(HierarchyNode selectedNode)
+        private void SyncProxySelection(HierarchyNode selectedNode)
         {
             if (selectedNode?.IsDefinitionProxy != true)
             {
@@ -216,7 +216,7 @@ namespace SvgEditor.Workspace.Canvas
             };
         }
 
-        private bool TryBuildLiveDraggedDefinitionOverlays(
+        private bool TryBuildLiveDraggedOverlays(
             ICanvasWorkspaceHost host,
             SceneProjector sceneProjector,
             out IReadOnlyList<CanvasDefinitionOverlayVisual> overlays)

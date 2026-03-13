@@ -4,7 +4,7 @@ using SvgEditor.Preview;
 
 namespace SvgEditor.Workspace.Canvas
 {
-    internal static class SceneViewportMappingUtility
+    internal static class ViewportMappingUtility
     {
         public static bool TrySceneRectToViewportRect(
             ViewportState viewportState,
@@ -58,7 +58,7 @@ namespace SvgEditor.Workspace.Canvas
             return true;
         }
 
-        public static bool TryConvertViewportDeltaToSceneDelta(
+        public static bool TryViewportDeltaToScene(
             ViewportState viewportState,
             PreviewSnapshot previewSnapshot,
             float framePadding,
@@ -83,7 +83,7 @@ namespace SvgEditor.Workspace.Canvas
             return true;
         }
 
-        public static bool TryConvertViewportDeltaToSceneDelta(
+        public static bool TryViewportDeltaToScene(
             ViewportState viewportState,
             Rect projectionSceneRect,
             float framePadding,
@@ -91,7 +91,7 @@ namespace SvgEditor.Workspace.Canvas
             Vector2 viewportDelta,
             out Vector2 sceneDelta)
         {
-            return TryConvertViewportDeltaToSceneDelta(
+            return TryViewportDeltaToScene(
                 viewportState,
                 projectionSceneRect,
                 SvgPreserveAspectRatioMode.Meet,
@@ -101,7 +101,7 @@ namespace SvgEditor.Workspace.Canvas
                 out sceneDelta);
         }
 
-        public static bool TryConvertViewportDeltaToSceneDelta(
+        public static bool TryViewportDeltaToScene(
             ViewportState viewportState,
             Rect projectionSceneRect,
             SvgPreserveAspectRatioMode preserveAspectRatioMode,

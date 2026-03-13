@@ -5,7 +5,7 @@ using SvgEditor.Document;
 
 namespace SvgEditor.Workspace.Document
 {
-    internal sealed class DocumentWorkspaceSyncService
+    internal sealed class DocumentSyncService
     {
         private readonly DocumentLifecycleView _view;
         private readonly DocumentPreviewService _previewService;
@@ -14,7 +14,7 @@ namespace SvgEditor.Workspace.Document
         private readonly Func<EditorWorkspaceCoordinator> _workspaceCoordinatorAccessor;
         private readonly Action _updateEditorInteractivity;
 
-        public DocumentWorkspaceSyncService(
+        public DocumentSyncService(
             DocumentLifecycleView view,
             DocumentPreviewService previewService,
             PanelController inspectorPanelController,

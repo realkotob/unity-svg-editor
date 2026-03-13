@@ -30,7 +30,7 @@ namespace SvgEditor.Workspace.Canvas
                 return false;
             }
 
-            if (!_sceneProjector.TryConvertViewportDeltaToSceneDelta(
+            if (!_sceneProjector.TryViewportDeltaToScene(
                     state.StartProjectionSceneRect,
                     state.StartPreserveAspectRatioMode,
                     viewportDelta,
@@ -194,7 +194,7 @@ namespace SvgEditor.Workspace.Canvas
             }
 
             if (dragMode == DragMode.MoveElement &&
-                (!_sceneProjector.TryConvertViewportDeltaToSceneDelta(
+                (!_sceneProjector.TryViewportDeltaToScene(
                      state.StartProjectionSceneRect,
                      state.StartPreserveAspectRatioMode,
                      canvasDelta,

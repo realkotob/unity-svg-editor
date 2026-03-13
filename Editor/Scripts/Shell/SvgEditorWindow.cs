@@ -28,9 +28,9 @@ namespace SvgEditor.Shell
         private AssetDatabaseVectorImageSourceProvider _vectorImageSourceProvider;
         private AssetBrowser _assetLibraryBrowser;
         private PanelController _inspectorPanelController;
-        private DocumentLifecycleController _documentLifecycleController;
-        private SvgEditorWindowLayoutBinder _layoutBinder;
-        private SvgEditorWindowShortcutRouter _shortcutRouter;
+        private LifecycleController _documentLifecycleController;
+        private WindowLayoutBinder _layoutBinder;
+        private WindowShortcutRouter _shortcutRouter;
         private PreviewGeometryLookupService _previewGeometryLookupService;
         private EditorWorkspaceCoordinator _workspaceCoordinator;
 
@@ -110,7 +110,7 @@ namespace SvgEditor.Shell
 
         #region Help Methods
 
-        private SvgEditorWindowLayoutBinder LayoutBinder => _layoutBinder ??= new SvgEditorWindowLayoutBinder(
+        private WindowLayoutBinder LayoutBinder => _layoutBinder ??= new WindowLayoutBinder(
             rootVisualElement,
             _assetLibraryBrowser,
             _documentLifecycleController,
@@ -128,13 +128,13 @@ namespace SvgEditor.Shell
             _vectorImageSourceProvider ??= new AssetDatabaseVectorImageSourceProvider();
             _assetLibraryBrowser ??= new AssetBrowser(_documentRepository, _vectorImageSourceProvider);
             _inspectorPanelController ??= new PanelController(new PanelState());
-            _documentLifecycleController ??= new DocumentLifecycleController(
+            _documentLifecycleController ??= new LifecycleController(
                 _documentRepository,
                 _previewSnapshotBuilder,
                 _inspectorPanelController,
                 () => WorkspaceCoordinator,
                 UpdateEditorInteractivity);
-            _shortcutRouter ??= new SvgEditorWindowShortcutRouter(
+            _shortcutRouter ??= new WindowShortcutRouter(
                 () => _documentLifecycleController.CurrentDocument,
                 () => WorkspaceCoordinator.TryCancelActiveDrag(),
                 () => _documentLifecycleController.TryUndo(),

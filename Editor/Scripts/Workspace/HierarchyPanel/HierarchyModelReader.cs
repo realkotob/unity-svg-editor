@@ -9,7 +9,7 @@ using SvgEditor.Document.Structure.Hierarchy;
 
 namespace SvgEditor.Workspace.HierarchyPanel
 {
-    internal static class HierarchyDocumentModelReader
+    internal static class HierarchyModelReader
     {
         public static bool TryBuildSnapshot(
             SvgDocumentModel documentModel,

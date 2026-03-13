@@ -111,7 +111,7 @@ namespace SvgEditor.Workspace.Canvas
             }
 
             float sceneHitRadius = 0f;
-            if (CanvasViewportLayoutUtility.TryConvertViewportDeltaToSceneDelta(
+            if (CanvasViewportLayoutUtility.TryViewportDeltaToScene(
                     viewportState,
                     previewSnapshot,
                     framePadding,

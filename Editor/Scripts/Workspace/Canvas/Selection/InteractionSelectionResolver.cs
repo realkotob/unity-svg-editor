@@ -9,12 +9,12 @@ using SvgEditor.Preview;
 
 namespace SvgEditor.Workspace.Canvas
 {
-    internal sealed class CanvasInteractionSelectionResolver
+    internal sealed class InteractionSelectionResolver
     {
         private readonly ICanvasPointerDragHost _host;
         private readonly SceneProjector _sceneProjector;
 
-        public CanvasInteractionSelectionResolver(
+        public InteractionSelectionResolver(
             ICanvasPointerDragHost host,
             SceneProjector sceneProjector)
         {

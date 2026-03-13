@@ -176,7 +176,7 @@ namespace SvgEditor.Workspace.Coordination
                 return false;
             }
 
-            return HierarchyDocumentModelReader.TryBuildSnapshot(document.DocumentModel, out snapshot, out error);
+            return HierarchyModelReader.TryBuildSnapshot(document.DocumentModel, out snapshot, out error);
         }
 
         private HierarchyNode FindHierarchyNodeByTargetKey(string targetKey)

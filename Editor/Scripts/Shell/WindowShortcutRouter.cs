@@ -5,7 +5,7 @@ using SvgEditor.Document;
 
 namespace SvgEditor.Shell
 {
-    internal sealed class SvgEditorWindowShortcutRouter
+    internal sealed class WindowShortcutRouter
     {
         private const double ShortcutDedupSeconds = 0.05d;
 
@@ -19,7 +19,7 @@ namespace SvgEditor.Shell
         private KeyCode _lastShortcutKey = KeyCode.None;
         private EventModifiers _lastShortcutModifiers;
 
-        public SvgEditorWindowShortcutRouter(
+        public WindowShortcutRouter(
             Func<DocumentSession> currentDocumentAccessor,
             Func<bool> tryCancelActiveDrag,
             Func<bool> tryUndo,

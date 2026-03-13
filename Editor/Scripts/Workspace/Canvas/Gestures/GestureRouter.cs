@@ -23,7 +23,7 @@ namespace SvgEditor.Workspace.Canvas
         private readonly GestureState _gestureState = new();
         private readonly ViewportGestureHandler _viewportGestureHandler;
         private readonly ElementGestureHandler _elementGestureHandler;
-        private readonly CanvasInteractionSelectionResolver _selectionResolver;
+        private readonly InteractionSelectionResolver _selectionResolver;
 
         public GestureRouter(GestureRouterDependencies dependencies)
         {
@@ -35,7 +35,7 @@ namespace SvgEditor.Workspace.Canvas
             _dragSession = dependencies.DragSession;
             _overlayAccessor = dependencies.OverlayAccessor;
             _resetCanvasView = dependencies.ResetCanvasView;
-            _selectionResolver = new CanvasInteractionSelectionResolver(dependencies.Host, dependencies.SceneProjector);
+            _selectionResolver = new InteractionSelectionResolver(dependencies.Host, dependencies.SceneProjector);
             _viewportGestureHandler = new ViewportGestureHandler(
                 dependencies.Host,
                 dependencies.ViewportState,

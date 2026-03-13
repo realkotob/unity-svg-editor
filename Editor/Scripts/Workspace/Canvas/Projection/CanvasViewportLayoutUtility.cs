@@ -148,7 +148,7 @@ namespace SvgEditor.Workspace.Canvas
             Rect sceneRect,
             out Rect viewportRect)
         {
-            return SceneViewportMappingUtility.TrySceneRectToViewportRect(
+            return ViewportMappingUtility.TrySceneRectToViewportRect(
                 viewportState,
                 previewSnapshot,
                 framePadding,
@@ -165,7 +165,7 @@ namespace SvgEditor.Workspace.Canvas
             Vector2 scenePoint,
             out Vector2 viewportPoint)
         {
-            return SceneViewportMappingUtility.TryScenePointToViewportPoint(
+            return ViewportMappingUtility.TryScenePointToViewportPoint(
                 viewportState,
                 previewSnapshot,
                 framePadding,
@@ -174,7 +174,7 @@ namespace SvgEditor.Workspace.Canvas
                 out viewportPoint);
         }
 
-        public static bool TryConvertViewportDeltaToSceneDelta(
+        public static bool TryViewportDeltaToScene(
             ViewportState viewportState,
             PreviewSnapshot previewSnapshot,
             float framePadding,
@@ -182,7 +182,7 @@ namespace SvgEditor.Workspace.Canvas
             Vector2 viewportDelta,
             out Vector2 sceneDelta)
         {
-            return SceneViewportMappingUtility.TryConvertViewportDeltaToSceneDelta(
+            return ViewportMappingUtility.TryViewportDeltaToScene(
                 viewportState,
                 previewSnapshot,
                 framePadding,
@@ -191,7 +191,7 @@ namespace SvgEditor.Workspace.Canvas
                 out sceneDelta);
         }
 
-        public static bool TryConvertViewportDeltaToSceneDelta(
+        public static bool TryViewportDeltaToScene(
             ViewportState viewportState,
             Rect projectionSceneRect,
             float framePadding,
@@ -199,7 +199,7 @@ namespace SvgEditor.Workspace.Canvas
             Vector2 viewportDelta,
             out Vector2 sceneDelta)
         {
-            return SceneViewportMappingUtility.TryConvertViewportDeltaToSceneDelta(
+            return ViewportMappingUtility.TryViewportDeltaToScene(
                 viewportState,
                 projectionSceneRect,
                 framePadding,
@@ -208,7 +208,7 @@ namespace SvgEditor.Workspace.Canvas
                 out sceneDelta);
         }
 
-        public static bool TryConvertViewportDeltaToSceneDelta(
+        public static bool TryViewportDeltaToScene(
             ViewportState viewportState,
             Rect projectionSceneRect,
             SvgPreserveAspectRatioMode preserveAspectRatioMode,
@@ -217,7 +217,7 @@ namespace SvgEditor.Workspace.Canvas
             Vector2 viewportDelta,
             out Vector2 sceneDelta)
         {
-            return SceneViewportMappingUtility.TryConvertViewportDeltaToSceneDelta(
+            return ViewportMappingUtility.TryViewportDeltaToScene(
                 viewportState,
                 projectionSceneRect,
                 preserveAspectRatioMode,
@@ -235,7 +235,7 @@ namespace SvgEditor.Workspace.Canvas
             Vector2 viewportPoint,
             out Vector2 scenePoint)
         {
-            return SceneViewportMappingUtility.TryViewportPointToScenePoint(
+            return ViewportMappingUtility.TryViewportPointToScenePoint(
                 viewportState,
                 previewSnapshot,
                 framePadding,
@@ -251,7 +251,7 @@ namespace SvgEditor.Workspace.Canvas
             float frameHeaderHeight,
             out float displayedZoomScale)
         {
-            return SceneViewportMappingUtility.TryGetDisplayedZoomScale(
+            return ViewportMappingUtility.TryGetDisplayedZoomScale(
                 viewportState,
                 previewSnapshot,
                 framePadding,

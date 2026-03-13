@@ -14,7 +14,7 @@ using SvgEditor.Workspace.InspectorPanel;
 
 namespace SvgEditor.Shell
 {
-    internal sealed class SvgEditorWindowLayoutBinder
+    internal sealed class WindowLayoutBinder
     {
         private static class ElementName
         {
@@ -44,16 +44,16 @@ namespace SvgEditor.Shell
 
         private readonly VisualElement _root;
         private readonly AssetBrowser _assetLibraryBrowser;
-        private readonly DocumentLifecycleController _documentLifecycleController;
+        private readonly LifecycleController _documentLifecycleController;
         private readonly PanelController _inspectorPanelController;
         private readonly Func<EditorWorkspaceCoordinator> _workspaceCoordinatorAccessor;
         private readonly Func<IPanelHost> _panelHostAccessor;
         private readonly EventCallback<KeyDownEvent> _rootKeyDownHandler;
 
-        public SvgEditorWindowLayoutBinder(
+        public WindowLayoutBinder(
             VisualElement root,
             AssetBrowser assetLibraryBrowser,
-            DocumentLifecycleController documentLifecycleController,
+            LifecycleController documentLifecycleController,
             PanelController inspectorPanelController,
             Func<EditorWorkspaceCoordinator> workspaceCoordinatorAccessor,
             Func<IPanelHost> panelHostAccessor,

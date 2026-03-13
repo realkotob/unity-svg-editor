@@ -9,15 +9,15 @@ using SvgEditor.Document;
 
 namespace SvgEditor.Workspace.Document
 {
-    internal sealed class DocumentLifecycleController
+    internal sealed class LifecycleController
     {
         private readonly DocumentLifecycleView _view;
         private readonly DocumentPreviewService _previewService;
-        private readonly DocumentWorkspaceSyncService _workspaceSyncService;
+        private readonly DocumentSyncService _workspaceSyncService;
         private readonly DocumentEditHistoryService _editHistory = new();
-        private readonly DocumentLifecycleCommandService _commandService;
+        private readonly LifecycleCommandService _commandService;
 
-        public DocumentLifecycleController(
+        public LifecycleController(
             DocumentRepository documentRepository,
             SnapshotBuilder previewSnapshotBuilder,
             PanelController inspectorPanelController,
@@ -30,14 +30,14 @@ namespace SvgEditor.Workspace.Document
                 _view,
                 () => CurrentDocument,
                 workspaceCoordinatorAccessor);
-            _workspaceSyncService = new DocumentWorkspaceSyncService(
+            _workspaceSyncService = new DocumentSyncService(
                 _view,
                 _previewService,
                 inspectorPanelController,
                 () => CurrentDocument,
                 workspaceCoordinatorAccessor,
                 updateEditorInteractivity);
-            _commandService = new DocumentLifecycleCommandService(
+            _commandService = new LifecycleCommandService(
                 documentRepository,
                 _previewService,
                 _workspaceSyncService,

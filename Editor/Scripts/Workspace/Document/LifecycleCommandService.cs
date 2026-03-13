@@ -4,20 +4,20 @@ using SvgEditor.Document;
 
 namespace SvgEditor.Workspace.Document
 {
-    internal sealed class DocumentLifecycleCommandService
+    internal sealed class LifecycleCommandService
     {
         private readonly DocumentRepository _documentRepository;
         private readonly DocumentPreviewService _previewService;
-        private readonly DocumentWorkspaceSyncService _workspaceSyncService;
+        private readonly DocumentSyncService _workspaceSyncService;
         private readonly DocumentEditHistoryService _editHistory;
         private readonly Func<DocumentSession> _currentDocumentAccessor;
         private readonly Action<DocumentSession> _setCurrentDocument;
         private readonly Action<string> _setStatus;
 
-        public DocumentLifecycleCommandService(
+        public LifecycleCommandService(
             DocumentRepository documentRepository,
             DocumentPreviewService previewService,
-            DocumentWorkspaceSyncService workspaceSyncService,
+            DocumentSyncService workspaceSyncService,
             DocumentEditHistoryService editHistory,
             Func<DocumentSession> currentDocumentAccessor,
             Action<DocumentSession> setCurrentDocument,
