@@ -49,8 +49,7 @@ namespace SvgEditor.Workspace.Canvas
                 _elementDragController,
                 _selectionSyncService,
                 _dragSession,
-                GetCanvasOverlay,
-                ResetCanvasViewInternal));
+                GetCanvasOverlay));
         }
 
         public VisualElement CanvasOverlay => _canvasOverlay;

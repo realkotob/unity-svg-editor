@@ -151,6 +151,33 @@ namespace SvgEditor.Workspace.Coordination
                 syncPatchTarget);
         }
 
+        public void ReplaceStructureElementSelection(IReadOnlyList<string> elementKeys, bool syncPatchTarget)
+        {
+            ApplySelectionKeys(elementKeys, syncPatchTarget);
+        }
+
+        public void AddStructureElementSelection(IReadOnlyList<string> elementKeys, bool syncPatchTarget)
+        {
+            if (elementKeys == null || elementKeys.Count == 0)
+            {
+                return;
+            }
+
+            List<string> mergedKeys = new(_structurePanelState.SelectedElementKeys);
+            foreach (string elementKey in elementKeys)
+            {
+                if (string.IsNullOrWhiteSpace(elementKey) ||
+                    mergedKeys.Contains(elementKey))
+                {
+                    continue;
+                }
+
+                mergedKeys.Add(elementKey);
+            }
+
+            ApplySelectionKeys(mergedKeys, syncPatchTarget);
+        }
+
         public void SyncSelectionFromInspectorTarget(string targetKey)
         {
             if (string.Equals(targetKey, SvgDocumentTargets.RootTargetKey, StringComparison.Ordinal))
@@ -307,6 +334,32 @@ namespace SvgEditor.Workspace.Coordination
 
             UpdateStructureInteractivity(CurrentDocument != null);
             _canvasWorkspaceController.UpdateSelectionVisual();
+        }
+
+        private void ApplySelectionKeys(IReadOnlyList<string> elementKeys, bool syncPatchTarget)
+        {
+            List<HierarchyNode> selectedItems = new();
+            if (elementKeys != null)
+            {
+                foreach (string elementKey in elementKeys)
+                {
+                    HierarchyNode selectedItem = FindHierarchyNode(elementKey);
+                    if (selectedItem != null)
+                    {
+                        selectedItems.Add(selectedItem);
+                    }
+                }
+            }
+
+            HierarchyNode primarySelectedItem = selectedItems.Count > 0
+                ? selectedItems[selectedItems.Count - 1]
+                : null;
+            ApplySelectionState(
+                selectedItems,
+                primarySelectedItem,
+                primarySelectedItem != null ? SelectionKind.Element : SelectionKind.None,
+                syncPatchTarget,
+                primarySelectedItem?.Key ?? string.Empty);
         }
     }
 }

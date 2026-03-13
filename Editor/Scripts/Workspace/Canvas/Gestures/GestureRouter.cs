@@ -15,6 +15,7 @@ namespace SvgEditor.Workspace.Canvas
     internal sealed class GestureRouter
     {
         private const float PendingGroupMoveThreshold = 5f;
+        private const float AreaSelectionMinimumSize = 2f;
 
         private readonly ICanvasPointerDragHost _host;
         private readonly OverlayController _overlayController;
@@ -23,7 +24,6 @@ namespace SvgEditor.Workspace.Canvas
         private readonly SelectionSyncService _selectionSyncService;
         private readonly PointerDragSession _dragSession;
         private readonly Func<VisualElement> _overlayAccessor;
-        private readonly Action _resetCanvasView;
         private readonly GestureState _gestureState = new();
         private readonly ViewportGestureHandler _viewportGestureHandler;
         private readonly ElementGestureHandler _elementGestureHandler;
@@ -31,6 +31,8 @@ namespace SvgEditor.Workspace.Canvas
         private string _pendingGroupSelectionElementKey = string.Empty;
         private Rect _pendingGroupSelectionSceneRect;
         private IReadOnlyList<ElementMoveTarget> _pendingGroupMoveTargets = Array.Empty<ElementMoveTarget>();
+        private bool _isAreaSelectionAdditive;
+        private IReadOnlyList<string> _areaSelectionBaselineKeys = Array.Empty<string>();
 
         public GestureRouter(GestureRouterDependencies dependencies)
         {
@@ -41,7 +43,6 @@ namespace SvgEditor.Workspace.Canvas
             _selectionSyncService = dependencies.SelectionSyncService;
             _dragSession = dependencies.DragSession;
             _overlayAccessor = dependencies.OverlayAccessor;
-            _resetCanvasView = dependencies.ResetCanvasView;
             _selectionResolver = new InteractionSelectionResolver(dependencies.Host, dependencies.SceneProjector);
             _viewportGestureHandler = new ViewportGestureHandler(
                 dependencies.Host,
@@ -70,11 +71,6 @@ namespace SvgEditor.Workspace.Canvas
             }
 
             _overlayAccessor()?.Focus();
-
-            if (TryHandleCanvasReset(evt, localPosition))
-            {
-                return;
-            }
 
             if (_toolController.IsPanGesture(evt))
             {
@@ -113,6 +109,10 @@ namespace SvgEditor.Workspace.Canvas
             if (_gestureState.IsViewportGesture)
             {
                 _viewportGestureHandler.ApplyViewportDelta(_gestureState, viewportDelta);
+            }
+            else if (_gestureState.Mode == DragMode.SelectArea)
+            {
+                UpdateAreaSelection(localPosition);
             }
             else if (TryBeginPendingGroupMove(localPosition, evt.pointerId, evt.modifiers))
             {
@@ -160,6 +160,14 @@ namespace SvgEditor.Workspace.Canvas
                 return;
             }
 
+            if (dragMode == DragMode.SelectArea)
+            {
+                CompleteAreaSelection(canvasDelta);
+                EndCanvasDrag();
+                evt.StopPropagation();
+                return;
+            }
+
             if (wasElementGesture)
             {
                 _elementGestureHandler.Complete(dragMode, canvasDelta);
@@ -182,6 +190,11 @@ namespace SvgEditor.Workspace.Canvas
         {
             _overlayController.ResetInteractionCursor();
             _host.ClearHover();
+            if (_gestureState.Mode == DragMode.SelectArea)
+            {
+                RestoreAreaSelectionBaseline();
+            }
+
             CancelCanvasDragPreview();
         }
 
@@ -191,6 +204,9 @@ namespace SvgEditor.Workspace.Canvas
             _elementGestureHandler.End();
             _gestureState.Reset();
             ResetPendingGroupSelection();
+            _isAreaSelectionAdditive = false;
+            _areaSelectionBaselineKeys = Array.Empty<string>();
+            _overlayController.ClearMarquee();
             _overlayController.ResetInteractionCursor();
             _host.UpdateHoverVisual();
             _host.UpdateSelectionVisual();
@@ -235,28 +251,6 @@ namespace SvgEditor.Workspace.Canvas
             {
                 _host.ClearHover();
             }
-        }
-
-        private bool TryHandleCanvasReset(PointerDownEvent evt, Vector2 localPosition)
-        {
-            if (evt.clickCount != 2 || evt.button != (int)MouseButton.LeftMouse)
-            {
-                return false;
-            }
-
-            if (_sceneProjector.TryHitTestPreviewElement(_host.PreviewSnapshot, localPosition, out _))
-            {
-                return false;
-            }
-
-            if (_sceneProjector.TryHitTestFrameChrome(_host.PreviewSnapshot, localPosition, out _))
-            {
-                return false;
-            }
-
-            _resetCanvasView?.Invoke();
-            evt.StopPropagation();
-            return true;
         }
 
         private bool TryHandleSelectionHandle(PointerDownEvent evt, Vector2 localPosition)
@@ -334,10 +328,10 @@ namespace SvgEditor.Workspace.Canvas
                     _selectionSyncService.ToggleCanvasElement(
                         toggledElementKey,
                         syncPatchTarget: toggledNode?.CanUseAsTarget == true);
-                }
 
-                evt.StopPropagation();
-                return;
+                    evt.StopPropagation();
+                    return;
+                }
             }
 
             if (TryBeginMoveSelectedElement(localPosition, evt.pointerId, evt.modifiers))
@@ -348,8 +342,7 @@ namespace SvgEditor.Workspace.Canvas
 
             if (!_selectionResolver.TryResolveInteractionElement(localPosition, evt.modifiers, out PreviewElementGeometry interactionElement, out string interactionElementKey))
             {
-                _host.ClearDefinitionProxySelection();
-                _selectionSyncService.ClearCanvasSelection();
+                BeginAreaSelection(localPosition, evt.pointerId, evt.modifiers);
                 evt.StopPropagation();
                 return;
             }
@@ -532,6 +525,99 @@ namespace SvgEditor.Workspace.Canvas
             _pendingGroupMoveTargets = Array.Empty<ElementMoveTarget>();
         }
 
+        private void BeginAreaSelection(Vector2 localPosition, int pointerId, EventModifiers modifiers)
+        {
+            _host.ClearDefinitionProxySelection();
+            _isAreaSelectionAdditive = (modifiers & EventModifiers.Shift) != 0;
+            _areaSelectionBaselineKeys = _host.SelectedElementKeys != null
+                ? new List<string>(_host.SelectedElementKeys)
+                : Array.Empty<string>();
+            _gestureState.Begin(DragMode.SelectArea, SelectionHandle.None, default, default);
+            _dragSession.Begin(_overlayAccessor(), pointerId, localPosition);
+            _overlayController.SetMarquee(new Rect(localPosition, Vector2.zero));
+        }
+
+        private void UpdateAreaSelection(Vector2 localPosition)
+        {
+            Rect viewportRect = BuildViewportRect(_dragSession.StartPosition, localPosition);
+            _overlayController.SetMarquee(viewportRect);
+
+            if (viewportRect.width < AreaSelectionMinimumSize &&
+                viewportRect.height < AreaSelectionMinimumSize)
+            {
+                return;
+            }
+
+            ApplyAreaSelection(viewportRect);
+        }
+
+        private void CompleteAreaSelection(Vector2 canvasDelta)
+        {
+            Rect viewportRect = BuildViewportRect(_dragSession.StartPosition, _dragSession.StartPosition + canvasDelta);
+            ApplyAreaSelection(viewportRect);
+        }
+
+        private void ApplyAreaSelection(Rect viewportRect)
+        {
+            if (viewportRect.width < AreaSelectionMinimumSize && viewportRect.height < AreaSelectionMinimumSize)
+            {
+                if (!_isAreaSelectionAdditive)
+                {
+                    _selectionSyncService.ClearCanvasSelection();
+                }
+
+                return;
+            }
+
+            if (!_sceneProjector.TryViewportPointToScenePoint(_host.PreviewSnapshot, viewportRect.min, out Vector2 minScenePoint) ||
+                !_sceneProjector.TryViewportPointToScenePoint(_host.PreviewSnapshot, viewportRect.max, out Vector2 maxScenePoint))
+            {
+                return;
+            }
+
+            Rect sceneRect = Rect.MinMaxRect(
+                Mathf.Min(minScenePoint.x, maxScenePoint.x),
+                Mathf.Min(minScenePoint.y, maxScenePoint.y),
+                Mathf.Max(minScenePoint.x, maxScenePoint.x),
+                Mathf.Max(minScenePoint.y, maxScenePoint.y));
+            IReadOnlyList<string> areaSelectionKeys = _selectionResolver.ResolveAreaSelectionKeys(sceneRect, EventModifiers.None);
+            if (_isAreaSelectionAdditive)
+            {
+                List<string> mergedKeys = new(_areaSelectionBaselineKeys);
+                foreach (string areaSelectionKey in areaSelectionKeys)
+                {
+                    if (ContainsElementKey(mergedKeys, areaSelectionKey))
+                    {
+                        RemoveElementKey(mergedKeys, areaSelectionKey);
+                    }
+                    else
+                    {
+                        mergedKeys.Add(areaSelectionKey);
+                    }
+                }
+
+                _selectionSyncService.ReplaceCanvasElements(mergedKeys, syncPatchTarget: false);
+            }
+            else
+            {
+                _selectionSyncService.ReplaceCanvasElements(areaSelectionKeys, syncPatchTarget: false);
+            }
+        }
+
+        private void RestoreAreaSelectionBaseline()
+        {
+            _selectionSyncService.ReplaceCanvasElements(_areaSelectionBaselineKeys, syncPatchTarget: false);
+        }
+
+        private static Rect BuildViewportRect(Vector2 startPosition, Vector2 currentPosition)
+        {
+            return Rect.MinMaxRect(
+                Mathf.Min(startPosition.x, currentPosition.x),
+                Mathf.Min(startPosition.y, currentPosition.y),
+                Mathf.Max(startPosition.x, currentPosition.x),
+                Mathf.Max(startPosition.y, currentPosition.y));
+        }
+
         private static bool ContainsElementKey(IReadOnlyList<string> selectedElementKeys, string elementKey)
         {
             if (selectedElementKeys == null || string.IsNullOrWhiteSpace(elementKey))
@@ -549,6 +635,22 @@ namespace SvgEditor.Workspace.Canvas
 
             return false;
         }
+
+        private static void RemoveElementKey(List<string> elementKeys, string elementKey)
+        {
+            if (elementKeys == null || string.IsNullOrWhiteSpace(elementKey))
+            {
+                return;
+            }
+
+            for (int index = elementKeys.Count - 1; index >= 0; index--)
+            {
+                if (string.Equals(elementKeys[index], elementKey, StringComparison.Ordinal))
+                {
+                    elementKeys.RemoveAt(index);
+                }
+            }
+        }
     }
 
     internal sealed class GestureRouterDependencies
@@ -562,8 +664,7 @@ namespace SvgEditor.Workspace.Canvas
             ElementDragController elementDragController,
             SelectionSyncService selectionSyncService,
             PointerDragSession dragSession,
-            Func<VisualElement> overlayAccessor,
-            Action resetCanvasView)
+            Func<VisualElement> overlayAccessor)
         {
             Host = host;
             ViewportState = viewportState;
@@ -574,7 +675,6 @@ namespace SvgEditor.Workspace.Canvas
             SelectionSyncService = selectionSyncService;
             DragSession = dragSession;
             OverlayAccessor = overlayAccessor;
-            ResetCanvasView = resetCanvasView;
         }
 
         public ICanvasPointerDragHost Host { get; }
@@ -586,6 +686,5 @@ namespace SvgEditor.Workspace.Canvas
         public SelectionSyncService SelectionSyncService { get; }
         public PointerDragSession DragSession { get; }
         public Func<VisualElement> OverlayAccessor { get; }
-        public Action ResetCanvasView { get; }
     }
 }

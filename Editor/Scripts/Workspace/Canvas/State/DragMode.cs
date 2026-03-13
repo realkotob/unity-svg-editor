@@ -9,6 +9,7 @@ namespace SvgEditor.Workspace.Canvas
         PanCanvas,
         MoveFrame,
         ResizeFrame,
+        SelectArea,
         MoveElement,
         ResizeElement,
         RotateElement

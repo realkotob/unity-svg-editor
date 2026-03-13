@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using SvgEditor.Shared;
 using SvgEditor.Document;
@@ -58,6 +59,35 @@ namespace SvgEditor.Workspace.Canvas
                 ? hitElement
                 : _sceneProjector.FindPreviewElement(_host.PreviewSnapshot, interactionElementKey);
             return interactionElement != null;
+        }
+
+        public IReadOnlyList<string> ResolveAreaSelectionKeys(Rect sceneRect, EventModifiers modifiers)
+        {
+            List<string> resolvedKeys = new();
+            PreviewSnapshot previewSnapshot = _host.PreviewSnapshot;
+            if (previewSnapshot?.Elements == null)
+            {
+                return resolvedKeys;
+            }
+
+            for (int index = 0; index < previewSnapshot.Elements.Count; index++)
+            {
+                PreviewElementGeometry candidate = previewSnapshot.Elements[index];
+                if (candidate == null || !candidate.VisualBounds.Overlaps(sceneRect))
+                {
+                    continue;
+                }
+
+                string resolvedKey = ResolveInteractionElementKey(candidate.Key, modifiers);
+                if (string.IsNullOrWhiteSpace(resolvedKey) || resolvedKeys.Contains(resolvedKey))
+                {
+                    continue;
+                }
+
+                resolvedKeys.Add(resolvedKey);
+            }
+
+            return resolvedKeys;
         }
 
         private string ResolveInteractionElementKey(string elementKey, EventModifiers modifiers)

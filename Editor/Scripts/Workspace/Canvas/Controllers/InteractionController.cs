@@ -184,6 +184,10 @@ namespace SvgEditor.Workspace.Canvas
         void ICanvasPointerDragHost.SelectElement(string elementKey, bool syncPatchTarget) => _host.SelectStructureElementFromCanvas(elementKey, syncPatchTarget);
         void ICanvasPointerDragHost.ToggleElementSelection(string elementKey, bool syncPatchTarget) =>
             _host.ToggleStructureElementSelectionFromCanvas(elementKey, syncPatchTarget);
+        void ICanvasPointerDragHost.ReplaceElementSelection(IReadOnlyList<string> elementKeys, bool syncPatchTarget) =>
+            _host.ReplaceStructureElementSelectionFromCanvas(elementKeys, syncPatchTarget);
+        void ICanvasPointerDragHost.AddElementSelection(IReadOnlyList<string> elementKeys, bool syncPatchTarget) =>
+            _host.AddStructureElementSelectionFromCanvas(elementKeys, syncPatchTarget);
         void ICanvasPointerDragHost.ClearSelection() => _host.ClearStructureSelectionFromCanvas();
         void ICanvasPointerDragHost.UpdateStructureInteractivity(bool hasDocument) => _host.UpdateStructureInteractivity(hasDocument);
         void ICanvasPointerDragHost.UpdateCanvasVisualState() => UpdateCanvasVisualState();

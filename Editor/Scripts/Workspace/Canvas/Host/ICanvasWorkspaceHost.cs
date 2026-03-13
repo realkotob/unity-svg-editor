@@ -24,6 +24,8 @@ namespace SvgEditor.Workspace.Canvas
         void SelectFrameFromCanvas();
         void SelectStructureElementFromCanvas(string elementKey, bool syncPatchTarget);
         void ToggleStructureElementSelectionFromCanvas(string elementKey, bool syncPatchTarget);
+        void ReplaceStructureElementSelectionFromCanvas(IReadOnlyList<string> elementKeys, bool syncPatchTarget);
+        void AddStructureElementSelectionFromCanvas(IReadOnlyList<string> elementKeys, bool syncPatchTarget);
         void UpdateStructureInteractivity(bool hasDocument);
         void UpdateSourceStatus(string status);
         void RefreshLivePreview(bool keepExistingPreviewOnFailure);

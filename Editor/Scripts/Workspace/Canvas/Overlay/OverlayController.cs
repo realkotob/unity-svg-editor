@@ -161,6 +161,16 @@ namespace SvgEditor.Workspace.Canvas
             _selectionChromePresenter.ClearHover();
         }
 
+        public void ClearMarquee()
+        {
+            _selectionChromePresenter.ClearMarquee();
+        }
+
+        public void SetMarquee(Rect viewportRect)
+        {
+            _selectionChromePresenter.SetMarquee(viewportRect);
+        }
+
         public void SetHover(Rect viewportRect)
         {
             _selectionChromePresenter.SetHover(viewportRect);

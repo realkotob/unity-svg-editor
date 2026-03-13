@@ -125,6 +125,12 @@ namespace SvgEditor.Workspace.Coordination
         void ICanvasWorkspaceHost.ToggleStructureElementSelectionFromCanvas(string elementKey, bool syncPatchTarget) =>
             _selectionCoordinator.ToggleStructureElementSelection(elementKey, syncPatchTarget);
 
+        void ICanvasWorkspaceHost.ReplaceStructureElementSelectionFromCanvas(IReadOnlyList<string> elementKeys, bool syncPatchTarget) =>
+            _selectionCoordinator.ReplaceStructureElementSelection(elementKeys, syncPatchTarget);
+
+        void ICanvasWorkspaceHost.AddStructureElementSelectionFromCanvas(IReadOnlyList<string> elementKeys, bool syncPatchTarget) =>
+            _selectionCoordinator.AddStructureElementSelection(elementKeys, syncPatchTarget);
+
         internal void SyncSelectionFromInspectorTarget(string targetKey) => _selectionCoordinator.SyncSelectionFromInspectorTarget(targetKey);
     }
 }

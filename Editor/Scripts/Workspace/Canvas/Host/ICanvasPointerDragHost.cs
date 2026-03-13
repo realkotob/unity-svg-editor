@@ -28,6 +28,8 @@ namespace SvgEditor.Workspace.Canvas
         void SelectFrame();
         void SelectElement(string elementKey, bool syncPatchTarget);
         void ToggleElementSelection(string elementKey, bool syncPatchTarget);
+        void ReplaceElementSelection(IReadOnlyList<string> elementKeys, bool syncPatchTarget);
+        void AddElementSelection(IReadOnlyList<string> elementKeys, bool syncPatchTarget);
         void ClearSelection();
         void UpdateStructureInteractivity(bool hasDocument);
         void UpdateCanvasVisualState();

@@ -17,6 +17,7 @@ namespace SvgEditor.Workspace.Canvas
 
         private VisualElement _overlay;
         private VisualElement _hoverBox;
+        private VisualElement _marqueeBox;
         private VisualElement _selectionBox;
         private Label _sizeBadge;
         private VisualElement _verticalGuide;
@@ -43,6 +44,11 @@ namespace SvgEditor.Workspace.Canvas
             _hoverBox.AddClass(OverlayClassName.HOVER_BOX);
             _hoverBox.pickingMode = PickingMode.Ignore;
             _overlay.Add(_hoverBox);
+
+            _marqueeBox = new VisualElement();
+            _marqueeBox.AddClass(OverlayClassName.SELECTION_BOX);
+            _marqueeBox.pickingMode = PickingMode.Ignore;
+            _overlay.Add(_marqueeBox);
         }
 
         public void BindSelectionChrome(VisualElement overlay)
@@ -97,12 +103,14 @@ namespace SvgEditor.Workspace.Canvas
             _rotationZones.Clear();
             _sizeBadge?.RemoveFromHierarchy();
             _selectionBox?.RemoveFromHierarchy();
+            _marqueeBox?.RemoveFromHierarchy();
             _hoverBox?.RemoveFromHierarchy();
             _verticalGuide?.RemoveFromHierarchy();
             _horizontalGuide?.RemoveFromHierarchy();
 
             _sizeBadge = null;
             _selectionBox = null;
+            _marqueeBox = null;
             _hoverBox = null;
             _verticalGuide = null;
             _horizontalGuide = null;
@@ -160,6 +168,29 @@ namespace SvgEditor.Workspace.Canvas
             {
                 _hoverBox.style.display = DisplayStyle.None;
             }
+        }
+
+        public void ClearMarquee()
+        {
+            if (_marqueeBox != null)
+            {
+                _marqueeBox.style.display = DisplayStyle.None;
+                _marqueeBox.style.rotate = new Rotate(new Angle(0f));
+            }
+        }
+
+        public void SetMarquee(Rect viewportRect)
+        {
+            if (_marqueeBox == null)
+            {
+                return;
+            }
+
+            _marqueeBox.style.display = DisplayStyle.Flex;
+            _marqueeBox.style.left = viewportRect.xMin;
+            _marqueeBox.style.top = viewportRect.yMin;
+            _marqueeBox.style.width = viewportRect.width;
+            _marqueeBox.style.height = viewportRect.height;
         }
 
         public void SetHover(Rect viewportRect)
