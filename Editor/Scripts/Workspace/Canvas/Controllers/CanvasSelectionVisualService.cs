@@ -64,13 +64,15 @@ namespace SvgEditor.Workspace.Canvas
 
             if (_definitionProxyCoordinator.HasDefinitionProxySelection)
             {
-                _overlayController.SetSelection(_sceneProjector.BuildSelectionVisual(
+                CanvasSelectionVisual selectionVisual = _sceneProjector.BuildSelectionVisual(
                     previewSnapshot,
                     new SelectionVisualRequest(
                         SelectionKind.Element,
                         _pointerDragController.DragCurrentSelectionViewportRect,
                         _pointerDragController.DragStartElementSceneRect.size,
-                        false)));
+                        false));
+                ApplyDraggingRotationVisual(selectionVisual);
+                _overlayController.SetSelection(selectionVisual);
                 _overlayController.SetDefinitionOverlays(_definitionProxyCoordinator.BuildDraggedOverlays(_host, _pointerDragController, _sceneProjector));
                 return true;
             }
@@ -93,7 +95,7 @@ namespace SvgEditor.Workspace.Canvas
                     _pointerDragController.DragResizeCenterAnchor)
                 : _pointerDragController.DragStartElementSceneRect;
 
-            _overlayController.SetSelection(_sceneProjector.BuildSelectionVisual(
+            CanvasSelectionVisual dragSelectionVisual = _sceneProjector.BuildSelectionVisual(
                 new SelectionVisualRequest(
                     SelectionKind.Element,
                     _pointerDragController.DragCurrentSelectionViewportRect,
@@ -101,7 +103,9 @@ namespace SvgEditor.Workspace.Canvas
                     _pointerDragController.DragMode != DragMode.RotateElement)
                     .WithProjection(
                         _pointerDragController.DragStartProjectionSceneRect,
-                        _pointerDragController.DragStartPreserveAspectRatioMode)));
+                        _pointerDragController.DragStartPreserveAspectRatioMode));
+            ApplyDraggingRotationVisual(dragSelectionVisual);
+            _overlayController.SetSelection(dragSelectionVisual);
             _overlayController.SetDefinitionOverlays(_definitionProxyCoordinator.BuildDraggedOverlays(_host, _pointerDragController, _sceneProjector));
             return true;
         }
@@ -181,7 +185,8 @@ namespace SvgEditor.Workspace.Canvas
                     elementViewportRect,
                     selectedElementSceneRect.size,
                     showSelectionHandles));
-            selectionVisual.AllowSelectionHandleInteraction = !multipleSelection && showSelectionHandles;
+            selectionVisual.AllowResizeHandleInteraction = !multipleSelection && showSelectionHandles;
+            selectionVisual.AllowRotateHandleInteraction = showSelectionHandles;
             PreviewElementGeometry selectedGeometry = !multipleSelection
                 ? _sceneProjector.FindPreviewElement(previewSnapshot, _host.SelectedElementKey)
                 : null;
@@ -194,6 +199,18 @@ namespace SvgEditor.Workspace.Canvas
 
             _overlayController.SetSelection(selectionVisual);
             return true;
+        }
+
+        private void ApplyDraggingRotationVisual(CanvasSelectionVisual selectionVisual)
+        {
+            if (selectionVisual == null || _pointerDragController.DragMode != DragMode.RotateElement)
+            {
+                return;
+            }
+
+            selectionVisual.HasRotationPivot = true;
+            selectionVisual.RotationPivotViewport = _pointerDragController.DragRotationPivotViewport;
+            selectionVisual.RotationDegrees = _pointerDragController.CurrentRotationAngle;
         }
 
         private bool IsResizeUnsupported(string elementKey)

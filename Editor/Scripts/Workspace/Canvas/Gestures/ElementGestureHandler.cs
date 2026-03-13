@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Core.UI.Foundation;
 using Unity.VectorGraphics;
 using UnityEngine;
@@ -76,17 +77,36 @@ namespace SvgEditor.Workspace.Canvas
         public bool TryBeginRotateFromHandle(GestureState state, Vector2 localPosition, int pointerId)
         {
             if (_host.HasDefinitionProxySelection ||
-                _host.SelectionKind != SelectionKind.Element ||
-                !_sceneProjector.TryResolveSelectedElementSceneRect(_host.PreviewSnapshot, _host.SelectedElementKey, out Rect selectedElementSceneRect))
+                _host.SelectionKind != SelectionKind.Element)
             {
                 return false;
             }
 
+            bool multipleSelection = _host.SelectedElementKeys != null && _host.SelectedElementKeys.Count > 1;
+            Rect selectedElementSceneRect;
             PreviewElementGeometry selectedGeometry = _sceneProjector.FindPreviewElement(_host.PreviewSnapshot, _host.SelectedElementKey);
-            Matrix2D parentWorldTransform = selectedGeometry?.ParentWorldTransform ?? Matrix2D.identity;
-            Vector2 rotationPivotWorld = selectedGeometry?.RotationPivotWorld ?? selectedElementSceneRect.center;
-            Vector2 rotationPivotParentSpace = selectedGeometry?.RotationPivotParentSpace ??
-                                              ElementRotationUtility.ToParentSpacePoint(parentWorldTransform, selectedElementSceneRect.center);
+            if (multipleSelection)
+            {
+                if (!CanvasProjectionMath.TryGetCombinedSelectionSceneRect(_host.PreviewSnapshot, _host.SelectedElementKeys, out selectedElementSceneRect))
+                {
+                    return false;
+                }
+            }
+            else if (!_sceneProjector.TryResolveSelectedElementSceneRect(_host.PreviewSnapshot, _host.SelectedElementKey, out selectedElementSceneRect))
+            {
+                return false;
+            }
+
+            Matrix2D parentWorldTransform = multipleSelection
+                ? Matrix2D.identity
+                : selectedGeometry?.ParentWorldTransform ?? Matrix2D.identity;
+            Vector2 rotationPivotWorld = multipleSelection
+                ? selectedElementSceneRect.center
+                : selectedGeometry?.RotationPivotWorld ?? selectedElementSceneRect.center;
+            Vector2 rotationPivotParentSpace = multipleSelection
+                ? rotationPivotWorld
+                : selectedGeometry?.RotationPivotParentSpace ??
+                  ElementRotationUtility.ToParentSpacePoint(parentWorldTransform, selectedElementSceneRect.center);
             state.Begin(DragMode.RotateElement, SelectionHandle.Rotate, default, default);
             _elementDragController.BeginRotate(
                 new RotateBeginRequest(
@@ -96,7 +116,8 @@ namespace SvgEditor.Workspace.Canvas
                         _host.SelectedElementKey,
                         localPosition,
                         selectedElementSceneRect,
-                        parentWorldTransform),
+                        parentWorldTransform,
+                        multipleSelection ? BuildMoveTargets(_host.SelectedElementKeys) : null),
                     rotationPivotWorld,
                     rotationPivotParentSpace));
             _dragSession.Begin(_overlayAccessor(), pointerId, localPosition);
@@ -179,6 +200,28 @@ namespace SvgEditor.Workspace.Canvas
             state.Begin(DragMode.ResizeElement, handle, default, default);
             _elementDragController.BeginResize(request);
             _dragSession.Begin(_overlayAccessor(), pointerId, localPosition);
+        }
+
+        private IReadOnlyList<ElementMoveTarget> BuildMoveTargets(IReadOnlyList<string> selectedElementKeys)
+        {
+            if (selectedElementKeys == null || selectedElementKeys.Count == 0)
+            {
+                return Array.Empty<ElementMoveTarget>();
+            }
+
+            List<ElementMoveTarget> moveTargets = new(selectedElementKeys.Count);
+            foreach (string selectedElementKey in selectedElementKeys)
+            {
+                PreviewElementGeometry selectedGeometry = _sceneProjector.FindPreviewElement(_host.PreviewSnapshot, selectedElementKey);
+                if (selectedGeometry == null)
+                {
+                    continue;
+                }
+
+                moveTargets.Add(new ElementMoveTarget(selectedElementKey, selectedGeometry.ParentWorldTransform));
+            }
+
+            return moveTargets;
         }
     }
 }

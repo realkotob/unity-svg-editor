@@ -101,6 +101,11 @@ namespace SvgEditor.Workspace.Canvas
                 ? SnapUtility.SnapAngle(rotationAngle)
                 : rotationAngle;
 
+            if (state.MoveTargets != null && state.MoveTargets.Count > 1)
+            {
+                return TryApplyMultiRotateTransientPreview(host, state.MoveTargets, state.CurrentRotationAngle, state.StartRotationPivotWorld);
+            }
+
             if (!rotationSession.TryBuildPreview(state.CurrentRotationAngle, out SvgDocumentModel previewDocumentModel, out _) ||
                 !host.TryRefreshTransientPreview(previewDocumentModel))
             {
@@ -223,6 +228,31 @@ namespace SvgEditor.Workspace.Canvas
                         out Vector2 multiSceneDelta) ||
                     multiSceneDelta.sqrMagnitude <= Mathf.Epsilon ||
                     !TryBuildMultiMoveCommittedSource(request.Host.CurrentDocument, state.MoveTargets, multiSceneDelta, out string multiUpdatedSource, out multiError))
+                {
+                    if (!string.IsNullOrWhiteSpace(multiError))
+                    {
+                        request.Host.UpdateSourceStatus($"Drag commit failed: {multiError}");
+                    }
+
+                    return false;
+                }
+
+                request.Host.ApplyUpdatedSource(multiUpdatedSource, BuildSuccessStatus(request.Host, state, request.DragMode));
+                return true;
+            }
+
+            if (request.DragMode == DragMode.RotateElement &&
+                state.MoveTargets != null &&
+                state.MoveTargets.Count > 1)
+            {
+                string multiError = string.Empty;
+                if (!TryBuildMultiRotateCommittedSource(
+                        request.Host.CurrentDocument,
+                        state.MoveTargets,
+                        state.CurrentRotationAngle,
+                        state.StartRotationPivotWorld,
+                        out string multiUpdatedSource,
+                        out multiError))
                 {
                     if (!string.IsNullOrWhiteSpace(multiError))
                     {
@@ -360,6 +390,89 @@ namespace SvgEditor.Workspace.Canvas
                 if (!mutationService.TryPrependElementTranslation(
                         workingDocumentModel,
                         new TranslateElementRequest(moveTarget.ElementKey, parentTranslateDelta),
+                        out MutationResult result))
+                {
+                    error = result.Error;
+                    return false;
+                }
+
+                workingDocumentModel = result.UpdatedDocumentModel;
+            }
+
+            updatedDocumentModel = workingDocumentModel;
+            return updatedDocumentModel != null;
+        }
+
+        private bool TryApplyMultiRotateTransientPreview(
+            ICanvasPointerDragHost host,
+            IReadOnlyList<ElementMoveTarget> moveTargets,
+            float angle,
+            Vector2 pivotWorld)
+        {
+            if (!TryBuildMultiRotateDocumentModel(host.CurrentDocument, moveTargets, angle, pivotWorld, out SvgDocumentModel previewDocumentModel, out _))
+            {
+                return false;
+            }
+
+            if (!host.TryRefreshTransientPreview(previewDocumentModel))
+            {
+                return false;
+            }
+
+            host.RefreshInspector(previewDocumentModel);
+            return true;
+        }
+
+        private bool TryBuildMultiRotateCommittedSource(
+            DocumentSession currentDocument,
+            IReadOnlyList<ElementMoveTarget> moveTargets,
+            float angle,
+            Vector2 pivotWorld,
+            out string updatedSource,
+            out string error)
+        {
+            updatedSource = string.Empty;
+            error = string.Empty;
+
+            if (!TryBuildMultiRotateDocumentModel(currentDocument, moveTargets, angle, pivotWorld, out SvgDocumentModel updatedDocumentModel, out error))
+            {
+                return false;
+            }
+
+            updatedSource = updatedDocumentModel?.SourceText ?? string.Empty;
+            return !string.IsNullOrWhiteSpace(updatedSource);
+        }
+
+        private bool TryBuildMultiRotateDocumentModel(
+            DocumentSession currentDocument,
+            IReadOnlyList<ElementMoveTarget> moveTargets,
+            float angle,
+            Vector2 pivotWorld,
+            out SvgDocumentModel updatedDocumentModel,
+            out string error)
+        {
+            updatedDocumentModel = null;
+            error = string.Empty;
+
+            if (currentDocument?.DocumentModel == null || moveTargets == null || moveTargets.Count == 0)
+            {
+                error = "Rotation session is unavailable.";
+                return false;
+            }
+
+            SvgDocumentModelMutationService mutationService = new();
+            SvgDocumentModel workingDocumentModel = currentDocument.DocumentModel;
+            foreach (ElementMoveTarget moveTarget in moveTargets)
+            {
+                if (string.IsNullOrWhiteSpace(moveTarget.ElementKey))
+                {
+                    continue;
+                }
+
+                Vector2 parentPivot = ElementRotationUtility.ToParentSpacePoint(moveTarget.ParentWorldTransform, pivotWorld);
+                if (!mutationService.TryPrependElementRotation(
+                        workingDocumentModel,
+                        new RotateElementRequest(moveTarget.ElementKey, angle, parentPivot),
                         out MutationResult result))
                 {
                     error = result.Error;

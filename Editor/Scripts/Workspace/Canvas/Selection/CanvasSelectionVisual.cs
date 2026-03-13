@@ -10,7 +10,8 @@ namespace SvgEditor.Workspace.Canvas
         public SelectionKind Kind { get; set; }
         public Rect Rect { get; set; }
         public bool ShowSelectionHandles { get; set; }
-        public bool AllowSelectionHandleInteraction { get; set; } = true;
+        public bool AllowResizeHandleInteraction { get; set; } = true;
+        public bool AllowRotateHandleInteraction { get; set; } = true;
         public string SizeText { get; set; } = string.Empty;
         public bool ShowVerticalGuide { get; set; }
         public float VerticalGuideX { get; set; }
@@ -18,5 +19,6 @@ namespace SvgEditor.Workspace.Canvas
         public float HorizontalGuideY { get; set; }
         public bool HasRotationPivot { get; set; }
         public Vector2 RotationPivotViewport { get; set; }
+        public float RotationDegrees { get; set; }
     }
 }

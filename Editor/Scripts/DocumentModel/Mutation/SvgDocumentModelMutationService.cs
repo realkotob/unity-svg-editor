@@ -231,6 +231,24 @@ namespace SvgEditor.DocumentModel
                 out result);
         }
 
+        public bool TryPrependElementRotation(
+            SvgDocumentModel documentModel,
+            RotateElementRequest request,
+            out MutationResult result)
+        {
+            if (UnityEngine.Mathf.Approximately(request.Angle, 0f))
+            {
+                result = new MutationResult(documentModel, documentModel?.SourceText ?? string.Empty, string.Empty);
+                return true;
+            }
+
+            return TryApplyPrependTransformMutation(
+                documentModel,
+                request.ElementKey,
+                existingTransform => SvgMutationWriter.PrependTransform(existingTransform, TransformStringBuilder.BuildRotateAround(request.Angle, request.Pivot)),
+                out result);
+        }
+
         private bool TryApplyPrependTransformMutation(
             SvgDocumentModel documentModel,
             string elementKey,

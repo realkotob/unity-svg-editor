@@ -67,4 +67,18 @@ namespace SvgEditor.DocumentModel
         public Vector2 Scale { get; }
         public Vector2 Pivot { get; }
     }
+
+    internal readonly struct RotateElementRequest
+    {
+        public RotateElementRequest(string elementKey, float angle, Vector2 pivot)
+        {
+            ElementKey = elementKey;
+            Angle = angle;
+            Pivot = pivot;
+        }
+
+        public string ElementKey { get; }
+        public float Angle { get; }
+        public Vector2 Pivot { get; }
+    }
 }

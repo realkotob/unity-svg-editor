@@ -117,6 +117,7 @@ namespace SvgEditor.Workspace.Canvas
             if (_selectionBox != null)
             {
                 _selectionBox.style.display = DisplayStyle.None;
+                _selectionBox.style.rotate = new Rotate(new Angle(0f));
             }
 
             if (_sizeBadge != null)
@@ -137,16 +138,19 @@ namespace SvgEditor.Workspace.Canvas
             foreach (var handle in _handles.Values)
             {
                 handle.style.display = DisplayStyle.None;
+                handle.style.rotate = new Rotate(new Angle(0f));
             }
 
             foreach (var edgeZone in _edgeZones.Values)
             {
                 edgeZone.style.display = DisplayStyle.None;
+                edgeZone.style.rotate = new Rotate(new Angle(0f));
             }
 
             foreach (var rotationZone in _rotationZones)
             {
                 rotationZone.style.display = DisplayStyle.None;
+                rotationZone.style.rotate = new Rotate(new Angle(0f));
             }
         }
 
@@ -231,34 +235,38 @@ namespace SvgEditor.Workspace.Canvas
             PositionSelectionHandle(SelectionHandle.BottomLeft, selection.Rect.xMin, selection.Rect.yMax);
             SelectionChromeGeometry.PositionEdgeZones(_edgeZones, selection.Rect, selection.ShowSelectionHandles);
             SelectionChromeGeometry.PositionRotationZones(_rotationZones, selection.Rect, selection.ShowSelectionHandles);
+            ApplySelectionRotation(selection);
         }
 
         public bool TryHitTestSelectionHandle(Vector2 localPoint, out SelectionHandle handle)
         {
             handle = SelectionHandle.None;
-            if (_currentSelection == null || !_currentSelection.AllowSelectionHandleInteraction)
+            if (_currentSelection == null)
             {
                 return false;
             }
 
-            foreach (var pair in _handles)
+            if (_currentSelection.AllowResizeHandleInteraction)
             {
-                Rect handleRect = SelectionChromeGeometry.BuildHandleRect(pair.Value);
-
-                if (handleRect.Contains(localPoint))
+                foreach (var pair in _handles)
                 {
-                    handle = pair.Key;
-                    return true;
+                    Rect handleRect = SelectionChromeGeometry.BuildHandleRect(pair.Value);
+
+                    if (handleRect.Contains(localPoint))
+                    {
+                        handle = pair.Key;
+                        return true;
+                    }
                 }
-            }
 
-            foreach (var pair in _edgeZones)
-            {
-                Rect zoneRect = SelectionChromeGeometry.BuildRect(pair.Value);
-                if (zoneRect.Contains(localPoint))
+                foreach (var pair in _edgeZones)
                 {
-                    handle = pair.Key;
-                    return true;
+                    Rect zoneRect = SelectionChromeGeometry.BuildRect(pair.Value);
+                    if (zoneRect.Contains(localPoint))
+                    {
+                        handle = pair.Key;
+                        return true;
+                    }
                 }
             }
 
@@ -311,6 +319,43 @@ namespace SvgEditor.Workspace.Canvas
         private bool TryHitTestRotationZone(Vector2 localPoint, out SelectionHandle handle)
         {
             return SelectionChromeGeometry.TryHitRotationZone(_currentSelection, localPoint, out handle);
+        }
+
+        private void ApplySelectionRotation(CanvasSelectionVisual selection)
+        {
+            float rotationDegrees = selection?.RotationDegrees ?? 0f;
+            Vector2 pivotViewport = selection?.HasRotationPivot == true
+                ? selection.RotationPivotViewport
+                : selection.Rect.center;
+
+            ApplyRotation(_selectionBox, pivotViewport, rotationDegrees);
+            foreach (VisualElement handle in _handles.Values)
+            {
+                ApplyRotation(handle, pivotViewport, rotationDegrees);
+            }
+
+            foreach (VisualElement edgeZone in _edgeZones.Values)
+            {
+                ApplyRotation(edgeZone, pivotViewport, rotationDegrees);
+            }
+
+            foreach (VisualElement rotationZone in _rotationZones)
+            {
+                ApplyRotation(rotationZone, pivotViewport, rotationDegrees);
+            }
+        }
+
+        private static void ApplyRotation(VisualElement element, Vector2 pivotViewport, float rotationDegrees)
+        {
+            if (element == null)
+            {
+                return;
+            }
+
+            float left = element.resolvedStyle.left;
+            float top = element.resolvedStyle.top;
+            element.style.transformOrigin = new TransformOrigin(pivotViewport.x - left, pivotViewport.y - top);
+            element.style.rotate = new Rotate(new Angle(rotationDegrees));
         }
     }
 }

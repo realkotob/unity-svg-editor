@@ -19,6 +19,7 @@ namespace SvgEditor.Workspace.Canvas
         public IReadOnlyList<ElementMoveTarget> MoveTargets { get; private set; } = new[] { new ElementMoveTarget(string.Empty, Matrix2D.identity) };
         public Matrix2D StartParentWorldTransform { get; private set; } = Matrix2D.identity;
         public Vector2 StartRotationPivotViewport { get; private set; }
+        public Vector2 StartRotationPivotWorld { get; private set; }
         public Vector2 StartRotateVector { get; private set; }
         public float CurrentRotationAngle { get; set; }
 
@@ -40,13 +41,15 @@ namespace SvgEditor.Workspace.Canvas
             StartElementSceneRect = elementSceneRect;
             ResizeCenterAnchor = false;
             StartRotationPivotViewport = Vector2.zero;
+            StartRotationPivotWorld = Vector2.zero;
             StartRotateVector = Vector2.zero;
             CurrentRotationAngle = 0f;
         }
 
-        public void BeginRotation(Vector2 pivotViewport, Vector2 startRotateVector)
+        public void BeginRotation(Vector2 pivotViewport, Vector2 pivotWorld, Vector2 startRotateVector)
         {
             StartRotationPivotViewport = pivotViewport;
+            StartRotationPivotWorld = pivotWorld;
             StartRotateVector = startRotateVector;
             CurrentRotationAngle = 0f;
         }
@@ -70,6 +73,7 @@ namespace SvgEditor.Workspace.Canvas
             ResizeCenterAnchor = false;
             StartParentWorldTransform = Matrix2D.identity;
             StartRotationPivotViewport = Vector2.zero;
+            StartRotationPivotWorld = Vector2.zero;
             StartRotateVector = Vector2.zero;
             CurrentRotationAngle = 0f;
         }

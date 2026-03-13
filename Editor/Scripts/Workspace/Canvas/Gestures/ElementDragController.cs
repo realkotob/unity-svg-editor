@@ -26,6 +26,8 @@ namespace SvgEditor.Workspace.Canvas
         public bool DragResizeCenterAnchor => _state.ResizeCenterAnchor;
         public string DragElementKey => _state.ElementKey;
         public bool IsGroupMove => _state.MoveTargets != null && _state.MoveTargets.Count > 1;
+        public float CurrentRotationAngle => _state.CurrentRotationAngle;
+        public Vector2 DragRotationPivotViewport => _state.StartRotationPivotViewport;
 
         public ElementDragController(SceneProjector sceneProjector)
         {
@@ -62,8 +64,11 @@ namespace SvgEditor.Workspace.Canvas
             Vector2 pivotViewport = _sceneProjector.TryScenePointToViewportPoint(dragBeginRequest.PreviewSnapshot, request.RotationPivotWorld, out Vector2 resolvedPivotViewport)
                 ? resolvedPivotViewport
                 : selectionViewportRect.center;
-            _state.BeginRotation(pivotViewport, dragBeginRequest.LocalPosition - pivotViewport);
-            _rotationSession.TryBegin(dragBeginRequest.CurrentDocument, dragBeginRequest.ElementKey, request.RotationPivotParentSpace);
+            _state.BeginRotation(pivotViewport, request.RotationPivotWorld, dragBeginRequest.LocalPosition - pivotViewport);
+            if (_state.MoveTargets == null || _state.MoveTargets.Count <= 1)
+            {
+                _rotationSession.TryBegin(dragBeginRequest.CurrentDocument, dragBeginRequest.ElementKey, request.RotationPivotParentSpace);
+            }
         }
 
         public Vector2 UpdateMove(Vector2 localPosition)

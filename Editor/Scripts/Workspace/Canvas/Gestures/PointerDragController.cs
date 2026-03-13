@@ -61,6 +61,8 @@ namespace SvgEditor.Workspace.Canvas
         public Rect DragStartProjectionSceneRect => _elementDragController.DragStartProjectionSceneRect;
         public SvgPreserveAspectRatioMode DragStartPreserveAspectRatioMode => _elementDragController.DragStartPreserveAspectRatioMode;
         public bool DragResizeCenterAnchor => _elementDragController.DragResizeCenterAnchor;
+        public float CurrentRotationAngle => _elementDragController.CurrentRotationAngle;
+        public Vector2 DragRotationPivotViewport => _elementDragController.DragRotationPivotViewport;
         public DragMode DragMode => _gestureRouter.DragMode;
         public SelectionHandle ActiveHandle => _gestureRouter.ActiveHandle;
         public float Zoom => _viewportState.Zoom;
