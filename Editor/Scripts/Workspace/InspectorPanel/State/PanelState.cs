@@ -83,32 +83,32 @@ namespace SvgEditor.Workspace.InspectorPanel
 
         public AttributePatchRequest BuildPatchRequest()
         {
-            return PanelStateValueCodec.BuildPatchRequest(this);
+            return PanelStatePatchRequestBuilder.BuildPatchRequest(this);
         }
 
         public AttributePatchRequest BuildPatchRequest(PanelView.ImmediateApplyField field)
         {
-            return PanelStateValueCodec.BuildPatchRequest(this, field);
+            return PanelStatePatchRequestBuilder.BuildPatchRequest(this, field);
         }
 
         public AttributePatchRequest BuildPatchRequest(PanelView.AttributeAction action)
         {
-            return PanelStateValueCodec.BuildPatchRequest(this, action);
+            return PanelStatePatchRequestBuilder.BuildPatchRequest(this, action);
         }
 
         public string BuildTransformFromHelper()
         {
-            return PanelStateValueCodec.BuildTransformFromHelper(this);
+            return PanelStatePatchRequestBuilder.BuildTransformFromHelper(this);
         }
 
         public bool TrySyncTransformHelperFromText()
         {
-            return PanelStateValueCodec.TrySyncTransformHelperFromText(this);
+            return PanelStateAttributeSync.TrySyncTransformHelperFromText(this);
         }
 
         public void SyncFromAttributes(IReadOnlyDictionary<string, string> attributes, string tagName)
         {
-            PanelStateValueCodec.SyncFromAttributes(this, attributes, tagName);
+            PanelStateAttributeSync.SyncFromAttributes(this, attributes, tagName);
         }
     }
 }
