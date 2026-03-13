@@ -213,28 +213,16 @@ namespace SvgEditor.Workspace.InspectorPanel
                 return;
             }
 
-            if (!Host.TryGetParentWorldTransform(targetKey, out Matrix2D parentWorldTransform))
+            if (!TryBuildMultiScaleSource(new[] { targetKey }, scale, sceneRect.center, out string updatedSource, out string error))
             {
-                Host?.UpdateSourceStatus("Flip failed: parent transform is unavailable.");
+                Host?.UpdateSourceStatus(
+                    string.IsNullOrWhiteSpace(error)
+                        ? "Flip failed: transform update could not be prepared."
+                        : $"Flip failed: {error}");
                 return;
             }
 
-            _view.CaptureState(_inspectorPanelState);
-            Vector2 parentPivot = ElementRotationUtility.ToParentSpacePoint(parentWorldTransform, sceneRect.center);
-            string existingTransform = _inspectorPanelState.Transform ?? string.Empty;
-            string transform = PrependTransform(
-                existingTransform,
-                TransformStringBuilder.BuildScaleAround(scale, parentPivot));
-            _inspectorPanelState.Transform = transform;
-            _inspectorPanelState.TransformEnabled = true;
-            _view.ApplyState(_inspectorPanelState);
-            Host.TryApplyPatchRequest(
-                new AttributePatchRequest
-                {
-                    TargetKey = targetKey,
-                    Transform = transform
-                },
-                successStatus);
+            Host.ApplyUpdatedSource(updatedSource, successStatus, HistoryRecordingMode.Coalesced);
         }
 
         private void ApplyMultiAlignmentAction(PanelView.PositionAction action, IReadOnlyList<string> selectedElementKeys)
@@ -463,19 +451,5 @@ namespace SvgEditor.Workspace.InspectorPanel
             return _selectedTargetKeyAccessor?.Invoke() ?? string.Empty;
         }
 
-        private static string PrependTransform(string existingTransform, string transformSegment)
-        {
-            if (string.IsNullOrWhiteSpace(transformSegment))
-            {
-                return existingTransform ?? string.Empty;
-            }
-
-            if (string.IsNullOrWhiteSpace(existingTransform))
-            {
-                return transformSegment;
-            }
-
-            return $"{transformSegment} {existingTransform}";
-        }
     }
 }
