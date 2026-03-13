@@ -31,6 +31,18 @@ namespace SvgEditor.Shell
                    CanvasProjectionMath.TryGetCombinedSelectionSceneRect(PreviewSnapshot, selectedElementKeys, out sceneRect);
         }
 
+        public bool TryGetElementSceneRect(string elementKey, out Rect sceneRect)
+        {
+            sceneRect = default;
+            if (!TryFindElementByKey(elementKey, out PreviewElementGeometry targetElement))
+            {
+                return false;
+            }
+
+            sceneRect = targetElement.VisualBounds;
+            return true;
+        }
+
         public bool TryGetTargetSceneRect(string targetKey, out Rect sceneRect)
         {
             sceneRect = default;

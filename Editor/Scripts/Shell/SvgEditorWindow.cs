@@ -287,6 +287,12 @@ namespace SvgEditor.Shell
             return _previewGeometryLookupService.TryGetCurrentSelectionSceneRect(out sceneRect);
         }
 
+        bool IPanelHost.TryGetElementSceneRect(string elementKey, out Rect sceneRect)
+        {
+            EnsureInitialized();
+            return _previewGeometryLookupService.TryGetElementSceneRect(elementKey, out sceneRect);
+        }
+
         bool IPanelHost.TryGetRotationPivotParentSpace(string targetKey, out Vector2 parentPivot)
         {
             EnsureInitialized();

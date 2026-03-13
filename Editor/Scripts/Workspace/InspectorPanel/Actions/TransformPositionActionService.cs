@@ -229,23 +229,11 @@ namespace SvgEditor.Workspace.InspectorPanel
         {
             string error = string.Empty;
             if (Host == null ||
-                !Host.TryGetCurrentSelectionSceneRect(out Rect currentSelectionRect) ||
-                !Host.TryGetViewportSceneRect(out Rect canvasRect))
+                !Host.TryGetCurrentSelectionSceneRect(out Rect currentSelectionRect))
             {
                 Host?.UpdateSourceStatus("Alignment failed: preview bounds are unavailable.");
                 return;
             }
-
-            Vector2 sceneDelta = action switch
-            {
-                PanelView.PositionAction.AlignLeft => new Vector2(canvasRect.xMin - currentSelectionRect.xMin, 0f),
-                PanelView.PositionAction.AlignCenter => new Vector2(canvasRect.center.x - currentSelectionRect.center.x, 0f),
-                PanelView.PositionAction.AlignRight => new Vector2(canvasRect.xMax - currentSelectionRect.xMax, 0f),
-                PanelView.PositionAction.AlignTop => new Vector2(0f, canvasRect.yMin - currentSelectionRect.yMin),
-                PanelView.PositionAction.AlignMiddle => new Vector2(0f, canvasRect.center.y - currentSelectionRect.center.y),
-                PanelView.PositionAction.AlignBottom => new Vector2(0f, canvasRect.yMax - currentSelectionRect.yMax),
-                _ => Vector2.zero
-            };
 
             string successStatus = action switch
             {
@@ -258,8 +246,7 @@ namespace SvgEditor.Workspace.InspectorPanel
                 _ => "Position updated."
             };
 
-            if (sceneDelta.sqrMagnitude <= Mathf.Epsilon ||
-                !TryBuildMultiTranslationSource(selectedElementKeys, sceneDelta, out string updatedSource, out error))
+            if (!TryBuildAlignedSelectionSource(selectedElementKeys, currentSelectionRect, action, out string updatedSource, out error))
             {
                 if (!string.IsNullOrWhiteSpace(error))
                 {
@@ -354,6 +341,73 @@ namespace SvgEditor.Workspace.InspectorPanel
                 }
 
                 workingDocumentModel = result.UpdatedDocumentModel;
+            }
+
+            updatedSource = workingDocumentModel?.SourceText ?? string.Empty;
+            return !string.IsNullOrWhiteSpace(updatedSource);
+        }
+
+        private bool TryBuildAlignedSelectionSource(
+            IReadOnlyList<string> selectedElementKeys,
+            Rect selectionRect,
+            PanelView.PositionAction action,
+            out string updatedSource,
+            out string error)
+        {
+            updatedSource = string.Empty;
+            error = string.Empty;
+
+            SvgDocumentModel workingDocumentModel = Host?.CurrentDocument?.DocumentModel;
+            if (workingDocumentModel == null)
+            {
+                error = "Document model is unavailable.";
+                return false;
+            }
+
+            SvgDocumentModelMutationService mutationService = new();
+            bool appliedAny = false;
+            foreach (string elementKey in selectedElementKeys)
+            {
+                if (string.IsNullOrWhiteSpace(elementKey) ||
+                    !Host.TryGetElementSceneRect(elementKey, out Rect elementRect) ||
+                    !Host.TryGetElementParentWorldTransform(elementKey, out Matrix2D parentWorldTransform))
+                {
+                    error = $"Could not resolve preview geometry for '{elementKey}'.";
+                    return false;
+                }
+
+                Vector2 sceneDelta = action switch
+                {
+                    PanelView.PositionAction.AlignLeft => new Vector2(selectionRect.xMin - elementRect.xMin, 0f),
+                    PanelView.PositionAction.AlignCenter => new Vector2(selectionRect.center.x - elementRect.center.x, 0f),
+                    PanelView.PositionAction.AlignRight => new Vector2(selectionRect.xMax - elementRect.xMax, 0f),
+                    PanelView.PositionAction.AlignTop => new Vector2(0f, selectionRect.yMin - elementRect.yMin),
+                    PanelView.PositionAction.AlignMiddle => new Vector2(0f, selectionRect.center.y - elementRect.center.y),
+                    PanelView.PositionAction.AlignBottom => new Vector2(0f, selectionRect.yMax - elementRect.yMax),
+                    _ => Vector2.zero
+                };
+
+                if (sceneDelta.sqrMagnitude <= Mathf.Epsilon)
+                {
+                    continue;
+                }
+
+                if (!mutationService.TryPrependElementTranslation(
+                        workingDocumentModel,
+                        new TranslateElementRequest(elementKey, parentWorldTransform.Inverse().MultiplyVector(sceneDelta)),
+                        out MutationResult result))
+                {
+                    error = result.Error;
+                    return false;
+                }
+
+                workingDocumentModel = result.UpdatedDocumentModel;
+                appliedAny = true;
+            }
+
+            if (!appliedAny)
+            {
+                return false;
             }
 
             updatedSource = workingDocumentModel?.SourceText ?? string.Empty;

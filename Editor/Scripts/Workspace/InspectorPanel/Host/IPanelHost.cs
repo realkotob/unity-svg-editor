@@ -24,6 +24,7 @@ namespace SvgEditor.Workspace.InspectorPanel
             string successStatus,
             HistoryRecordingMode recordingMode = HistoryRecordingMode.Immediate);
         bool TryGetCurrentSelectionSceneRect(out Rect sceneRect);
+        bool TryGetElementSceneRect(string elementKey, out Rect sceneRect);
         bool TryGetTargetSceneRect(string targetKey, out Rect sceneRect);
         bool TryGetRotationPivotParentSpace(string targetKey, out Vector2 parentPivot);
         bool TryGetParentWorldTransform(string targetKey, out Matrix2D parentWorldTransform);
