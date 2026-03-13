@@ -2,12 +2,12 @@ using UnityEngine.UIElements;
 
 namespace SvgEditor.Workspace.InspectorPanel
 {
-    internal sealed class PanelInteractivityApplier
+    internal sealed class PanelInteractivity
     {
         private readonly PanelState _state;
         private readonly PanelView _view;
 
-        public PanelInteractivityApplier(PanelState state, PanelView view)
+        public PanelInteractivity(PanelState state, PanelView view)
         {
             _state = state;
             _view = view;

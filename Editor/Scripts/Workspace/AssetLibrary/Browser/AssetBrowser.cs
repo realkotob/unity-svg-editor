@@ -8,6 +8,7 @@ using SvgEditor.Document;
 using SvgEditor.Workspace.AssetLibrary.Grid;
 using SvgEditor.Workspace.AssetLibrary.Model;
 using SvgEditor.Workspace.AssetLibrary.Presentation;
+using SvgEditor.Shared;
 
 namespace SvgEditor.Workspace.AssetLibrary.Browser
 {
@@ -89,8 +90,7 @@ namespace SvgEditor.Workspace.AssetLibrary.Browser
 
             if (_assetLibraryRefreshButton != null)
             {
-                _assetLibraryRefreshButton.clicked -= OnRefreshButtonClicked;
-                _assetLibraryRefreshButton.clicked += OnRefreshButtonClicked;
+                CallbackBindingUtility.ToggleButtonClicked(_assetLibraryRefreshButton, OnRefreshButtonClicked, register: true);
             }
 
             _assetGridView.BindRuntime(OnAssetGridItemSelected, OnAssetGridSelectionChanged);
@@ -103,7 +103,7 @@ namespace SvgEditor.Workspace.AssetLibrary.Browser
             _assetGridView?.UnbindRuntime();
             if (_assetLibraryRefreshButton != null)
             {
-                _assetLibraryRefreshButton.clicked -= OnRefreshButtonClicked;
+                CallbackBindingUtility.ToggleButtonClicked(_assetLibraryRefreshButton, OnRefreshButtonClicked, register: false);
             }
 
             _assetLibraryFilterAccordion = null;

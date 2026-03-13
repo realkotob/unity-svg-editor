@@ -24,7 +24,7 @@ namespace SvgEditor.Workspace.Document
         private readonly DocumentLifecycleView _view;
         private readonly Func<DocumentSession> _currentDocumentAccessor;
         private readonly Func<EditorWorkspaceCoordinator> _workspaceCoordinatorAccessor;
-        private readonly EditorDeferredActionGate _disposeGate;
+        private readonly DeferredActionGate _disposeGate;
         private readonly List<PendingPreviewDisposal> _pendingDisposals = new();
 
         public DocumentPreviewService(
@@ -37,7 +37,7 @@ namespace SvgEditor.Workspace.Document
             _view = view;
             _currentDocumentAccessor = currentDocumentAccessor;
             _workspaceCoordinatorAccessor = workspaceCoordinatorAccessor;
-            _disposeGate = new EditorDeferredActionGate(FlushPendingDisposals);
+            _disposeGate = new DeferredActionGate(FlushPendingDisposals);
         }
 
         public PreviewSnapshot PreviewSnapshot { get; private set; }

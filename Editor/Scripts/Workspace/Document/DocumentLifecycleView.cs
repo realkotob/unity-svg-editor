@@ -2,6 +2,7 @@ using System;
 using Core.UI.Foundation.Tooling;
 using UnityEngine;
 using UnityEngine.UIElements;
+using SvgEditor.Shared;
 
 namespace SvgEditor.Workspace.Document
 {
@@ -85,7 +86,7 @@ namespace SvgEditor.Workspace.Document
 
             if (_saveButton != null)
             {
-                _saveButton.clicked += OnSaveClicked;
+                CallbackBindingUtility.ToggleButtonClicked(_saveButton, OnSaveClicked, register: true);
             }
         }
 
@@ -97,7 +98,7 @@ namespace SvgEditor.Workspace.Document
 
             if (_saveButton != null)
             {
-                _saveButton.clicked -= OnSaveClicked;
+                CallbackBindingUtility.ToggleButtonClicked(_saveButton, OnSaveClicked, register: false);
             }
 
             _previewImage = null;

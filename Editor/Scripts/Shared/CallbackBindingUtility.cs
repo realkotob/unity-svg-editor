@@ -3,7 +3,7 @@ using UnityEngine.UIElements;
 
 namespace SvgEditor.Shared
 {
-    internal static class EditorCallbackBindingUtility
+    internal static class CallbackBindingUtility
     {
         public static void ToggleButtonClicked(Button button, Action callback, bool register)
         {

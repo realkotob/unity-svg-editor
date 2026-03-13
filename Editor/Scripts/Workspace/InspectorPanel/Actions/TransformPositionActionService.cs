@@ -99,7 +99,7 @@ namespace SvgEditor.Workspace.InspectorPanel
             }
 
             if (!Host.TryGetTargetSceneRect(targetKey, out Rect currentRect) ||
-                !Host.TryGetCanvasViewportSceneRect(out Rect canvasRect))
+                !Host.TryGetViewportSceneRect(out Rect canvasRect))
             {
                 Host?.UpdateSourceStatus("Alignment failed: preview bounds are unavailable.");
                 return;
@@ -150,7 +150,7 @@ namespace SvgEditor.Workspace.InspectorPanel
 
             var rotationSession = new ElementRotationSession();
             _view.CaptureState(_inspectorPanelState);
-            if (!Host.TryGetTargetRotationPivotParentSpace(targetKey, out Vector2 parentPivot) ||
+            if (!Host.TryGetRotationPivotParentSpace(targetKey, out Vector2 parentPivot) ||
                 !rotationSession.TryBegin(Host.CurrentDocument, targetKey, parentPivot) ||
                 !rotationSession.TryBuildTransform(deltaDegrees, out string transform, out _))
             {
@@ -189,7 +189,7 @@ namespace SvgEditor.Workspace.InspectorPanel
                 return;
             }
 
-            if (!Host.TryGetTargetParentWorldTransform(targetKey, out Matrix2D parentWorldTransform))
+            if (!Host.TryGetParentWorldTransform(targetKey, out Matrix2D parentWorldTransform))
             {
                 Host?.UpdateSourceStatus("Flip failed: parent transform is unavailable.");
                 return;

@@ -25,9 +25,9 @@ namespace SvgEditor.Workspace.HierarchyPanel
             if (_treeView == null)
                 return;
 
-            _treeView.RegisterCallback<PointerMoveEvent>(OnHierarchyPointerMove);
-            _treeView.RegisterCallback<PointerUpEvent>(OnHierarchyPointerUp);
-            _treeView.RegisterCallback<PointerCancelEvent>(OnHierarchyPointerCancel);
+            CallbackBindingUtility.ToggleCallback<PointerMoveEvent>(_treeView, OnHierarchyPointerMove, register: true);
+            CallbackBindingUtility.ToggleCallback<PointerUpEvent>(_treeView, OnHierarchyPointerUp, register: true);
+            CallbackBindingUtility.ToggleCallback<PointerCancelEvent>(_treeView, OnHierarchyPointerCancel, register: true);
             _dropIndicatorPresenter.Bind(_treeView);
         }
 
@@ -37,9 +37,9 @@ namespace SvgEditor.Workspace.HierarchyPanel
 
             if (_treeView != null)
             {
-                _treeView.UnregisterCallback<PointerMoveEvent>(OnHierarchyPointerMove);
-                _treeView.UnregisterCallback<PointerUpEvent>(OnHierarchyPointerUp);
-                _treeView.UnregisterCallback<PointerCancelEvent>(OnHierarchyPointerCancel);
+                CallbackBindingUtility.ToggleCallback<PointerMoveEvent>(_treeView, OnHierarchyPointerMove, register: false);
+                CallbackBindingUtility.ToggleCallback<PointerUpEvent>(_treeView, OnHierarchyPointerUp, register: false);
+                CallbackBindingUtility.ToggleCallback<PointerCancelEvent>(_treeView, OnHierarchyPointerCancel, register: false);
             }
 
             _dropIndicatorPresenter.Unbind(_treeView);
@@ -52,9 +52,9 @@ namespace SvgEditor.Workspace.HierarchyPanel
             _reorderSession.CancelPendingPress();
         }
 
-        public bool TryConsumeSuppressedRowClick()
+        public bool ConsumeSuppressedRowClick()
         {
-            return _reorderSession.TryConsumeSuppressedRowClick();
+            return _reorderSession.ConsumeSuppressedRowClick();
         }
 
         public void OnHierarchyRowPointerDown(PointerDownEvent evt)
@@ -97,7 +97,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
                 return;
             }
 
-            UpdateHierarchyInsertionIndicator(evt.position, ResolveHoveredHierarchyElement(evt.position), draggedItem);
+            UpdateHierarchyInsertionIndicator(evt.position, ResolveHoveredElement(evt.position), draggedItem);
             evt.StopPropagation();
         }
 
@@ -212,7 +212,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
             return null;
         }
 
-        private VisualElement ResolveHoveredHierarchyElement(Vector2 pointerPosition)
+        private VisualElement ResolveHoveredElement(Vector2 pointerPosition)
         {
             if (_treeView?.panel == null)
             {

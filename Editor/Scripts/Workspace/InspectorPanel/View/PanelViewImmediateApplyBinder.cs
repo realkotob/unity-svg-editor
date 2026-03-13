@@ -104,7 +104,7 @@ namespace SvgEditor.Workspace.InspectorPanel
             EventCallback<ChangeEvent<Color>> callback,
             bool register)
         {
-            EditorCallbackBindingUtility.ToggleCallback(field, callback, register);
+            CallbackBindingUtility.ToggleCallback(field, callback, register);
         }
 
         private static void ToggleImmediateApplyCallback(
@@ -112,7 +112,7 @@ namespace SvgEditor.Workspace.InspectorPanel
             EventCallback<ChangeEvent<Color>> callback,
             bool register)
         {
-            EditorCallbackBindingUtility.ToggleValueChangedCallback(field, callback, register);
+            CallbackBindingUtility.ToggleValueChangedCallback(field, callback, register);
         }
 
         private static void ToggleImmediateApplyCallback(
@@ -128,7 +128,7 @@ namespace SvgEditor.Workspace.InspectorPanel
             EventCallback<ChangeEvent<string>> callback,
             bool register)
         {
-            EditorCallbackBindingUtility.ToggleCallback(field, callback, register);
+            CallbackBindingUtility.ToggleCallback(field, callback, register);
         }
 
         private static void ToggleImmediateApplyCallback(
@@ -136,7 +136,7 @@ namespace SvgEditor.Workspace.InspectorPanel
             EventCallback<ChangeEvent<string>> callback,
             bool register)
         {
-            EditorCallbackBindingUtility.ToggleValueChangedCallback(field, callback, register);
+            CallbackBindingUtility.ToggleValueChangedCallback(field, callback, register);
         }
 
         private static void ToggleValueChangedCallback(
@@ -144,7 +144,7 @@ namespace SvgEditor.Workspace.InspectorPanel
             EventCallback<ChangeEvent<float>> callback,
             bool register)
         {
-            EditorCallbackBindingUtility.ToggleValueChangedCallback(field, callback, register);
+            CallbackBindingUtility.ToggleValueChangedCallback(field, callback, register);
         }
     }
 }

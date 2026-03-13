@@ -80,7 +80,7 @@ namespace SvgEditor.Workspace.InspectorPanel
 
         private static void ToggleButtonClicked(Button button, Action callback, bool register)
         {
-            EditorCallbackBindingUtility.ToggleButtonClicked(button, callback, register);
+            CallbackBindingUtility.ToggleButtonClicked(button, callback, register);
         }
     }
 }

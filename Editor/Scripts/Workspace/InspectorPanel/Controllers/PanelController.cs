@@ -11,11 +11,11 @@ namespace SvgEditor.Workspace.InspectorPanel
     {
         private readonly PanelState _inspectorPanelState;
         private readonly PanelView _view;
-        private readonly PanelInteractivityApplier _interactivityApplier;
+        private readonly PanelInteractivity _interactivityApplier;
         private readonly TargetSyncService _targetSyncService;
-        private readonly EditorDeferredActionGate _refreshGate;
-        private readonly EditorDeferredActionGate _frameRectApplyGate;
-        private readonly EditorDeferredActionGate _transformApplyGate;
+        private readonly DeferredActionGate _refreshGate;
+        private readonly DeferredActionGate _frameRectApplyGate;
+        private readonly DeferredActionGate _transformApplyGate;
         private IPanelHost _host;
         private bool _hasPendingRefresh;
         private SvgDocumentModel _pendingDocumentModel;
@@ -32,15 +32,15 @@ namespace SvgEditor.Workspace.InspectorPanel
             System.Action<System.Action> deferredScheduler = scheduleDeferredCall ?? ScheduleDeferredCall;
             System.Action<System.Action> deferredUnscheduler = unscheduleDeferredCall ?? UnscheduleDeferredCall;
             _view = new PanelView();
-            _interactivityApplier = new PanelInteractivityApplier(inspectorPanelState, _view);
+            _interactivityApplier = new PanelInteractivity(inspectorPanelState, _view);
             _targetSyncService = new TargetSyncService(
                 inspectorPanelState,
                 _view,
                 () => _host,
                 () => UpdateInteractivity(HasInspectableDocument()));
-            _refreshGate = new EditorDeferredActionGate(ProcessPendingRefresh, deferredScheduler, deferredUnscheduler);
-            _frameRectApplyGate = new EditorDeferredActionGate(ProcessPendingFrameRectApply, deferredScheduler, deferredUnscheduler);
-            _transformApplyGate = new EditorDeferredActionGate(ProcessPendingTransformApply, deferredScheduler, deferredUnscheduler);
+            _refreshGate = new DeferredActionGate(ProcessPendingRefresh, deferredScheduler, deferredUnscheduler);
+            _frameRectApplyGate = new DeferredActionGate(ProcessPendingFrameRectApply, deferredScheduler, deferredUnscheduler);
+            _transformApplyGate = new DeferredActionGate(ProcessPendingTransformApply, deferredScheduler, deferredUnscheduler);
 
             _view.ImmediateApplyRequested += OnImmediateApplyRequested;
             _view.FrameRectChanged += OnFrameRectChanged;

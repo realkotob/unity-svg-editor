@@ -291,7 +291,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
                 return;
             }
 
-            if (hierarchyListView._interactionController?.TryConsumeSuppressedRowClick() == true)
+            if (hierarchyListView._interactionController?.ConsumeSuppressedRowClick() == true)
             {
                 evt.StopPropagation();
             }

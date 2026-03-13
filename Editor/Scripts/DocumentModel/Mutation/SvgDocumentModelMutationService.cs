@@ -60,24 +60,8 @@ namespace SvgEditor.DocumentModel
                 return false;
             }
 
-            Dictionary<string, string> attributes = SvgDocumentModelCloneUtility.CloneAttributes(targetNode.RawAttributes);
-            ApplyAttribute(attributes, SvgAttributeName.FILL, request.Fill);
-            ApplyAttribute(attributes, SvgAttributeName.STROKE, request.Stroke);
-            ApplyAttribute(attributes, SvgAttributeName.STROKE_WIDTH, request.StrokeWidth);
-            ApplyAttribute(attributes, SvgAttributeName.OPACITY, request.Opacity);
-            ApplyAttribute(attributes, SvgAttributeName.FILL_OPACITY, request.FillOpacity);
-            ApplyAttribute(attributes, SvgAttributeName.STROKE_OPACITY, request.StrokeOpacity);
-            ApplyAttribute(attributes, SvgAttributeName.STROKE_LINECAP, request.StrokeLinecap);
-            ApplyAttribute(attributes, SvgAttributeName.STROKE_LINEJOIN, request.StrokeLinejoin);
-            ApplyAttribute(attributes, SvgAttributeName.STROKE_DASHARRAY, request.StrokeDasharray);
-            ApplyAttribute(attributes, SvgAttributeName.RX, request.CornerRadiusX);
-            ApplyAttribute(attributes, SvgAttributeName.RY, request.CornerRadiusY);
-            ApplyAttribute(attributes, SvgAttributeName.TRANSFORM, request.Transform);
-            ApplyAttribute(attributes, SvgAttributeName.DISPLAY, request.Display);
-
-            targetNode.RawAttributes = attributes;
-            targetNode.References = SvgDocumentModelReferenceUtility.RebuildReferences(attributes);
-            return TrySerializeUpdatedDocumentModel(updatedDocumentModel, out updatedSourceText, out error);
+            SvgMutationWriter.ApplyAttributePatch(targetNode, request);
+            return SvgMutationWriter.TrySerialize(_serializer, updatedDocumentModel, out updatedSourceText, out error);
         }
 
         public bool TryReorderElementWithinSameParent(
@@ -208,7 +192,7 @@ namespace SvgEditor.DocumentModel
                 SvgDocumentModelMutationLookupUtility.RefreshSiblingOrder(updatedDocumentModel, targetParentNode);
             }
 
-            return TrySerializeUpdatedDocumentModel(updatedDocumentModel, out updatedSourceText, out error);
+            return SvgMutationWriter.TrySerialize(_serializer, updatedDocumentModel, out updatedSourceText, out error);
         }
 
         public bool TryPrependElementTranslation(
@@ -231,7 +215,7 @@ namespace SvgEditor.DocumentModel
             return TryApplyPrependTransformMutation(
                 documentModel,
                 elementKey,
-                existingTransform => PrependTransform(existingTransform, TransformStringBuilder.BuildTranslate(translation)),
+                existingTransform => SvgMutationWriter.PrependTransform(existingTransform, TransformStringBuilder.BuildTranslate(translation)),
                 out updatedDocumentModel,
                 out updatedSourceText,
                 out error);
@@ -259,7 +243,7 @@ namespace SvgEditor.DocumentModel
             return TryApplyPrependTransformMutation(
                 documentModel,
                 elementKey,
-                existingTransform => PrependTransform(existingTransform, TransformStringBuilder.BuildScaleAround(scale, pivot)),
+                existingTransform => SvgMutationWriter.PrependTransform(existingTransform, TransformStringBuilder.BuildScaleAround(scale, pivot)),
                 out updatedDocumentModel,
                 out updatedSourceText,
                 out error);
@@ -290,50 +274,8 @@ namespace SvgEditor.DocumentModel
                 return false;
             }
 
-            Dictionary<string, string> attributes = SvgDocumentModelCloneUtility.CloneAttributes(node.RawAttributes);
-            string existingTransform = attributes.TryGetValue(SvgAttributeName.TRANSFORM, out string transform)
-                ? transform ?? string.Empty
-                : string.Empty;
-            attributes[SvgAttributeName.TRANSFORM] = buildUpdatedTransform(existingTransform);
-            node.RawAttributes = attributes;
-            node.References = SvgDocumentModelReferenceUtility.RebuildReferences(attributes);
-            return TrySerializeUpdatedDocumentModel(updatedDocumentModel, out updatedSourceText, out error);
-        }
-
-        private bool TrySerializeUpdatedDocumentModel(
-            SvgDocumentModel updatedDocumentModel,
-            out string updatedSourceText,
-            out string error)
-        {
-            updatedSourceText = string.Empty;
-            error = string.Empty;
-
-            if (!_serializer.TrySerialize(updatedDocumentModel, out updatedSourceText, out error))
-                return false;
-
-            updatedDocumentModel.SourceText = updatedSourceText;
-            return true;
-        }
-
-        private static string PrependTransform(string existingTransform, string transformSegment)
-        {
-            return string.IsNullOrWhiteSpace(existingTransform)
-                ? transformSegment
-                : $"{transformSegment} {existingTransform}";
-        }
-
-        private static void ApplyAttribute(Dictionary<string, string> attributes, string attributeName, string value)
-        {
-            if (value == null)
-                return;
-
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                attributes.Remove(attributeName);
-                return;
-            }
-
-            attributes[attributeName] = value.Trim();
+            SvgMutationWriter.ApplyPrependTransform(node, buildUpdatedTransform);
+            return SvgMutationWriter.TrySerialize(_serializer, updatedDocumentModel, out updatedSourceText, out error);
         }
     }
 }

@@ -8,7 +8,7 @@ using SvgEditor.Workspace.AssetLibrary.Presentation;
 
 namespace SvgEditor.Workspace.AssetLibrary.Grid
 {
-    internal sealed class AssetGridPreviewRenderer
+    internal sealed class AssetGridPreviewRenderer : PreviewCollectionRenderer<VirtualizedGridView, GridViewItem>
     {
         private static readonly string[] PREVIEW_RESOURCE_PATHS =
         {
@@ -17,50 +17,18 @@ namespace SvgEditor.Workspace.AssetLibrary.Grid
             SvgEditorIconClass.RESOURCE_CIRCLE
         };
 
-        private List<GridViewItem> _previewGridItems;
-
-        public void ApplyPreview(
-            VisualElement owner,
-            VirtualizedGridView gridView,
-            List<GridViewItem> gridItems,
-            string previewEnabledClassName)
+        protected override void ApplyPreviewItems(VirtualizedGridView gridView, List<GridViewItem> gridItems)
         {
-            if (owner == null || gridView == null || gridItems == null)
-            {
-                return;
-            }
-
-            gridItems.Clear();
-            gridItems.AddRange(GetPreviewGridItems());
             gridView.EmptyText = "No SVG assets found";
             gridView.SetItems(gridItems);
-            owner.EnableClass(previewEnabledClassName, true);
         }
 
-        public void ClearPreview(
-            VisualElement owner,
-            VirtualizedGridView gridView,
-            List<GridViewItem> gridItems,
-            string previewEnabledClassName)
+        protected override void ClearPreviewItems(VirtualizedGridView gridView, List<GridViewItem> gridItems)
         {
-            if (owner == null || gridView == null || gridItems == null)
-            {
-                return;
-            }
-
-            gridItems.Clear();
             gridView.SetItems(gridItems);
-            owner.EnableClass(previewEnabledClassName, false);
-            _previewGridItems = null;
         }
 
-        private IReadOnlyList<GridViewItem> GetPreviewGridItems()
-        {
-            _previewGridItems ??= CreatePreviewGridItems();
-            return _previewGridItems;
-        }
-
-        private static List<GridViewItem> CreatePreviewGridItems()
+        protected override List<GridViewItem> CreatePreviewItems()
         {
             List<GridViewItem> previewGridItems = new();
             foreach (string resourcePath in PREVIEW_RESOURCE_PATHS)

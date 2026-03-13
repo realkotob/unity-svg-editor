@@ -5,6 +5,7 @@ using UnityEngine.UIElements;
 
 using SvgEditor;
 using SvgEditor.Preview;
+using SvgEditor.Shared;
 
 namespace SvgEditor.Workspace.Canvas
 {
@@ -128,12 +129,12 @@ namespace SvgEditor.Workspace.Canvas
                 : DisplayStyle.None;
         }
 
-        private void SelectionHandleDocumentResetButtonClicked()
+        private void OnDocumentResetClicked()
         {
             DocumentResetRequested?.Invoke();
         }
 
-        private void SelectionHandleResetButtonClicked()
+        private void OnResetClicked()
         {
             ResetRequested?.Invoke();
         }
@@ -150,15 +151,13 @@ namespace SvgEditor.Workspace.Canvas
             if (_documentResetButton != null)
             {
                 _documentResetButton.tooltip = "Discard unsaved edits and reload the SVG";
-                _documentResetButton.clicked -= SelectionHandleDocumentResetButtonClicked;
-                _documentResetButton.clicked += SelectionHandleDocumentResetButtonClicked;
+                CallbackBindingUtility.ToggleButtonClicked(_documentResetButton, OnDocumentResetClicked, register: true);
             }
 
             if (_zoomResetButton != null)
             {
                 _zoomResetButton.tooltip = "Reset zoom to actual size";
-                _zoomResetButton.clicked -= SelectionHandleResetButtonClicked;
-                _zoomResetButton.clicked += SelectionHandleResetButtonClicked;
+                CallbackBindingUtility.ToggleButtonClicked(_zoomResetButton, OnResetClicked, register: true);
             }
         }
         #endregion Internal Methods

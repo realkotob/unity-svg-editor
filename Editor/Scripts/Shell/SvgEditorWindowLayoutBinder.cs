@@ -103,7 +103,7 @@ namespace SvgEditor.Shell
         {
             ApplyToolbarIcons();
             ApplyPositionIcons();
-            ApplyInspectorAttributeIcons();
+            ApplyAttributeIcons();
 
             _assetLibraryBrowser.Bind(
                 _root,
@@ -112,7 +112,7 @@ namespace SvgEditor.Shell
                 _documentLifecycleController.CanSwitchDocument);
 
             _documentLifecycleController.Bind(_root);
-            BuildSharedInspectorSections();
+            BuildInspectorSections();
 
             CanvasStageView canvasStageView = _root.Q<CanvasStageView>(ElementName.CANVAS_STAGE_VIEW);
             if (canvasStageView != null)
@@ -125,7 +125,7 @@ namespace SvgEditor.Shell
             _inspectorPanelController.Bind(_root, PanelHost);
         }
 
-        private void BuildSharedInspectorSections()
+        private void BuildInspectorSections()
         {
             ReplaceInspectorSection("structure-panel", "Selection", accent: true);
             ReplaceInspectorSection("patch-panel", "Appearance", accent: false);
@@ -169,7 +169,7 @@ namespace SvgEditor.Shell
             EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.POSITION_FLIP_VERTICAL, IconClass.FLIP_VERTICAL);
         }
 
-        private void ApplyInspectorAttributeIcons()
+        private void ApplyAttributeIcons()
         {
             EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.FILL_ADD_BUTTON, IconClass.PLUS);
             EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.FILL_REMOVE_BUTTON, IconClass.MINUS);

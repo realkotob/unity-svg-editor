@@ -6,13 +6,13 @@ namespace SvgEditor.Shared
     /// <summary>
     /// Small reusable gate for coalescing one editor deferred callback.
     /// </summary>
-    internal sealed class EditorDeferredActionGate
+    internal sealed class DeferredActionGate
     {
         private readonly Action _callback;
         private readonly Action<Action> _schedule;
         private readonly Action<Action> _unschedule;
 
-        public EditorDeferredActionGate(
+        public DeferredActionGate(
             Action callback,
             Action<Action> schedule = null,
             Action<Action> unschedule = null)

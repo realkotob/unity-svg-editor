@@ -28,7 +28,7 @@ namespace SvgEditor.Shell
             return true;
         }
 
-        public bool TryGetTargetRotationPivotParentSpace(string targetKey, out Vector2 parentPivot)
+        public bool TryGetRotationPivotParentSpace(string targetKey, out Vector2 parentPivot)
         {
             parentPivot = default;
             if (!TryFindTargetElement(targetKey, out PreviewElementGeometry targetElement))
@@ -40,7 +40,7 @@ namespace SvgEditor.Shell
             return true;
         }
 
-        public bool TryGetTargetParentWorldTransform(string targetKey, out Matrix2D parentWorldTransform)
+        public bool TryGetParentWorldTransform(string targetKey, out Matrix2D parentWorldTransform)
         {
             parentWorldTransform = Matrix2D.identity;
             if (!TryFindTargetElement(targetKey, out PreviewElementGeometry targetElement))
@@ -52,7 +52,7 @@ namespace SvgEditor.Shell
             return true;
         }
 
-        public bool TryGetCanvasViewportSceneRect(out Rect sceneRect)
+        public bool TryGetViewportSceneRect(out Rect sceneRect)
         {
             sceneRect = PreviewSnapshot?.CanvasViewportRect ?? default;
             return sceneRect.width > 0f || sceneRect.height > 0f;

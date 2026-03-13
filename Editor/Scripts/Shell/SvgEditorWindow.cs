@@ -266,22 +266,22 @@ namespace SvgEditor.Shell
             return _previewGeometryLookupService.TryGetTargetSceneRect(targetKey, out sceneRect);
         }
 
-        bool IPanelHost.TryGetTargetRotationPivotParentSpace(string targetKey, out Vector2 parentPivot)
+        bool IPanelHost.TryGetRotationPivotParentSpace(string targetKey, out Vector2 parentPivot)
         {
             EnsureInitialized();
-            return _previewGeometryLookupService.TryGetTargetRotationPivotParentSpace(targetKey, out parentPivot);
+            return _previewGeometryLookupService.TryGetRotationPivotParentSpace(targetKey, out parentPivot);
         }
 
-        bool IPanelHost.TryGetTargetParentWorldTransform(string targetKey, out Matrix2D parentWorldTransform)
+        bool IPanelHost.TryGetParentWorldTransform(string targetKey, out Matrix2D parentWorldTransform)
         {
             EnsureInitialized();
-            return _previewGeometryLookupService.TryGetTargetParentWorldTransform(targetKey, out parentWorldTransform);
+            return _previewGeometryLookupService.TryGetParentWorldTransform(targetKey, out parentWorldTransform);
         }
 
-        bool IPanelHost.TryGetCanvasViewportSceneRect(out Rect sceneRect)
+        bool IPanelHost.TryGetViewportSceneRect(out Rect sceneRect)
         {
             EnsureInitialized();
-            return _previewGeometryLookupService.TryGetCanvasViewportSceneRect(out sceneRect);
+            return _previewGeometryLookupService.TryGetViewportSceneRect(out sceneRect);
         }
 
         void IPanelHost.SyncSelectionFromInspectorTarget(string targetKey)

@@ -4,7 +4,7 @@ using SvgEditor.Document;
 
 namespace SvgEditor.Workspace.InspectorPanel
 {
-    internal static class PanelStatePatchRequestBuilder
+    internal static class PanelPatchBuilder
     {
         public static AttributePatchRequest BuildPatchRequest(PanelState state)
         {

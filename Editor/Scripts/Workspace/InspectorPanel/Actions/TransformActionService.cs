@@ -60,7 +60,7 @@ namespace SvgEditor.Workspace.InspectorPanel
                 return;
             }
 
-            if (!Host.TryGetTargetRotationPivotParentSpace(targetKey, out _rotationDragParentPivot) ||
+            if (!Host.TryGetRotationPivotParentSpace(targetKey, out _rotationDragParentPivot) ||
                 !_rotationSession.TryBegin(Host.CurrentDocument, targetKey, _rotationDragParentPivot))
             {
                 _rotationSession.End();
@@ -140,7 +140,7 @@ namespace SvgEditor.Workspace.InspectorPanel
                                   string.Equals(_rotationDragTargetKey, targetKey, StringComparison.Ordinal);
             if (!useDragSession)
             {
-                if (!Host.TryGetTargetRotationPivotParentSpace(targetKey, out _rotationDragParentPivot))
+                if (!Host.TryGetRotationPivotParentSpace(targetKey, out _rotationDragParentPivot))
                 {
                     Host?.UpdateSourceStatus("Rotation failed: stable pivot is unavailable.");
                     return;

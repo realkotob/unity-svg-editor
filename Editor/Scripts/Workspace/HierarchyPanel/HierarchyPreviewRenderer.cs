@@ -3,29 +3,24 @@ using Core.UI.Foundation;
 using UnityEngine.UIElements;
 using SvgEditor.Document;
 using SvgEditor.Document.Structure.Hierarchy;
+using SvgEditor.Shared;
 
 namespace SvgEditor.Workspace.HierarchyPanel
 {
-    internal sealed class HierarchyPreviewRenderer
+    internal sealed class HierarchyPreviewRenderer : PreviewCollectionRenderer<TreeView, TreeViewItemData<HierarchyNode>>
     {
-        private List<TreeViewItemData<HierarchyNode>> _previewHierarchyItems;
-
-        public void ApplyPreview(
-            VisualElement owner,
-            TreeView hierarchyTreeView,
-            List<TreeViewItemData<HierarchyNode>> hierarchyItems,
-            string previewEnabledClassName)
+        protected override void ApplyPreviewItems(TreeView hierarchyTreeView, List<TreeViewItemData<HierarchyNode>> hierarchyItems)
         {
-            if (owner == null || hierarchyTreeView == null || hierarchyItems == null)
-            {
-                return;
-            }
-
-            hierarchyItems.Clear();
-            hierarchyItems.AddRange(GetPreviewHierarchyItems());
             hierarchyTreeView.SetRootItems<HierarchyNode>(hierarchyItems);
-            owner.EnableClass(previewEnabledClassName, true);
+        }
 
+        protected override void ClearPreviewItems(TreeView hierarchyTreeView, List<TreeViewItemData<HierarchyNode>> hierarchyItems)
+        {
+            hierarchyTreeView.SetRootItems<HierarchyNode>(hierarchyItems);
+        }
+
+        protected override void AfterApplyPreview(TreeView hierarchyTreeView, List<TreeViewItemData<HierarchyNode>> hierarchyItems)
+        {
             foreach (TreeViewItemData<HierarchyNode> hierarchyItem in hierarchyItems)
             {
                 ExpandHierarchyItemRecursive(hierarchyTreeView, hierarchyItem);
@@ -34,45 +29,12 @@ namespace SvgEditor.Workspace.HierarchyPanel
             hierarchyTreeView.Rebuild();
         }
 
-        public void ClearPreview(
-            VisualElement owner,
-            TreeView hierarchyTreeView,
-            List<TreeViewItemData<HierarchyNode>> hierarchyItems,
-            string previewEnabledClassName)
+        protected override void AfterClearPreview(TreeView hierarchyTreeView, List<TreeViewItemData<HierarchyNode>> hierarchyItems)
         {
-            if (owner == null || hierarchyTreeView == null || hierarchyItems == null)
-            {
-                return;
-            }
-
-            hierarchyItems.Clear();
-            hierarchyTreeView.SetRootItems<HierarchyNode>(hierarchyItems);
-            owner.EnableClass(previewEnabledClassName, false);
             hierarchyTreeView.Rebuild();
-            _previewHierarchyItems = null;
         }
 
-        private IReadOnlyList<TreeViewItemData<HierarchyNode>> GetPreviewHierarchyItems()
-        {
-            _previewHierarchyItems ??= CreatePreviewHierarchyItems();
-            return _previewHierarchyItems;
-        }
-
-        private static void ExpandHierarchyItemRecursive(TreeView hierarchyTreeView, TreeViewItemData<HierarchyNode> hierarchyItem)
-        {
-            if (!hierarchyItem.hasChildren)
-            {
-                return;
-            }
-
-            hierarchyTreeView.ExpandItem(hierarchyItem.id, false);
-            foreach (TreeViewItemData<HierarchyNode> childItem in hierarchyItem.children)
-            {
-                ExpandHierarchyItemRecursive(hierarchyTreeView, childItem);
-            }
-        }
-
-        private static List<TreeViewItemData<HierarchyNode>> CreatePreviewHierarchyItems()
+        protected override List<TreeViewItemData<HierarchyNode>> CreatePreviewItems()
         {
             HierarchyNode rootNode = CreatePreviewHierarchyNode("preview-svg", "landing-hero", "svg", 0);
             HierarchyNode heroLayerNode = CreatePreviewHierarchyNode("preview-hero-layer", "hero-layer", "g", 1, rootNode.Key, "hero-layer");
@@ -105,6 +67,20 @@ namespace SvgEditor.Workspace.HierarchyPanel
                             })
                     })
             };
+        }
+
+        private static void ExpandHierarchyItemRecursive(TreeView hierarchyTreeView, TreeViewItemData<HierarchyNode> hierarchyItem)
+        {
+            if (!hierarchyItem.hasChildren)
+            {
+                return;
+            }
+
+            hierarchyTreeView.ExpandItem(hierarchyItem.id, false);
+            foreach (TreeViewItemData<HierarchyNode> childItem in hierarchyItem.children)
+            {
+                ExpandHierarchyItemRecursive(hierarchyTreeView, childItem);
+            }
         }
 
         private static HierarchyNode CreatePreviewHierarchyNode(

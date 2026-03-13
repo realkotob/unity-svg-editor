@@ -9,7 +9,7 @@ using SvgEditor.Shared;
 
 namespace SvgEditor.Workspace.InspectorPanel
 {
-    internal static class PanelStateAttributeSync
+    internal static class PanelAttributeSync
     {
         private const float MissingStrokeWidth = 0f;
         private const float MissingDashLength = 0f;

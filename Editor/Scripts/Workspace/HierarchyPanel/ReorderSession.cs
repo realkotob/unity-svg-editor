@@ -34,7 +34,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
             _dragSession.Reset();
         }
 
-        public bool TryConsumeSuppressedRowClick()
+        public bool ConsumeSuppressedRowClick()
         {
             if (!_shouldSuppressHierarchyRowClick)
             {
