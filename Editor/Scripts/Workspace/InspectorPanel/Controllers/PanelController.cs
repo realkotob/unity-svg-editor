@@ -11,6 +11,7 @@ namespace SvgEditor.Workspace.InspectorPanel
     {
         private readonly PanelState _inspectorPanelState;
         private readonly PanelView _view;
+        private readonly PanelInteractivityApplier _interactivityApplier;
         private readonly TargetSyncService _targetSyncService;
         private readonly EditorDeferredActionGate _refreshGate;
         private readonly EditorDeferredActionGate _frameRectApplyGate;
@@ -31,6 +32,7 @@ namespace SvgEditor.Workspace.InspectorPanel
             System.Action<System.Action> deferredScheduler = scheduleDeferredCall ?? ScheduleDeferredCall;
             System.Action<System.Action> deferredUnscheduler = unscheduleDeferredCall ?? UnscheduleDeferredCall;
             _view = new PanelView();
+            _interactivityApplier = new PanelInteractivityApplier(inspectorPanelState, _view);
             _targetSyncService = new TargetSyncService(
                 inspectorPanelState,
                 _view,
@@ -126,37 +128,7 @@ namespace SvgEditor.Workspace.InspectorPanel
 
         public void UpdateInteractivity(bool hasDocument)
         {
-            SetEnabledIfNotNull(_view.FillAddControl, hasDocument);
-            SetEnabledIfNotNull(_view.FillRemoveControl, hasDocument);
-            SetEnabledIfNotNull(_view.FillColorControl, hasDocument && _inspectorPanelState.FillEnabled);
-            SetEnabledIfNotNull(_view.StrokeAddControl, hasDocument);
-            SetEnabledIfNotNull(_view.StrokeRemoveControl, hasDocument);
-            SetEnabledIfNotNull(_view.StrokeColorControl, hasDocument && _inspectorPanelState.StrokeEnabled);
-            SetEnabledIfNotNull(_view.StrokeWidthControl, hasDocument && _inspectorPanelState.StrokeEnabled);
-            SetEnabledIfNotNull(_view.OpacityControl, hasDocument);
-            SetEnabledIfNotNull(_view.CornerRadiusControl, hasDocument && _inspectorPanelState.CornerRadiusEnabled);
-            SetEnabledIfNotNull(_view.DashLengthControl, hasDocument && _inspectorPanelState.StrokeEnabled);
-            SetEnabledIfNotNull(_view.DashGapControl, hasDocument && _inspectorPanelState.StrokeEnabled);
-            SetEnabledIfNotNull(_view.FrameXControl, hasDocument);
-            SetEnabledIfNotNull(_view.FrameYControl, hasDocument);
-            SetEnabledIfNotNull(_view.FrameWidthControl, hasDocument);
-            SetEnabledIfNotNull(_view.FrameHeightControl, hasDocument);
-            SetEnabledIfNotNull(_view.LinecapControl, hasDocument && _inspectorPanelState.StrokeEnabled);
-            SetEnabledIfNotNull(_view.LinejoinControl, hasDocument && _inspectorPanelState.StrokeEnabled);
-            SetEnabledIfNotNull(_view.TranslateXControl, hasDocument);
-            SetEnabledIfNotNull(_view.TranslateYControl, hasDocument);
-            SetEnabledIfNotNull(_view.RotateControl, hasDocument);
-            SetEnabledIfNotNull(_view.ScaleXControl, hasDocument);
-            SetEnabledIfNotNull(_view.ScaleYControl, hasDocument);
-            SetEnabledIfNotNull(_view.PositionAlignLeftControl, hasDocument);
-            SetEnabledIfNotNull(_view.PositionAlignCenterControl, hasDocument);
-            SetEnabledIfNotNull(_view.PositionAlignRightControl, hasDocument);
-            SetEnabledIfNotNull(_view.PositionAlignTopControl, hasDocument);
-            SetEnabledIfNotNull(_view.PositionAlignMiddleControl, hasDocument);
-            SetEnabledIfNotNull(_view.PositionAlignBottomControl, hasDocument);
-            SetEnabledIfNotNull(_view.PositionRotateClockwise90Control, hasDocument);
-            SetEnabledIfNotNull(_view.PositionFlipHorizontalControl, hasDocument);
-            SetEnabledIfNotNull(_view.PositionFlipVerticalControl, hasDocument);
+            _interactivityApplier.Apply(hasDocument);
         }
 
         private void OnImmediateApplyRequested(PanelView.ImmediateApplyField field) => _targetSyncService.ApplyImmediatePatch(field);
@@ -176,12 +148,6 @@ namespace SvgEditor.Workspace.InspectorPanel
         private void OnPositionActionRequested(PanelView.PositionAction action) => _targetSyncService.ApplyPositionAction(action);
 
         private void OnAttributeActionRequested(PanelView.AttributeAction action) => _targetSyncService.ApplyAttributeAction(action);
-
-        private static void SetEnabledIfNotNull(VisualElement element, bool enabled)
-        {
-            if (element != null)
-                element.SetEnabled(enabled);
-        }
 
         private void ProcessPendingRefresh()
         {
