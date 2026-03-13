@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using Unity.VectorGraphics;
 using UnityEngine;
+using SvgEditor.Document.Structure.Lookup;
+using SvgEditor.Shared;
 
 namespace SvgEditor.Document
 {
@@ -10,7 +12,7 @@ namespace SvgEditor.Document
     {
         public static Matrix2D Parse(IReadOnlyDictionary<string, string> attributes)
         {
-            if (!TryGetAttribute(attributes, "transform", out var transformText) ||
+            if (!SvgAttributeUtility.TryGetAttribute(attributes, SvgAttributeName.TRANSFORM, out var transformText) ||
                 string.IsNullOrWhiteSpace(transformText))
             {
                 return Matrix2D.identity;
@@ -158,14 +160,6 @@ namespace SvgEditor.Document
             return aroundPivot
                 ? Matrix2D.Translate(pivot) * rotation * Matrix2D.Translate(-pivot)
                 : rotation;
-        }
-
-        private static bool TryGetAttribute(IReadOnlyDictionary<string, string> attributes, string name, out string value)
-        {
-            value = string.Empty;
-            return attributes != null &&
-                   attributes.TryGetValue(name, out value) &&
-                   !string.IsNullOrWhiteSpace(value);
         }
     }
 }

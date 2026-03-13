@@ -7,6 +7,7 @@ using SvgEditor.Preview.Build;
 using SvgEditor.Workspace.Coordination;
 using SvgEditor.DocumentModel;
 using SvgEditor.Document;
+using SvgEditor.Shared;
 
 namespace SvgEditor.Workspace.Document
 {
@@ -23,8 +24,8 @@ namespace SvgEditor.Workspace.Document
         private readonly DocumentLifecycleView _view;
         private readonly Func<DocumentSession> _currentDocumentAccessor;
         private readonly Func<EditorWorkspaceCoordinator> _workspaceCoordinatorAccessor;
+        private readonly EditorDeferredActionGate _disposeGate;
         private readonly List<PendingPreviewDisposal> _pendingDisposals = new();
-        private bool _isDisposeScheduled;
 
         public DocumentPreviewService(
             SnapshotBuilder previewSnapshotBuilder,
@@ -36,6 +37,7 @@ namespace SvgEditor.Workspace.Document
             _view = view;
             _currentDocumentAccessor = currentDocumentAccessor;
             _workspaceCoordinatorAccessor = workspaceCoordinatorAccessor;
+            _disposeGate = new EditorDeferredActionGate(FlushPendingDisposals);
         }
 
         public PreviewSnapshot PreviewSnapshot { get; private set; }
@@ -183,20 +185,12 @@ namespace SvgEditor.Workspace.Document
 
         private void SchedulePendingDisposals()
         {
-            if (_isDisposeScheduled)
-                return;
-
-            _isDisposeScheduled = true;
-            EditorApplication.delayCall += FlushPendingDisposals;
+            _disposeGate.Schedule();
         }
 
         private void FlushPendingDisposals()
         {
-            if (_isDisposeScheduled)
-            {
-                _isDisposeScheduled = false;
-                EditorApplication.delayCall -= FlushPendingDisposals;
-            }
+            _disposeGate.Cancel();
 
             for (int index = _pendingDisposals.Count - 1; index >= 0; index--)
             {

@@ -46,6 +46,11 @@ namespace SvgEditor.Document.Structure.Lookup
             return ColorUtility.TryParseHtmlString(normalized, out color);
         }
 
+        public static bool IsDisabledPaintValue(string text)
+        {
+            return string.Equals(text?.Trim(), "none", StringComparison.OrdinalIgnoreCase);
+        }
+
         public static bool TryGetOpacity(IReadOnlyDictionary<string, string> attributes, out float opacity)
         {
             opacity = 1f;

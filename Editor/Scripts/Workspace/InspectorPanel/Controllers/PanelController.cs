@@ -3,6 +3,7 @@ using UnityEditor;
 using SvgEditor.DocumentModel;
 
 using SvgEditor;
+using SvgEditor.Shared;
 
 namespace SvgEditor.Workspace.InspectorPanel
 {
@@ -11,15 +12,13 @@ namespace SvgEditor.Workspace.InspectorPanel
         private readonly PanelState _inspectorPanelState;
         private readonly PanelView _view;
         private readonly TargetSyncService _targetSyncService;
-        private readonly System.Action<System.Action> _scheduleDeferredCall;
-        private readonly System.Action<System.Action> _unscheduleDeferredCall;
+        private readonly EditorDeferredActionGate _refreshGate;
+        private readonly EditorDeferredActionGate _frameRectApplyGate;
+        private readonly EditorDeferredActionGate _transformApplyGate;
         private IPanelHost _host;
-        private bool _isRefreshScheduled;
         private bool _hasPendingRefresh;
         private SvgDocumentModel _pendingDocumentModel;
-        private bool _isFrameRectApplyScheduled;
         private bool _hasPendingFrameRectApply;
-        private bool _isTransformApplyScheduled;
         private bool _hasPendingTransformApply;
         private PanelView.TransformHelperChange _pendingTransformHelperChange;
 
@@ -29,14 +28,17 @@ namespace SvgEditor.Workspace.InspectorPanel
             System.Action<System.Action> unscheduleDeferredCall = null)
         {
             _inspectorPanelState = inspectorPanelState;
-            _scheduleDeferredCall = scheduleDeferredCall ?? ScheduleDeferredCall;
-            _unscheduleDeferredCall = unscheduleDeferredCall ?? UnscheduleDeferredCall;
+            System.Action<System.Action> deferredScheduler = scheduleDeferredCall ?? ScheduleDeferredCall;
+            System.Action<System.Action> deferredUnscheduler = unscheduleDeferredCall ?? UnscheduleDeferredCall;
             _view = new PanelView();
             _targetSyncService = new TargetSyncService(
                 inspectorPanelState,
                 _view,
                 () => _host,
                 () => UpdateInteractivity(HasInspectableDocument()));
+            _refreshGate = new EditorDeferredActionGate(ProcessPendingRefresh, deferredScheduler, deferredUnscheduler);
+            _frameRectApplyGate = new EditorDeferredActionGate(ProcessPendingFrameRectApply, deferredScheduler, deferredUnscheduler);
+            _transformApplyGate = new EditorDeferredActionGate(ProcessPendingTransformApply, deferredScheduler, deferredUnscheduler);
 
             _view.ImmediateApplyRequested += OnImmediateApplyRequested;
             _view.FrameRectChanged += OnFrameRectChanged;
@@ -107,13 +109,7 @@ namespace SvgEditor.Workspace.InspectorPanel
 
             _pendingDocumentModel = null;
             _hasPendingRefresh = true;
-            if (_isRefreshScheduled)
-            {
-                return;
-            }
-
-            _isRefreshScheduled = true;
-            _scheduleDeferredCall(ProcessPendingRefresh);
+            _refreshGate.Schedule();
         }
 
         public bool TrySelectTargetByKey(string targetKey, out string label) => _targetSyncService.TrySelectTargetByKey(targetKey, out label);
@@ -189,8 +185,7 @@ namespace SvgEditor.Workspace.InspectorPanel
 
         private void ProcessPendingRefresh()
         {
-            _isRefreshScheduled = false;
-            _unscheduleDeferredCall(ProcessPendingRefresh);
+            _refreshGate.Cancel();
 
             if (!_hasPendingRefresh)
             {
@@ -213,13 +208,7 @@ namespace SvgEditor.Workspace.InspectorPanel
         {
             _pendingDocumentModel = null;
             _hasPendingRefresh = false;
-            if (!_isRefreshScheduled)
-            {
-                return;
-            }
-
-            _isRefreshScheduled = false;
-            _unscheduleDeferredCall(ProcessPendingRefresh);
+            _refreshGate.Cancel();
         }
 
         private void QueueFrameRectApply()
@@ -230,19 +219,12 @@ namespace SvgEditor.Workspace.InspectorPanel
             }
 
             _hasPendingFrameRectApply = true;
-            if (_isFrameRectApplyScheduled)
-            {
-                return;
-            }
-
-            _isFrameRectApplyScheduled = true;
-            _scheduleDeferredCall(ProcessPendingFrameRectApply);
+            _frameRectApplyGate.Schedule();
         }
 
         private void ProcessPendingFrameRectApply()
         {
-            _isFrameRectApplyScheduled = false;
-            _unscheduleDeferredCall(ProcessPendingFrameRectApply);
+            _frameRectApplyGate.Cancel();
 
             if (!_hasPendingFrameRectApply)
             {
@@ -256,13 +238,7 @@ namespace SvgEditor.Workspace.InspectorPanel
         private void ClearPendingFrameRectApply()
         {
             _hasPendingFrameRectApply = false;
-            if (!_isFrameRectApplyScheduled)
-            {
-                return;
-            }
-
-            _isFrameRectApplyScheduled = false;
-            _unscheduleDeferredCall(ProcessPendingFrameRectApply);
+            _frameRectApplyGate.Cancel();
         }
 
         private void QueueTransformApply()
@@ -273,19 +249,12 @@ namespace SvgEditor.Workspace.InspectorPanel
             }
 
             _hasPendingTransformApply = true;
-            if (_isTransformApplyScheduled)
-            {
-                return;
-            }
-
-            _isTransformApplyScheduled = true;
-            _scheduleDeferredCall(ProcessPendingTransformApply);
+            _transformApplyGate.Schedule();
         }
 
         private void ProcessPendingTransformApply()
         {
-            _isTransformApplyScheduled = false;
-            _unscheduleDeferredCall(ProcessPendingTransformApply);
+            _transformApplyGate.Cancel();
 
             if (!_hasPendingTransformApply)
             {
@@ -299,13 +268,7 @@ namespace SvgEditor.Workspace.InspectorPanel
         private void ClearPendingTransformApply()
         {
             _hasPendingTransformApply = false;
-            if (!_isTransformApplyScheduled)
-            {
-                return;
-            }
-
-            _isTransformApplyScheduled = false;
-            _unscheduleDeferredCall(ProcessPendingTransformApply);
+            _transformApplyGate.Cancel();
         }
     }
 }

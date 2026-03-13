@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using SvgEditor.Document.Structure.Lookup;
 using SvgEditor.DocumentModel;
 using SvgEditor.Shared;
 using SvgEditor.Document;
@@ -166,7 +167,7 @@ namespace SvgEditor.Workspace.InspectorPanel
             SvgNodeModel current = node;
             while (current != null)
             {
-                if (TryGetAttribute(current.RawAttributes, attributeName, out value) &&
+                if (SvgAttributeUtility.TryGetAttribute(current.RawAttributes, attributeName, out value) &&
                     !string.Equals(value, "inherit", StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
@@ -181,17 +182,6 @@ namespace SvgEditor.Workspace.InspectorPanel
 
             value = string.Empty;
             return false;
-        }
-
-        private static bool TryGetAttribute(
-            IReadOnlyDictionary<string, string> attributes,
-            string attributeName,
-            out string value)
-        {
-            value = string.Empty;
-            return attributes != null &&
-                   attributes.TryGetValue(attributeName, out value) &&
-                   !string.IsNullOrWhiteSpace(value);
         }
     }
 }

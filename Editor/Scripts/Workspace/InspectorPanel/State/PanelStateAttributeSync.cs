@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using UnityEngine;
 using SvgEditor.Document;
+using SvgEditor.Document.Structure.Lookup;
 using SvgEditor.Shared;
 
 namespace SvgEditor.Workspace.InspectorPanel
@@ -39,29 +40,31 @@ namespace SvgEditor.Workspace.InspectorPanel
             state.StrokeLinecap = string.Empty;
             state.StrokeLinejoin = string.Empty;
 
-            state.FillEnabled = TryGetNonEmpty(attributes, SvgAttributeName.FILL, out string fillRaw) && !IsDisabledPaintValue(fillRaw);
-            if (state.FillEnabled && ColorUtility.TryParseHtmlString(fillRaw.Trim(), out Color fillColor))
+            state.FillEnabled = SvgAttributeUtility.TryGetAttribute(attributes, SvgAttributeName.FILL, out string fillRaw) &&
+                                !SvgAttributeUtility.IsDisabledPaintValue(fillRaw);
+            if (state.FillEnabled && SvgAttributeUtility.TryParseColor(fillRaw, out Color fillColor))
             {
                 state.FillColor = fillColor;
             }
 
-            if (TryGetFloat(attributes, SvgAttributeName.FILL_OPACITY, out float fillOpacity))
+            if (SvgAttributeUtility.TryGetFloat(attributes, SvgAttributeName.FILL_OPACITY, out float fillOpacity))
             {
                 state.FillColor = WithCombinedAlpha(state.FillColor, fillOpacity);
             }
 
-            state.StrokeEnabled = TryGetNonEmpty(attributes, SvgAttributeName.STROKE, out string strokeRaw) && !IsDisabledPaintValue(strokeRaw);
-            if (state.StrokeEnabled && ColorUtility.TryParseHtmlString(strokeRaw.Trim(), out Color strokeColor))
+            state.StrokeEnabled = SvgAttributeUtility.TryGetAttribute(attributes, SvgAttributeName.STROKE, out string strokeRaw) &&
+                                  !SvgAttributeUtility.IsDisabledPaintValue(strokeRaw);
+            if (state.StrokeEnabled && SvgAttributeUtility.TryParseColor(strokeRaw, out Color strokeColor))
             {
                 state.StrokeColor = strokeColor;
             }
 
-            if (TryGetFloat(attributes, SvgAttributeName.STROKE_OPACITY, out float strokeOpacity))
+            if (SvgAttributeUtility.TryGetFloat(attributes, SvgAttributeName.STROKE_OPACITY, out float strokeOpacity))
             {
                 state.StrokeColor = WithCombinedAlpha(state.StrokeColor, strokeOpacity);
             }
 
-            state.StrokeWidthEnabled = TryGetFloat(attributes, SvgAttributeName.STROKE_WIDTH, out float strokeWidth);
+            state.StrokeWidthEnabled = SvgAttributeUtility.TryGetFloat(attributes, SvgAttributeName.STROKE_WIDTH, out float strokeWidth);
             if (state.StrokeWidthEnabled)
             {
                 state.StrokeWidth = Mathf.Max(0f, strokeWidth);
@@ -71,7 +74,7 @@ namespace SvgEditor.Workspace.InspectorPanel
                 state.StrokeWidth = 1f;
             }
 
-            state.OpacityEnabled = TryGetFloat(attributes, SvgAttributeName.OPACITY, out float opacity);
+            state.OpacityEnabled = SvgAttributeUtility.TryGetFloat(attributes, SvgAttributeName.OPACITY, out float opacity);
             if (state.OpacityEnabled)
             {
                 state.Opacity = Mathf.Clamp01(opacity);
@@ -79,17 +82,17 @@ namespace SvgEditor.Workspace.InspectorPanel
 
             if (state.CornerRadiusEnabled)
             {
-                if (TryGetFloat(attributes, SvgAttributeName.RX, out float radiusX))
+                if (SvgAttributeUtility.TryGetFloat(attributes, SvgAttributeName.RX, out float radiusX))
                 {
                     state.CornerRadius = Mathf.Max(0f, radiusX);
                 }
-                else if (TryGetFloat(attributes, SvgAttributeName.RY, out float radiusY))
+                else if (SvgAttributeUtility.TryGetFloat(attributes, SvgAttributeName.RY, out float radiusY))
                 {
                     state.CornerRadius = Mathf.Max(0f, radiusY);
                 }
             }
 
-            state.DasharrayEnabled = TryGetNonEmpty(attributes, SvgAttributeName.STROKE_DASHARRAY, out string dashRaw);
+            state.DasharrayEnabled = SvgAttributeUtility.TryGetAttribute(attributes, SvgAttributeName.STROKE_DASHARRAY, out string dashRaw);
             if (state.DasharrayEnabled)
             {
                 ParseDasharray(dashRaw, out float dashLength, out float dashGap);
@@ -97,7 +100,7 @@ namespace SvgEditor.Workspace.InspectorPanel
                 state.DashGap = dashGap;
             }
 
-            state.TransformEnabled = TryGetNonEmpty(attributes, SvgAttributeName.TRANSFORM, out string transformRaw);
+            state.TransformEnabled = SvgAttributeUtility.TryGetAttribute(attributes, SvgAttributeName.TRANSFORM, out string transformRaw);
             state.Transform = state.TransformEnabled ? transformRaw.Trim() : string.Empty;
             TrySyncTransformHelperFromText(state);
 
@@ -162,42 +165,13 @@ namespace SvgEditor.Workspace.InspectorPanel
             string key,
             IReadOnlyCollection<string> allowed)
         {
-            if (!TryGetNonEmpty(attributes, key, out string raw))
+            if (!SvgAttributeUtility.TryGetAttribute(attributes, key, out string raw))
             {
                 return string.Empty;
             }
 
             string value = raw.Trim().ToLowerInvariant();
             return allowed.Contains(value) ? value : string.Empty;
-        }
-
-        private static bool TryGetFloat(IReadOnlyDictionary<string, string> attributes, string key, out float value)
-        {
-            value = 0f;
-            return TryGetNonEmpty(attributes, key, out string raw) &&
-                   float.TryParse(raw.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out value);
-        }
-
-        private static bool TryGetNonEmpty(IReadOnlyDictionary<string, string> attributes, string key, out string value)
-        {
-            value = string.Empty;
-            if (attributes == null || string.IsNullOrWhiteSpace(key))
-            {
-                return false;
-            }
-
-            if (!attributes.TryGetValue(key, out string found) || string.IsNullOrWhiteSpace(found))
-            {
-                return false;
-            }
-
-            value = found;
-            return true;
-        }
-
-        private static bool IsDisabledPaintValue(string value)
-        {
-            return string.Equals(value?.Trim(), "none", StringComparison.OrdinalIgnoreCase);
         }
 
         private static Color WithCombinedAlpha(Color color, float opacity)
