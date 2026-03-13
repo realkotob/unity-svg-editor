@@ -120,11 +120,15 @@ namespace SvgEditor.Document
             _documentSourceService.RefreshDocumentModel(document);
         }
 
+        #endregion Public Methods
+
+        #region Internal Methods
+
         internal bool TryResolveSourceTextToPersist(DocumentSession document, out string sourceText, out string error)
         {
             return _documentSourceService.TryResolvePersistedSource(document, out sourceText, out error);
         }
 
-        #endregion Public Methods
+        #endregion Internal Methods
     }
 }

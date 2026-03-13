@@ -27,27 +27,27 @@ namespace SvgEditor.Workspace.Canvas
 
         public GestureRouter(GestureRouterDependencies dependencies)
         {
-            _host = dependencies.host;
-            _overlayController = dependencies.overlayController;
-            _sceneProjector = dependencies.sceneProjector;
-            _toolController = dependencies.toolController;
-            _selectionSyncService = dependencies.selectionSyncService;
-            _dragSession = dependencies.dragSession;
-            _overlayAccessor = dependencies.overlayAccessor;
-            _resetCanvasView = dependencies.resetCanvasView;
-            _selectionResolver = new CanvasInteractionSelectionResolver(dependencies.host, dependencies.sceneProjector);
+            _host = dependencies.Host;
+            _overlayController = dependencies.OverlayController;
+            _sceneProjector = dependencies.SceneProjector;
+            _toolController = dependencies.ToolController;
+            _selectionSyncService = dependencies.SelectionSyncService;
+            _dragSession = dependencies.DragSession;
+            _overlayAccessor = dependencies.OverlayAccessor;
+            _resetCanvasView = dependencies.ResetCanvasView;
+            _selectionResolver = new CanvasInteractionSelectionResolver(dependencies.Host, dependencies.SceneProjector);
             _viewportGestureHandler = new ViewportGestureHandler(
-                dependencies.host,
-                dependencies.viewportState,
-                dependencies.dragSession,
-                dependencies.overlayAccessor);
+                dependencies.Host,
+                dependencies.ViewportState,
+                dependencies.DragSession,
+                dependencies.OverlayAccessor);
             _elementGestureHandler = new ElementGestureHandler(
-                dependencies.host,
-                dependencies.sceneProjector,
-                dependencies.elementDragController,
-                dependencies.selectionSyncService,
-                dependencies.dragSession,
-                dependencies.overlayAccessor);
+                dependencies.Host,
+                dependencies.SceneProjector,
+                dependencies.ElementDragController,
+                dependencies.SelectionSyncService,
+                dependencies.DragSession,
+                dependencies.OverlayAccessor);
         }
 
         public DragMode DragMode => _gestureState.Mode;
@@ -364,15 +364,39 @@ namespace SvgEditor.Workspace.Canvas
 
     internal sealed class GestureRouterDependencies
     {
-        public ICanvasPointerDragHost host;
-        public ViewportState viewportState;
-        public OverlayController overlayController;
-        public SceneProjector sceneProjector;
-        public ToolController toolController;
-        public ElementDragController elementDragController;
-        public SelectionSyncService selectionSyncService;
-        public PointerDragSession dragSession;
-        public Func<VisualElement> overlayAccessor;
-        public Action resetCanvasView;
+        public GestureRouterDependencies(
+            ICanvasPointerDragHost host,
+            ViewportState viewportState,
+            OverlayController overlayController,
+            SceneProjector sceneProjector,
+            ToolController toolController,
+            ElementDragController elementDragController,
+            SelectionSyncService selectionSyncService,
+            PointerDragSession dragSession,
+            Func<VisualElement> overlayAccessor,
+            Action resetCanvasView)
+        {
+            Host = host;
+            ViewportState = viewportState;
+            OverlayController = overlayController;
+            SceneProjector = sceneProjector;
+            ToolController = toolController;
+            ElementDragController = elementDragController;
+            SelectionSyncService = selectionSyncService;
+            DragSession = dragSession;
+            OverlayAccessor = overlayAccessor;
+            ResetCanvasView = resetCanvasView;
+        }
+
+        public ICanvasPointerDragHost Host { get; }
+        public ViewportState ViewportState { get; }
+        public OverlayController OverlayController { get; }
+        public SceneProjector SceneProjector { get; }
+        public ToolController ToolController { get; }
+        public ElementDragController ElementDragController { get; }
+        public SelectionSyncService SelectionSyncService { get; }
+        public PointerDragSession DragSession { get; }
+        public Func<VisualElement> OverlayAccessor { get; }
+        public Action ResetCanvasView { get; }
     }
 }

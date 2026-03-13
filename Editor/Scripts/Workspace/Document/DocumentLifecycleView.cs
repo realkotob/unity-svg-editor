@@ -7,6 +7,15 @@ namespace SvgEditor.Workspace.Document
 {
     internal sealed class DocumentLifecycleView
     {
+        private static class ElementName
+        {
+            public const string PREVIEW_IMAGE = "preview-image";
+            public const string SAVE_BUTTON = "document-save";
+            public const string STATUS_LABEL = "document-status";
+            public const string TOAST_LAYER = "document-toast-layer";
+            public const string TOAST = "document-toast";
+        }
+
         private static class UssClassName
         {
             private const string Prefix = "svg-editor__";
@@ -42,7 +51,7 @@ namespace SvgEditor.Workspace.Document
                 return;
             }
 
-            _previewImage = root.Q<Image>("preview-image");
+            _previewImage = root.Q<Image>(ElementName.PREVIEW_IMAGE);
             if (_previewImage != null)
             {
                 _previewImage.scaleMode = ScaleMode.ScaleToFit;
@@ -54,12 +63,12 @@ namespace SvgEditor.Workspace.Document
                 _previewImage.style.height = Length.Percent(100);
             }
 
-            _saveButton = root.Q<Button>("document-save");
-            _sourceStatusLabel = root.Q<Label>("document-status");
+            _saveButton = root.Q<Button>(ElementName.SAVE_BUTTON);
+            _sourceStatusLabel = root.Q<Label>(ElementName.STATUS_LABEL);
 
             _toastLayer = new VisualElement
             {
-                name = "document-toast-layer"
+                name = ElementName.TOAST_LAYER
             };
             _toastLayer.AddToClassList(UssClassName.TOAST_LAYER);
             _toastLayer.pickingMode = PickingMode.Ignore;
@@ -67,7 +76,7 @@ namespace SvgEditor.Workspace.Document
 
             _toastLabel = new Label
             {
-                name = "document-toast"
+                name = ElementName.TOAST
             };
             _toastLabel.AddToClassList(UssClassName.TOAST);
             _toastLabel.pickingMode = PickingMode.Ignore;

@@ -17,6 +17,47 @@ namespace SvgEditor.Workspace.InspectorPanel
         private const string LinecapDisplayDefaultValue = "none";
         private const string LinejoinActualDefaultValue = "miter";
         private const string LinejoinDisplayDefaultValue = "none";
+
+        internal static class ElementName
+        {
+            public const string FILL_COLOR_ROW = "fill-color-row";
+            public const string FILL_ADD_BUTTON = "fill-add-button";
+            public const string FILL_REMOVE_BUTTON = "fill-remove-button";
+            public const string FILL_COLOR = "inspector-fill-color";
+            public const string STROKE_COLOR_ROW = "stroke-color-row";
+            public const string STROKE_METRICS_ROW = "stroke-metrics-row";
+            public const string STROKE_LINE_STYLE_ROW = "stroke-line-style-row";
+            public const string STROKE_ADD_BUTTON = "stroke-add-button";
+            public const string STROKE_REMOVE_BUTTON = "stroke-remove-button";
+            public const string STROKE_COLOR = "inspector-stroke-color";
+            public const string STROKE_WIDTH = "inspector-stroke-width";
+            public const string OPACITY = "inspector-opacity";
+            public const string CORNER_RADIUS = "inspector-corner-radius";
+            public const string LINECAP = "inspector-linecap";
+            public const string LINEJOIN = "inspector-linejoin";
+            public const string DASH_LENGTH = "inspector-dash-length";
+            public const string DASH_GAP = "inspector-dash-gap";
+            public const string TRANSFORM = "inspector-transform";
+            public const string FRAME_X = "inspector-frame-x";
+            public const string FRAME_Y = "inspector-frame-y";
+            public const string FRAME_WIDTH = "inspector-frame-width";
+            public const string FRAME_HEIGHT = "inspector-frame-height";
+            public const string TRANSLATE_X = "inspector-translate-x";
+            public const string TRANSLATE_Y = "inspector-translate-y";
+            public const string ROTATE = "inspector-rotate";
+            public const string SCALE_X = "inspector-scale-x";
+            public const string SCALE_Y = "inspector-scale-y";
+            public const string POSITION_ALIGN_LEFT = "position-align-left";
+            public const string POSITION_ALIGN_CENTER = "position-align-center";
+            public const string POSITION_ALIGN_RIGHT = "position-align-right";
+            public const string POSITION_ALIGN_TOP = "position-align-top";
+            public const string POSITION_ALIGN_MIDDLE = "position-align-middle";
+            public const string POSITION_ALIGN_BOTTOM = "position-align-bottom";
+            public const string POSITION_ROTATE_CLOCKWISE_90 = "position-rotate-clockwise-90";
+            public const string POSITION_FLIP_HORIZONTAL = "position-flip-horizontal";
+            public const string POSITION_FLIP_VERTICAL = "position-flip-vertical";
+        }
+
         private VisualElement _root;
         private bool _isFillVisible = true;
         private bool _isStrokeVisible = true;
@@ -62,11 +103,11 @@ namespace SvgEditor.Workspace.InspectorPanel
         public Button PositionFlipHorizontalButton { get; private set; }
         public Button PositionFlipVerticalButton { get; private set; }
 
-        public VisualElement FillColorControl => ResolveColorControl("inspector-fill-color", FillColorField, FillColorLegacyField);
-        public VisualElement StrokeColorControl => ResolveColorControl("inspector-stroke-color", StrokeColorField, StrokeColorLegacyField);
+        public VisualElement FillColorControl => ResolveColorControl(ElementName.FILL_COLOR, FillColorField, FillColorLegacyField);
+        public VisualElement StrokeColorControl => ResolveColorControl(ElementName.STROKE_COLOR, StrokeColorField, StrokeColorLegacyField);
         public VisualElement OpacityControl => ResolveOpacityField();
-        public Color FillColorValue => ResolveColorValue("inspector-fill-color", FillColorField, FillColorLegacyField, Color.black);
-        public Color StrokeColorValue => ResolveColorValue("inspector-stroke-color", StrokeColorField, StrokeColorLegacyField, Color.black);
+        public Color FillColorValue => ResolveColorValue(ElementName.FILL_COLOR, FillColorField, FillColorLegacyField, Color.black);
+        public Color StrokeColorValue => ResolveColorValue(ElementName.STROKE_COLOR, StrokeColorField, StrokeColorLegacyField, Color.black);
         public float OpacityValue => ResolveOpacityField()?.value ?? 1f;
         public bool IsOpacitySlider => ResolveOpacityField() is Slider;
 
@@ -92,53 +133,53 @@ namespace SvgEditor.Workspace.InspectorPanel
                 return;
 
             _root = root;
-            FillColorRow = root.Q<VisualElement>("fill-color-row");
-            FillAddButton = root.Q<Button>("fill-add-button");
-            FillRemoveButton = root.Q<Button>("fill-remove-button");
-            VisualElement fillColorElement = root.Q<VisualElement>("inspector-fill-color");
+            FillColorRow = root.Q<VisualElement>(ElementName.FILL_COLOR_ROW);
+            FillAddButton = root.Q<Button>(ElementName.FILL_ADD_BUTTON);
+            FillRemoveButton = root.Q<Button>(ElementName.FILL_REMOVE_BUTTON);
+            VisualElement fillColorElement = root.Q<VisualElement>(ElementName.FILL_COLOR);
             FillColorField = fillColorElement as ColorPercentField;
             FillColorLegacyField = fillColorElement as ColorField;
-            StrokeColorRow = root.Q<VisualElement>("stroke-color-row");
-            StrokeMetricsRow = root.Q<VisualElement>("stroke-metrics-row");
-            StrokeLineStyleRow = root.Q<VisualElement>("stroke-line-style-row");
-            StrokeAddButton = root.Q<Button>("stroke-add-button");
-            StrokeRemoveButton = root.Q<Button>("stroke-remove-button");
-            VisualElement strokeColorElement = root.Q<VisualElement>("inspector-stroke-color");
+            StrokeColorRow = root.Q<VisualElement>(ElementName.STROKE_COLOR_ROW);
+            StrokeMetricsRow = root.Q<VisualElement>(ElementName.STROKE_METRICS_ROW);
+            StrokeLineStyleRow = root.Q<VisualElement>(ElementName.STROKE_LINE_STYLE_ROW);
+            StrokeAddButton = root.Q<Button>(ElementName.STROKE_ADD_BUTTON);
+            StrokeRemoveButton = root.Q<Button>(ElementName.STROKE_REMOVE_BUTTON);
+            VisualElement strokeColorElement = root.Q<VisualElement>(ElementName.STROKE_COLOR);
             StrokeColorField = strokeColorElement as ColorPercentField;
             StrokeColorLegacyField = strokeColorElement as ColorField;
-            StrokeWidthField = root.Q<FloatField>("inspector-stroke-width");
-            VisualElement opacityElement = root.Q<VisualElement>("inspector-opacity");
+            StrokeWidthField = root.Q<FloatField>(ElementName.STROKE_WIDTH);
+            VisualElement opacityElement = root.Q<VisualElement>(ElementName.OPACITY);
             OpacityField = opacityElement as BaseField<float>;
-            CornerRadiusField = root.Q<FloatField>("inspector-corner-radius");
-            VisualElement linecapElement = root.Q<VisualElement>("inspector-linecap");
+            CornerRadiusField = root.Q<FloatField>(ElementName.CORNER_RADIUS);
+            VisualElement linecapElement = root.Q<VisualElement>(ElementName.LINECAP);
             LinecapPopup = linecapElement as SelectElement;
             LinecapLegacyPopup = linecapElement as DropdownField;
             ConfigureLinecapDropdown(LinecapLegacyPopup);
-            VisualElement linejoinElement = root.Q<VisualElement>("inspector-linejoin");
+            VisualElement linejoinElement = root.Q<VisualElement>(ElementName.LINEJOIN);
             LinejoinPopup = linejoinElement as SelectElement;
             LinejoinLegacyPopup = linejoinElement as DropdownField;
             ConfigureLinejoinDropdown(LinejoinLegacyPopup);
-            DashLengthField = root.Q<FloatField>("inspector-dash-length");
-            DashGapField = root.Q<FloatField>("inspector-dash-gap");
-            TransformField = root.Q<TextField>("inspector-transform");
-            FrameXField = root.Q<FloatField>("inspector-frame-x");
-            FrameYField = root.Q<FloatField>("inspector-frame-y");
-            FrameWidthField = root.Q<FloatField>("inspector-frame-width");
-            FrameHeightField = root.Q<FloatField>("inspector-frame-height");
-            TranslateXField = root.Q<FloatField>("inspector-translate-x");
-            TranslateYField = root.Q<FloatField>("inspector-translate-y");
-            RotateField = root.Q<FloatField>("inspector-rotate");
-            ScaleXField = root.Q<FloatField>("inspector-scale-x");
-            ScaleYField = root.Q<FloatField>("inspector-scale-y");
-            PositionAlignLeftButton = root.Q<Button>("position-align-left");
-            PositionAlignCenterButton = root.Q<Button>("position-align-center");
-            PositionAlignRightButton = root.Q<Button>("position-align-right");
-            PositionAlignTopButton = root.Q<Button>("position-align-top");
-            PositionAlignMiddleButton = root.Q<Button>("position-align-middle");
-            PositionAlignBottomButton = root.Q<Button>("position-align-bottom");
-            PositionRotateClockwise90Button = root.Q<Button>("position-rotate-clockwise-90");
-            PositionFlipHorizontalButton = root.Q<Button>("position-flip-horizontal");
-            PositionFlipVerticalButton = root.Q<Button>("position-flip-vertical");
+            DashLengthField = root.Q<FloatField>(ElementName.DASH_LENGTH);
+            DashGapField = root.Q<FloatField>(ElementName.DASH_GAP);
+            TransformField = root.Q<TextField>(ElementName.TRANSFORM);
+            FrameXField = root.Q<FloatField>(ElementName.FRAME_X);
+            FrameYField = root.Q<FloatField>(ElementName.FRAME_Y);
+            FrameWidthField = root.Q<FloatField>(ElementName.FRAME_WIDTH);
+            FrameHeightField = root.Q<FloatField>(ElementName.FRAME_HEIGHT);
+            TranslateXField = root.Q<FloatField>(ElementName.TRANSLATE_X);
+            TranslateYField = root.Q<FloatField>(ElementName.TRANSLATE_Y);
+            RotateField = root.Q<FloatField>(ElementName.ROTATE);
+            ScaleXField = root.Q<FloatField>(ElementName.SCALE_X);
+            ScaleYField = root.Q<FloatField>(ElementName.SCALE_Y);
+            PositionAlignLeftButton = root.Q<Button>(ElementName.POSITION_ALIGN_LEFT);
+            PositionAlignCenterButton = root.Q<Button>(ElementName.POSITION_ALIGN_CENTER);
+            PositionAlignRightButton = root.Q<Button>(ElementName.POSITION_ALIGN_RIGHT);
+            PositionAlignTopButton = root.Q<Button>(ElementName.POSITION_ALIGN_TOP);
+            PositionAlignMiddleButton = root.Q<Button>(ElementName.POSITION_ALIGN_MIDDLE);
+            PositionAlignBottomButton = root.Q<Button>(ElementName.POSITION_ALIGN_BOTTOM);
+            PositionRotateClockwise90Button = root.Q<Button>(ElementName.POSITION_ROTATE_CLOCKWISE_90);
+            PositionFlipHorizontalButton = root.Q<Button>(ElementName.POSITION_FLIP_HORIZONTAL);
+            PositionFlipVerticalButton = root.Q<Button>(ElementName.POSITION_FLIP_VERTICAL);
 
             ConfigureNumericFieldFormat(StrokeWidthField);
             ConfigureNumericFieldFormat(OpacityField as FloatField);
@@ -321,7 +362,7 @@ namespace SvgEditor.Workspace.InspectorPanel
 
         private BaseField<float> ResolveOpacityField()
         {
-            return OpacityField ?? _root?.Q<VisualElement>("inspector-opacity") as BaseField<float>;
+            return OpacityField ?? _root?.Q<VisualElement>(ElementName.OPACITY) as BaseField<float>;
         }
 
         private static void SetDisplay(VisualElement element, bool visible)

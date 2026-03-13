@@ -6,6 +6,11 @@ namespace SvgEditor.Workspace.Coordination
 {
     internal sealed class ShellBinder
     {
+        private static class ElementName
+        {
+            public const string HIERARCHY_LIST = "asset-hierarchy-list";
+        }
+
         public HierarchyListView HierarchyListView { get; private set; }
 
         public bool IsBound => HierarchyListView != null;
@@ -16,7 +21,7 @@ namespace SvgEditor.Workspace.Coordination
             if (root == null)
                 return;
 
-            HierarchyListView = root.Q<HierarchyListView>("asset-hierarchy-list");
+            HierarchyListView = root.Q<HierarchyListView>(ElementName.HIERARCHY_LIST);
         }
 
         public void Unbind()

@@ -60,9 +60,12 @@ namespace SvgEditor.Workspace.Canvas
         internal VisualElement StageElement => _stageElement;
         internal VisualElement FrameElement => _frameElement;
         internal Image PreviewImageElement => _previewImageElement;
+        #endregion Properties
+
+        #region Events
         internal event Action DocumentResetRequested;
         internal event Action ResetRequested;
-        #endregion Properties
+        #endregion Events
 
         #region Constructor
         public CanvasStageView()

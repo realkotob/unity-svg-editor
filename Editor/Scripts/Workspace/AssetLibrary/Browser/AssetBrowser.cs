@@ -15,6 +15,15 @@ namespace SvgEditor.Workspace.AssetLibrary.Browser
     {
         private const string ALL_CATEGORIES_FILTER_KEY = "__all__";
 
+        private static class ElementName
+        {
+            public const string REFRESH_BUTTON = "asset-library-refresh-button";
+            public const string FILTER_ACCORDION = "asset-library-filter-accordion";
+            public const string FILTER_ACCORDION_ITEM = "asset-library-filter-accordion-item";
+            public const string FILTER_HOST = "asset-library-filter-host";
+            public const string GRID_VIEW = "asset-grid-view";
+        }
+
         private static readonly StringComparer _assetNameComparer = StringComparer.OrdinalIgnoreCase;
         private static readonly Comparison<AssetEntry> _assetEntryComparison =
             static (left, right) =>
@@ -65,11 +74,11 @@ namespace SvgEditor.Workspace.AssetLibrary.Browser
             _loadAsset = loadAsset;
             _getCurrentAssetPath = getCurrentAssetPath;
             _canSwitchDocument = canSwitchDocument;
-            _assetLibraryRefreshButton = root.Q<Button>("asset-library-refresh-button");
-            _assetLibraryFilterAccordion = root.Q<Accordion>("asset-library-filter-accordion");
-            _assetLibraryFilterAccordionItem = root.Q<AccordionItem>("asset-library-filter-accordion-item");
-            _assetLibraryFilterHost = root.Q<VisualElement>("asset-library-filter-host");
-            _assetGridView = root.Q<AssetGridView>("asset-grid-view");
+            _assetLibraryRefreshButton = root.Q<Button>(ElementName.REFRESH_BUTTON);
+            _assetLibraryFilterAccordion = root.Q<Accordion>(ElementName.FILTER_ACCORDION);
+            _assetLibraryFilterAccordionItem = root.Q<AccordionItem>(ElementName.FILTER_ACCORDION_ITEM);
+            _assetLibraryFilterHost = root.Q<VisualElement>(ElementName.FILTER_HOST);
+            _assetGridView = root.Q<AssetGridView>(ElementName.GRID_VIEW);
 
             if (_assetGridView == null)
             {

@@ -16,6 +16,12 @@ namespace SvgEditor.Shell
 {
     internal sealed class SvgEditorWindowLayoutBinder
     {
+        private static class ElementName
+        {
+            public const string CANVAS_STAGE_VIEW = "canvas-stage-view";
+            public const string MOVE_TOOL = "tool-move";
+        }
+
         private static class UssClassName
         {
             private const string Prefix = "svg-editor__";
@@ -108,12 +114,12 @@ namespace SvgEditor.Shell
             _documentLifecycleController.Bind(_root);
             BuildSharedInspectorSections();
 
-            CanvasStageView canvasStageView = _root.Q<CanvasStageView>("canvas-stage-view");
+            CanvasStageView canvasStageView = _root.Q<CanvasStageView>(ElementName.CANVAS_STAGE_VIEW);
             if (canvasStageView != null)
             {
                 canvasStageView.PrepareRuntime();
                 canvasStageView.DocumentResetRequested += _documentLifecycleController.ReloadCurrentDocument;
-                WorkspaceCoordinator?.Bind(canvasStageView, _root.Q<Toggle>("tool-move"));
+                WorkspaceCoordinator?.Bind(canvasStageView, _root.Q<Toggle>(ElementName.MOVE_TOOL));
             }
 
             _inspectorPanelController.Bind(_root, PanelHost);
@@ -147,28 +153,28 @@ namespace SvgEditor.Shell
 
         private void ApplyToolbarIcons()
         {
-            EditorFoundationIconUtility.ApplyToggleVectorImage(_root, "tool-move", SvgEditorIconClass.RESOURCE_MOVE);
+            EditorFoundationIconUtility.ApplyToggleVectorImage(_root, ElementName.MOVE_TOOL, SvgEditorIconClass.RESOURCE_MOVE);
         }
 
         private void ApplyPositionIcons()
         {
-            EditorFoundationIconUtility.ApplyButtonIconClass(_root, "position-align-left", IconClass.ALIGN_HORIZONTAL_LEFT);
-            EditorFoundationIconUtility.ApplyButtonIconClass(_root, "position-align-center", IconClass.ALIGN_HORIZONTAL_CENTER);
-            EditorFoundationIconUtility.ApplyButtonIconClass(_root, "position-align-right", IconClass.ALIGN_HORIZONTAL_RIGHT);
-            EditorFoundationIconUtility.ApplyButtonIconClass(_root, "position-align-top", IconClass.ALIGN_VERTICAL_TOP);
-            EditorFoundationIconUtility.ApplyButtonIconClass(_root, "position-align-middle", IconClass.ALIGN_VERTICAL_CENTER);
-            EditorFoundationIconUtility.ApplyButtonIconClass(_root, "position-align-bottom", IconClass.ALIGN_VERTICAL_BOTTOM);
-            EditorFoundationIconUtility.ApplyButtonIconClass(_root, "position-rotate-clockwise-90", IconClass.ROTATE_90);
-            EditorFoundationIconUtility.ApplyButtonIconClass(_root, "position-flip-horizontal", IconClass.FLIP_HORIZONTAL);
-            EditorFoundationIconUtility.ApplyButtonIconClass(_root, "position-flip-vertical", IconClass.FLIP_VERTICAL);
+            EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.POSITION_ALIGN_LEFT, IconClass.ALIGN_HORIZONTAL_LEFT);
+            EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.POSITION_ALIGN_CENTER, IconClass.ALIGN_HORIZONTAL_CENTER);
+            EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.POSITION_ALIGN_RIGHT, IconClass.ALIGN_HORIZONTAL_RIGHT);
+            EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.POSITION_ALIGN_TOP, IconClass.ALIGN_VERTICAL_TOP);
+            EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.POSITION_ALIGN_MIDDLE, IconClass.ALIGN_VERTICAL_CENTER);
+            EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.POSITION_ALIGN_BOTTOM, IconClass.ALIGN_VERTICAL_BOTTOM);
+            EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.POSITION_ROTATE_CLOCKWISE_90, IconClass.ROTATE_90);
+            EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.POSITION_FLIP_HORIZONTAL, IconClass.FLIP_HORIZONTAL);
+            EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.POSITION_FLIP_VERTICAL, IconClass.FLIP_VERTICAL);
         }
 
         private void ApplyInspectorAttributeIcons()
         {
-            EditorFoundationIconUtility.ApplyButtonIconClass(_root, "fill-add-button", IconClass.PLUS);
-            EditorFoundationIconUtility.ApplyButtonIconClass(_root, "fill-remove-button", IconClass.MINUS);
-            EditorFoundationIconUtility.ApplyButtonIconClass(_root, "stroke-add-button", IconClass.PLUS);
-            EditorFoundationIconUtility.ApplyButtonIconClass(_root, "stroke-remove-button", IconClass.MINUS);
+            EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.FILL_ADD_BUTTON, IconClass.PLUS);
+            EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.FILL_REMOVE_BUTTON, IconClass.MINUS);
+            EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.STROKE_ADD_BUTTON, IconClass.PLUS);
+            EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.STROKE_REMOVE_BUTTON, IconClass.MINUS);
         }
     }
 }

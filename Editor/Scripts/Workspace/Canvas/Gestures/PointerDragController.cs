@@ -40,19 +40,17 @@ namespace SvgEditor.Workspace.Canvas
             _sceneProjector = sceneProjector;
             _elementDragController = new ElementDragController(sceneProjector);
             _selectionSyncService = new SelectionSyncService(_host, _overlayController, _elementDragController);
-            _gestureRouter = new GestureRouter(new GestureRouterDependencies
-            {
-                host = _host,
-                viewportState = _viewportState,
-                overlayController = _overlayController,
-                sceneProjector = _sceneProjector,
-                toolController = _toolController,
-                elementDragController = _elementDragController,
-                selectionSyncService = _selectionSyncService,
-                dragSession = _dragSession,
-                overlayAccessor = GetCanvasOverlay,
-                resetCanvasView = ResetCanvasViewInternal
-            });
+            _gestureRouter = new GestureRouter(new GestureRouterDependencies(
+                _host,
+                _viewportState,
+                _overlayController,
+                _sceneProjector,
+                _toolController,
+                _elementDragController,
+                _selectionSyncService,
+                _dragSession,
+                GetCanvasOverlay,
+                ResetCanvasViewInternal));
         }
 
         public VisualElement CanvasOverlay => _canvasOverlay;
