@@ -33,119 +33,109 @@ namespace SvgEditor.DocumentModel
         public bool TryApplyAttributePatch(
             SvgDocumentModel documentModel,
             AttributePatchRequest request,
-            out SvgDocumentModel updatedDocumentModel,
-            out string updatedSourceText,
-            out string error)
+            out MutationResult result)
         {
-            updatedDocumentModel = null;
-            updatedSourceText = string.Empty;
-            error = string.Empty;
+            result = default;
+            string error = string.Empty;
 
             if (documentModel?.Root == null)
             {
-                error = "Document model is unavailable.";
+                result = new MutationResult(null, string.Empty, "Document model is unavailable.");
                 return false;
             }
 
             if (!CanApplyAttributePatch(request))
             {
-                error = "Patch request is not supported by the document model mutation path.";
+                result = new MutationResult(null, string.Empty, "Patch request is not supported by the document model mutation path.");
                 return false;
             }
 
-            updatedDocumentModel = SvgDocumentModelCloneUtility.CloneDocumentModel(documentModel);
+            SvgDocumentModel updatedDocumentModel = SvgDocumentModelCloneUtility.CloneDocumentModel(documentModel);
             if (!SvgDocumentModelMutationLookupUtility.TryResolveTargetNode(updatedDocumentModel, request.TargetKey, out SvgNodeModel targetNode))
             {
-                error = $"Could not find target '{request.TargetKey}'.";
+                result = new MutationResult(null, string.Empty, $"Could not find target '{request.TargetKey}'.");
                 return false;
             }
 
             SvgMutationWriter.ApplyAttributePatch(targetNode, request);
-            return SvgMutationWriter.TrySerialize(_serializer, updatedDocumentModel, out updatedSourceText, out error);
+            if (!SvgMutationWriter.TrySerialize(_serializer, updatedDocumentModel, out string updatedSourceText, out error))
+            {
+                result = new MutationResult(null, string.Empty, error);
+                return false;
+            }
+
+            result = new MutationResult(updatedDocumentModel, updatedSourceText, string.Empty);
+            return true;
         }
 
         public bool TryReorderElementWithinSameParent(
             SvgDocumentModel documentModel,
-            string elementKey,
-            int targetChildIndex,
-            out SvgDocumentModel updatedDocumentModel,
-            out string updatedSourceText,
-            out string error)
+            ReorderElementRequest request,
+            out MutationResult result)
         {
-            updatedDocumentModel = null;
-            updatedSourceText = string.Empty;
-            error = string.Empty;
+            result = default;
 
             if (documentModel?.Root == null)
             {
-                error = "Document model is unavailable.";
+                result = new MutationResult(null, string.Empty, "Document model is unavailable.");
                 return false;
             }
 
-            if (!SvgNodeLookupUtility.TryFindNodeByLegacyElementKey(documentModel, elementKey, out SvgNodeModel movedNode))
+            if (!SvgNodeLookupUtility.TryFindNodeByLegacyElementKey(documentModel, request.ElementKey, out SvgNodeModel movedNode))
             {
-                error = $"Could not find element '{elementKey}'.";
+                result = new MutationResult(null, string.Empty, $"Could not find element '{request.ElementKey}'.");
                 return false;
             }
 
             if (!documentModel.TryGetNode(movedNode.ParentId, out SvgNodeModel parentNode) || parentNode == null)
             {
-                error = "Moved element does not have a parent node.";
+                result = new MutationResult(null, string.Empty, "Moved element does not have a parent node.");
                 return false;
             }
 
             return TryMoveElement(
                 documentModel,
-                elementKey,
-                parentNode.LegacyElementKey,
-                targetChildIndex,
-                out updatedDocumentModel,
-                out updatedSourceText,
-                out error);
+                new MoveElementRequest(request.ElementKey, parentNode.LegacyElementKey, request.TargetChildIndex),
+                out result);
         }
 
         public bool TryMoveElement(
             SvgDocumentModel documentModel,
-            string elementKey,
-            string targetParentKey,
-            int targetChildIndex,
-            out SvgDocumentModel updatedDocumentModel,
-            out string updatedSourceText,
-            out string error)
+            MoveElementRequest request,
+            out MutationResult result)
         {
-            updatedDocumentModel = null;
-            updatedSourceText = string.Empty;
-            error = string.Empty;
+            result = default;
+            string error = string.Empty;
 
             if (documentModel?.Root == null)
             {
-                error = "Document model is unavailable.";
+                result = new MutationResult(null, string.Empty, "Document model is unavailable.");
                 return false;
             }
 
-            updatedDocumentModel = SvgDocumentModelCloneUtility.CloneDocumentModel(documentModel);
-            if (!SvgNodeLookupUtility.TryFindNodeByLegacyElementKey(updatedDocumentModel, elementKey, out SvgNodeModel movedNode))
+            SvgDocumentModel updatedDocumentModel = SvgDocumentModelCloneUtility.CloneDocumentModel(documentModel);
+            if (!SvgNodeLookupUtility.TryFindNodeByLegacyElementKey(updatedDocumentModel, request.ElementKey, out SvgNodeModel movedNode))
             {
-                error = $"Could not find element '{elementKey}'.";
+                result = new MutationResult(null, string.Empty, $"Could not find element '{request.ElementKey}'.");
                 return false;
             }
 
             if (!updatedDocumentModel.TryGetNode(movedNode.ParentId, out SvgNodeModel sourceParentNode) || sourceParentNode == null)
             {
-                error = "Moved element does not have a parent node.";
+                result = new MutationResult(null, string.Empty, "Moved element does not have a parent node.");
                 return false;
             }
 
-            if (!SvgNodeLookupUtility.TryFindNodeByLegacyElementKey(updatedDocumentModel, targetParentKey, out SvgNodeModel targetParentNode))
+            if (!SvgNodeLookupUtility.TryFindNodeByLegacyElementKey(updatedDocumentModel, request.TargetParentKey, out SvgNodeModel targetParentNode))
             {
-                error = $"Could not find target parent '{targetParentKey}'.";
+                result = new MutationResult(null, string.Empty, $"Could not find target parent '{request.TargetParentKey}'.");
                 return false;
             }
 
             if (targetParentNode.Id == movedNode.Id ||
                 SvgDocumentModelMutationLookupUtility.IsSameOrDescendantOf(updatedDocumentModel, targetParentNode, movedNode.Id))
             {
-                error = "Cannot move an element into itself or its descendant.";
+                result = new MutationResult(null, string.Empty, "Cannot move an element into itself or its descendant.");
                 return false;
             }
 
@@ -154,20 +144,20 @@ namespace SvgEditor.DocumentModel
             int sourceIndex = sourceChildren.IndexOf(movedNode.Id);
             if (sourceIndex < 0)
             {
-                error = "Could not resolve the moved element index.";
+                result = new MutationResult(null, string.Empty, "Could not resolve the moved element index.");
                 return false;
             }
 
             if (movingWithinSameParent)
             {
-                int clampedTargetIndex = Math.Clamp(targetChildIndex, 0, sourceChildren.Count);
+                int clampedTargetIndex = Math.Clamp(request.TargetChildIndex, 0, sourceChildren.Count);
                 if (sourceIndex < clampedTargetIndex)
                     clampedTargetIndex--;
 
                 if (clampedTargetIndex == sourceIndex)
                 {
-                    updatedSourceText = documentModel.SourceText;
-                    updatedDocumentModel.SourceText = updatedSourceText;
+                    updatedDocumentModel.SourceText = documentModel.SourceText;
+                    result = new MutationResult(updatedDocumentModel, documentModel.SourceText, string.Empty);
                     return true;
                 }
 
@@ -179,7 +169,7 @@ namespace SvgEditor.DocumentModel
             else
             {
                 List<SvgNodeId> targetChildren = new(targetParentNode.Children ?? Array.Empty<SvgNodeId>());
-                int clampedTargetIndex = Math.Clamp(targetChildIndex, 0, targetChildren.Count);
+                int clampedTargetIndex = Math.Clamp(request.TargetChildIndex, 0, targetChildren.Count);
 
                 sourceChildren.RemoveAt(sourceIndex);
                 targetChildren.Insert(clampedTargetIndex, movedNode.Id);
@@ -192,90 +182,86 @@ namespace SvgEditor.DocumentModel
                 SvgDocumentModelMutationLookupUtility.RefreshSiblingOrder(updatedDocumentModel, targetParentNode);
             }
 
-            return SvgMutationWriter.TrySerialize(_serializer, updatedDocumentModel, out updatedSourceText, out error);
+            if (!SvgMutationWriter.TrySerialize(_serializer, updatedDocumentModel, out string updatedSourceText, out error))
+            {
+                result = new MutationResult(null, string.Empty, error);
+                return false;
+            }
+
+            result = new MutationResult(updatedDocumentModel, updatedSourceText, string.Empty);
+            return true;
         }
 
         public bool TryPrependElementTranslation(
             SvgDocumentModel documentModel,
-            string elementKey,
-            UnityEngine.Vector2 translation,
-            out SvgDocumentModel updatedDocumentModel,
-            out string updatedSourceText,
-            out string error)
+            TranslateElementRequest request,
+            out MutationResult result)
         {
-            if (UnityEngine.Mathf.Approximately(translation.x, 0f) &&
-                UnityEngine.Mathf.Approximately(translation.y, 0f))
+            if (UnityEngine.Mathf.Approximately(request.Translation.x, 0f) &&
+                UnityEngine.Mathf.Approximately(request.Translation.y, 0f))
             {
-                updatedDocumentModel = documentModel;
-                updatedSourceText = documentModel?.SourceText ?? string.Empty;
-                error = string.Empty;
+                result = new MutationResult(documentModel, documentModel?.SourceText ?? string.Empty, string.Empty);
                 return true;
             }
 
             return TryApplyPrependTransformMutation(
                 documentModel,
-                elementKey,
-                existingTransform => SvgMutationWriter.PrependTransform(existingTransform, TransformStringBuilder.BuildTranslate(translation)),
-                out updatedDocumentModel,
-                out updatedSourceText,
-                out error);
+                request.ElementKey,
+                existingTransform => SvgMutationWriter.PrependTransform(existingTransform, TransformStringBuilder.BuildTranslate(request.Translation)),
+                out result);
         }
 
         public bool TryPrependElementScale(
             SvgDocumentModel documentModel,
-            string elementKey,
-            UnityEngine.Vector2 scale,
-            UnityEngine.Vector2 pivot,
-            out SvgDocumentModel updatedDocumentModel,
-            out string updatedSourceText,
-            out string error)
+            ScaleElementRequest request,
+            out MutationResult result)
         {
-            if ((UnityEngine.Mathf.Approximately(scale.x, 1f) && UnityEngine.Mathf.Approximately(scale.y, 1f)) ||
-                scale.x <= UnityEngine.Mathf.Epsilon ||
-                scale.y <= UnityEngine.Mathf.Epsilon)
+            if ((UnityEngine.Mathf.Approximately(request.Scale.x, 1f) && UnityEngine.Mathf.Approximately(request.Scale.y, 1f)) ||
+                request.Scale.x <= UnityEngine.Mathf.Epsilon ||
+                request.Scale.y <= UnityEngine.Mathf.Epsilon)
             {
-                updatedDocumentModel = documentModel;
-                updatedSourceText = documentModel?.SourceText ?? string.Empty;
-                error = string.Empty;
+                result = new MutationResult(documentModel, documentModel?.SourceText ?? string.Empty, string.Empty);
                 return true;
             }
 
             return TryApplyPrependTransformMutation(
                 documentModel,
-                elementKey,
-                existingTransform => SvgMutationWriter.PrependTransform(existingTransform, TransformStringBuilder.BuildScaleAround(scale, pivot)),
-                out updatedDocumentModel,
-                out updatedSourceText,
-                out error);
+                request.ElementKey,
+                existingTransform => SvgMutationWriter.PrependTransform(existingTransform, TransformStringBuilder.BuildScaleAround(request.Scale, request.Pivot)),
+                out result);
         }
 
         private bool TryApplyPrependTransformMutation(
             SvgDocumentModel documentModel,
             string elementKey,
             Func<string, string> buildUpdatedTransform,
-            out SvgDocumentModel updatedDocumentModel,
-            out string updatedSourceText,
-            out string error)
+            out MutationResult result)
         {
-            updatedDocumentModel = null;
-            updatedSourceText = string.Empty;
-            error = string.Empty;
+            result = default;
+            string error = string.Empty;
 
             if (documentModel?.Root == null)
             {
-                error = "Document model is unavailable.";
+                result = new MutationResult(null, string.Empty, "Document model is unavailable.");
                 return false;
             }
 
-            updatedDocumentModel = SvgDocumentModelCloneUtility.CloneDocumentModel(documentModel);
+            SvgDocumentModel updatedDocumentModel = SvgDocumentModelCloneUtility.CloneDocumentModel(documentModel);
             if (!SvgNodeLookupUtility.TryFindNodeByLegacyElementKey(updatedDocumentModel, elementKey, out SvgNodeModel node))
             {
-                error = $"Could not find element '{elementKey}'.";
+                result = new MutationResult(null, string.Empty, $"Could not find element '{elementKey}'.");
                 return false;
             }
 
             SvgMutationWriter.ApplyPrependTransform(node, buildUpdatedTransform);
-            return SvgMutationWriter.TrySerialize(_serializer, updatedDocumentModel, out updatedSourceText, out error);
+            if (!SvgMutationWriter.TrySerialize(_serializer, updatedDocumentModel, out string updatedSourceText, out error))
+            {
+                result = new MutationResult(null, string.Empty, error);
+                return false;
+            }
+
+            result = new MutationResult(updatedDocumentModel, updatedSourceText, string.Empty);
+            return true;
         }
     }
 }

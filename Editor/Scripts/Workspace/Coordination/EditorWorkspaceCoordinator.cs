@@ -62,12 +62,8 @@ namespace SvgEditor.Workspace.Coordination
             HistoryRecordingMode recordingMode = HistoryRecordingMode.Immediate) =>
             _mutationCoordinator.TryApplyPatchRequest(request, successStatus, recordingMode);
 
-        public bool TryApplyTargetFrameRect(
-            string targetKey,
-            Rect targetSceneRect,
-            string successStatus,
-            HistoryRecordingMode recordingMode = HistoryRecordingMode.Immediate) =>
-            _mutationCoordinator.TryApplyTargetFrameRect(targetKey, targetSceneRect, successStatus, recordingMode);
+        public bool TryApplyTargetFrameRect(TargetFrameRectRequest request) =>
+            _mutationCoordinator.TryApplyTargetFrameRect(request);
 
         public void ResetCanvasView(bool clearSelection = false) => _canvasWorkspaceController.ResetCanvasView(clearSelection);
 

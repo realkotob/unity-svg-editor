@@ -1,6 +1,7 @@
 using Unity.VectorGraphics;
 using UnityEngine;
 using SvgEditor.Document;
+using SvgEditor.Workspace.Coordination;
 using SvgEditor.Workspace.Document;
 
 using SvgEditor;
@@ -15,11 +16,7 @@ namespace SvgEditor.Workspace.InspectorPanel
             AttributePatchRequest request,
             string successStatus,
             HistoryRecordingMode recordingMode = HistoryRecordingMode.Immediate);
-        bool TryApplyTargetFrameRect(
-            string targetKey,
-            Rect targetSceneRect,
-            string successStatus,
-            HistoryRecordingMode recordingMode = HistoryRecordingMode.Immediate);
+        bool TryApplyTargetFrameRect(TargetFrameRectRequest request);
         bool TryGetTargetSceneRect(string targetKey, out Rect sceneRect);
         bool TryGetRotationPivotParentSpace(string targetKey, out Vector2 parentPivot);
         bool TryGetParentWorldTransform(string targetKey, out Matrix2D parentWorldTransform);

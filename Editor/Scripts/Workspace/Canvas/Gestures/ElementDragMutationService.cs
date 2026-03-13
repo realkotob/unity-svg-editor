@@ -20,7 +20,7 @@ namespace SvgEditor.Workspace.Canvas
         public bool TryUpdateMoveTransientState(
             ICanvasPointerDragHost host,
             ElementDragState state,
-            CanvasTransientDocumentModelSession transientDocumentModelSession,
+            TransientDocumentSession transientDocumentModelSession,
             Vector2 viewportDelta,
             bool axisLock,
             bool snapEnabled)
@@ -108,7 +108,7 @@ namespace SvgEditor.Workspace.Canvas
         public bool TryUpdateResizeTransientState(
             ICanvasPointerDragHost host,
             ElementDragState state,
-            CanvasTransientDocumentModelSession transientDocumentModelSession,
+            TransientDocumentSession transientDocumentModelSession,
             SelectionHandle activeHandle,
             bool snapEnabled)
         {
@@ -169,88 +169,81 @@ namespace SvgEditor.Workspace.Canvas
         }
 
         public bool TryCommitDrag(
-            ICanvasPointerDragHost host,
+            CommitDragRequest request,
             ElementDragState state,
-            CanvasTransientDocumentModelSession transientDocumentModelSession,
-            ElementRotationSession rotationSession,
-            DragMode dragMode,
-            Vector2 canvasDelta)
+            TransientDocumentSession transientDocumentModelSession,
+            ElementRotationSession rotationSession)
         {
             if (string.IsNullOrWhiteSpace(state.ElementKey))
             {
                 return false;
             }
 
-            if (dragMode == DragMode.RotateElement)
+            if (request.DragMode == DragMode.RotateElement)
             {
                 if (Mathf.Approximately(state.CurrentRotationAngle, 0f))
                 {
                     return false;
                 }
             }
-            else if (canvasDelta.sqrMagnitude < 4f)
+            else if (request.CanvasDelta.sqrMagnitude < 4f)
             {
                 return false;
             }
 
-            if (dragMode == DragMode.MoveElement &&
+            if (request.DragMode == DragMode.MoveElement &&
                 (!_sceneProjector.TryViewportDeltaToScene(
                      state.StartProjectionSceneRect,
                      state.StartPreserveAspectRatioMode,
-                     canvasDelta,
+                     request.CanvasDelta,
                      out Vector2 sceneDelta) ||
                  sceneDelta.sqrMagnitude <= Mathf.Epsilon))
             {
                 return false;
             }
 
-            if (host.CurrentDocument == null)
+            if (request.Host.CurrentDocument == null)
             {
                 return false;
             }
 
             string updatedSource;
             string error;
-            bool builtSource = dragMode == DragMode.RotateElement
+            bool builtSource = request.DragMode == DragMode.RotateElement
                 ? rotationSession.TryBuildCommittedSource(out updatedSource, out error)
                 : transientDocumentModelSession.TryBuildCommittedSource(out updatedSource, out error);
             if (!builtSource)
             {
-                host.UpdateSourceStatus(
+                request.Host.UpdateSourceStatus(
                     string.IsNullOrWhiteSpace(error)
                         ? "Drag commit failed: transient model state is unavailable."
                         : $"Drag commit failed: {error}");
                 return false;
             }
 
-            host.ApplyUpdatedSource(updatedSource, BuildSuccessStatus(host, state.ElementKey, dragMode));
+            request.Host.ApplyUpdatedSource(updatedSource, BuildSuccessStatus(request.Host, state.ElementKey, request.DragMode));
             return true;
         }
 
         public bool TryBuildNudgedSource(
-            DocumentSession currentDocument,
-            string elementKey,
-            Vector2 sceneDelta,
-            Matrix2D parentWorldTransform,
+            NudgeSourceRequest request,
             out string updatedSource)
         {
             updatedSource = string.Empty;
-            if (currentDocument?.DocumentModel == null ||
-                string.IsNullOrWhiteSpace(elementKey) ||
-                sceneDelta.sqrMagnitude <= Mathf.Epsilon)
+            if (request.CurrentDocument?.DocumentModel == null ||
+                string.IsNullOrWhiteSpace(request.ElementKey) ||
+                request.SceneDelta.sqrMagnitude <= Mathf.Epsilon)
             {
                 return false;
             }
 
-            Vector2 parentDelta = parentWorldTransform.Inverse().MultiplyVector(sceneDelta);
+            Vector2 parentDelta = request.ParentWorldTransform.Inverse().MultiplyVector(request.SceneDelta);
             SvgDocumentModelMutationService mutationService = new();
             return mutationService.TryPrependElementTranslation(
-                currentDocument.DocumentModel,
-                elementKey,
-                parentDelta,
-                out _,
-                out updatedSource,
-                out _);
+                request.CurrentDocument.DocumentModel,
+                new TranslateElementRequest(request.ElementKey, parentDelta),
+                out MutationResult result) &&
+                !string.IsNullOrWhiteSpace(updatedSource = result.UpdatedSourceText);
         }
 
         private static string BuildSuccessStatus(ICanvasPointerDragHost host, string elementKey, DragMode dragMode)
@@ -266,8 +259,8 @@ namespace SvgEditor.Workspace.Canvas
 
         private static bool TryApplyTransientPreview(
             ICanvasPointerDragHost host,
-            CanvasTransientDocumentModelSession transientDocumentModelSession,
-            Func<CanvasTransientDocumentModelSession, bool> applyMutation)
+            TransientDocumentSession transientDocumentModelSession,
+            Func<TransientDocumentSession, bool> applyMutation)
         {
             if (!applyMutation(transientDocumentModelSession) ||
                 !transientDocumentModelSession.TryBuildPreviewDocumentModel(out SvgDocumentModel previewDocumentModel, out _) ||

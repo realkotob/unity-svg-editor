@@ -88,7 +88,7 @@ namespace SvgEditor.Workspace.Canvas
             }
         }
 
-        public IReadOnlyList<CanvasDefinitionOverlayVisual> BuildDraggedDefinitionOverlays(
+        public IReadOnlyList<CanvasDefinitionOverlayVisual> BuildDraggedOverlays(
             ICanvasWorkspaceHost host,
             PointerDragController pointerDragController,
             SceneProjector sceneProjector)
@@ -123,7 +123,7 @@ namespace SvgEditor.Workspace.Canvas
             return shifted;
         }
 
-        public bool TryBuildDraggedSelectionVisual(
+        public bool TryBuildDraggedSelection(
             ICanvasWorkspaceHost host,
             PointerDragController pointerDragController,
             SceneProjector sceneProjector,
@@ -148,10 +148,11 @@ namespace SvgEditor.Workspace.Canvas
             var showSelectionHandles = pointerDragController.DragMode != DragMode.RotateElement;
             selectionVisual = sceneProjector.BuildSelectionVisual(
                 previewSnapshot,
-                SelectionKind.Element,
-                selectedElementViewportRect,
-                selectedElementSceneRect.size,
-                showSelectionHandles);
+                new SelectionVisualRequest(
+                    SelectionKind.Element,
+                    selectedElementViewportRect,
+                    selectedElementSceneRect.size,
+                    showSelectionHandles));
 
             var selectedGeometry = sceneProjector.FindPreviewElement(previewSnapshot, host.SelectedElementKey);
             if (selectedGeometry != null &&

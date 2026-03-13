@@ -11,7 +11,7 @@ using SvgEditor.Preview;
 
 namespace SvgEditor.Workspace.Canvas
 {
-    internal sealed class CanvasTransientDocumentModelSession
+    internal sealed class TransientDocumentSession
     {
         private readonly SvgDocumentModelSerializer _serializer = new();
 

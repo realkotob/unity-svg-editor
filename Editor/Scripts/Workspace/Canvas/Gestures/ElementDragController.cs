@@ -14,7 +14,7 @@ namespace SvgEditor.Workspace.Canvas
         private readonly SceneProjector _sceneProjector;
         private readonly ElementDragMutationService _mutationService;
         private readonly ElementMoveSession _moveSession = new();
-        private readonly CanvasTransientDocumentModelSession _transientDocumentModelSession = new();
+        private readonly TransientDocumentSession _transientDocumentModelSession = new();
         private readonly ElementRotationSession _rotationSession = new();
         private readonly ElementDragState _state = new();
 
@@ -54,23 +54,16 @@ namespace SvgEditor.Workspace.Canvas
             _transientDocumentModelSession.TryBegin(currentDocument, elementKey);
         }
 
-        public void BeginResize(
-            DocumentSession currentDocument,
-            string elementKey,
-            Rect projectionSceneRect,
-            SvgPreserveAspectRatioMode preserveAspectRatioMode,
-            Rect selectionViewportRect,
-            Rect selectionSceneRect,
-            Matrix2D parentWorldTransform)
+        public void BeginResize(ResizeBeginRequest request)
         {
             _state.BeginSelection(
-                elementKey,
-                projectionSceneRect,
-                preserveAspectRatioMode,
-                selectionViewportRect,
-                selectionSceneRect,
-                parentWorldTransform);
-            _transientDocumentModelSession.TryBegin(currentDocument, elementKey);
+                request.ElementKey,
+                request.ProjectionSceneRect,
+                request.PreserveAspectRatioMode,
+                request.SelectionViewportRect,
+                request.SelectionSceneRect,
+                request.ParentWorldTransform);
+            _transientDocumentModelSession.TryBegin(request.CurrentDocument, request.ElementKey);
         }
 
         public void BeginRotate(
@@ -182,34 +175,20 @@ namespace SvgEditor.Workspace.Canvas
                 snapEnabled);
         }
 
-        public bool TryCommitDrag(
-            ICanvasPointerDragHost host,
-            DragMode dragMode,
-            SelectionHandle activeHandle,
-            Vector2 canvasDelta)
+        public bool TryCommitDrag(CommitDragRequest request)
         {
             return _mutationService.TryCommitDrag(
-                host,
+                request,
                 _state,
                 _transientDocumentModelSession,
-                _rotationSession,
-                dragMode,
-                canvasDelta);
+                _rotationSession);
         }
 
         public bool TryBuildNudgedSource(
-            DocumentSession currentDocument,
-            string elementKey,
-            Vector2 sceneDelta,
-            Matrix2D parentWorldTransform,
+            NudgeSourceRequest request,
             out string updatedSource)
         {
-            return _mutationService.TryBuildNudgedSource(
-                currentDocument,
-                elementKey,
-                sceneDelta,
-                parentWorldTransform,
-                out updatedSource);
+            return _mutationService.TryBuildNudgedSource(request, out updatedSource);
         }
     }
 }

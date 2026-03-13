@@ -7,20 +7,12 @@ namespace SvgEditor.Workspace.Canvas
     internal static class ViewportMappingUtility
     {
         public static bool TrySceneRectToViewportRect(
-            ViewportState viewportState,
-            PreviewSnapshot previewSnapshot,
-            float framePadding,
-            float frameHeaderHeight,
+            CanvasViewportLayoutUtility.ProjectionContext context,
             Rect sceneRect,
             out Rect viewportRect)
         {
             viewportRect = default;
-            if (!TryGetSceneViewportMapping(
-                    viewportState,
-                    previewSnapshot,
-                    framePadding,
-                    frameHeaderHeight,
-                    out SceneViewportMapping mapping))
+            if (!TryGetSceneViewportMapping(context, out SceneViewportMapping mapping))
             {
                 return false;
             }
@@ -34,20 +26,12 @@ namespace SvgEditor.Workspace.Canvas
         }
 
         public static bool TryScenePointToViewportPoint(
-            ViewportState viewportState,
-            PreviewSnapshot previewSnapshot,
-            float framePadding,
-            float frameHeaderHeight,
+            CanvasViewportLayoutUtility.ProjectionContext context,
             Vector2 scenePoint,
             out Vector2 viewportPoint)
         {
             viewportPoint = default;
-            if (!TryGetSceneViewportMapping(
-                    viewportState,
-                    previewSnapshot,
-                    framePadding,
-                    frameHeaderHeight,
-                    out SceneViewportMapping mapping))
+            if (!TryGetSceneViewportMapping(context, out SceneViewportMapping mapping))
             {
                 return false;
             }
@@ -59,65 +43,12 @@ namespace SvgEditor.Workspace.Canvas
         }
 
         public static bool TryViewportDeltaToScene(
-            ViewportState viewportState,
-            PreviewSnapshot previewSnapshot,
-            float framePadding,
-            float frameHeaderHeight,
+            CanvasViewportLayoutUtility.ProjectionContext context,
             Vector2 viewportDelta,
             out Vector2 sceneDelta)
         {
             sceneDelta = default;
-            if (!TryGetSceneViewportMapping(
-                    viewportState,
-                    previewSnapshot,
-                    framePadding,
-                    frameHeaderHeight,
-                    out SceneViewportMapping mapping))
-            {
-                return false;
-            }
-
-            sceneDelta = new Vector2(
-                viewportDelta.x / mapping.Scale.x,
-                viewportDelta.y / mapping.Scale.y);
-            return true;
-        }
-
-        public static bool TryViewportDeltaToScene(
-            ViewportState viewportState,
-            Rect projectionSceneRect,
-            float framePadding,
-            float frameHeaderHeight,
-            Vector2 viewportDelta,
-            out Vector2 sceneDelta)
-        {
-            return TryViewportDeltaToScene(
-                viewportState,
-                projectionSceneRect,
-                SvgPreserveAspectRatioMode.Meet,
-                framePadding,
-                frameHeaderHeight,
-                viewportDelta,
-                out sceneDelta);
-        }
-
-        public static bool TryViewportDeltaToScene(
-            ViewportState viewportState,
-            Rect projectionSceneRect,
-            SvgPreserveAspectRatioMode preserveAspectRatioMode,
-            float framePadding,
-            float frameHeaderHeight,
-            Vector2 viewportDelta,
-            out Vector2 sceneDelta)
-        {
-            sceneDelta = default;
-            if (!TryGetSceneViewportMapping(
-                    viewportState,
-                    projectionSceneRect,
-                    preserveAspectRatioMode,
-                    framePadding,
-                    frameHeaderHeight,
-                    out SceneViewportMapping mapping))
+            if (!TryGetSceneViewportMapping(context, out SceneViewportMapping mapping))
             {
                 return false;
             }
@@ -129,20 +60,12 @@ namespace SvgEditor.Workspace.Canvas
         }
 
         public static bool TryViewportPointToScenePoint(
-            ViewportState viewportState,
-            PreviewSnapshot previewSnapshot,
-            float framePadding,
-            float frameHeaderHeight,
+            CanvasViewportLayoutUtility.ProjectionContext context,
             Vector2 viewportPoint,
             out Vector2 scenePoint)
         {
             scenePoint = default;
-            if (!TryGetSceneViewportMapping(
-                    viewportState,
-                    previewSnapshot,
-                    framePadding,
-                    frameHeaderHeight,
-                    out SceneViewportMapping mapping))
+            if (!TryGetSceneViewportMapping(context, out SceneViewportMapping mapping))
             {
                 return false;
             }
@@ -154,19 +77,11 @@ namespace SvgEditor.Workspace.Canvas
         }
 
         public static bool TryGetDisplayedZoomScale(
-            ViewportState viewportState,
-            PreviewSnapshot previewSnapshot,
-            float framePadding,
-            float frameHeaderHeight,
+            CanvasViewportLayoutUtility.ProjectionContext context,
             out float displayedZoomScale)
         {
             displayedZoomScale = 1f;
-            if (!TryGetSceneViewportMapping(
-                    viewportState,
-                    previewSnapshot,
-                    framePadding,
-                    frameHeaderHeight,
-                    out SceneViewportMapping mapping))
+            if (!TryGetSceneViewportMapping(context, out SceneViewportMapping mapping))
             {
                 return false;
             }
@@ -176,50 +91,30 @@ namespace SvgEditor.Workspace.Canvas
         }
 
         private static bool TryGetSceneViewportMapping(
-            ViewportState viewportState,
-            PreviewSnapshot previewSnapshot,
-            float framePadding,
-            float frameHeaderHeight,
-            out SceneViewportMapping mapping)
-        {
-            return TryGetSceneViewportMapping(
-                viewportState,
-                CanvasViewportLayoutUtility.GetPreviewSceneRect(previewSnapshot),
-                previewSnapshot?.PreserveAspectRatioMode ?? SvgPreserveAspectRatioMode.Meet,
-                framePadding,
-                frameHeaderHeight,
-                out mapping);
-        }
-
-        private static bool TryGetSceneViewportMapping(
-            ViewportState viewportState,
-            Rect projectionSceneRect,
-            SvgPreserveAspectRatioMode preserveAspectRatioMode,
-            float framePadding,
-            float frameHeaderHeight,
+            CanvasViewportLayoutUtility.ProjectionContext context,
             out SceneViewportMapping mapping)
         {
             mapping = default;
             if (!ViewportFrameLayoutCalculator.TryGetFrameContentLayout(
-                    viewportState,
-                    projectionSceneRect,
-                    preserveAspectRatioMode,
-                    framePadding,
-                    frameHeaderHeight,
+                    context.ViewportState,
+                    context.ProjectionSceneRect,
+                    context.PreserveAspectRatioMode,
+                    context.FramePadding,
+                    context.FrameHeaderHeight,
                     out CanvasViewportLayoutUtility.FrameContentLayout layout))
             {
                 return false;
             }
 
             Vector2 scale = new(
-                layout.ImageViewportRect.width / projectionSceneRect.width,
-                layout.ImageViewportRect.height / projectionSceneRect.height);
+                layout.ImageViewportRect.width / context.ProjectionSceneRect.width,
+                layout.ImageViewportRect.height / context.ProjectionSceneRect.height);
             if (scale.x <= Mathf.Epsilon || scale.y <= Mathf.Epsilon)
             {
                 return false;
             }
 
-            mapping = new SceneViewportMapping(projectionSceneRect, layout, scale);
+            mapping = new SceneViewportMapping(context.ProjectionSceneRect, layout, scale);
             return true;
         }
 

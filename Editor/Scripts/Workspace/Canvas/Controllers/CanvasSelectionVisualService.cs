@@ -66,18 +66,19 @@ namespace SvgEditor.Workspace.Canvas
             {
                 _overlayController.SetSelection(_sceneProjector.BuildSelectionVisual(
                     previewSnapshot,
-                    SelectionKind.Element,
-                    _pointerDragController.DragCurrentSelectionViewportRect,
-                    _pointerDragController.DragStartElementSceneRect.size,
-                    false));
-                _overlayController.SetDefinitionOverlays(_definitionProxyCoordinator.BuildDraggedDefinitionOverlays(_host, _pointerDragController, _sceneProjector));
+                    new SelectionVisualRequest(
+                        SelectionKind.Element,
+                        _pointerDragController.DragCurrentSelectionViewportRect,
+                        _pointerDragController.DragStartElementSceneRect.size,
+                        false)));
+                _overlayController.SetDefinitionOverlays(_definitionProxyCoordinator.BuildDraggedOverlays(_host, _pointerDragController, _sceneProjector));
                 return true;
             }
 
-            if (_definitionProxyCoordinator.TryBuildDraggedSelectionVisual(_host, _pointerDragController, _sceneProjector, out CanvasSelectionVisual draggedSelectionVisual))
+            if (_definitionProxyCoordinator.TryBuildDraggedSelection(_host, _pointerDragController, _sceneProjector, out CanvasSelectionVisual draggedSelectionVisual))
             {
                 _overlayController.SetSelection(draggedSelectionVisual);
-                _overlayController.SetDefinitionOverlays(_definitionProxyCoordinator.BuildDraggedDefinitionOverlays(_host, _pointerDragController, _sceneProjector));
+                _overlayController.SetDefinitionOverlays(_definitionProxyCoordinator.BuildDraggedOverlays(_host, _pointerDragController, _sceneProjector));
                 return true;
             }
 
@@ -93,13 +94,15 @@ namespace SvgEditor.Workspace.Canvas
                 : _pointerDragController.DragStartElementSceneRect;
 
             _overlayController.SetSelection(_sceneProjector.BuildSelectionVisual(
-                _pointerDragController.DragStartProjectionSceneRect,
-                _pointerDragController.DragStartPreserveAspectRatioMode,
-                SelectionKind.Element,
-                _pointerDragController.DragCurrentSelectionViewportRect,
-                sourceRect.size,
-                _pointerDragController.DragMode != DragMode.RotateElement));
-            _overlayController.SetDefinitionOverlays(_definitionProxyCoordinator.BuildDraggedDefinitionOverlays(_host, _pointerDragController, _sceneProjector));
+                new SelectionVisualRequest(
+                    SelectionKind.Element,
+                    _pointerDragController.DragCurrentSelectionViewportRect,
+                    sourceRect.size,
+                    _pointerDragController.DragMode != DragMode.RotateElement)
+                    .WithProjection(
+                        _pointerDragController.DragStartProjectionSceneRect,
+                        _pointerDragController.DragStartPreserveAspectRatioMode)));
+            _overlayController.SetDefinitionOverlays(_definitionProxyCoordinator.BuildDraggedOverlays(_host, _pointerDragController, _sceneProjector));
             return true;
         }
 
@@ -114,10 +117,11 @@ namespace SvgEditor.Workspace.Canvas
             Vector2 frameSourceSize = previewSnapshot?.ProjectionRect.size ?? frameViewportRect.size;
             _overlayController.SetSelection(_sceneProjector.BuildSelectionVisual(
                 previewSnapshot,
-                SelectionKind.Frame,
-                frameViewportRect,
-                frameSourceSize,
-                false));
+                new SelectionVisualRequest(
+                    SelectionKind.Frame,
+                    frameViewportRect,
+                    frameSourceSize,
+                    false)));
             _overlayController.ClearDefinitionOverlays();
             return true;
         }
@@ -132,10 +136,11 @@ namespace SvgEditor.Workspace.Canvas
 
             _overlayController.SetSelection(_sceneProjector.BuildSelectionVisual(
                 previewSnapshot,
-                SelectionKind.Element,
-                selectedProxy.ViewportBounds,
-                selectedProxy.SceneBounds.size,
-                false));
+                new SelectionVisualRequest(
+                    SelectionKind.Element,
+                    selectedProxy.ViewportBounds,
+                    selectedProxy.SceneBounds.size,
+                    false)));
             return true;
         }
 
@@ -151,10 +156,11 @@ namespace SvgEditor.Workspace.Canvas
             bool showSelectionHandles = !IsResizeUnsupported(_host.SelectedElementKey);
             CanvasSelectionVisual selectionVisual = _sceneProjector.BuildSelectionVisual(
                 previewSnapshot,
-                SelectionKind.Element,
-                elementViewportRect,
-                selectedElementSceneRect.size,
-                showSelectionHandles);
+                new SelectionVisualRequest(
+                    SelectionKind.Element,
+                    elementViewportRect,
+                    selectedElementSceneRect.size,
+                    showSelectionHandles));
             PreviewElementGeometry selectedGeometry = _sceneProjector.FindPreviewElement(previewSnapshot, _host.SelectedElementKey);
             if (selectedGeometry != null &&
                 _sceneProjector.TryScenePointToViewportPoint(previewSnapshot, selectedGeometry.RotationPivotWorld, out Vector2 rotationPivotViewport))

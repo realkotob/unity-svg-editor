@@ -62,13 +62,14 @@ namespace SvgEditor.Workspace.Canvas
                 handle,
                 localPosition,
                 pointerId,
-                _host.CurrentDocument,
-                _host.PreviewSnapshot.CanvasViewportRect,
-                _host.PreviewSnapshot.PreserveAspectRatioMode,
-                selectionViewportRect,
-                selectedElementSceneRect,
-                _host.SelectedElementKey,
-                parentWorldTransform);
+                new ResizeBeginRequest(
+                    _host.CurrentDocument,
+                    _host.SelectedElementKey,
+                    _host.PreviewSnapshot.CanvasViewportRect,
+                    _host.PreviewSnapshot.PreserveAspectRatioMode,
+                    selectionViewportRect,
+                    selectedElementSceneRect,
+                    parentWorldTransform));
             return true;
         }
 
@@ -143,9 +144,9 @@ namespace SvgEditor.Workspace.Canvas
             }
         }
 
-        public void Complete(DragMode dragMode, SelectionHandle activeHandle, Vector2 canvasDelta)
+        public void Complete(DragMode dragMode, Vector2 canvasDelta)
         {
-            if (_elementDragController.TryCommitDrag(_host, dragMode, activeHandle, canvasDelta))
+            if (_elementDragController.TryCommitDrag(new CommitDragRequest(_host, dragMode, canvasDelta)))
             {
                 if (_host.HasDefinitionProxySelection)
                 {
@@ -172,23 +173,10 @@ namespace SvgEditor.Workspace.Canvas
             SelectionHandle handle,
             Vector2 localPosition,
             int pointerId,
-            DocumentSession currentDocument,
-            Rect projectionSceneRect,
-            SvgPreserveAspectRatioMode preserveAspectRatioMode,
-            Rect selectionViewportRect,
-            Rect selectionSceneRect,
-            string elementKey,
-            Matrix2D parentWorldTransform)
+            ResizeBeginRequest request)
         {
             state.Begin(DragMode.ResizeElement, handle, default, default);
-            _elementDragController.BeginResize(
-                currentDocument,
-                elementKey,
-                projectionSceneRect,
-                preserveAspectRatioMode,
-                selectionViewportRect,
-                selectionSceneRect,
-                parentWorldTransform);
+            _elementDragController.BeginResize(request);
             _dragSession.Begin(_overlayAccessor(), pointerId, localPosition);
         }
     }

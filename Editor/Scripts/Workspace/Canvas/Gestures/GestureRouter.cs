@@ -148,7 +148,7 @@ namespace SvgEditor.Workspace.Canvas
 
             if (wasElementGesture)
             {
-                _elementGestureHandler.Complete(dragMode, activeHandle, canvasDelta);
+                _elementGestureHandler.Complete(dragMode, canvasDelta);
                 EndCanvasDrag();
                 evt.StopPropagation();
                 return;

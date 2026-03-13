@@ -103,10 +103,7 @@ namespace SvgEditor.Workspace.Canvas
         public bool TrySceneRectToViewportRect(PreviewSnapshot previewSnapshot, Rect sceneRect, out Rect viewportRect)
         {
             return CanvasViewportLayoutUtility.TrySceneRectToViewportRect(
-                _viewportState,
-                previewSnapshot,
-                _framePadding,
-                _frameHeaderHeight,
+                CreateProjectionContext(previewSnapshot),
                 sceneRect,
                 out viewportRect);
         }
@@ -114,10 +111,7 @@ namespace SvgEditor.Workspace.Canvas
         public bool TryViewportDeltaToScene(PreviewSnapshot previewSnapshot, Vector2 viewportDelta, out Vector2 sceneDelta)
         {
             return CanvasViewportLayoutUtility.TryViewportDeltaToScene(
-                _viewportState,
-                previewSnapshot,
-                _framePadding,
-                _frameHeaderHeight,
+                CreateProjectionContext(previewSnapshot),
                 viewportDelta,
                 out sceneDelta);
         }
@@ -125,10 +119,7 @@ namespace SvgEditor.Workspace.Canvas
         public bool TryViewportDeltaToScene(Rect projectionSceneRect, Vector2 viewportDelta, out Vector2 sceneDelta)
         {
             return CanvasViewportLayoutUtility.TryViewportDeltaToScene(
-                _viewportState,
-                projectionSceneRect,
-                _framePadding,
-                _frameHeaderHeight,
+                CreateProjectionContext(projectionSceneRect),
                 viewportDelta,
                 out sceneDelta);
         }
@@ -140,11 +131,7 @@ namespace SvgEditor.Workspace.Canvas
             out Vector2 sceneDelta)
         {
             return CanvasViewportLayoutUtility.TryViewportDeltaToScene(
-                _viewportState,
-                projectionSceneRect,
-                preserveAspectRatioMode,
-                _framePadding,
-                _frameHeaderHeight,
+                CreateProjectionContext(projectionSceneRect, preserveAspectRatioMode),
                 viewportDelta,
                 out sceneDelta);
         }
@@ -152,10 +139,7 @@ namespace SvgEditor.Workspace.Canvas
         public bool TryViewportPointToScenePoint(PreviewSnapshot previewSnapshot, Vector2 viewportPoint, out Vector2 scenePoint)
         {
             return CanvasViewportLayoutUtility.TryViewportPointToScenePoint(
-                _viewportState,
-                previewSnapshot,
-                _framePadding,
-                _frameHeaderHeight,
+                CreateProjectionContext(previewSnapshot),
                 viewportPoint,
                 out scenePoint);
         }
@@ -163,10 +147,7 @@ namespace SvgEditor.Workspace.Canvas
         public bool TryScenePointToViewportPoint(PreviewSnapshot previewSnapshot, Vector2 scenePoint, out Vector2 viewportPoint)
         {
             return CanvasViewportLayoutUtility.TryScenePointToViewportPoint(
-                _viewportState,
-                previewSnapshot,
-                _framePadding,
-                _frameHeaderHeight,
+                CreateProjectionContext(previewSnapshot),
                 scenePoint,
                 out viewportPoint);
         }
@@ -174,10 +155,7 @@ namespace SvgEditor.Workspace.Canvas
         public bool TryGetDisplayedZoomScale(PreviewSnapshot previewSnapshot, out float displayedZoomScale)
         {
             return CanvasViewportLayoutUtility.TryGetDisplayedZoomScale(
-                _viewportState,
-                previewSnapshot,
-                _framePadding,
-                _frameHeaderHeight,
+                CreateProjectionContext(previewSnapshot),
                 out displayedZoomScale);
         }
 
@@ -236,61 +214,22 @@ namespace SvgEditor.Workspace.Canvas
 
         public CanvasSelectionVisual BuildSelectionVisual(
             PreviewSnapshot previewSnapshot,
-            SelectionKind kind,
-            Rect viewportRect,
-            Vector2 sourceSize,
-            bool showSelectionHandles)
+            SelectionVisualRequest request)
         {
             return CanvasProjectionMath.BuildSelectionVisual(
                 _viewportState,
-                previewSnapshot,
-                _framePadding,
-                _frameHeaderHeight,
+                CreateProjectionContext(previewSnapshot),
                 _alignmentGuideThreshold,
-                kind,
-                viewportRect,
-                sourceSize,
-                showSelectionHandles);
+                request);
         }
 
-        public CanvasSelectionVisual BuildSelectionVisual(
-            Rect projectionSceneRect,
-            SelectionKind kind,
-            Rect viewportRect,
-            Vector2 sourceSize,
-            bool showSelectionHandles)
+        public CanvasSelectionVisual BuildSelectionVisual(SelectionVisualRequest request)
         {
             return CanvasProjectionMath.BuildSelectionVisual(
                 _viewportState,
-                projectionSceneRect,
-                _framePadding,
-                _frameHeaderHeight,
+                CreateProjectionContext(request.ProjectionSceneRect, request.PreserveAspectRatioMode),
                 _alignmentGuideThreshold,
-                kind,
-                viewportRect,
-                sourceSize,
-                showSelectionHandles);
-        }
-
-        public CanvasSelectionVisual BuildSelectionVisual(
-            Rect projectionSceneRect,
-            SvgPreserveAspectRatioMode preserveAspectRatioMode,
-            SelectionKind kind,
-            Rect viewportRect,
-            Vector2 sourceSize,
-            bool showSelectionHandles)
-        {
-            return CanvasProjectionMath.BuildSelectionVisual(
-                _viewportState,
-                projectionSceneRect,
-                preserveAspectRatioMode,
-                _framePadding,
-                _frameHeaderHeight,
-                _alignmentGuideThreshold,
-                kind,
-                viewportRect,
-                sourceSize,
-                showSelectionHandles);
+                request);
         }
 
         public Rect BuildScaledSceneRect(
@@ -390,6 +329,32 @@ namespace SvgEditor.Workspace.Canvas
                 return "Frame 1";
 
             return Path.GetFileNameWithoutExtension(currentDocument.AssetPath);
+        }
+
+        private CanvasViewportLayoutUtility.ProjectionContext CreateProjectionContext(PreviewSnapshot previewSnapshot)
+        {
+            return CanvasViewportLayoutUtility.CreateProjectionContext(
+                _viewportState,
+                previewSnapshot,
+                _framePadding,
+                _frameHeaderHeight);
+        }
+
+        private CanvasViewportLayoutUtility.ProjectionContext CreateProjectionContext(
+            Rect projectionSceneRect,
+            SvgPreserveAspectRatioMode preserveAspectRatioMode)
+        {
+            return CanvasViewportLayoutUtility.CreateProjectionContext(
+                _viewportState,
+                projectionSceneRect,
+                preserveAspectRatioMode,
+                _framePadding,
+                _frameHeaderHeight);
+        }
+
+        private CanvasViewportLayoutUtility.ProjectionContext CreateProjectionContext(Rect projectionSceneRect)
+        {
+            return CreateProjectionContext(projectionSceneRect, SvgPreserveAspectRatioMode.Meet);
         }
     }
 }

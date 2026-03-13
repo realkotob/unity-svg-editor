@@ -5,14 +5,14 @@ using SvgEditor.Preview;
 
 namespace SvgEditor.Shell
 {
-    internal sealed class PreviewGeometryLookupService
+    internal sealed class GeometryLookupService
     {
         private readonly Func<PreviewSnapshot> _previewSnapshotAccessor;
 
-        public PreviewGeometryLookupService(Func<PreviewSnapshot> previewSnapshotAccessor)
-        {
-            _previewSnapshotAccessor = previewSnapshotAccessor;
-        }
+        public GeometryLookupService(Func<PreviewSnapshot> previewSnapshotAccessor)
+            {
+                _previewSnapshotAccessor = previewSnapshotAccessor;
+            }
 
         private PreviewSnapshot PreviewSnapshot => _previewSnapshotAccessor?.Invoke();
 

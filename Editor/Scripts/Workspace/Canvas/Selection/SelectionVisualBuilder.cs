@@ -9,89 +9,35 @@ namespace SvgEditor.Workspace.Canvas
     {
         public static CanvasSelectionVisual BuildSelectionVisual(
             ViewportState viewportState,
-            PreviewSnapshot previewSnapshot,
-            float framePadding,
-            float frameHeaderHeight,
+            CanvasViewportLayoutUtility.ProjectionContext projectionContext,
             float alignmentGuideThreshold,
-            SelectionKind kind,
-            Rect viewportRect,
-            Vector2 sourceSize,
-            bool showSelectionHandles)
-        {
-            return BuildSelectionVisual(
-                viewportState,
-                CanvasViewportLayoutUtility.GetPreviewSceneRect(previewSnapshot),
-                previewSnapshot?.PreserveAspectRatioMode ?? SvgPreserveAspectRatioMode.Meet,
-                framePadding,
-                frameHeaderHeight,
-                alignmentGuideThreshold,
-                kind,
-                viewportRect,
-                sourceSize,
-                showSelectionHandles);
-        }
-
-        public static CanvasSelectionVisual BuildSelectionVisual(
-            ViewportState viewportState,
-            Rect projectionSceneRect,
-            float framePadding,
-            float frameHeaderHeight,
-            float alignmentGuideThreshold,
-            SelectionKind kind,
-            Rect viewportRect,
-            Vector2 sourceSize,
-            bool showSelectionHandles)
-        {
-            return BuildSelectionVisual(
-                viewportState,
-                projectionSceneRect,
-                SvgPreserveAspectRatioMode.Meet,
-                framePadding,
-                frameHeaderHeight,
-                alignmentGuideThreshold,
-                kind,
-                viewportRect,
-                sourceSize,
-                showSelectionHandles);
-        }
-
-        public static CanvasSelectionVisual BuildSelectionVisual(
-            ViewportState viewportState,
-            Rect projectionSceneRect,
-            SvgPreserveAspectRatioMode preserveAspectRatioMode,
-            float framePadding,
-            float frameHeaderHeight,
-            float alignmentGuideThreshold,
-            SelectionKind kind,
-            Rect viewportRect,
-            Vector2 sourceSize,
-            bool showSelectionHandles)
+            SelectionVisualRequest request)
         {
             bool showVerticalGuide = false;
             bool showHorizontalGuide = false;
             float verticalGuideX = 0f;
             float horizontalGuideY = 0f;
-            if (kind == SelectionKind.Element &&
+            if (request.Kind == SelectionKind.Element &&
                 CanvasViewportLayoutUtility.TryGetFrameContentLayout(
                     viewportState,
-                    projectionSceneRect,
-                    preserveAspectRatioMode,
-                    framePadding,
-                    frameHeaderHeight,
+                    projectionContext.ProjectionSceneRect,
+                    projectionContext.PreserveAspectRatioMode,
+                    projectionContext.FramePadding,
+                    projectionContext.FrameHeaderHeight,
                     out CanvasViewportLayoutUtility.FrameContentLayout layout))
             {
-                showVerticalGuide = Mathf.Abs(viewportRect.center.x - layout.ImageViewportRect.center.x) <= alignmentGuideThreshold;
-                showHorizontalGuide = Mathf.Abs(viewportRect.center.y - layout.ImageViewportRect.center.y) <= alignmentGuideThreshold;
+                showVerticalGuide = Mathf.Abs(request.ViewportRect.center.x - layout.ImageViewportRect.center.x) <= alignmentGuideThreshold;
+                showHorizontalGuide = Mathf.Abs(request.ViewportRect.center.y - layout.ImageViewportRect.center.y) <= alignmentGuideThreshold;
                 verticalGuideX = layout.ImageViewportRect.center.x;
                 horizontalGuideY = layout.ImageViewportRect.center.y;
             }
 
             return new CanvasSelectionVisual
             {
-                Kind = kind,
-                Rect = viewportRect,
-                ShowSelectionHandles = showSelectionHandles,
-                SizeText = $"{Mathf.RoundToInt(sourceSize.x)} × {Mathf.RoundToInt(sourceSize.y)}",
+                Kind = request.Kind,
+                Rect = request.ViewportRect,
+                ShowSelectionHandles = request.ShowSelectionHandles,
+                SizeText = $"{Mathf.RoundToInt(request.SourceSize.x)} × {Mathf.RoundToInt(request.SourceSize.y)}",
                 ShowVerticalGuide = showVerticalGuide,
                 VerticalGuideX = verticalGuideX,
                 ShowHorizontalGuide = showHorizontalGuide,

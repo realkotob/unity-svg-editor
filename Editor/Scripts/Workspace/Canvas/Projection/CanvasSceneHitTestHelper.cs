@@ -99,11 +99,14 @@ namespace SvgEditor.Workspace.Canvas
             if (previewSnapshot?.Elements == null)
                 return false;
 
+            CanvasViewportLayoutUtility.ProjectionContext projectionContext = CanvasViewportLayoutUtility.CreateProjectionContext(
+                viewportState,
+                previewSnapshot,
+                framePadding,
+                frameHeaderHeight);
+
             if (!CanvasViewportLayoutUtility.TryViewportPointToScenePoint(
-                    viewportState,
-                    previewSnapshot,
-                    framePadding,
-                    frameHeaderHeight,
+                    projectionContext,
                     canvasLocalPoint,
                     out Vector2 scenePoint))
             {
@@ -112,10 +115,7 @@ namespace SvgEditor.Workspace.Canvas
 
             float sceneHitRadius = 0f;
             if (CanvasViewportLayoutUtility.TryViewportDeltaToScene(
-                    viewportState,
-                    previewSnapshot,
-                    framePadding,
-                    frameHeaderHeight,
+                    projectionContext,
                     new Vector2(HitViewportRadius, HitViewportRadius),
                     out Vector2 sceneRadiusDelta))
             {
@@ -154,10 +154,11 @@ namespace SvgEditor.Workspace.Canvas
                 SelectionKind.Frame => CanvasViewportLayoutUtility.TryGetFrameViewportRect(viewportState, out selectionViewportRect),
                 SelectionKind.Element => TryResolveSelectedElementSceneRect(previewSnapshot, selectedElementKey, out Rect sceneRect) &&
                                               CanvasViewportLayoutUtility.TrySceneRectToViewportRect(
-                                                  viewportState,
-                                                  previewSnapshot,
-                                                  framePadding,
-                                                  frameHeaderHeight,
+                                                  CanvasViewportLayoutUtility.CreateProjectionContext(
+                                                      viewportState,
+                                                      previewSnapshot,
+                                                      framePadding,
+                                                      frameHeaderHeight),
                                                   sceneRect,
                                                   out selectionViewportRect),
                 _ => false

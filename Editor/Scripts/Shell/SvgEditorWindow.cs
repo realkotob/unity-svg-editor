@@ -31,7 +31,7 @@ namespace SvgEditor.Shell
         private LifecycleController _documentLifecycleController;
         private WindowLayoutBinder _layoutBinder;
         private WindowShortcutRouter _shortcutRouter;
-        private PreviewGeometryLookupService _previewGeometryLookupService;
+        private GeometryLookupService _previewGeometryLookupService;
         private EditorWorkspaceCoordinator _workspaceCoordinator;
 
         VisualElement IEditorWorkspaceHost.RootVisualElement => rootVisualElement;
@@ -140,7 +140,7 @@ namespace SvgEditor.Shell
                 () => _documentLifecycleController.TryUndo(),
                 () => _documentLifecycleController.TryRedo(),
                 _documentLifecycleController.SaveCurrentDocument);
-            _previewGeometryLookupService ??= new PreviewGeometryLookupService(() => _documentLifecycleController.PreviewSnapshot);
+            _previewGeometryLookupService ??= new GeometryLookupService(() => _documentLifecycleController.PreviewSnapshot);
         }
 
         private string ResolveSelectedPatchTargetKey()
@@ -250,14 +250,10 @@ namespace SvgEditor.Shell
             string successStatus,
             HistoryRecordingMode recordingMode) => TryApplyPatchRequest(request, successStatus, recordingMode);
 
-        bool IPanelHost.TryApplyTargetFrameRect(
-            string targetKey,
-            Rect targetSceneRect,
-            string successStatus,
-            HistoryRecordingMode recordingMode)
+        bool IPanelHost.TryApplyTargetFrameRect(TargetFrameRectRequest request)
         {
             EnsureInitialized();
-            return WorkspaceCoordinator.TryApplyTargetFrameRect(targetKey, targetSceneRect, successStatus, recordingMode);
+            return WorkspaceCoordinator.TryApplyTargetFrameRect(request);
         }
 
         bool IPanelHost.TryGetTargetSceneRect(string targetKey, out Rect sceneRect)

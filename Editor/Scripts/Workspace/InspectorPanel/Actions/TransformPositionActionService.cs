@@ -2,6 +2,7 @@ using System;
 using Unity.VectorGraphics;
 using UnityEngine;
 using SvgEditor.Document;
+using SvgEditor.Workspace.Coordination;
 using SvgEditor.Workspace.Document;
 using SvgEditor.Workspace.Transforms;
 
@@ -52,11 +53,11 @@ namespace SvgEditor.Workspace.InspectorPanel
                 Math.Max(0f, _inspectorPanelState.FrameWidth),
                 Math.Max(0f, _inspectorPanelState.FrameHeight));
 
-            Host.TryApplyTargetFrameRect(
+            Host.TryApplyTargetFrameRect(new TargetFrameRectRequest(
                 targetKey,
                 desiredSceneRect,
                 "Frame rect updated.",
-                HistoryRecordingMode.Coalesced);
+                HistoryRecordingMode.Coalesced));
         }
 
         public void ApplyPositionAction(PanelView.PositionAction action)
@@ -135,7 +136,7 @@ namespace SvgEditor.Workspace.InspectorPanel
                     break;
             }
 
-            Host.TryApplyTargetFrameRect(targetKey, desiredRect, successStatus);
+            Host.TryApplyTargetFrameRect(new TargetFrameRectRequest(targetKey, desiredRect, successStatus));
         }
 
         private void ApplyRotateClockwiseAction(float deltaDegrees)

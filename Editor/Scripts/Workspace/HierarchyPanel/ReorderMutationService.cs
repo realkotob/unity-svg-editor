@@ -31,24 +31,20 @@ namespace SvgEditor.Workspace.HierarchyPanel
 
             if (_documentModelMutationService.TryMoveElement(
                     host.CurrentDocument.DocumentModel,
-                    elementKey,
-                    parentKey,
-                    childIndex,
-                    out SvgDocumentModel _,
-                    out string reorderedSource,
-                    out string error))
+                    new MoveElementRequest(elementKey, parentKey, childIndex),
+                    out MutationResult result))
             {
-                if (!string.Equals(reorderedSource, host.CurrentDocument.WorkingSourceText, StringComparison.Ordinal))
+                if (!string.Equals(result.UpdatedSourceText, host.CurrentDocument.WorkingSourceText, StringComparison.Ordinal))
                 {
-                    host.ApplyUpdatedSource(reorderedSource, $"Moved #{elementKey}.");
+                    host.ApplyUpdatedSource(result.UpdatedSourceText, $"Moved #{elementKey}.");
                 }
 
                 return;
             }
 
-            if (!string.IsNullOrWhiteSpace(error))
+            if (!string.IsNullOrWhiteSpace(result.Error))
             {
-                host.UpdateSourceStatus($"Move failed: {error}");
+                host.UpdateSourceStatus($"Move failed: {result.Error}");
             }
         }
     }

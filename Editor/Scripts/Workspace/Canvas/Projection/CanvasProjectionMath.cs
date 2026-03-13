@@ -48,73 +48,15 @@ namespace SvgEditor.Workspace.Canvas
 
         public static CanvasSelectionVisual BuildSelectionVisual(
             ViewportState viewportState,
-            PreviewSnapshot previewSnapshot,
-            float framePadding,
-            float frameHeaderHeight,
+            CanvasViewportLayoutUtility.ProjectionContext projectionContext,
             float alignmentGuideThreshold,
-            SelectionKind kind,
-            Rect viewportRect,
-            Vector2 sourceSize,
-            bool showSelectionHandles)
+            SelectionVisualRequest request)
         {
             return SelectionVisualBuilder.BuildSelectionVisual(
                 viewportState,
-                previewSnapshot,
-                framePadding,
-                frameHeaderHeight,
+                projectionContext,
                 alignmentGuideThreshold,
-                kind,
-                viewportRect,
-                sourceSize,
-                showSelectionHandles);
-        }
-
-        public static CanvasSelectionVisual BuildSelectionVisual(
-            ViewportState viewportState,
-            Rect projectionSceneRect,
-            float framePadding,
-            float frameHeaderHeight,
-            float alignmentGuideThreshold,
-            SelectionKind kind,
-            Rect viewportRect,
-            Vector2 sourceSize,
-            bool showSelectionHandles)
-        {
-            return SelectionVisualBuilder.BuildSelectionVisual(
-                viewportState,
-                projectionSceneRect,
-                framePadding,
-                frameHeaderHeight,
-                alignmentGuideThreshold,
-                kind,
-                viewportRect,
-                sourceSize,
-                showSelectionHandles);
-        }
-
-        public static CanvasSelectionVisual BuildSelectionVisual(
-            ViewportState viewportState,
-            Rect projectionSceneRect,
-            SvgPreserveAspectRatioMode preserveAspectRatioMode,
-            float framePadding,
-            float frameHeaderHeight,
-            float alignmentGuideThreshold,
-            SelectionKind kind,
-            Rect viewportRect,
-            Vector2 sourceSize,
-            bool showSelectionHandles)
-        {
-            return SelectionVisualBuilder.BuildSelectionVisual(
-                viewportState,
-                projectionSceneRect,
-                preserveAspectRatioMode,
-                framePadding,
-                frameHeaderHeight,
-                alignmentGuideThreshold,
-                kind,
-                viewportRect,
-                sourceSize,
-                showSelectionHandles);
+                request);
         }
 
         public static Rect BuildScaledSceneRect(

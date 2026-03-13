@@ -59,35 +59,29 @@ namespace SvgEditor.Workspace.Coordination
             if (!_documentModelMutationService.TryApplyAttributePatch(
                     CurrentDocument.DocumentModel,
                     request,
-                    out SvgDocumentModel _,
-                    out string patched,
-                    out string error))
+                    out MutationResult result))
             {
-                _host.UpdateSourceStatus($"Patch failed: {error}");
+                _host.UpdateSourceStatus($"Patch failed: {result.Error}");
                 return false;
             }
 
-            if (string.Equals(patched, CurrentDocument.WorkingSourceText, StringComparison.Ordinal))
+            if (string.Equals(result.UpdatedSourceText, CurrentDocument.WorkingSourceText, StringComparison.Ordinal))
             {
                 _host.UpdateSourceStatus("No patch changes were applied.");
                 return false;
             }
 
-            _host.ApplyUpdatedSource(patched, successStatus, recordingMode);
+            _host.ApplyUpdatedSource(result.UpdatedSourceText, successStatus, recordingMode);
             return true;
         }
 
-        public bool TryApplyTargetFrameRect(
-            string targetKey,
-            Rect targetSceneRect,
-            string successStatus,
-            HistoryRecordingMode recordingMode)
+        public bool TryApplyTargetFrameRect(TargetFrameRectRequest request)
         {
-            if (CurrentDocument == null || string.IsNullOrWhiteSpace(targetKey))
+            if (CurrentDocument == null || string.IsNullOrWhiteSpace(request.TargetKey))
                 return false;
 
             PreviewElementGeometry targetElement = _host.PreviewSnapshot?.Elements?
-                .FirstOrDefault(item => string.Equals(item?.TargetKey, targetKey, StringComparison.Ordinal));
+                .FirstOrDefault(item => string.Equals(item?.TargetKey, request.TargetKey, StringComparison.Ordinal));
             if (targetElement == null)
                 return false;
 
@@ -105,57 +99,54 @@ namespace SvgEditor.Workspace.Coordination
 
             if (currentSceneRect.width > Mathf.Epsilon &&
                 currentSceneRect.height > Mathf.Epsilon &&
-                (!Mathf.Approximately(currentSceneRect.width, targetSceneRect.width) ||
-                 !Mathf.Approximately(currentSceneRect.height, targetSceneRect.height)))
+                (!Mathf.Approximately(currentSceneRect.width, request.TargetSceneRect.width) ||
+                 !Mathf.Approximately(currentSceneRect.height, request.TargetSceneRect.height)))
             {
                 Vector2 scale = new(
-                    Mathf.Max(0f, targetSceneRect.width) / currentSceneRect.width,
-                    Mathf.Max(0f, targetSceneRect.height) / currentSceneRect.height);
+                    Mathf.Max(0f, request.TargetSceneRect.width) / currentSceneRect.width,
+                    Mathf.Max(0f, request.TargetSceneRect.height) / currentSceneRect.height);
                 Vector2 pivot = new(currentSceneRect.xMin, currentSceneRect.yMin);
                 Vector2 parentPivot = ToParentSpacePoint(targetElement.ParentWorldTransform, pivot);
                 bool scaleSucceeded = _documentModelMutationService.TryPrependElementScale(
                     workingDocumentModel,
-                    targetElement.Key,
-                    scale,
-                    parentPivot,
-                    out workingDocumentModel,
-                    out updatedSource,
-                    out _);
+                    new ScaleElementRequest(targetElement.Key, scale, parentPivot),
+                    out MutationResult scaleResult);
 
                 if (!scaleSucceeded)
                 {
                     return false;
                 }
 
+                workingDocumentModel = scaleResult.UpdatedDocumentModel;
+                updatedSource = scaleResult.UpdatedSourceText;
                 hasChanged = true;
             }
 
             Vector2 sceneDelta = new(
-                targetSceneRect.xMin - currentSceneRect.xMin,
-                targetSceneRect.yMin - currentSceneRect.yMin);
+                request.TargetSceneRect.xMin - currentSceneRect.xMin,
+                request.TargetSceneRect.yMin - currentSceneRect.yMin);
             if (sceneDelta.sqrMagnitude > Mathf.Epsilon)
             {
                 Vector2 parentDelta = ToParentSpaceDelta(targetElement.ParentWorldTransform, sceneDelta);
                 bool translateSucceeded = _documentModelMutationService.TryPrependElementTranslation(
                     workingDocumentModel,
-                    targetElement.Key,
-                    parentDelta,
-                    out workingDocumentModel,
-                    out updatedSource,
-                    out _);
+                    new TranslateElementRequest(targetElement.Key, parentDelta),
+                    out MutationResult translateResult);
 
                 if (!translateSucceeded)
                 {
                     return false;
                 }
 
+                workingDocumentModel = translateResult.UpdatedDocumentModel;
+                updatedSource = translateResult.UpdatedSourceText;
                 hasChanged = true;
             }
 
             if (!hasChanged || string.Equals(updatedSource, CurrentDocument.WorkingSourceText, StringComparison.Ordinal))
                 return false;
 
-            _host.ApplyUpdatedSource(updatedSource, successStatus, recordingMode);
+            _host.ApplyUpdatedSource(updatedSource, request.SuccessStatus, request.RecordingMode);
             return true;
         }
 

@@ -73,10 +73,11 @@ namespace SvgEditor.Workspace.Canvas
             out string updatedSource)
         {
             return _elementDragController.TryBuildNudgedSource(
-                currentDocument,
-                elementKey,
-                sceneDelta,
-                parentWorldTransform,
+                new NudgeSourceRequest(
+                    currentDocument,
+                    elementKey,
+                    sceneDelta,
+                    parentWorldTransform),
                 out updatedSource);
         }
 

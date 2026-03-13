@@ -32,7 +32,7 @@ namespace SvgEditor.Workspace.Transforms
         }
 
         public static bool TryBuildRotationTransform(
-            CanvasTransientDocumentModelSession session,
+            TransientDocumentSession session,
             float deltaDegrees,
             Vector2 parentPivot,
             out string transform,
@@ -63,7 +63,7 @@ namespace SvgEditor.Workspace.Transforms
         }
 
         public static bool TryBuildRotationPreview(
-            CanvasTransientDocumentModelSession session,
+            TransientDocumentSession session,
             float deltaDegrees,
             Vector2 parentPivot,
             out SvgDocumentModel previewDocumentModel,

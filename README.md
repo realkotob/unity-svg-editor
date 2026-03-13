@@ -139,6 +139,33 @@ fixture 위치:
 - `text`를 overlay 유지 대상으로 둘지, 더 축소할지 판단
 - 추가 fixture 기반 renderer coverage 확장
 
+## 리팩터 상태
+
+최근 정리 방향:
+
+- folder 단위 `unity-guide` cleanup
+- shared utility 추출
+- 과도한 helper/type 이름 축소
+- `4개 이상 파라미터` 메서드 축소
+
+이미 반영된 shared 예시:
+
+- `DeferredActionGate`
+- `CallbackBindingUtility`
+- `SvgFragmentReferenceUtility`
+- `PreviewCollectionRenderer`
+- `SvgMutationWriter`
+
+현재 로컬 작업 방향:
+
+- canvas / mutation / selection request 객체 도입
+- long-name cluster 추가 축소
+- parameter count 4+ 메서드 지속 축소
+
+핸드오프:
+
+- 최신 상태와 남은 작업은 `HANDOFF.md` 참고
+
 ## 추가 문서
 
 - Unity `VectorImage` 지원 범위 정리: `docs/unity-vectorimage-support.md`

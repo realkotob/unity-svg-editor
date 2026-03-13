@@ -7,7 +7,7 @@ namespace SvgEditor.Workspace.Transforms
 {
     internal sealed class ElementRotationSession
     {
-        private readonly CanvasTransientDocumentModelSession _transientSession = new();
+        private readonly TransientDocumentSession _transientSession = new();
 
         public bool IsActive { get; private set; }
         public string TargetKey { get; private set; } = string.Empty;
