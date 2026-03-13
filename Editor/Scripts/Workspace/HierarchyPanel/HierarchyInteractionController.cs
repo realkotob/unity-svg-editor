@@ -17,6 +17,11 @@ namespace SvgEditor.Workspace.HierarchyPanel
         private readonly ReorderSession _reorderSession = new();
         private readonly DropIndicatorPresenter _dropIndicatorPresenter = new();
         private readonly ReorderMutationService _mutationService = new();
+        private string _selectionAnchorElementKey = string.Empty;
+        private string _preferredPrimaryElementKey = string.Empty;
+
+        public string PreferredPrimaryElementKey => _preferredPrimaryElementKey;
+        public string SelectionAnchorElementKey => _selectionAnchorElementKey;
 
         public void Bind(TreeView treeView, IHierarchyHost host)
         {
@@ -58,6 +63,12 @@ namespace SvgEditor.Workspace.HierarchyPanel
             return _reorderSession.ConsumeSuppressedRowClick();
         }
 
+        public void SetSelectionState(string primaryElementKey, string selectionAnchorElementKey)
+        {
+            _preferredPrimaryElementKey = primaryElementKey ?? string.Empty;
+            _selectionAnchorElementKey = selectionAnchorElementKey ?? _preferredPrimaryElementKey;
+        }
+
         public void OnHierarchyRowPointerDown(PointerDownEvent evt)
         {
             if (evt.button != 0 || evt.currentTarget is not VisualElement row)
@@ -72,6 +83,24 @@ namespace SvgEditor.Workspace.HierarchyPanel
                 return;
             }
 
+            bool rangeSelection = (evt.modifiers & EventModifiers.Shift) != 0;
+            bool toggleSelection = (evt.modifiers & (EventModifiers.Command | EventModifiers.Control)) != 0;
+
+            if (rangeSelection)
+            {
+                ApplyRangeSelection(pressedHierarchyElementKey);
+                evt.StopPropagation();
+                return;
+            }
+
+            if (toggleSelection)
+            {
+                ApplyToggleSelection(pressedHierarchyElementKey);
+                evt.StopPropagation();
+                return;
+            }
+
+            SetSelectionState(pressedHierarchyElementKey, pressedHierarchyElementKey);
             _treeView.SetSelectionById(treeItemId);
             _reorderSession.BeginPress(_treeView, pressedHierarchyElementKey, evt.pointerId, evt.position);
         }
@@ -292,6 +321,81 @@ namespace SvgEditor.Workspace.HierarchyPanel
         {
             ClearPendingDropIndicator();
             _reorderSession.Reset(_treeView);
+        }
+
+        private void ApplyRangeSelection(string pressedHierarchyElementKey)
+        {
+            string anchorElementKey = !string.IsNullOrWhiteSpace(_selectionAnchorElementKey)
+                ? _selectionAnchorElementKey
+                : pressedHierarchyElementKey;
+            IReadOnlyList<string> rangeKeys = HierarchyTreeUtility.BuildElementKeyRange(
+                _treeView,
+                _host.HierarchyItems,
+                anchorElementKey,
+                pressedHierarchyElementKey);
+            if (rangeKeys.Count == 0)
+            {
+                ApplySelectionKeys(new[] { pressedHierarchyElementKey }, pressedHierarchyElementKey, pressedHierarchyElementKey);
+                return;
+            }
+
+            var selectionKeys = GetCurrentSelectionKeys();
+            foreach (string rangeKey in rangeKeys)
+            {
+                if (!selectionKeys.Contains(rangeKey))
+                {
+                    selectionKeys.Add(rangeKey);
+                }
+            }
+
+            ApplySelectionKeys(selectionKeys, pressedHierarchyElementKey, anchorElementKey);
+        }
+
+        private void ApplyToggleSelection(string pressedHierarchyElementKey)
+        {
+            var selectionKeys = GetCurrentSelectionKeys();
+            if (selectionKeys.Remove(pressedHierarchyElementKey))
+            {
+                string fallbackPrimaryElementKey = selectionKeys.Count > 0
+                    ? selectionKeys[selectionKeys.Count - 1]
+                    : string.Empty;
+                ApplySelectionKeys(selectionKeys, fallbackPrimaryElementKey, fallbackPrimaryElementKey);
+                return;
+            }
+
+            selectionKeys.Add(pressedHierarchyElementKey);
+            ApplySelectionKeys(selectionKeys, pressedHierarchyElementKey, pressedHierarchyElementKey);
+        }
+
+        private void ApplySelectionKeys(
+            IReadOnlyList<string> selectionKeys,
+            string primaryElementKey,
+            string selectionAnchorElementKey)
+        {
+            SetSelectionState(primaryElementKey, selectionAnchorElementKey);
+            HierarchyTreeUtility.SelectElementsByKey(_treeView, selectionKeys, _host.HierarchyItems, primaryElementKey);
+        }
+
+        private List<string> GetCurrentSelectionKeys()
+        {
+            var selectedKeys = new List<string>();
+            foreach (int selectedIndex in _treeView.selectedIndices)
+            {
+                if (selectedIndex < 0)
+                {
+                    continue;
+                }
+
+                HierarchyNode selectedNode = _treeView.GetItemDataForIndex<HierarchyNode>(selectedIndex);
+                if (selectedNode != null &&
+                    !string.IsNullOrWhiteSpace(selectedNode.Key) &&
+                    !selectedKeys.Contains(selectedNode.Key))
+                {
+                    selectedKeys.Add(selectedNode.Key);
+                }
+            }
+
+            return selectedKeys;
         }
     }
 }

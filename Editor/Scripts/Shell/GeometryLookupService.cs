@@ -2,19 +2,34 @@ using System;
 using Unity.VectorGraphics;
 using UnityEngine;
 using SvgEditor.Preview;
+using SvgEditor.Workspace.Canvas;
 
 namespace SvgEditor.Shell
 {
     internal sealed class GeometryLookupService
     {
         private readonly Func<PreviewSnapshot> _previewSnapshotAccessor;
+        private readonly Func<System.Collections.Generic.IReadOnlyList<string>> _selectedElementKeysAccessor;
 
-        public GeometryLookupService(Func<PreviewSnapshot> previewSnapshotAccessor)
-            {
-                _previewSnapshotAccessor = previewSnapshotAccessor;
-            }
+        public GeometryLookupService(
+            Func<PreviewSnapshot> previewSnapshotAccessor,
+            Func<System.Collections.Generic.IReadOnlyList<string>> selectedElementKeysAccessor)
+        {
+            _previewSnapshotAccessor = previewSnapshotAccessor;
+            _selectedElementKeysAccessor = selectedElementKeysAccessor;
+        }
 
         private PreviewSnapshot PreviewSnapshot => _previewSnapshotAccessor?.Invoke();
+        private System.Collections.Generic.IReadOnlyList<string> SelectedElementKeys => _selectedElementKeysAccessor?.Invoke();
+
+        public bool TryGetCurrentSelectionSceneRect(out Rect sceneRect)
+        {
+            sceneRect = default;
+            System.Collections.Generic.IReadOnlyList<string> selectedElementKeys = SelectedElementKeys;
+            return selectedElementKeys != null &&
+                   selectedElementKeys.Count > 1 &&
+                   CanvasProjectionMath.TryGetCombinedSelectionSceneRect(PreviewSnapshot, selectedElementKeys, out sceneRect);
+        }
 
         public bool TryGetTargetSceneRect(string targetKey, out Rect sceneRect)
         {

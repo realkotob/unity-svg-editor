@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using Core.UI.Foundation;
+using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.UIElements;
 using SvgEditor.Document;
@@ -12,6 +14,8 @@ namespace SvgEditor.Workspace.Canvas
 {
     internal sealed class GestureRouter
     {
+        private const float PendingGroupMoveThreshold = 5f;
+
         private readonly ICanvasPointerDragHost _host;
         private readonly OverlayController _overlayController;
         private readonly SceneProjector _sceneProjector;
@@ -24,6 +28,9 @@ namespace SvgEditor.Workspace.Canvas
         private readonly ViewportGestureHandler _viewportGestureHandler;
         private readonly ElementGestureHandler _elementGestureHandler;
         private readonly InteractionSelectionResolver _selectionResolver;
+        private string _pendingGroupSelectionElementKey = string.Empty;
+        private Rect _pendingGroupSelectionSceneRect;
+        private IReadOnlyList<ElementMoveTarget> _pendingGroupMoveTargets = Array.Empty<ElementMoveTarget>();
 
         public GestureRouter(GestureRouterDependencies dependencies)
         {
@@ -107,6 +114,11 @@ namespace SvgEditor.Workspace.Canvas
             {
                 _viewportGestureHandler.ApplyViewportDelta(_gestureState, viewportDelta);
             }
+            else if (TryBeginPendingGroupMove(localPosition, evt.pointerId, evt.modifiers))
+            {
+                evt.StopPropagation();
+                return;
+            }
             else if (_gestureState.IsElementGesture)
             {
                 bool shiftPressed = (evt.modifiers & EventModifiers.Shift) != 0;
@@ -156,6 +168,13 @@ namespace SvgEditor.Workspace.Canvas
                 return;
             }
 
+            if (TryApplyPendingGroupSelection(evt.pointerId))
+            {
+                EndCanvasDrag();
+                evt.StopPropagation();
+                return;
+            }
+
             EndCanvasDrag();
         }
 
@@ -171,6 +190,7 @@ namespace SvgEditor.Workspace.Canvas
             _dragSession.End(_overlayAccessor());
             _elementGestureHandler.End();
             _gestureState.Reset();
+            ResetPendingGroupSelection();
             _overlayController.ResetInteractionCursor();
             _host.UpdateHoverVisual();
             _host.UpdateSelectionVisual();
@@ -276,6 +296,8 @@ namespace SvgEditor.Workspace.Canvas
 
         private void HandleCanvasSelection(PointerDownEvent evt, Vector2 localPosition)
         {
+            bool toggleSelection = (evt.modifiers & EventModifiers.Shift) != 0;
+
             if (_overlayController.IsFrameLabelTarget(evt.target))
             {
                 _host.ClearDefinitionProxySelection();
@@ -299,6 +321,21 @@ namespace SvgEditor.Workspace.Canvas
                         localPosition,
                         selectedProxy.SceneBounds,
                         selectedProxy.ParentWorldTransform));
+                evt.StopPropagation();
+                return;
+            }
+
+            if (toggleSelection)
+            {
+                if (_selectionResolver.TryResolveInteractionElement(localPosition, evt.modifiers, out _, out string toggledElementKey))
+                {
+                    _host.ClearDefinitionProxySelection();
+                    HierarchyNode toggledNode = _host.FindHierarchyNode(toggledElementKey);
+                    _selectionSyncService.ToggleCanvasElement(
+                        toggledElementKey,
+                        syncPatchTarget: toggledNode?.CanUseAsTarget == true);
+                }
+
                 evt.StopPropagation();
                 return;
             }
@@ -335,13 +372,30 @@ namespace SvgEditor.Workspace.Canvas
 
         private bool TryBeginMoveSelectedElement(Vector2 localPosition, int pointerId, EventModifiers modifiers)
         {
+            bool multipleSelection = _host.SelectedElementKeys != null && _host.SelectedElementKeys.Count > 1;
+            Rect selectedElementSceneRect;
+            Rect selectedElementViewportRect;
+
             if (_host.HasDefinitionProxySelection ||
                 _selectionResolver.IsDirectElementSelectionModifier(modifiers) ||
                 _host.SelectionKind != SelectionKind.Element ||
-                string.IsNullOrWhiteSpace(_host.SelectedElementKey) ||
-                !_sceneProjector.TryResolveSelectedElementSceneRect(_host.PreviewSnapshot, _host.SelectedElementKey, out Rect selectedElementSceneRect) ||
-                !_sceneProjector.TrySceneRectToViewportRect(_host.PreviewSnapshot, selectedElementSceneRect, out Rect selectedElementViewportRect) ||
-                !selectedElementViewportRect.Contains(localPosition))
+                string.IsNullOrWhiteSpace(_host.SelectedElementKey))
+            {
+                return false;
+            }
+
+            if (multipleSelection)
+            {
+                if (!CanvasProjectionMath.TryGetCombinedSelectionSceneRect(_host.PreviewSnapshot, _host.SelectedElementKeys, out selectedElementSceneRect) ||
+                    !_sceneProjector.TrySceneRectToViewportRect(_host.PreviewSnapshot, selectedElementSceneRect, out selectedElementViewportRect) ||
+                    !selectedElementViewportRect.Contains(localPosition))
+                {
+                    return false;
+                }
+            }
+            else if (!_sceneProjector.TryResolveSelectedElementSceneRect(_host.PreviewSnapshot, _host.SelectedElementKey, out selectedElementSceneRect) ||
+                     !_sceneProjector.TrySceneRectToViewportRect(_host.PreviewSnapshot, selectedElementSceneRect, out selectedElementViewportRect) ||
+                     !selectedElementViewportRect.Contains(localPosition))
             {
                 return false;
             }
@@ -354,7 +408,79 @@ namespace SvgEditor.Workspace.Canvas
 
             if (!_sceneProjector.TryHitTestPreviewElement(_host.PreviewSnapshot, localPosition, out PreviewElementGeometry hitElement) ||
                 hitElement == null ||
-                !string.Equals(hitElement.Key, _host.SelectedElementKey, StringComparison.Ordinal))
+                (multipleSelection
+                    ? _host.SelectedElementKeys == null || !ContainsElementKey(_host.SelectedElementKeys, hitElement.Key)
+                    : !string.Equals(hitElement.Key, _host.SelectedElementKey, StringComparison.Ordinal)))
+            {
+                return false;
+            }
+
+            if (multipleSelection)
+            {
+                BeginPendingGroupSelection(localPosition, pointerId, hitElement.Key, selectedElementSceneRect, BuildMoveTargets(_host.SelectedElementKeys));
+                return true;
+            }
+
+            _elementGestureHandler.BeginMove(
+                _gestureState,
+                pointerId,
+                new ElementDragBeginRequest(
+                    _host.CurrentDocument,
+                    _host.PreviewSnapshot,
+                    _host.SelectedElementKey,
+                    localPosition,
+                    multipleSelection ? selectedElementSceneRect : selectedElement.VisualBounds,
+                    multipleSelection ? Matrix2D.identity : selectedElement.ParentWorldTransform,
+                    multipleSelection ? BuildMoveTargets(_host.SelectedElementKeys) : null));
+            return true;
+        }
+
+        private IReadOnlyList<ElementMoveTarget> BuildMoveTargets(IReadOnlyList<string> selectedElementKeys)
+        {
+            if (selectedElementKeys == null || selectedElementKeys.Count == 0)
+            {
+                return Array.Empty<ElementMoveTarget>();
+            }
+
+            var moveTargets = new List<ElementMoveTarget>(selectedElementKeys.Count);
+            foreach (string selectedElementKey in selectedElementKeys)
+            {
+                PreviewElementGeometry selectedGeometry = _sceneProjector.FindPreviewElement(_host.PreviewSnapshot, selectedElementKey);
+                if (selectedGeometry == null)
+                {
+                    continue;
+                }
+
+                moveTargets.Add(new ElementMoveTarget(selectedElementKey, selectedGeometry.ParentWorldTransform));
+            }
+
+            return moveTargets;
+        }
+
+        private void BeginPendingGroupSelection(
+            Vector2 localPosition,
+            int pointerId,
+            string selectedElementKey,
+            Rect selectionSceneRect,
+            IReadOnlyList<ElementMoveTarget> moveTargets)
+        {
+            _pendingGroupSelectionElementKey = selectedElementKey ?? string.Empty;
+            _pendingGroupSelectionSceneRect = selectionSceneRect;
+            _pendingGroupMoveTargets = moveTargets ?? Array.Empty<ElementMoveTarget>();
+            _dragSession.Begin(_overlayAccessor(), pointerId, localPosition);
+        }
+
+        private bool TryBeginPendingGroupMove(Vector2 localPosition, int pointerId, EventModifiers modifiers)
+        {
+            if (string.IsNullOrWhiteSpace(_pendingGroupSelectionElementKey) ||
+                !_dragSession.Matches(pointerId) ||
+                (localPosition - _dragSession.StartPosition).magnitude < PendingGroupMoveThreshold)
+            {
+                return false;
+            }
+
+            PreviewElementGeometry primarySelectedGeometry = _sceneProjector.FindPreviewElement(_host.PreviewSnapshot, _host.SelectedElementKey);
+            if (primarySelectedGeometry == null)
             {
                 return false;
             }
@@ -366,10 +492,62 @@ namespace SvgEditor.Workspace.Canvas
                     _host.CurrentDocument,
                     _host.PreviewSnapshot,
                     _host.SelectedElementKey,
+                    _dragSession.StartPosition,
+                    _pendingGroupSelectionSceneRect,
+                    Matrix2D.identity,
+                    _pendingGroupMoveTargets));
+
+            bool axisLock = (modifiers & EventModifiers.Shift) != 0;
+            bool snapEnabled = (modifiers & (EventModifiers.Command | EventModifiers.Control)) != 0;
+            _elementGestureHandler.ApplyElementDelta(
+                _gestureState,
+                new ElementDeltaRequest(
                     localPosition,
-                    selectedElement.VisualBounds,
-                    selectedElement.ParentWorldTransform));
+                    localPosition - _dragSession.StartPosition,
+                    uniformScale: false,
+                    centerAnchor: false,
+                    axisLock,
+                    snapEnabled));
             return true;
+        }
+
+        private bool TryApplyPendingGroupSelection(int pointerId)
+        {
+            if (string.IsNullOrWhiteSpace(_pendingGroupSelectionElementKey) || !_dragSession.Matches(pointerId))
+            {
+                return false;
+            }
+
+            HierarchyNode selectedNode = _host.FindHierarchyNode(_pendingGroupSelectionElementKey);
+            _selectionSyncService.SelectCanvasElement(
+                _pendingGroupSelectionElementKey,
+                syncPatchTarget: selectedNode?.CanUseAsTarget == true);
+            return true;
+        }
+
+        private void ResetPendingGroupSelection()
+        {
+            _pendingGroupSelectionElementKey = string.Empty;
+            _pendingGroupSelectionSceneRect = default;
+            _pendingGroupMoveTargets = Array.Empty<ElementMoveTarget>();
+        }
+
+        private static bool ContainsElementKey(IReadOnlyList<string> selectedElementKeys, string elementKey)
+        {
+            if (selectedElementKeys == null || string.IsNullOrWhiteSpace(elementKey))
+            {
+                return false;
+            }
+
+            foreach (string selectedElementKey in selectedElementKeys)
+            {
+                if (string.Equals(selectedElementKey, elementKey, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 

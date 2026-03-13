@@ -25,6 +25,7 @@ namespace SvgEditor.Workspace.Canvas
         public SvgPreserveAspectRatioMode DragStartPreserveAspectRatioMode => _state.StartPreserveAspectRatioMode;
         public bool DragResizeCenterAnchor => _state.ResizeCenterAnchor;
         public string DragElementKey => _state.ElementKey;
+        public bool IsGroupMove => _state.MoveTargets != null && _state.MoveTargets.Count > 1;
 
         public ElementDragController(SceneProjector sceneProjector)
         {
@@ -36,7 +37,10 @@ namespace SvgEditor.Workspace.Canvas
         {
             Rect selectionViewportRect = BeginSelection(request);
             _moveSession.Begin(request.ElementKey, request.LocalPosition, selectionViewportRect, request.ElementSceneRect);
-            _transientDocumentModelSession.TryBegin(request.CurrentDocument, request.ElementKey);
+            if (!IsGroupMove)
+            {
+                _transientDocumentModelSession.TryBegin(request.CurrentDocument, request.ElementKey);
+            }
         }
 
         public void BeginResize(ResizeBeginRequest request)
@@ -173,6 +177,7 @@ namespace SvgEditor.Workspace.Canvas
                 selectionViewportRect,
                 request.ElementSceneRect,
                 request.ParentWorldTransform);
+            _state.SetMoveTargets(request.MoveTargets);
             return selectionViewportRect;
         }
     }

@@ -131,6 +131,11 @@ namespace SvgEditor.Workspace.Canvas
         {
             selectionVisual = null;
 
+            if (host.SelectedElementKeys != null && host.SelectedElementKeys.Count > 1)
+            {
+                return false;
+            }
+
             var previewSnapshot = host.PreviewSnapshot;
             if (previewSnapshot == null ||
                 string.IsNullOrWhiteSpace(host.SelectedElementKey) ||

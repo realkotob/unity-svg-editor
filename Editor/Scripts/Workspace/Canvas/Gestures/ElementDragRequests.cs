@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Unity.VectorGraphics;
 using UnityEngine;
 using SvgEditor.Document;
@@ -14,7 +15,8 @@ namespace SvgEditor.Workspace.Canvas
             string elementKey,
             Vector2 localPosition,
             Rect elementSceneRect,
-            Matrix2D parentWorldTransform)
+            Matrix2D parentWorldTransform,
+            IReadOnlyList<ElementMoveTarget> moveTargets = null)
         {
             CurrentDocument = currentDocument;
             PreviewSnapshot = previewSnapshot;
@@ -22,6 +24,7 @@ namespace SvgEditor.Workspace.Canvas
             LocalPosition = localPosition;
             ElementSceneRect = elementSceneRect;
             ParentWorldTransform = parentWorldTransform;
+            MoveTargets = moveTargets;
         }
 
         public DocumentSession CurrentDocument { get; }
@@ -29,6 +32,19 @@ namespace SvgEditor.Workspace.Canvas
         public string ElementKey { get; }
         public Vector2 LocalPosition { get; }
         public Rect ElementSceneRect { get; }
+        public Matrix2D ParentWorldTransform { get; }
+        public IReadOnlyList<ElementMoveTarget> MoveTargets { get; }
+    }
+
+    internal readonly struct ElementMoveTarget
+    {
+        public ElementMoveTarget(string elementKey, Matrix2D parentWorldTransform)
+        {
+            ElementKey = elementKey;
+            ParentWorldTransform = parentWorldTransform;
+        }
+
+        public string ElementKey { get; }
         public Matrix2D ParentWorldTransform { get; }
     }
 

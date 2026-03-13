@@ -2,7 +2,7 @@
 
 `unity-svg-editor`는 Unity 안에서 SVG를 읽고, 구조를 이해하고, 자주 수정하는 속성을 시각적으로 편집하고, 다시 저장하기 위한 editor module입니다.
 
-- Namespace: `UnitySvgEditor.Editor`
+- Namespace: `SvgEditor.Editor`
 - Menu: `Window/Unity SVG Editor/SVG Editor`
 
 ## 현재 방향
@@ -110,7 +110,7 @@ fixture 위치:
 
 기본 검증 기준:
 
-- `UnitySvgEditor.Editor.Tests` EditMode green 유지
+- `SvgEditor.Editor.Tests` EditMode green 유지
 
 프로젝트 상황에 따라 test runner가 초기화 타임아웃을 낼 수 있으므로, 필요하면 해당 fixture를 editor에서 직접 열어 아래를 확인합니다.
 

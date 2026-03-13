@@ -236,7 +236,7 @@ namespace SvgEditor.Workspace.Canvas
         public bool TryHitTestSelectionHandle(Vector2 localPoint, out SelectionHandle handle)
         {
             handle = SelectionHandle.None;
-            if (_currentSelection == null || !_currentSelection.ShowSelectionHandles)
+            if (_currentSelection == null || !_currentSelection.AllowSelectionHandleInteraction)
             {
                 return false;
             }

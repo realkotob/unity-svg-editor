@@ -140,7 +140,9 @@ namespace SvgEditor.Shell
                 () => _documentLifecycleController.TryUndo(),
                 () => _documentLifecycleController.TryRedo(),
                 _documentLifecycleController.SaveCurrentDocument);
-            _previewGeometryLookupService ??= new GeometryLookupService(() => _documentLifecycleController.PreviewSnapshot);
+            _previewGeometryLookupService ??= new GeometryLookupService(
+                () => _documentLifecycleController.PreviewSnapshot,
+                () => WorkspaceCoordinator.SelectedElementKeys);
         }
 
         private string ResolveSelectedPatchTargetKey()
@@ -258,6 +260,12 @@ namespace SvgEditor.Shell
         {
             EnsureInitialized();
             return _previewGeometryLookupService.TryGetTargetSceneRect(targetKey, out sceneRect);
+        }
+
+        bool IPanelHost.TryGetCurrentSelectionSceneRect(out Rect sceneRect)
+        {
+            EnsureInitialized();
+            return _previewGeometryLookupService.TryGetCurrentSelectionSceneRect(out sceneRect);
         }
 
         bool IPanelHost.TryGetRotationPivotParentSpace(string targetKey, out Vector2 parentPivot)

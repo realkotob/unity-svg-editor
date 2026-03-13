@@ -40,7 +40,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
         private readonly List<TreeViewItemData<HierarchyNode>> _hierarchyItems = new();
 
         private HierarchyInteractionController _interactionController;
-        private Action<HierarchyNode> _selectionChangedHandler;
+        private Action<IReadOnlyList<HierarchyNode>, HierarchyNode> _selectionChangedHandler;
         private bool _showPreview;
         #endregion Variables
 
@@ -79,7 +79,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
         internal void BindRuntime(
             IHierarchyHost host,
             HierarchyInteractionController interactionController,
-            Action<HierarchyNode> selectionChangedHandler)
+            Action<IReadOnlyList<HierarchyNode>, HierarchyNode> selectionChangedHandler)
         {
             _selectionChangedHandler = selectionChangedHandler;
             _interactionController = interactionController;
@@ -113,7 +113,19 @@ namespace SvgEditor.Workspace.HierarchyPanel
 
         internal void SelectElementByKey(string elementKey)
         {
-            HierarchyTreeUtility.SelectElementByKey(_hierarchyTreeView, elementKey, _hierarchyItems);
+            SelectElementsByKey(
+                string.IsNullOrWhiteSpace(elementKey) ? Array.Empty<string>() : new[] { elementKey },
+                elementKey,
+                elementKey);
+        }
+
+        internal void SelectElementsByKey(
+            IReadOnlyList<string> elementKeys,
+            string primaryElementKey,
+            string selectionAnchorElementKey)
+        {
+            _interactionController?.SetSelectionState(primaryElementKey, selectionAnchorElementKey);
+            HierarchyTreeUtility.SelectElementsByKey(_hierarchyTreeView, elementKeys, _hierarchyItems, primaryElementKey);
         }
         #endregion Internal Methods
 
@@ -122,7 +134,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
         {
             TreeView hierarchyTreeView = new()
             {
-                selectionType = SelectionType.Single,
+                selectionType = SelectionType.Multiple,
                 fixedItemHeight = Layout.HIERARCHY_ITEM_HEIGHT,
                 reorderable = false,
                 viewDataKey = ViewDataKey.TREE
@@ -207,16 +219,18 @@ namespace SvgEditor.Workspace.HierarchyPanel
 
         private void OnSelectedIndicesChanged(IEnumerable<int> selectedIndices)
         {
-            _selectionChangedHandler?.Invoke(ResolveSelectedNode(selectedIndices));
+            IReadOnlyList<HierarchyNode> selectedNodes = ResolveSelectedNodes(selectedIndices);
+            _selectionChangedHandler?.Invoke(selectedNodes, ResolvePrimarySelectedNode(selectedNodes));
         }
 
-        private HierarchyNode ResolveSelectedNode(IEnumerable<int> selectedIndices)
+        private IReadOnlyList<HierarchyNode> ResolveSelectedNodes(IEnumerable<int> selectedIndices)
         {
             if (selectedIndices == null)
             {
-                return null;
+                return Array.Empty<HierarchyNode>();
             }
 
+            List<HierarchyNode> selectedNodes = new();
             foreach (int index in selectedIndices)
             {
                 if (index < 0)
@@ -224,10 +238,36 @@ namespace SvgEditor.Workspace.HierarchyPanel
                     continue;
                 }
 
-                return _hierarchyTreeView.GetItemDataForIndex<HierarchyNode>(index);
+                HierarchyNode selectedNode = _hierarchyTreeView.GetItemDataForIndex<HierarchyNode>(index);
+                if (selectedNode != null)
+                {
+                    selectedNodes.Add(selectedNode);
+                }
             }
 
-            return null;
+            return selectedNodes;
+        }
+
+        private HierarchyNode ResolvePrimarySelectedNode(IReadOnlyList<HierarchyNode> selectedNodes)
+        {
+            if (selectedNodes == null || selectedNodes.Count == 0)
+            {
+                return null;
+            }
+
+            string preferredPrimaryElementKey = _interactionController?.PreferredPrimaryElementKey;
+            if (!string.IsNullOrWhiteSpace(preferredPrimaryElementKey))
+            {
+                foreach (HierarchyNode selectedNode in selectedNodes)
+                {
+                    if (string.Equals(selectedNode.Key, preferredPrimaryElementKey, StringComparison.Ordinal))
+                    {
+                        return selectedNode;
+                    }
+                }
+            }
+
+            return selectedNodes[selectedNodes.Count - 1];
         }
 
         private void ToggleHierarchyItemExpansion(string elementKey)

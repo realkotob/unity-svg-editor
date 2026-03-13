@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using SvgEditor.DocumentModel;
 using SvgEditor.Document;
@@ -13,6 +14,7 @@ namespace SvgEditor.Workspace.Canvas
         DocumentSession CurrentDocument { get; }
         PreviewSnapshot PreviewSnapshot { get; }
         string SelectedElementKey { get; }
+        IReadOnlyList<string> SelectedElementKeys { get; }
         SelectionKind SelectionKind { get; set; }
         bool HasDefinitionProxySelection { get; }
 
@@ -25,6 +27,7 @@ namespace SvgEditor.Workspace.Canvas
         HierarchyNode FindHierarchyNode(string elementKey);
         void SelectFrame();
         void SelectElement(string elementKey, bool syncPatchTarget);
+        void ToggleElementSelection(string elementKey, bool syncPatchTarget);
         void ClearSelection();
         void UpdateStructureInteractivity(bool hasDocument);
         void UpdateCanvasVisualState();

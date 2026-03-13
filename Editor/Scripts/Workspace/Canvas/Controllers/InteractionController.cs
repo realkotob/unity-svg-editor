@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using SvgEditor.Document;
@@ -165,6 +166,7 @@ namespace SvgEditor.Workspace.Canvas
         DocumentSession ICanvasPointerDragHost.CurrentDocument => _host.CurrentDocument;
         PreviewSnapshot ICanvasPointerDragHost.PreviewSnapshot => _host.PreviewSnapshot;
         string ICanvasPointerDragHost.SelectedElementKey => _host.SelectedElementKey;
+        IReadOnlyList<string> ICanvasPointerDragHost.SelectedElementKeys => _host.SelectedElementKeys;
         SelectionKind ICanvasPointerDragHost.SelectionKind
         {
             get => _selectionKind;
@@ -180,6 +182,8 @@ namespace SvgEditor.Workspace.Canvas
         HierarchyNode ICanvasPointerDragHost.FindHierarchyNode(string elementKey) => _host.FindHierarchyNode(elementKey);
         void ICanvasPointerDragHost.SelectFrame() => _host.SelectFrameFromCanvas();
         void ICanvasPointerDragHost.SelectElement(string elementKey, bool syncPatchTarget) => _host.SelectStructureElementFromCanvas(elementKey, syncPatchTarget);
+        void ICanvasPointerDragHost.ToggleElementSelection(string elementKey, bool syncPatchTarget) =>
+            _host.ToggleStructureElementSelectionFromCanvas(elementKey, syncPatchTarget);
         void ICanvasPointerDragHost.ClearSelection() => _host.ClearStructureSelectionFromCanvas();
         void ICanvasPointerDragHost.UpdateStructureInteractivity(bool hasDocument) => _host.UpdateStructureInteractivity(hasDocument);
         void ICanvasPointerDragHost.UpdateCanvasVisualState() => UpdateCanvasVisualState();

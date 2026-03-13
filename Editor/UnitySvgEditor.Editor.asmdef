@@ -1,6 +1,6 @@
 {
-    "name": "UnitySvgEditor.Editor",
-    "rootNamespace": "UnitySvgEditor.Editor",
+    "name": "SvgEditor.Editor",
+    "rootNamespace": "SvgEditor.Editor",
     "references": [
         "Core.UI.Foundation.Tooling",
         "Core.UI.Foundation.Editor",

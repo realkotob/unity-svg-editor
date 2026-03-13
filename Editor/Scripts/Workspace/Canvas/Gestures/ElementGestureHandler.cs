@@ -149,6 +149,12 @@ namespace SvgEditor.Workspace.Canvas
                     return;
                 }
 
+                if (_elementDragController.IsGroupMove)
+                {
+                    _host.UpdateSelectionVisual();
+                    return;
+                }
+
                 _selectionSyncService.SelectCanvasElement(_elementDragController.DragElementKey, syncPatchTarget: false);
                 return;
             }

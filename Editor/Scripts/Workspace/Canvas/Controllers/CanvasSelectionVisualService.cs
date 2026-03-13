@@ -146,14 +146,34 @@ namespace SvgEditor.Workspace.Canvas
 
         private bool TrySetElementSelection(PreviewSnapshot previewSnapshot, SelectionKind selectionKind)
         {
-            if (selectionKind != SelectionKind.Element ||
-                !_sceneProjector.TryResolveSelectedElementSceneRect(previewSnapshot, _host.SelectedElementKey, out Rect selectedElementSceneRect) ||
-                !_sceneProjector.TrySceneRectToViewportRect(previewSnapshot, selectedElementSceneRect, out Rect elementViewportRect))
+            if (selectionKind != SelectionKind.Element)
             {
                 return false;
             }
 
-            bool showSelectionHandles = !IsResizeUnsupported(_host.SelectedElementKey);
+            bool multipleSelection = _host.SelectedElementKeys != null && _host.SelectedElementKeys.Count > 1;
+            Rect selectedElementSceneRect;
+            if (multipleSelection)
+            {
+                if (!CanvasProjectionMath.TryGetCombinedSelectionSceneRect(
+                        previewSnapshot,
+                        _host.SelectedElementKeys,
+                        out selectedElementSceneRect))
+                {
+                    return false;
+                }
+            }
+            else if (!_sceneProjector.TryResolveSelectedElementSceneRect(previewSnapshot, _host.SelectedElementKey, out selectedElementSceneRect))
+            {
+                return false;
+            }
+
+            if (!_sceneProjector.TrySceneRectToViewportRect(previewSnapshot, selectedElementSceneRect, out Rect elementViewportRect))
+            {
+                return false;
+            }
+
+            bool showSelectionHandles = multipleSelection || !IsResizeUnsupported(_host.SelectedElementKey);
             CanvasSelectionVisual selectionVisual = _sceneProjector.BuildSelectionVisual(
                 previewSnapshot,
                 new SelectionVisualRequest(
@@ -161,7 +181,10 @@ namespace SvgEditor.Workspace.Canvas
                     elementViewportRect,
                     selectedElementSceneRect.size,
                     showSelectionHandles));
-            PreviewElementGeometry selectedGeometry = _sceneProjector.FindPreviewElement(previewSnapshot, _host.SelectedElementKey);
+            selectionVisual.AllowSelectionHandleInteraction = !multipleSelection && showSelectionHandles;
+            PreviewElementGeometry selectedGeometry = !multipleSelection
+                ? _sceneProjector.FindPreviewElement(previewSnapshot, _host.SelectedElementKey)
+                : null;
             if (selectedGeometry != null &&
                 _sceneProjector.TryScenePointToViewportPoint(previewSnapshot, selectedGeometry.RotationPivotWorld, out Vector2 rotationPivotViewport))
             {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Unity.VectorGraphics;
 using UnityEngine;
 using SvgEditor.DocumentModel;
@@ -61,6 +62,11 @@ namespace SvgEditor.Workspace.Canvas
                 _sceneProjector.TrySceneRectToViewportRect(host.PreviewSnapshot, movedSceneRect, out Rect viewportRect))
             {
                 state.CurrentSelectionViewportRect = viewportRect;
+            }
+
+            if (state.MoveTargets != null && state.MoveTargets.Count > 1)
+            {
+                return TryApplyMultiMoveTransientPreview(host, state.MoveTargets, sceneDelta);
             }
 
             Vector2 svgTranslateDelta = state.StartParentWorldTransform.Inverse().MultiplyVector(sceneDelta);
@@ -205,6 +211,31 @@ namespace SvgEditor.Workspace.Canvas
                 return false;
             }
 
+            if (request.DragMode == DragMode.MoveElement &&
+                state.MoveTargets != null &&
+                state.MoveTargets.Count > 1)
+            {
+                string multiError = string.Empty;
+                if (!_sceneProjector.TryViewportDeltaToScene(
+                        state.StartProjectionSceneRect,
+                        state.StartPreserveAspectRatioMode,
+                        request.CanvasDelta,
+                        out Vector2 multiSceneDelta) ||
+                    multiSceneDelta.sqrMagnitude <= Mathf.Epsilon ||
+                    !TryBuildMultiMoveCommittedSource(request.Host.CurrentDocument, state.MoveTargets, multiSceneDelta, out string multiUpdatedSource, out multiError))
+                {
+                    if (!string.IsNullOrWhiteSpace(multiError))
+                    {
+                        request.Host.UpdateSourceStatus($"Drag commit failed: {multiError}");
+                    }
+
+                    return false;
+                }
+
+                request.Host.ApplyUpdatedSource(multiUpdatedSource, BuildSuccessStatus(request.Host, state, request.DragMode));
+                return true;
+            }
+
             string updatedSource;
             string error;
             bool builtSource = request.DragMode == DragMode.RotateElement
@@ -219,7 +250,7 @@ namespace SvgEditor.Workspace.Canvas
                 return false;
             }
 
-            request.Host.ApplyUpdatedSource(updatedSource, BuildSuccessStatus(request.Host, state.ElementKey, request.DragMode));
+            request.Host.ApplyUpdatedSource(updatedSource, BuildSuccessStatus(request.Host, state, request.DragMode));
             return true;
         }
 
@@ -244,15 +275,102 @@ namespace SvgEditor.Workspace.Canvas
                 !string.IsNullOrWhiteSpace(updatedSource = result.UpdatedSourceText);
         }
 
-        private static string BuildSuccessStatus(ICanvasPointerDragHost host, string elementKey, DragMode dragMode)
+        private static string BuildSuccessStatus(ICanvasPointerDragHost host, ElementDragState state, DragMode dragMode)
         {
-            string tagName = host.FindHierarchyNode(elementKey)?.TagName ?? "element";
+            if (dragMode == DragMode.MoveElement &&
+                state.MoveTargets != null &&
+                state.MoveTargets.Count > 1)
+            {
+                return $"Moved {state.MoveTargets.Count} elements.";
+            }
+
+            string tagName = host.FindHierarchyNode(state.ElementKey)?.TagName ?? "element";
             return dragMode switch
             {
                 DragMode.ResizeElement => $"Resized <{tagName}>.",
                 DragMode.RotateElement => $"Rotated <{tagName}>.",
                 _ => $"Moved <{tagName}>."
             };
+        }
+
+        private bool TryApplyMultiMoveTransientPreview(
+            ICanvasPointerDragHost host,
+            IReadOnlyList<ElementMoveTarget> moveTargets,
+            Vector2 sceneDelta)
+        {
+            if (!TryBuildMultiMoveDocumentModel(host.CurrentDocument, moveTargets, sceneDelta, out SvgDocumentModel previewDocumentModel, out _))
+            {
+                return false;
+            }
+
+            if (!host.TryRefreshTransientPreview(previewDocumentModel))
+            {
+                return false;
+            }
+
+            host.RefreshInspector(previewDocumentModel);
+            return true;
+        }
+
+        private bool TryBuildMultiMoveCommittedSource(
+            DocumentSession currentDocument,
+            IReadOnlyList<ElementMoveTarget> moveTargets,
+            Vector2 sceneDelta,
+            out string updatedSource,
+            out string error)
+        {
+            updatedSource = string.Empty;
+            error = string.Empty;
+
+            if (!TryBuildMultiMoveDocumentModel(currentDocument, moveTargets, sceneDelta, out SvgDocumentModel updatedDocumentModel, out error))
+            {
+                return false;
+            }
+
+            updatedSource = updatedDocumentModel?.SourceText ?? string.Empty;
+            return !string.IsNullOrWhiteSpace(updatedSource);
+        }
+
+        private bool TryBuildMultiMoveDocumentModel(
+            DocumentSession currentDocument,
+            IReadOnlyList<ElementMoveTarget> moveTargets,
+            Vector2 sceneDelta,
+            out SvgDocumentModel updatedDocumentModel,
+            out string error)
+        {
+            updatedDocumentModel = null;
+            error = string.Empty;
+
+            if (currentDocument?.DocumentModel == null || moveTargets == null || moveTargets.Count == 0)
+            {
+                error = "Transient document model is unavailable.";
+                return false;
+            }
+
+            SvgDocumentModelMutationService mutationService = new();
+            SvgDocumentModel workingDocumentModel = currentDocument.DocumentModel;
+            foreach (ElementMoveTarget moveTarget in moveTargets)
+            {
+                if (string.IsNullOrWhiteSpace(moveTarget.ElementKey))
+                {
+                    continue;
+                }
+
+                Vector2 parentTranslateDelta = moveTarget.ParentWorldTransform.Inverse().MultiplyVector(sceneDelta);
+                if (!mutationService.TryPrependElementTranslation(
+                        workingDocumentModel,
+                        new TranslateElementRequest(moveTarget.ElementKey, parentTranslateDelta),
+                        out MutationResult result))
+                {
+                    error = result.Error;
+                    return false;
+                }
+
+                workingDocumentModel = result.UpdatedDocumentModel;
+            }
+
+            updatedDocumentModel = workingDocumentModel;
+            return updatedDocumentModel != null;
         }
 
         private static bool TryApplyTransientPreview(

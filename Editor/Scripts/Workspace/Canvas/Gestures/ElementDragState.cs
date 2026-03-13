@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Unity.VectorGraphics;
 using UnityEngine;
 
@@ -15,6 +16,7 @@ namespace SvgEditor.Workspace.Canvas
         public SvgPreserveAspectRatioMode StartPreserveAspectRatioMode { get; private set; } = SvgPreserveAspectRatioMode.Meet;
         public bool ResizeCenterAnchor { get; set; }
         public string ElementKey { get; private set; } = string.Empty;
+        public IReadOnlyList<ElementMoveTarget> MoveTargets { get; private set; } = new[] { new ElementMoveTarget(string.Empty, Matrix2D.identity) };
         public Matrix2D StartParentWorldTransform { get; private set; } = Matrix2D.identity;
         public Vector2 StartRotationPivotViewport { get; private set; }
         public Vector2 StartRotateVector { get; private set; }
@@ -30,6 +32,7 @@ namespace SvgEditor.Workspace.Canvas
         {
             ElementKey = elementKey ?? string.Empty;
             StartParentWorldTransform = parentWorldTransform;
+            MoveTargets = new[] { new ElementMoveTarget(ElementKey, parentWorldTransform) };
             StartProjectionSceneRect = projectionSceneRect;
             StartPreserveAspectRatioMode = preserveAspectRatioMode;
             StartSelectionViewportRect = selectionViewportRect;
@@ -48,9 +51,17 @@ namespace SvgEditor.Workspace.Canvas
             CurrentRotationAngle = 0f;
         }
 
+        public void SetMoveTargets(IReadOnlyList<ElementMoveTarget> moveTargets)
+        {
+            MoveTargets = moveTargets != null && moveTargets.Count > 0
+                ? moveTargets
+                : new[] { new ElementMoveTarget(ElementKey, StartParentWorldTransform) };
+        }
+
         public void Reset()
         {
             ElementKey = string.Empty;
+            MoveTargets = new[] { new ElementMoveTarget(string.Empty, Matrix2D.identity) };
             StartSelectionViewportRect = default;
             CurrentSelectionViewportRect = default;
             StartElementSceneRect = default;

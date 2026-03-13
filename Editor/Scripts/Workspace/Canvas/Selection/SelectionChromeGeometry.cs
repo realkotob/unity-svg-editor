@@ -117,7 +117,7 @@ namespace SvgEditor.Workspace.Canvas
         public static bool TryHitRotationZone(CanvasSelectionVisual selection, Vector2 localPoint, out SelectionHandle handle)
         {
             handle = SelectionHandle.None;
-            if (selection == null || !selection.ShowSelectionHandles)
+            if (selection == null || !selection.AllowSelectionHandleInteraction)
             {
                 return false;
             }

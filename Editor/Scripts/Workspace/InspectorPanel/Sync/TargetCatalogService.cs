@@ -121,6 +121,18 @@ namespace SvgEditor.Workspace.InspectorPanel
             _inspectorPanelState.FramePositionEnabled = false;
             _inspectorPanelState.FrameX = 0f;
             _inspectorPanelState.FrameY = 0f;
+            _inspectorPanelState.FrameWidth = 0f;
+            _inspectorPanelState.FrameHeight = 0f;
+
+            if (Host != null && Host.TryGetCurrentSelectionSceneRect(out Rect selectionSceneRect))
+            {
+                _inspectorPanelState.FramePositionEnabled = true;
+                _inspectorPanelState.FrameX = selectionSceneRect.xMin;
+                _inspectorPanelState.FrameY = selectionSceneRect.yMin;
+                _inspectorPanelState.FrameWidth = selectionSceneRect.width;
+                _inspectorPanelState.FrameHeight = selectionSceneRect.height;
+                return;
+            }
 
             string targetKey = ResolveSelectedTargetKey();
             if (Host == null ||

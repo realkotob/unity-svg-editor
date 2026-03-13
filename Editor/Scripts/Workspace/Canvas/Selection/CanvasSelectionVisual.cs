@@ -10,6 +10,7 @@ namespace SvgEditor.Workspace.Canvas
         public SelectionKind Kind { get; set; }
         public Rect Rect { get; set; }
         public bool ShowSelectionHandles { get; set; }
+        public bool AllowSelectionHandleInteraction { get; set; } = true;
         public string SizeText { get; set; } = string.Empty;
         public bool ShowVerticalGuide { get; set; }
         public float VerticalGuideX { get; set; }

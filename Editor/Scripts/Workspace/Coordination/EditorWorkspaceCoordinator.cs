@@ -78,6 +78,7 @@ namespace SvgEditor.Workspace.Coordination
         public void UpdateSelectionVisual() => _canvasWorkspaceController.UpdateSelectionVisual();
 
         public bool TryCancelActiveDrag() => _canvasWorkspaceController.TryCancelActiveDrag();
+        internal IReadOnlyList<string> SelectedElementKeys => _selectionCoordinator.SelectedElementKeys;
 
         internal static bool TryResolveSelection(
             IReadOnlyList<HierarchyNode> elements,
@@ -96,6 +97,7 @@ namespace SvgEditor.Workspace.Coordination
         PreviewSnapshot ICanvasWorkspaceHost.PreviewSnapshot => _host.PreviewSnapshot;
         Image ICanvasWorkspaceHost.PreviewImage => _host.PreviewImage;
         string ICanvasWorkspaceHost.SelectedElementKey => _selectionCoordinator.ResolveCanvasSelectedElementKey();
+        IReadOnlyList<string> ICanvasWorkspaceHost.SelectedElementKeys => _selectionCoordinator.SelectedElementKeys;
         HierarchyNode ICanvasWorkspaceHost.SelectedHierarchyNode => _selectionCoordinator.SelectedHierarchyNode;
         string ICanvasWorkspaceHost.FormatNumber(float value) => _host.FormatNumber(value);
         HierarchyNode ICanvasWorkspaceHost.FindHierarchyNode(string elementKey) => _selectionCoordinator.FindHierarchyNode(elementKey);
@@ -119,6 +121,9 @@ namespace SvgEditor.Workspace.Coordination
 
         void ICanvasWorkspaceHost.SelectStructureElementFromCanvas(string elementKey, bool syncPatchTarget) =>
             _selectionCoordinator.SelectStructureElementFromCanvas(elementKey, syncPatchTarget);
+
+        void ICanvasWorkspaceHost.ToggleStructureElementSelectionFromCanvas(string elementKey, bool syncPatchTarget) =>
+            _selectionCoordinator.ToggleStructureElementSelection(elementKey, syncPatchTarget);
 
         internal void SyncSelectionFromInspectorTarget(string targetKey) => _selectionCoordinator.SyncSelectionFromInspectorTarget(targetKey);
     }

@@ -1,3 +1,4 @@
+using System;
 using SvgEditor;
 using SvgEditor.Preview;
 using SvgEditor.Document;
@@ -39,6 +40,16 @@ namespace SvgEditor.Workspace.Canvas
         {
             _host.SelectionKind = SelectionKind.Element;
             _host.SelectElement(elementKey, syncPatchTarget);
+            _host.UpdateStructureInteractivity(_host.CurrentDocument != null);
+            _host.UpdateSelectionVisual();
+        }
+
+        public void ToggleCanvasElement(string elementKey, bool syncPatchTarget)
+        {
+            _host.ToggleElementSelection(elementKey, syncPatchTarget);
+            _host.SelectionKind = string.IsNullOrWhiteSpace(_host.SelectedElementKey)
+                ? SelectionKind.None
+                : SelectionKind.Element;
             _host.UpdateStructureInteractivity(_host.CurrentDocument != null);
             _host.UpdateSelectionVisual();
         }

@@ -37,6 +37,8 @@ namespace SvgEditor.Workspace.Coordination
         private HierarchyListView HierarchyListView => _shellBinder.HierarchyListView;
 
         public IReadOnlyList<TreeViewItemData<HierarchyNode>> HierarchyItems => _structurePanelState.HierarchyItems;
+        public IReadOnlyList<string> SelectedElementKeys => _structurePanelState.SelectedElementKeys;
+        public string SelectionRangeAnchorKey => _structurePanelState.SelectionRangeAnchorKey;
         public HierarchyNode SelectedHierarchyNode => FindHierarchyNode(_structurePanelState.SelectedElementKey);
 
         public void Bind(IHierarchyHost hierarchyHost)
@@ -78,6 +80,12 @@ namespace SvgEditor.Workspace.Coordination
 
             _structurePanelState.SetStructure(snapshot, selectedElementKey);
             HierarchyListView?.SetHierarchyItems(_structurePanelState.HierarchyItems);
+
+            if (_structurePanelState.SelectedElementKeys.Count > 0)
+            {
+                SyncStructureSelection(SelectionKind.Element, syncPatchTarget: false);
+                return;
+            }
 
             if (TryResolveSelection(_structurePanelState.Elements, selectedElementKey, selectedTargetKey, out HierarchyNode selectedItem, out SelectionKind selectionKind))
             {
@@ -127,6 +135,22 @@ namespace SvgEditor.Workspace.Coordination
                 syncPatchTarget);
         }
 
+        public void ToggleStructureElementSelection(string elementKey, bool syncPatchTarget)
+        {
+            _structurePanelState.ToggleElementSelection(elementKey);
+            SyncStructureSelection(
+                _structurePanelState.SelectedElementKeys.Count > 0 ? SelectionKind.Element : SelectionKind.None,
+                syncPatchTarget);
+        }
+
+        public void AddStructureElementSelectionRange(string elementKey, bool syncPatchTarget)
+        {
+            _structurePanelState.AddElementSelectionRange(elementKey);
+            SyncStructureSelection(
+                _structurePanelState.SelectedElementKeys.Count > 0 ? SelectionKind.Element : SelectionKind.None,
+                syncPatchTarget);
+        }
+
         public void SyncSelectionFromInspectorTarget(string targetKey)
         {
             if (string.Equals(targetKey, SvgDocumentTargets.RootTargetKey, StringComparison.Ordinal))
@@ -142,15 +166,17 @@ namespace SvgEditor.Workspace.Coordination
                 syncPatchTarget: false);
         }
 
-        private void OnStructureElementSelectionChanged(HierarchyNode selected)
+        private void OnStructureElementSelectionChanged(IReadOnlyList<HierarchyNode> selectedItems, HierarchyNode primarySelectedItem)
         {
             if (_isUpdatingStructureSelection)
                 return;
 
             ApplySelectionState(
-                selected,
-                selected != null ? SelectionKind.Element : SelectionKind.None,
-                syncPatchTarget: true);
+                selectedItems,
+                primarySelectedItem,
+                selectedItems != null && selectedItems.Count > 0 ? SelectionKind.Element : SelectionKind.None,
+                syncPatchTarget: true,
+                selectionAnchorKey: _structureHierarchyInteractionController.SelectionAnchorElementKey);
         }
 
         private bool TryBuildStructureSnapshot(DocumentSession document, out HierarchyOutline snapshot, out string error)
@@ -187,22 +213,45 @@ namespace SvgEditor.Workspace.Coordination
 
         private void ApplySelectionState(HierarchyNode selectedItem, SelectionKind selectionKind, bool syncPatchTarget)
         {
-            _structurePanelState.SelectElement(selectedItem?.Key);
-            _structurePanelState.SelectLayer(selectedItem?.LayerKey);
-            _canvasWorkspaceController.SetSelectionKind(selectionKind);
-            SelectStructureElementByKey(_structurePanelState.SelectedElementKey);
+            ApplySelectionState(
+                selectedItem != null ? new[] { selectedItem } : Array.Empty<HierarchyNode>(),
+                selectedItem,
+                selectionKind,
+                syncPatchTarget,
+                _structurePanelState.SelectionRangeAnchorKey);
+        }
 
-            if (syncPatchTarget && selectedItem?.CanUseAsTarget == true)
-                _host.TrySelectPatchTargetByKey(selectedItem.TargetKey);
+        private void ApplySelectionState(
+            IReadOnlyList<HierarchyNode> selectedItems,
+            HierarchyNode primarySelectedItem,
+            SelectionKind selectionKind,
+            bool syncPatchTarget,
+            string selectionAnchorKey)
+        {
+            if (selectionKind == SelectionKind.Element && primarySelectedItem != null)
+            {
+                _structurePanelState.SetElementSelection(
+                    selectedItems.Select(item => item.Key),
+                    primarySelectedItem.Key,
+                    selectionAnchorKey);
+            }
+            else
+            {
+                _structurePanelState.ClearElementSelection();
+            }
 
-            UpdateStructureInteractivity(CurrentDocument != null);
-            _canvasWorkspaceController.UpdateSelectionVisual();
+            SyncStructureSelection(selectionKind, syncPatchTarget);
         }
 
         private void SelectStructureElementByKey(string elementKey)
         {
+            SelectStructureElements(_structurePanelState.SelectedElementKeys, elementKey);
+        }
+
+        private void SelectStructureElements(IReadOnlyList<string> elementKeys, string primaryElementKey)
+        {
             _isUpdatingStructureSelection = true;
-            HierarchyListView?.SelectElementByKey(elementKey);
+            HierarchyListView?.SelectElementsByKey(elementKeys, primaryElementKey, _structurePanelState.SelectionRangeAnchorKey);
             _isUpdatingStructureSelection = false;
         }
 
@@ -237,6 +286,27 @@ namespace SvgEditor.Workspace.Coordination
 
             selectionKind = SelectionKind.None;
             return false;
+        }
+
+        private void SyncStructureSelection(SelectionKind fallbackSelectionKind, bool syncPatchTarget)
+        {
+            HierarchyNode primarySelectedItem = FindHierarchyNode(_structurePanelState.SelectedElementKey);
+            _structurePanelState.SelectLayer(primarySelectedItem?.LayerKey);
+
+            SelectionKind selectionKind = primarySelectedItem != null
+                ? SelectionKind.Element
+                : fallbackSelectionKind;
+
+            _canvasWorkspaceController.SetSelectionKind(selectionKind);
+            SelectStructureElementByKey(_structurePanelState.SelectedElementKey);
+
+            if (syncPatchTarget && primarySelectedItem?.CanUseAsTarget == true)
+            {
+                _host.TrySelectPatchTargetByKey(primarySelectedItem.TargetKey);
+            }
+
+            UpdateStructureInteractivity(CurrentDocument != null);
+            _canvasWorkspaceController.UpdateSelectionVisual();
         }
     }
 }

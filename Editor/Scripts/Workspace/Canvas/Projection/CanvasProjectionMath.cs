@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 using SvgEditor;
 using SvgEditor.Preview;
@@ -123,6 +124,60 @@ namespace SvgEditor.Workspace.Canvas
                 centerAnchor,
                 out scale,
                 out pivot);
+        }
+
+        public static bool TryGetCombinedSelectionSceneRect(
+            PreviewSnapshot previewSnapshot,
+            IReadOnlyList<string> selectedElementKeys,
+            out Rect combinedSceneRect)
+        {
+            combinedSceneRect = default;
+            if (previewSnapshot?.Elements == null || selectedElementKeys == null || selectedElementKeys.Count == 0)
+            {
+                return false;
+            }
+
+            bool foundAny = false;
+            Rect selectionRect = default;
+            foreach (string selectedElementKey in selectedElementKeys)
+            {
+                if (string.IsNullOrWhiteSpace(selectedElementKey))
+                {
+                    continue;
+                }
+
+                PreviewElementGeometry selectedGeometry = null;
+                foreach (PreviewElementGeometry previewElement in previewSnapshot.Elements)
+                {
+                    if (previewElement != null &&
+                        string.Equals(previewElement.Key, selectedElementKey, System.StringComparison.Ordinal))
+                    {
+                        selectedGeometry = previewElement;
+                        break;
+                    }
+                }
+
+                if (selectedGeometry == null)
+                {
+                    continue;
+                }
+
+                if (!foundAny)
+                {
+                    selectionRect = selectedGeometry.VisualBounds;
+                    foundAny = true;
+                    continue;
+                }
+
+                selectionRect = Rect.MinMaxRect(
+                    Mathf.Min(selectionRect.xMin, selectedGeometry.VisualBounds.xMin),
+                    Mathf.Min(selectionRect.yMin, selectedGeometry.VisualBounds.yMin),
+                    Mathf.Max(selectionRect.xMax, selectedGeometry.VisualBounds.xMax),
+                    Mathf.Max(selectionRect.yMax, selectedGeometry.VisualBounds.yMax));
+            }
+
+            combinedSceneRect = selectionRect;
+            return foundAny;
         }
     }
 }
