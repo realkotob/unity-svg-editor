@@ -13,16 +13,16 @@ namespace SvgEditor.Workspace.AssetLibrary.Browser
 {
     internal sealed class AssetBrowser
     {
-        private const string AllCategoriesFilterKey = "__all__";
+        private const string ALL_CATEGORIES_FILTER_KEY = "__all__";
 
-        private static readonly StringComparer AssetNameComparer = StringComparer.OrdinalIgnoreCase;
-        private static readonly Comparison<AssetEntry> AssetEntryComparison =
+        private static readonly StringComparer _assetNameComparer = StringComparer.OrdinalIgnoreCase;
+        private static readonly Comparison<AssetEntry> _assetEntryComparison =
             static (left, right) =>
             {
-                int groupComparison = AssetNameComparer.Compare(left?.GroupKey, right?.GroupKey);
+                int groupComparison = _assetNameComparer.Compare(left?.GroupKey, right?.GroupKey);
                 return groupComparison != 0
                     ? groupComparison
-                    : AssetNameComparer.Compare(left?.DisplayName, right?.DisplayName);
+                    : _assetNameComparer.Compare(left?.DisplayName, right?.DisplayName);
             };
 
         private readonly DocumentRepository _documentRepository;
@@ -39,7 +39,7 @@ namespace SvgEditor.Workspace.AssetLibrary.Browser
         private Button _assetLibraryRefreshButton;
         private AssetGridView _assetGridView;
         private bool _isProgrammaticSelection;
-        private string _selectedCategoryKey = AllCategoriesFilterKey;
+        private string _selectedCategoryKey = ALL_CATEGORIES_FILTER_KEY;
         private Action<string> _loadAsset;
         private Func<string> _getCurrentAssetPath;
         private Func<bool> _canSwitchDocument;
@@ -128,7 +128,7 @@ namespace SvgEditor.Workspace.AssetLibrary.Browser
                 });
             }
 
-            _allAssetItems.Sort(AssetEntryComparison);
+            _allAssetItems.Sort(_assetEntryComparison);
             RebuildCategoryFilterBar();
             ApplyAssetFilter(selectFirst);
         }
@@ -172,13 +172,12 @@ namespace SvgEditor.Workspace.AssetLibrary.Browser
 
         private void RebuildCategoryFilterBar()
         {
-            List<string> categories = BuildCategoryList();
-
-            if (!string.Equals(_selectedCategoryKey, AllCategoriesFilterKey, StringComparison.Ordinal) &&
-                !categories.Contains(_selectedCategoryKey, AssetNameComparer))
-            {
-                _selectedCategoryKey = AllCategoriesFilterKey;
-            }
+            List<string> categories = AssetBrowserCategoryController.BuildCategoryList(_allAssetItems, _assetNameComparer);
+            _selectedCategoryKey = AssetBrowserCategoryController.NormalizeSelectedCategoryKey(
+                _selectedCategoryKey,
+                categories,
+                ALL_CATEGORIES_FILTER_KEY,
+                _assetNameComparer);
 
             if (_assetLibraryFilterAccordion != null)
             {
@@ -187,42 +186,30 @@ namespace SvgEditor.Workspace.AssetLibrary.Browser
                     : DisplayStyle.None;
             }
 
-            UpdateCategoryFilterAccordionTitle(GetSelectedCategoryAssetCount());
+            UpdateCategoryFilterAccordionTitle(
+                AssetBrowserCategoryController.CountSelectedAssets(
+                    _allAssetItems,
+                    _selectedCategoryKey,
+                    ALL_CATEGORIES_FILTER_KEY,
+                    _assetNameComparer));
 
             if (_assetLibraryCategoryBar == null)
             {
                 return;
             }
 
-            List<FilterBadgeOption> options = new()
-            {
-                new()
-                {
-                    key = AllCategoriesFilterKey,
-                    label = "All",
-                    tooltip = "Show all SVG assets",
-                    isSelected = string.Equals(_selectedCategoryKey, AllCategoriesFilterKey, StringComparison.Ordinal)
-                }
-            };
-
-            foreach (string category in categories)
-            {
-                options.Add(new FilterBadgeOption
-                {
-                    key = category,
-                    label = category,
-                    tooltip = $"Filter assets in {category}",
-                    isSelected = AssetNameComparer.Equals(_selectedCategoryKey, category)
-                });
-            }
-
+            List<FilterBadgeOption> options = AssetBrowserCategoryController.BuildOptions(
+                categories,
+                _selectedCategoryKey,
+                ALL_CATEGORIES_FILTER_KEY,
+                _assetNameComparer);
             _assetLibraryCategoryBar.Bind(options, _selectedCategoryKey, OnCategorySelected);
         }
 
         private void OnCategorySelected(string selectedKey)
         {
             string nextCategoryKey = string.IsNullOrWhiteSpace(selectedKey)
-                ? AllCategoriesFilterKey
+                ? ALL_CATEGORIES_FILTER_KEY
                 : selectedKey;
             if (string.Equals(_selectedCategoryKey, nextCategoryKey, StringComparison.Ordinal))
             {
@@ -238,17 +225,20 @@ namespace SvgEditor.Workspace.AssetLibrary.Browser
         {
             _filteredAssetItems.Clear();
 
-            bool showAllCategories = string.Equals(_selectedCategoryKey, AllCategoriesFilterKey, StringComparison.Ordinal);
+            bool showAllCategories = string.Equals(_selectedCategoryKey, ALL_CATEGORIES_FILTER_KEY, StringComparison.Ordinal);
             foreach (AssetEntry item in _allAssetItems)
             {
-                if (showAllCategories || AssetNameComparer.Equals(item.Library, _selectedCategoryKey))
+                if (showAllCategories || _assetNameComparer.Equals(item.Library, _selectedCategoryKey))
                 {
                     _filteredAssetItems.Add(item);
                 }
             }
 
-            RebuildFilteredAssetPathLookup();
-            RebuildAssetGridItems();
+            AssetBrowserGridItemBuilder.Populate(
+                _filteredAssetItems,
+                _vectorImageSourceProvider,
+                _assetGridItems,
+                _filteredAssetPaths);
             UpdateCategoryFilterAccordionTitle(_assetGridItems.Count);
             _assetGridView?.SetItems(_assetGridItems);
 
@@ -279,56 +269,9 @@ namespace SvgEditor.Workspace.AssetLibrary.Browser
             }
         }
 
-        private void RebuildAssetGridItems()
-        {
-            _assetGridItems.Clear();
-
-            foreach (AssetEntry item in _filteredAssetItems)
-            {
-                _assetGridItems.Add(new GridViewItem
-                {
-                    Id = item.AssetPath,
-                    Label = item.DisplayName,
-                    SortKey = item.DisplayName,
-                    GroupKey = item.GroupKey,
-                    PreviewSource = PreviewImageSource.FromVectorImage(_vectorImageSourceProvider.Load(item.AssetPath)),
-                    UserData = item.AssetPath
-                });
-            }
-        }
-
         private void OnRefreshButtonClicked()
         {
             RefreshAssetList(selectFirst: false);
-        }
-
-        private List<string> BuildCategoryList()
-        {
-            return _allAssetItems
-                .Select(static item => item.Library)
-                .Where(static category => !string.IsNullOrWhiteSpace(category))
-                .Distinct(AssetNameComparer)
-                .OrderBy(static category => category, AssetNameComparer)
-                .ToList();
-        }
-
-        private int GetSelectedCategoryAssetCount()
-        {
-            if (string.Equals(_selectedCategoryKey, AllCategoriesFilterKey, StringComparison.Ordinal))
-            {
-                return _allAssetItems.Count;
-            }
-
-            int count = 0;
-            foreach (AssetEntry item in _allAssetItems)
-            {
-                if (AssetNameComparer.Equals(item.Library, _selectedCategoryKey))
-                {
-                    count++;
-                }
-            }
-
-            return count;
         }
 
         private void UpdateCategoryFilterAccordionTitle(int assetCount)
@@ -338,12 +281,10 @@ namespace SvgEditor.Workspace.AssetLibrary.Browser
                 return;
             }
 
-            string selectedLabel = string.Equals(_selectedCategoryKey, AllCategoriesFilterKey, StringComparison.Ordinal)
-                ? "All"
-                : _selectedCategoryKey;
-            _assetLibraryFilterAccordionItem.Title = assetCount > 0
-                ? $"Libraries: {selectedLabel} ({assetCount})"
-                : "Libraries";
+            _assetLibraryFilterAccordionItem.Title = AssetBrowserCategoryController.BuildAccordionTitle(
+                _selectedCategoryKey,
+                assetCount,
+                ALL_CATEGORIES_FILTER_KEY);
         }
 
         private void OnAssetGridSelectionChanged(List<GridViewItem> selectedItems)
@@ -388,15 +329,6 @@ namespace SvgEditor.Workspace.AssetLibrary.Browser
             }
 
             _loadAsset?.Invoke(selectedAssetPath);
-        }
-
-        private void RebuildFilteredAssetPathLookup()
-        {
-            _filteredAssetPaths.Clear();
-            foreach (AssetEntry item in _filteredAssetItems)
-            {
-                _filteredAssetPaths.Add(item.AssetPath);
-            }
         }
     }
 }

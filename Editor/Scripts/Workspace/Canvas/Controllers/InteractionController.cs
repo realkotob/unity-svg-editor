@@ -1,11 +1,8 @@
 using UnityEngine;
 using UnityEngine.UIElements;
-using SvgEditor.DocumentModel;
-using SvgEditor.Shared;
 using SvgEditor.Document;
 using SvgEditor.Document.Structure.Hierarchy;
-
-using SvgEditor;
+using SvgEditor.DocumentModel;
 using SvgEditor.Preview;
 
 namespace SvgEditor.Workspace.Canvas
@@ -20,6 +17,9 @@ namespace SvgEditor.Workspace.Canvas
         private readonly OverlayController _overlayController;
         private readonly PointerDragController _pointerDragController;
         private readonly DefinitionProxyCoordinator _definitionProxyCoordinator = new();
+        private readonly CanvasSelectionVisualService _selectionVisualService;
+        private readonly CanvasHoverVisualService _hoverVisualService;
+
         private SelectionKind _selectionKind = SelectionKind.None;
         private string _hoveredElementKey = string.Empty;
         private CanvasStageView _canvasStageView;
@@ -39,6 +39,16 @@ namespace SvgEditor.Workspace.Canvas
                 viewportState,
                 overlayController,
                 sceneProjector);
+            _selectionVisualService = new CanvasSelectionVisualService(
+                host,
+                sceneProjector,
+                overlayController,
+                _definitionProxyCoordinator,
+                _pointerDragController);
+            _hoverVisualService = new CanvasHoverVisualService(
+                host,
+                sceneProjector,
+                overlayController);
         }
 
         public SelectionKind SelectionKind => _selectionKind;
@@ -132,110 +142,7 @@ namespace SvgEditor.Workspace.Canvas
 
         public void UpdateSelectionVisual()
         {
-            if (PreviewSnapshot == null || SelectionKind == SelectionKind.None)
-            {
-                _definitionProxyCoordinator.ClearSelection();
-                _overlayController.ClearSelection();
-                _overlayController.ClearDefinitionOverlays();
-                return;
-            }
-
-            if (_pointerDragController.IsDraggingSelectionPreview)
-            {
-                if (HasDefinitionProxySelection)
-                {
-                    _overlayController.SetSelection(_sceneProjector.BuildSelectionVisual(
-                        PreviewSnapshot,
-                        SelectionKind.Element,
-                        _pointerDragController.DragCurrentSelectionViewportRect,
-                        _pointerDragController.DragStartElementSceneRect.size,
-                        false));
-                    _overlayController.SetDefinitionOverlays(_definitionProxyCoordinator.BuildDraggedDefinitionOverlays(_host, _pointerDragController, _sceneProjector));
-                    return;
-                }
-
-                if (_definitionProxyCoordinator.TryBuildDraggedSelectionVisual(_host, _pointerDragController, _sceneProjector, out CanvasSelectionVisual draggedSelectionVisual))
-                {
-                    _overlayController.SetSelection(draggedSelectionVisual);
-                    _overlayController.SetDefinitionOverlays(_definitionProxyCoordinator.BuildDraggedDefinitionOverlays(_host, _pointerDragController, _sceneProjector));
-                    return;
-                }
-
-                var sourceRect = _pointerDragController.DragMode == DragMode.ResizeElement
-                    ? _sceneProjector.BuildScaledSceneRect(
-                        _pointerDragController.DragStartSelectionViewportRect,
-                        _pointerDragController.DragStartElementSceneRect,
-                        _pointerDragController.DragCurrentSelectionViewportRect,
-                        _pointerDragController.DragMode == DragMode.ResizeElement
-                            ? _pointerDragController.ActiveHandle
-                            : SelectionHandle.None,
-                        _pointerDragController.DragResizeCenterAnchor)
-                    : _pointerDragController.DragStartElementSceneRect;
-
-                _overlayController.SetSelection(_sceneProjector.BuildSelectionVisual(
-                    _pointerDragController.DragStartProjectionSceneRect,
-                    _pointerDragController.DragStartPreserveAspectRatioMode,
-                    SelectionKind.Element,
-                    _pointerDragController.DragCurrentSelectionViewportRect,
-                    sourceRect.size,
-                    _pointerDragController.DragMode != DragMode.RotateElement));
-                _overlayController.SetDefinitionOverlays(_definitionProxyCoordinator.BuildDraggedDefinitionOverlays(_host, _pointerDragController, _sceneProjector));
-                return;
-            }
-
-            _definitionProxyCoordinator.UpdateDefinitionOverlayVisual(_host, _selectionKind, _overlayController, _sceneProjector);
-
-            if (SelectionKind == SelectionKind.Frame &&
-                _sceneProjector.TryGetFrameViewportRect(out Rect frameViewportRect))
-            {
-                var frameSourceSize = PreviewSnapshot?.ProjectionRect.size ?? frameViewportRect.size;
-                _overlayController.SetSelection(_sceneProjector.BuildSelectionVisual(
-                    PreviewSnapshot,
-                    SelectionKind.Frame,
-                    frameViewportRect,
-                    frameSourceSize,
-                    false));
-                _overlayController.ClearDefinitionOverlays();
-                return;
-            }
-
-            if (_definitionProxyCoordinator.TryGetSelectedDefinitionProxy(_host.SelectedElementKey, out CanvasDefinitionOverlayVisual selectedProxy) &&
-                selectedProxy != null)
-            {
-                _overlayController.SetSelection(_sceneProjector.BuildSelectionVisual(
-                    PreviewSnapshot,
-                    SelectionKind.Element,
-                    selectedProxy.ViewportBounds,
-                    selectedProxy.SceneBounds.size,
-                    false));
-                return;
-            }
-
-            if (SelectionKind == SelectionKind.Element &&
-                _sceneProjector.TryResolveSelectedElementSceneRect(PreviewSnapshot, _host.SelectedElementKey, out Rect selectedElementSceneRect) &&
-                _sceneProjector.TrySceneRectToViewportRect(PreviewSnapshot, selectedElementSceneRect, out Rect elementViewportRect))
-            {
-                var showSelectionHandles = !IsResizeUnsupported(_host.SelectedElementKey);
-                var selectionVisual = _sceneProjector.BuildSelectionVisual(
-                    PreviewSnapshot,
-                    SelectionKind.Element,
-                    elementViewportRect,
-                    selectedElementSceneRect.size,
-                    showSelectionHandles);
-                var selectedGeometry = _sceneProjector.FindPreviewElement(PreviewSnapshot, _host.SelectedElementKey);
-                if (selectedGeometry != null &&
-                    _sceneProjector.TryScenePointToViewportPoint(PreviewSnapshot, selectedGeometry.RotationPivotWorld, out Vector2 rotationPivotViewport))
-                {
-                    selectionVisual.HasRotationPivot = true;
-                    selectionVisual.RotationPivotViewport = rotationPivotViewport;
-                }
-
-                _overlayController.SetSelection(selectionVisual);
-                return;
-            }
-
-            _overlayController.ClearSelection();
-            _overlayController.ClearDefinitionOverlays();
+            _selectionVisualService.UpdateSelectionVisual(_selectionKind);
         }
 
         public void SetHoveredElement(string elementKey)
@@ -252,36 +159,7 @@ namespace SvgEditor.Workspace.Canvas
 
         public void UpdateHoverVisual()
         {
-            if (PreviewSnapshot == null ||
-                string.IsNullOrWhiteSpace(_hoveredElementKey) ||
-                (SelectionKind == SelectionKind.Element &&
-                 string.Equals(_hoveredElementKey, _host.SelectedElementKey, System.StringComparison.Ordinal)))
-            {
-                _overlayController.ClearHover();
-                return;
-            }
-
-            if (string.Equals(_hoveredElementKey, FrameHoverSentinel, System.StringComparison.Ordinal))
-            {
-                if (SelectionKind != SelectionKind.Frame &&
-                    _sceneProjector.TryGetFrameViewportRect(out Rect frameViewportRect))
-                {
-                    _overlayController.SetHover(frameViewportRect);
-                    return;
-                }
-
-                _overlayController.ClearHover();
-                return;
-            }
-
-            if (_sceneProjector.TryResolveSelectedElementSceneRect(PreviewSnapshot, _hoveredElementKey, out Rect hoveredElementSceneRect) &&
-                _sceneProjector.TrySceneRectToViewportRect(PreviewSnapshot, hoveredElementSceneRect, out Rect hoveredElementViewportRect))
-            {
-                _overlayController.SetHover(hoveredElementViewportRect);
-                return;
-            }
-
-            _overlayController.ClearHover();
+            _hoverVisualService.UpdateHoverVisual(_hoveredElementKey, _selectionKind);
         }
 
         DocumentSession ICanvasPointerDragHost.CurrentDocument => _host.CurrentDocument;
@@ -319,43 +197,13 @@ namespace SvgEditor.Workspace.Canvas
 
         internal bool TryNudgeSelectedElement(Vector2 sceneDelta)
         {
-            if (PreviewSnapshot == null || _selectionKind != SelectionKind.Element)
-            {
-                return false;
-            }
-
-            if (_definitionProxyCoordinator.TryGetSelectedDefinitionProxy(_host.SelectedElementKey, out CanvasDefinitionOverlayVisual selectedProxy) &&
-                selectedProxy != null &&
-                _pointerDragController.TryBuildNudgedSource(
-                    _host.CurrentDocument,
-                    selectedProxy.DefinitionElementKey,
-                    sceneDelta,
-                    selectedProxy.ParentWorldTransform,
-                    out string proxyUpdatedSource))
-            {
-                _host.ApplyUpdatedSource(proxyUpdatedSource, $"Moved <{_host.FindHierarchyNode(selectedProxy.DefinitionElementKey)?.TagName ?? "definition"}>.");
-                return true;
-            }
-
-            if (string.IsNullOrWhiteSpace(_host.SelectedElementKey))
-            {
-                return false;
-            }
-
-            var selectedGeometry = _sceneProjector.FindPreviewElement(PreviewSnapshot, _host.SelectedElementKey);
-            if (selectedGeometry == null ||
-                !_pointerDragController.TryBuildNudgedSource(
-                    _host.CurrentDocument,
-                    _host.SelectedElementKey,
-                    sceneDelta,
-                    selectedGeometry.ParentWorldTransform,
-                    out string updatedSource))
-            {
-                return false;
-            }
-
-            _host.ApplyUpdatedSource(updatedSource, $"Moved <{_host.FindHierarchyNode(_host.SelectedElementKey)?.TagName ?? "element"}>.");
-            return true;
+            return CanvasNudgeService.TryNudgeSelectedElement(
+                _host,
+                _sceneProjector,
+                _pointerDragController,
+                _definitionProxyCoordinator,
+                _selectionKind,
+                sceneDelta);
         }
 
         private void SelectDefinitionProxy(CanvasDefinitionOverlayVisual overlay)
@@ -375,13 +223,6 @@ namespace SvgEditor.Workspace.Canvas
             _definitionProxyCoordinator.ClearSelection();
         }
 
-        private bool IsResizeUnsupported(string elementKey)
-        {
-            string tagName = _host.FindHierarchyNode(elementKey)?.TagName;
-            return string.Equals(tagName, SvgTagName.TSPAN, System.StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(tagName, SvgTagName.TEXT_PATH, System.StringComparison.OrdinalIgnoreCase);
-        }
-
         private void UpdateZoomHud()
         {
             if (_canvasStageView == null)
@@ -389,7 +230,7 @@ namespace SvgEditor.Workspace.Canvas
                 return;
             }
 
-            var displayedZoomScale = 1f;
+            float displayedZoomScale = 1f;
             if (PreviewSnapshot != null &&
                 _sceneProjector.TryGetDisplayedZoomScale(PreviewSnapshot, out float resolvedZoomScale))
             {

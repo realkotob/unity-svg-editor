@@ -11,10 +11,6 @@ namespace SvgEditor.Workspace.Canvas
 {
     internal sealed class SelectionChromePresenter
     {
-        private const float SelectionHandleHalfSize = 4f;
-        private const float EdgeZoneThickness = 12f;
-        private const float RotateZoneHalfSize = 18f;
-
         private readonly Dictionary<SelectionHandle, VisualElement> _handles = new();
         private readonly Dictionary<SelectionHandle, VisualElement> _edgeZones = new();
         private readonly List<VisualElement> _rotationZones = new();
@@ -233,8 +229,8 @@ namespace SvgEditor.Workspace.Canvas
             PositionSelectionHandle(SelectionHandle.TopRight, selection.Rect.xMax, selection.Rect.yMin);
             PositionSelectionHandle(SelectionHandle.BottomRight, selection.Rect.xMax, selection.Rect.yMax);
             PositionSelectionHandle(SelectionHandle.BottomLeft, selection.Rect.xMin, selection.Rect.yMax);
-            PositionEdgeZones(selection.Rect, selection.ShowSelectionHandles);
-            PositionRotationZones(selection.Rect, selection.ShowSelectionHandles);
+            SelectionChromeGeometry.PositionEdgeZones(_edgeZones, selection.Rect, selection.ShowSelectionHandles);
+            SelectionChromeGeometry.PositionRotationZones(_rotationZones, selection.Rect, selection.ShowSelectionHandles);
         }
 
         public bool TryHitTestSelectionHandle(Vector2 localPoint, out SelectionHandle handle)
@@ -247,17 +243,7 @@ namespace SvgEditor.Workspace.Canvas
 
             foreach (var pair in _handles)
             {
-                var handleWidth = pair.Value.resolvedStyle.width > 0f
-                    ? pair.Value.resolvedStyle.width
-                    : SelectionHandleHalfSize * 2f;
-                var handleHeight = pair.Value.resolvedStyle.height > 0f
-                    ? pair.Value.resolvedStyle.height
-                    : SelectionHandleHalfSize * 2f;
-                var handleRect = new Rect(
-                    pair.Value.resolvedStyle.left,
-                    pair.Value.resolvedStyle.top,
-                    handleWidth,
-                    handleHeight);
+                Rect handleRect = SelectionChromeGeometry.BuildHandleRect(pair.Value);
 
                 if (handleRect.Contains(localPoint))
                 {
@@ -268,11 +254,7 @@ namespace SvgEditor.Workspace.Canvas
 
             foreach (var pair in _edgeZones)
             {
-                var zoneRect = new Rect(
-                    pair.Value.resolvedStyle.left,
-                    pair.Value.resolvedStyle.top,
-                    pair.Value.resolvedStyle.width,
-                    pair.Value.resolvedStyle.height);
+                Rect zoneRect = SelectionChromeGeometry.BuildRect(pair.Value);
                 if (zoneRect.Contains(localPoint))
                 {
                     handle = pair.Key;
@@ -287,7 +269,7 @@ namespace SvgEditor.Workspace.Canvas
         {
             var element = new VisualElement();
             element.AddClass(OverlayClassName.SELECTION_HANDLE);
-            element.AddClass(ResolveSelectionHandleCursorClass(handle));
+            element.AddClass(SelectionChromeGeometry.ResolveSelectionHandleCursorClass(handle));
             element.pickingMode = PickingMode.Position;
             _overlay.Add(element);
             _handles[handle] = element;
@@ -323,112 +305,12 @@ namespace SvgEditor.Workspace.Canvas
                 return;
             }
 
-            element.style.left = x - SelectionHandleHalfSize;
-            element.style.top = y - SelectionHandleHalfSize;
-        }
-
-        private void PositionEdgeZones(Rect selectionRect, bool visible)
-        {
-            PositionEdgeZone(SelectionHandle.Top, selectionRect.xMin + SelectionHandleHalfSize, selectionRect.yMin - (EdgeZoneThickness * 0.5f), Mathf.Max(0f, selectionRect.width - (SelectionHandleHalfSize * 2f)), EdgeZoneThickness, visible);
-            PositionEdgeZone(SelectionHandle.Right, selectionRect.xMax - (EdgeZoneThickness * 0.5f), selectionRect.yMin + SelectionHandleHalfSize, EdgeZoneThickness, Mathf.Max(0f, selectionRect.height - (SelectionHandleHalfSize * 2f)), visible);
-            PositionEdgeZone(SelectionHandle.Bottom, selectionRect.xMin + SelectionHandleHalfSize, selectionRect.yMax - (EdgeZoneThickness * 0.5f), Mathf.Max(0f, selectionRect.width - (SelectionHandleHalfSize * 2f)), EdgeZoneThickness, visible);
-            PositionEdgeZone(SelectionHandle.Left, selectionRect.xMin - (EdgeZoneThickness * 0.5f), selectionRect.yMin + SelectionHandleHalfSize, EdgeZoneThickness, Mathf.Max(0f, selectionRect.height - (SelectionHandleHalfSize * 2f)), visible);
-        }
-
-        private void PositionEdgeZone(SelectionHandle handle, float left, float top, float width, float height, bool visible)
-        {
-            if (!_edgeZones.TryGetValue(handle, out var element))
-            {
-                return;
-            }
-
-            element.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
-            element.style.left = left;
-            element.style.top = top;
-            element.style.width = width;
-            element.style.height = height;
-        }
-
-        private void PositionRotationZones(Rect selectionRect, bool showSelectionHandles)
-        {
-            if (_rotationZones.Count < 4)
-            {
-                return;
-            }
-
-            PositionRotationZone(_rotationZones[0], selectionRect.min, new Vector2(-RotateZoneHalfSize, -RotateZoneHalfSize), showSelectionHandles);
-            PositionRotationZone(_rotationZones[1], new Vector2(selectionRect.xMax, selectionRect.yMin), new Vector2(0f, -RotateZoneHalfSize), showSelectionHandles);
-            PositionRotationZone(_rotationZones[2], selectionRect.max, Vector2.zero, showSelectionHandles);
-            PositionRotationZone(_rotationZones[3], new Vector2(selectionRect.xMin, selectionRect.yMax), new Vector2(-RotateZoneHalfSize, 0f), showSelectionHandles);
-        }
-
-        private static void PositionRotationZone(VisualElement element, Vector2 corner, Vector2 offset, bool visible)
-        {
-            if (element == null)
-            {
-                return;
-            }
-
-            element.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
-            element.style.left = corner.x + offset.x;
-            element.style.top = corner.y + offset.y;
-            element.style.width = RotateZoneHalfSize;
-            element.style.height = RotateZoneHalfSize;
-        }
-
-        private static string ResolveSelectionHandleCursorClass(SelectionHandle handle)
-        {
-            return handle switch
-            {
-                SelectionHandle.TopLeft => OverlayClassName.SELECTION_HANDLE_TOP_LEFT,
-                SelectionHandle.Top => OverlayClassName.SELECTION_HANDLE_TOP,
-                SelectionHandle.TopRight => OverlayClassName.SELECTION_HANDLE_TOP_RIGHT,
-                SelectionHandle.Right => OverlayClassName.SELECTION_HANDLE_RIGHT,
-                SelectionHandle.BottomRight => OverlayClassName.SELECTION_HANDLE_BOTTOM_RIGHT,
-                SelectionHandle.Bottom => OverlayClassName.SELECTION_HANDLE_BOTTOM,
-                SelectionHandle.BottomLeft => OverlayClassName.SELECTION_HANDLE_BOTTOM_LEFT,
-                SelectionHandle.Left => OverlayClassName.SELECTION_HANDLE_LEFT,
-                _ => string.Empty
-            };
+            SelectionChromeGeometry.PositionHandle(element, x, y);
         }
 
         private bool TryHitTestRotationZone(Vector2 localPoint, out SelectionHandle handle)
         {
-            handle = SelectionHandle.None;
-            if (_currentSelection == null || !_currentSelection.ShowSelectionHandles)
-            {
-                return false;
-            }
-
-            var selectionRect = _currentSelection.Rect;
-            if (TryHitCornerRotationZone(localPoint, selectionRect.min, point => point.x <= selectionRect.xMin && point.y <= selectionRect.yMin) ||
-                TryHitCornerRotationZone(localPoint, new Vector2(selectionRect.xMax, selectionRect.yMin), point => point.x >= selectionRect.xMax && point.y <= selectionRect.yMin) ||
-                TryHitCornerRotationZone(localPoint, selectionRect.max, point => point.x >= selectionRect.xMax && point.y >= selectionRect.yMax) ||
-                TryHitCornerRotationZone(localPoint, new Vector2(selectionRect.xMin, selectionRect.yMax), point => point.x <= selectionRect.xMin && point.y >= selectionRect.yMax))
-            {
-                handle = SelectionHandle.Rotate;
-                return true;
-            }
-
-            return false;
-        }
-
-        private static bool TryHitCornerRotationZone(Vector2 localPoint, Vector2 corner, Func<Vector2, bool> diagonalPredicate)
-        {
-            var outerZone = new Rect(
-                corner.x - RotateZoneHalfSize,
-                corner.y - RotateZoneHalfSize,
-                RotateZoneHalfSize * 2f,
-                RotateZoneHalfSize * 2f);
-            var resizeZone = new Rect(
-                corner.x - SelectionHandleHalfSize,
-                corner.y - SelectionHandleHalfSize,
-                SelectionHandleHalfSize * 2f,
-                SelectionHandleHalfSize * 2f);
-
-            return outerZone.Contains(localPoint) &&
-                   !resizeZone.Contains(localPoint) &&
-                   diagonalPredicate(localPoint);
+            return SelectionChromeGeometry.TryHitRotationZone(_currentSelection, localPoint, out handle);
         }
     }
 }
