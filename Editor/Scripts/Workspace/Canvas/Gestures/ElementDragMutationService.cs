@@ -154,6 +154,11 @@ namespace SvgEditor.Workspace.Canvas
                 }
 
                 Vector2 svgPivot = ElementRotationUtility.ToParentSpacePoint(state.StartParentWorldTransform, pivot);
+                if (state.MoveTargets != null && state.MoveTargets.Count > 1)
+                {
+                    return TryApplyMultiScaleTransientPreview(host, state.MoveTargets, scale, pivot);
+                }
+
                 return TryApplyTransientPreview(
                     host,
                     transientDocumentModelSession,
@@ -173,6 +178,11 @@ namespace SvgEditor.Workspace.Canvas
             }
 
             Vector2 unsnappedSvgPivot = ElementRotationUtility.ToParentSpacePoint(state.StartParentWorldTransform, unsnappedPivot);
+            if (state.MoveTargets != null && state.MoveTargets.Count > 1)
+            {
+                return TryApplyMultiScaleTransientPreview(host, state.MoveTargets, unsnappedScale, unsnappedPivot);
+            }
+
             return TryApplyTransientPreview(
                 host,
                 transientDocumentModelSession,
@@ -251,6 +261,44 @@ namespace SvgEditor.Workspace.Canvas
                         state.MoveTargets,
                         state.CurrentRotationAngle,
                         state.StartRotationPivotWorld,
+                        out string multiUpdatedSource,
+                        out multiError))
+                {
+                    if (!string.IsNullOrWhiteSpace(multiError))
+                    {
+                        request.Host.UpdateSourceStatus($"Drag commit failed: {multiError}");
+                    }
+
+                    return false;
+                }
+
+                request.Host.ApplyUpdatedSource(multiUpdatedSource, BuildSuccessStatus(request.Host, state, request.DragMode));
+                return true;
+            }
+
+            if (request.DragMode == DragMode.ResizeElement &&
+                state.MoveTargets != null &&
+                state.MoveTargets.Count > 1)
+            {
+                string multiError = string.Empty;
+                Rect currentSceneRect = _sceneProjector.BuildScaledSceneRect(
+                    state.StartSelectionViewportRect,
+                    state.StartElementSceneRect,
+                    state.CurrentSelectionViewportRect,
+                    state.ActiveResizeHandle,
+                    state.ResizeCenterAnchor);
+                if (!_sceneProjector.TryBuildScaleTransformFromSceneRect(
+                        state.StartElementSceneRect,
+                        currentSceneRect,
+                        state.ActiveResizeHandle,
+                        state.ResizeCenterAnchor,
+                        out Vector2 scale,
+                        out Vector2 pivotWorld) ||
+                    !TryBuildMultiScaleCommittedSource(
+                        request.Host.CurrentDocument,
+                        state.MoveTargets,
+                        scale,
+                        pivotWorld,
                         out string multiUpdatedSource,
                         out multiError))
                 {
@@ -473,6 +521,89 @@ namespace SvgEditor.Workspace.Canvas
                 if (!mutationService.TryPrependElementRotation(
                         workingDocumentModel,
                         new RotateElementRequest(moveTarget.ElementKey, angle, parentPivot),
+                        out MutationResult result))
+                {
+                    error = result.Error;
+                    return false;
+                }
+
+                workingDocumentModel = result.UpdatedDocumentModel;
+            }
+
+            updatedDocumentModel = workingDocumentModel;
+            return updatedDocumentModel != null;
+        }
+
+        private bool TryApplyMultiScaleTransientPreview(
+            ICanvasPointerDragHost host,
+            IReadOnlyList<ElementMoveTarget> moveTargets,
+            Vector2 scale,
+            Vector2 pivotWorld)
+        {
+            if (!TryBuildMultiScaleDocumentModel(host.CurrentDocument, moveTargets, scale, pivotWorld, out SvgDocumentModel previewDocumentModel, out _))
+            {
+                return false;
+            }
+
+            if (!host.TryRefreshTransientPreview(previewDocumentModel))
+            {
+                return false;
+            }
+
+            host.RefreshInspector(previewDocumentModel);
+            return true;
+        }
+
+        private bool TryBuildMultiScaleCommittedSource(
+            DocumentSession currentDocument,
+            IReadOnlyList<ElementMoveTarget> moveTargets,
+            Vector2 scale,
+            Vector2 pivotWorld,
+            out string updatedSource,
+            out string error)
+        {
+            updatedSource = string.Empty;
+            error = string.Empty;
+
+            if (!TryBuildMultiScaleDocumentModel(currentDocument, moveTargets, scale, pivotWorld, out SvgDocumentModel updatedDocumentModel, out error))
+            {
+                return false;
+            }
+
+            updatedSource = updatedDocumentModel?.SourceText ?? string.Empty;
+            return !string.IsNullOrWhiteSpace(updatedSource);
+        }
+
+        private bool TryBuildMultiScaleDocumentModel(
+            DocumentSession currentDocument,
+            IReadOnlyList<ElementMoveTarget> moveTargets,
+            Vector2 scale,
+            Vector2 pivotWorld,
+            out SvgDocumentModel updatedDocumentModel,
+            out string error)
+        {
+            updatedDocumentModel = null;
+            error = string.Empty;
+
+            if (currentDocument?.DocumentModel == null || moveTargets == null || moveTargets.Count == 0)
+            {
+                error = "Resize session is unavailable.";
+                return false;
+            }
+
+            SvgDocumentModelMutationService mutationService = new();
+            SvgDocumentModel workingDocumentModel = currentDocument.DocumentModel;
+            foreach (ElementMoveTarget moveTarget in moveTargets)
+            {
+                if (string.IsNullOrWhiteSpace(moveTarget.ElementKey))
+                {
+                    continue;
+                }
+
+                Vector2 parentPivot = ElementRotationUtility.ToParentSpacePoint(moveTarget.ParentWorldTransform, pivotWorld);
+                if (!mutationService.TryPrependElementScale(
+                        workingDocumentModel,
+                        new ScaleElementRequest(moveTarget.ElementKey, scale, parentPivot),
                         out MutationResult result))
                 {
                     error = result.Error;

@@ -54,7 +54,11 @@ namespace SvgEditor.Workspace.Canvas
                 request.SelectionViewportRect,
                 request.SelectionSceneRect,
                 request.ParentWorldTransform);
-            _transientDocumentModelSession.TryBegin(request.CurrentDocument, request.ElementKey);
+            _state.SetMoveTargets(request.MoveTargets);
+            if (!IsGroupMove)
+            {
+                _transientDocumentModelSession.TryBegin(request.CurrentDocument, request.ElementKey);
+            }
         }
 
         public void BeginRotate(RotateBeginRequest request)
@@ -81,6 +85,7 @@ namespace SvgEditor.Workspace.Canvas
         public void UpdateResize(Vector2 viewportDelta, SelectionHandle activeHandle, bool uniformScale, bool centerAnchor)
         {
             _state.ResizeCenterAnchor = centerAnchor;
+            _state.ActiveResizeHandle = activeHandle;
             Rect resizedViewportRect = RectResizeUtility.ResizeRect(
                 _state.StartSelectionViewportRect,
                 activeHandle,

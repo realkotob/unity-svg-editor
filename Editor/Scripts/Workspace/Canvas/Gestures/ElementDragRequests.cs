@@ -74,7 +74,8 @@ namespace SvgEditor.Workspace.Canvas
             SvgPreserveAspectRatioMode preserveAspectRatioMode,
             Rect selectionViewportRect,
             Rect selectionSceneRect,
-            Matrix2D parentWorldTransform)
+            Matrix2D parentWorldTransform,
+            IReadOnlyList<ElementMoveTarget> moveTargets = null)
         {
             CurrentDocument = currentDocument;
             ElementKey = elementKey;
@@ -83,6 +84,7 @@ namespace SvgEditor.Workspace.Canvas
             SelectionViewportRect = selectionViewportRect;
             SelectionSceneRect = selectionSceneRect;
             ParentWorldTransform = parentWorldTransform;
+            MoveTargets = moveTargets;
         }
 
         public DocumentSession CurrentDocument { get; }
@@ -92,6 +94,7 @@ namespace SvgEditor.Workspace.Canvas
         public Rect SelectionViewportRect { get; }
         public Rect SelectionSceneRect { get; }
         public Matrix2D ParentWorldTransform { get; }
+        public IReadOnlyList<ElementMoveTarget> MoveTargets { get; }
     }
 
     internal readonly struct CommitDragRequest

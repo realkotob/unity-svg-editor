@@ -41,23 +41,38 @@ namespace SvgEditor.Workspace.Canvas
         public bool TryBeginResizeFromHandle(GestureState state, SelectionHandle handle, Vector2 localPosition, int pointerId)
         {
             if (_host.HasDefinitionProxySelection ||
-                _host.SelectionKind != SelectionKind.Element ||
-                !_sceneProjector.TryResolveSelectedElementSceneRect(_host.PreviewSnapshot, _host.SelectedElementKey, out Rect selectedElementSceneRect) ||
-                !_sceneProjector.TryBuildCurrentSelectionViewportRect(_host.PreviewSnapshot, _host.SelectionKind, _host.SelectedElementKey, out Rect selectionViewportRect))
+                _host.SelectionKind != SelectionKind.Element)
             {
                 return false;
             }
 
-            string tagName = _host.FindHierarchyNode(_host.SelectedElementKey)?.TagName;
-            if (string.Equals(tagName, SvgTagName.TSPAN, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(tagName, SvgTagName.TEXT_PATH, StringComparison.OrdinalIgnoreCase))
+            bool multipleSelection = _host.SelectedElementKeys != null && _host.SelectedElementKeys.Count > 1;
+            Rect selectedElementSceneRect;
+            Rect selectionViewportRect;
+            if (multipleSelection)
             {
-                _host.UpdateSourceStatus($"Resize is not supported for <{tagName}>. Move/select is still available.");
+                if (!CanvasProjectionMath.TryGetCombinedSelectionSceneRect(_host.PreviewSnapshot, _host.SelectedElementKeys, out selectedElementSceneRect) ||
+                    !_sceneProjector.TrySceneRectToViewportRect(_host.PreviewSnapshot, selectedElementSceneRect, out selectionViewportRect))
+                {
+                    return false;
+                }
+            }
+            else if (!_sceneProjector.TryResolveSelectedElementSceneRect(_host.PreviewSnapshot, _host.SelectedElementKey, out selectedElementSceneRect) ||
+                     !_sceneProjector.TryBuildCurrentSelectionViewportRect(_host.PreviewSnapshot, _host.SelectionKind, _host.SelectedElementKey, out selectionViewportRect))
+            {
+                return false;
+            }
+
+            if (multipleSelection ? HasUnsupportedResizeTargets(_host.SelectedElementKeys) : IsResizeUnsupported(_host.SelectedElementKey))
+            {
+                _host.UpdateSourceStatus("Resize is not supported for the current selection. Move/select is still available.");
                 return false;
             }
 
             PreviewElementGeometry selectedGeometry = _sceneProjector.FindPreviewElement(_host.PreviewSnapshot, _host.SelectedElementKey);
-            Matrix2D parentWorldTransform = selectedGeometry?.ParentWorldTransform ?? Matrix2D.identity;
+            Matrix2D parentWorldTransform = multipleSelection
+                ? Matrix2D.identity
+                : selectedGeometry?.ParentWorldTransform ?? Matrix2D.identity;
             BeginResize(
                 state,
                 handle,
@@ -70,7 +85,8 @@ namespace SvgEditor.Workspace.Canvas
                     _host.PreviewSnapshot.PreserveAspectRatioMode,
                     selectionViewportRect,
                     selectedElementSceneRect,
-                    parentWorldTransform));
+                    parentWorldTransform,
+                    multipleSelection ? BuildMoveTargets(_host.SelectedElementKeys) : null));
             return true;
         }
 
@@ -222,6 +238,31 @@ namespace SvgEditor.Workspace.Canvas
             }
 
             return moveTargets;
+        }
+
+        private bool HasUnsupportedResizeTargets(IReadOnlyList<string> selectedElementKeys)
+        {
+            if (selectedElementKeys == null)
+            {
+                return false;
+            }
+
+            foreach (string selectedElementKey in selectedElementKeys)
+            {
+                if (IsResizeUnsupported(selectedElementKey))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool IsResizeUnsupported(string elementKey)
+        {
+            string tagName = _host.FindHierarchyNode(elementKey)?.TagName;
+            return string.Equals(tagName, SvgTagName.TSPAN, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(tagName, SvgTagName.TEXT_PATH, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

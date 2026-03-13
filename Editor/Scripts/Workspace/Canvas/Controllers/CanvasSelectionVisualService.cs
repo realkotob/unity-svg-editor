@@ -177,7 +177,10 @@ namespace SvgEditor.Workspace.Canvas
                 return false;
             }
 
-            bool showSelectionHandles = multipleSelection || !IsResizeUnsupported(_host.SelectedElementKey);
+            bool resizeSupported = multipleSelection
+                ? !HasUnsupportedResizeTargets(_host.SelectedElementKeys)
+                : !IsResizeUnsupported(_host.SelectedElementKey);
+            bool showSelectionHandles = multipleSelection || resizeSupported;
             CanvasSelectionVisual selectionVisual = _sceneProjector.BuildSelectionVisual(
                 previewSnapshot,
                 new SelectionVisualRequest(
@@ -185,7 +188,7 @@ namespace SvgEditor.Workspace.Canvas
                     elementViewportRect,
                     selectedElementSceneRect.size,
                     showSelectionHandles));
-            selectionVisual.AllowResizeHandleInteraction = !multipleSelection && showSelectionHandles;
+            selectionVisual.AllowResizeHandleInteraction = resizeSupported && showSelectionHandles;
             selectionVisual.AllowRotateHandleInteraction = showSelectionHandles;
             PreviewElementGeometry selectedGeometry = !multipleSelection
                 ? _sceneProjector.FindPreviewElement(previewSnapshot, _host.SelectedElementKey)
@@ -218,6 +221,24 @@ namespace SvgEditor.Workspace.Canvas
             string tagName = _host.FindHierarchyNode(elementKey)?.TagName;
             return string.Equals(tagName, SvgTagName.TSPAN, System.StringComparison.OrdinalIgnoreCase) ||
                    string.Equals(tagName, SvgTagName.TEXT_PATH, System.StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool HasUnsupportedResizeTargets(System.Collections.Generic.IReadOnlyList<string> selectedElementKeys)
+        {
+            if (selectedElementKeys == null)
+            {
+                return false;
+            }
+
+            foreach (string selectedElementKey in selectedElementKeys)
+            {
+                if (IsResizeUnsupported(selectedElementKey))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

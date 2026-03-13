@@ -15,6 +15,7 @@ namespace SvgEditor.Workspace.Canvas
         public Rect StartProjectionSceneRect { get; private set; }
         public SvgPreserveAspectRatioMode StartPreserveAspectRatioMode { get; private set; } = SvgPreserveAspectRatioMode.Meet;
         public bool ResizeCenterAnchor { get; set; }
+        public SelectionHandle ActiveResizeHandle { get; set; } = SelectionHandle.None;
         public string ElementKey { get; private set; } = string.Empty;
         public IReadOnlyList<ElementMoveTarget> MoveTargets { get; private set; } = new[] { new ElementMoveTarget(string.Empty, Matrix2D.identity) };
         public Matrix2D StartParentWorldTransform { get; private set; } = Matrix2D.identity;
@@ -40,6 +41,7 @@ namespace SvgEditor.Workspace.Canvas
             CurrentSelectionViewportRect = selectionViewportRect;
             StartElementSceneRect = elementSceneRect;
             ResizeCenterAnchor = false;
+            ActiveResizeHandle = SelectionHandle.None;
             StartRotationPivotViewport = Vector2.zero;
             StartRotationPivotWorld = Vector2.zero;
             StartRotateVector = Vector2.zero;
@@ -71,6 +73,7 @@ namespace SvgEditor.Workspace.Canvas
             StartProjectionSceneRect = default;
             StartPreserveAspectRatioMode = SvgPreserveAspectRatioMode.Meet;
             ResizeCenterAnchor = false;
+            ActiveResizeHandle = SelectionHandle.None;
             StartParentWorldTransform = Matrix2D.identity;
             StartRotationPivotViewport = Vector2.zero;
             StartRotationPivotWorld = Vector2.zero;
