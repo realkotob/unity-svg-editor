@@ -5,7 +5,6 @@ using InspectorSectionClasses = Core.UI.Foundation.Tooling.InspectorSectionClass
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-using SvgEditor.Shared;
 using SvgEditor.Workspace.AssetLibrary.Browser;
 using SvgEditor.Workspace.Canvas;
 using SvgEditor.Workspace.Coordination;
@@ -153,7 +152,7 @@ namespace SvgEditor.Shell
 
         private void ApplyToolbarIcons()
         {
-            EditorFoundationIconUtility.ApplyToggleVectorImage(_root, ElementName.MOVE_TOOL, SvgEditorIconClass.RESOURCE_MOVE);
+            EditorFoundationIconUtility.ApplyToggleVectorImage(_root, ElementName.MOVE_TOOL, IconPath.Lucide.Move);
         }
 
         private void ApplyPositionIcons()

@@ -12,9 +12,9 @@ namespace SvgEditor.Workspace.AssetLibrary.Grid
     {
         private static readonly string[] PREVIEW_RESOURCE_PATHS =
         {
-            SvgEditorIconClass.RESOURCE_FILE_TEXT,
-            SvgEditorIconClass.RESOURCE_PEN,
-            SvgEditorIconClass.RESOURCE_CIRCLE
+            IconPath.Lucide.FileText,
+            IconPath.Lucide.Pen,
+            IconPath.Lucide.Circle
         };
 
         protected override void ApplyPreviewItems(VirtualizedGridView gridView, List<GridViewItem> gridItems)
