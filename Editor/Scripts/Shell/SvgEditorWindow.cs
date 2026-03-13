@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using Core.UI.Foundation.Editor;
 using Unity.VectorGraphics;
@@ -245,6 +246,15 @@ namespace SvgEditor.Shell
             }
         }
 
+        IReadOnlyList<string> IPanelHost.SelectedElementKeys
+        {
+            get
+            {
+                EnsureInitialized();
+                return WorkspaceCoordinator.SelectedElementKeys;
+            }
+        }
+
         bool IPanelHost.TryApplyPatchRequest(
             AttributePatchRequest request,
             string successStatus,
@@ -254,6 +264,15 @@ namespace SvgEditor.Shell
         {
             EnsureInitialized();
             return WorkspaceCoordinator.TryApplyTargetFrameRect(request);
+        }
+
+        void IPanelHost.ApplyUpdatedSource(
+            string updatedSource,
+            string successStatus,
+            HistoryRecordingMode recordingMode)
+        {
+            EnsureInitialized();
+            _documentLifecycleController.ApplyUpdatedSource(updatedSource, successStatus, recordingMode);
         }
 
         bool IPanelHost.TryGetTargetSceneRect(string targetKey, out Rect sceneRect)
@@ -278,6 +297,12 @@ namespace SvgEditor.Shell
         {
             EnsureInitialized();
             return _previewGeometryLookupService.TryGetParentWorldTransform(targetKey, out parentWorldTransform);
+        }
+
+        bool IPanelHost.TryGetElementParentWorldTransform(string elementKey, out Matrix2D parentWorldTransform)
+        {
+            EnsureInitialized();
+            return _previewGeometryLookupService.TryGetElementParentWorldTransform(elementKey, out parentWorldTransform);
         }
 
         bool IPanelHost.TryGetViewportSceneRect(out Rect sceneRect)

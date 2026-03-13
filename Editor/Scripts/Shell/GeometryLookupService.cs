@@ -67,6 +67,18 @@ namespace SvgEditor.Shell
             return true;
         }
 
+        public bool TryGetElementParentWorldTransform(string elementKey, out Matrix2D parentWorldTransform)
+        {
+            parentWorldTransform = Matrix2D.identity;
+            if (!TryFindElementByKey(elementKey, out PreviewElementGeometry targetElement))
+            {
+                return false;
+            }
+
+            parentWorldTransform = targetElement.ParentWorldTransform;
+            return true;
+        }
+
         public bool TryGetViewportSceneRect(out Rect sceneRect)
         {
             sceneRect = PreviewSnapshot?.CanvasViewportRect ?? default;
@@ -87,6 +99,31 @@ namespace SvgEditor.Shell
                 PreviewElementGeometry candidate = snapshot.Elements[index];
                 if (candidate == null ||
                     !string.Equals(candidate.TargetKey, targetKey, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                targetElement = candidate;
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool TryFindElementByKey(string elementKey, out PreviewElementGeometry targetElement)
+        {
+            targetElement = null;
+            var snapshot = PreviewSnapshot;
+            if (snapshot?.Elements == null || string.IsNullOrWhiteSpace(elementKey))
+            {
+                return false;
+            }
+
+            for (var index = 0; index < snapshot.Elements.Count; index++)
+            {
+                PreviewElementGeometry candidate = snapshot.Elements[index];
+                if (candidate == null ||
+                    !string.Equals(candidate.Key, elementKey, StringComparison.Ordinal))
                 {
                     continue;
                 }

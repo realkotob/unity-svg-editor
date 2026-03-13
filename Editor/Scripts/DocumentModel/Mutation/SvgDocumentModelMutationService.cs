@@ -217,8 +217,8 @@ namespace SvgEditor.DocumentModel
             out MutationResult result)
         {
             if ((UnityEngine.Mathf.Approximately(request.Scale.x, 1f) && UnityEngine.Mathf.Approximately(request.Scale.y, 1f)) ||
-                request.Scale.x <= UnityEngine.Mathf.Epsilon ||
-                request.Scale.y <= UnityEngine.Mathf.Epsilon)
+                UnityEngine.Mathf.Abs(request.Scale.x) <= UnityEngine.Mathf.Epsilon ||
+                UnityEngine.Mathf.Abs(request.Scale.y) <= UnityEngine.Mathf.Epsilon)
             {
                 result = new MutationResult(documentModel, documentModel?.SourceText ?? string.Empty, string.Empty);
                 return true;

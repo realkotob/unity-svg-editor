@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using Unity.VectorGraphics;
 using UnityEngine;
 using SvgEditor.Document;
+using SvgEditor.DocumentModel;
 using SvgEditor.Workspace.Coordination;
 using SvgEditor.Workspace.Document;
 using SvgEditor.Workspace.Transforms;
@@ -91,6 +93,13 @@ namespace SvgEditor.Workspace.InspectorPanel
 
         private void ApplyAlignmentAction(PanelView.PositionAction action)
         {
+            IReadOnlyList<string> selectedElementKeys = ResolveMultiSelectedElementKeys();
+            if (selectedElementKeys.Count > 1)
+            {
+                ApplyMultiAlignmentAction(action, selectedElementKeys);
+                return;
+            }
+
             string targetKey = ResolveSelectedTargetKey();
             if (string.IsNullOrWhiteSpace(targetKey) ||
                 string.Equals(targetKey, SvgDocumentTargets.RootTargetKey, StringComparison.Ordinal))
@@ -141,6 +150,13 @@ namespace SvgEditor.Workspace.InspectorPanel
 
         private void ApplyRotateClockwiseAction(float deltaDegrees)
         {
+            IReadOnlyList<string> selectedElementKeys = ResolveMultiSelectedElementKeys();
+            if (selectedElementKeys.Count > 1)
+            {
+                ApplyMultiRotateAction(deltaDegrees, selectedElementKeys);
+                return;
+            }
+
             string targetKey = ResolveSelectedTargetKey();
             if (string.IsNullOrWhiteSpace(targetKey) ||
                 string.Equals(targetKey, SvgDocumentTargets.RootTargetKey, StringComparison.Ordinal))
@@ -176,6 +192,13 @@ namespace SvgEditor.Workspace.InspectorPanel
 
         private void ApplyFlipAction(Vector2 scale, string successStatus)
         {
+            IReadOnlyList<string> selectedElementKeys = ResolveMultiSelectedElementKeys();
+            if (selectedElementKeys.Count > 1)
+            {
+                ApplyMultiFlipAction(scale, successStatus, selectedElementKeys);
+                return;
+            }
+
             string targetKey = ResolveSelectedTargetKey();
             if (string.IsNullOrWhiteSpace(targetKey) ||
                 string.Equals(targetKey, SvgDocumentTargets.RootTargetKey, StringComparison.Ordinal))
@@ -212,6 +235,227 @@ namespace SvgEditor.Workspace.InspectorPanel
                     Transform = transform
                 },
                 successStatus);
+        }
+
+        private void ApplyMultiAlignmentAction(PanelView.PositionAction action, IReadOnlyList<string> selectedElementKeys)
+        {
+            string error = string.Empty;
+            if (Host == null ||
+                !Host.TryGetCurrentSelectionSceneRect(out Rect currentSelectionRect) ||
+                !Host.TryGetViewportSceneRect(out Rect canvasRect))
+            {
+                Host?.UpdateSourceStatus("Alignment failed: preview bounds are unavailable.");
+                return;
+            }
+
+            Vector2 sceneDelta = action switch
+            {
+                PanelView.PositionAction.AlignLeft => new Vector2(canvasRect.xMin - currentSelectionRect.xMin, 0f),
+                PanelView.PositionAction.AlignCenter => new Vector2(canvasRect.center.x - currentSelectionRect.center.x, 0f),
+                PanelView.PositionAction.AlignRight => new Vector2(canvasRect.xMax - currentSelectionRect.xMax, 0f),
+                PanelView.PositionAction.AlignTop => new Vector2(0f, canvasRect.yMin - currentSelectionRect.yMin),
+                PanelView.PositionAction.AlignMiddle => new Vector2(0f, canvasRect.center.y - currentSelectionRect.center.y),
+                PanelView.PositionAction.AlignBottom => new Vector2(0f, canvasRect.yMax - currentSelectionRect.yMax),
+                _ => Vector2.zero
+            };
+
+            string successStatus = action switch
+            {
+                PanelView.PositionAction.AlignLeft => "Aligned left.",
+                PanelView.PositionAction.AlignCenter => "Aligned center.",
+                PanelView.PositionAction.AlignRight => "Aligned right.",
+                PanelView.PositionAction.AlignTop => "Aligned top.",
+                PanelView.PositionAction.AlignMiddle => "Aligned middle.",
+                PanelView.PositionAction.AlignBottom => "Aligned bottom.",
+                _ => "Position updated."
+            };
+
+            if (sceneDelta.sqrMagnitude <= Mathf.Epsilon ||
+                !TryBuildMultiTranslationSource(selectedElementKeys, sceneDelta, out string updatedSource, out error))
+            {
+                if (!string.IsNullOrWhiteSpace(error))
+                {
+                    Host.UpdateSourceStatus($"Alignment failed: {error}");
+                }
+
+                return;
+            }
+
+            Host.ApplyUpdatedSource(updatedSource, successStatus, HistoryRecordingMode.Coalesced);
+        }
+
+        private void ApplyMultiRotateAction(float deltaDegrees, IReadOnlyList<string> selectedElementKeys)
+        {
+            string error = string.Empty;
+            if (Host == null ||
+                !Host.TryGetCurrentSelectionSceneRect(out Rect selectionRect) ||
+                !TryBuildMultiRotationSource(selectedElementKeys, deltaDegrees, selectionRect.center, out string updatedSource, out error))
+            {
+                Host?.UpdateSourceStatus(
+                    string.IsNullOrWhiteSpace(error)
+                        ? "Rotation failed: transform update could not be prepared."
+                        : $"Rotation failed: {error}");
+                return;
+            }
+
+            Host.ApplyUpdatedSource(updatedSource, $"Rotated {deltaDegrees:+0;-0}°.", HistoryRecordingMode.Coalesced);
+        }
+
+        private void ApplyMultiFlipAction(Vector2 scale, string successStatus, IReadOnlyList<string> selectedElementKeys)
+        {
+            string error = string.Empty;
+            if (Host == null ||
+                !Host.TryGetCurrentSelectionSceneRect(out Rect selectionRect) ||
+                !TryBuildMultiScaleSource(selectedElementKeys, scale, selectionRect.center, out string updatedSource, out error))
+            {
+                Host?.UpdateSourceStatus(
+                    string.IsNullOrWhiteSpace(error)
+                        ? "Flip failed: transform update could not be prepared."
+                        : $"Flip failed: {error}");
+                return;
+            }
+
+            Host.ApplyUpdatedSource(updatedSource, successStatus, HistoryRecordingMode.Coalesced);
+        }
+
+        private IReadOnlyList<string> ResolveMultiSelectedElementKeys()
+        {
+            return Host?.SelectedElementKeys != null && Host.SelectedElementKeys.Count > 1
+                ? Host.SelectedElementKeys
+                : Array.Empty<string>();
+        }
+
+        private bool TryBuildMultiTranslationSource(
+            IReadOnlyList<string> selectedElementKeys,
+            Vector2 sceneDelta,
+            out string updatedSource,
+            out string error)
+        {
+            updatedSource = string.Empty;
+            error = string.Empty;
+
+            if (sceneDelta.sqrMagnitude <= Mathf.Epsilon)
+            {
+                return false;
+            }
+
+            SvgDocumentModel workingDocumentModel = Host?.CurrentDocument?.DocumentModel;
+            if (workingDocumentModel == null)
+            {
+                error = "Document model is unavailable.";
+                return false;
+            }
+
+            SvgDocumentModelMutationService mutationService = new();
+            foreach (string elementKey in selectedElementKeys)
+            {
+                if (string.IsNullOrWhiteSpace(elementKey) ||
+                    !Host.TryGetElementParentWorldTransform(elementKey, out Matrix2D parentWorldTransform))
+                {
+                    error = $"Could not resolve parent transform for '{elementKey}'.";
+                    return false;
+                }
+
+                if (!mutationService.TryPrependElementTranslation(
+                        workingDocumentModel,
+                        new TranslateElementRequest(elementKey, parentWorldTransform.Inverse().MultiplyVector(sceneDelta)),
+                        out MutationResult result))
+                {
+                    error = result.Error;
+                    return false;
+                }
+
+                workingDocumentModel = result.UpdatedDocumentModel;
+            }
+
+            updatedSource = workingDocumentModel?.SourceText ?? string.Empty;
+            return !string.IsNullOrWhiteSpace(updatedSource);
+        }
+
+        private bool TryBuildMultiRotationSource(
+            IReadOnlyList<string> selectedElementKeys,
+            float deltaDegrees,
+            Vector2 pivotWorld,
+            out string updatedSource,
+            out string error)
+        {
+            updatedSource = string.Empty;
+            error = string.Empty;
+
+            SvgDocumentModel workingDocumentModel = Host?.CurrentDocument?.DocumentModel;
+            if (workingDocumentModel == null)
+            {
+                error = "Document model is unavailable.";
+                return false;
+            }
+
+            SvgDocumentModelMutationService mutationService = new();
+            foreach (string elementKey in selectedElementKeys)
+            {
+                if (string.IsNullOrWhiteSpace(elementKey) ||
+                    !Host.TryGetElementParentWorldTransform(elementKey, out Matrix2D parentWorldTransform))
+                {
+                    error = $"Could not resolve parent transform for '{elementKey}'.";
+                    return false;
+                }
+
+                if (!mutationService.TryPrependElementRotation(
+                        workingDocumentModel,
+                        new RotateElementRequest(elementKey, deltaDegrees, ElementRotationUtility.ToParentSpacePoint(parentWorldTransform, pivotWorld)),
+                        out MutationResult result))
+                {
+                    error = result.Error;
+                    return false;
+                }
+
+                workingDocumentModel = result.UpdatedDocumentModel;
+            }
+
+            updatedSource = workingDocumentModel?.SourceText ?? string.Empty;
+            return !string.IsNullOrWhiteSpace(updatedSource);
+        }
+
+        private bool TryBuildMultiScaleSource(
+            IReadOnlyList<string> selectedElementKeys,
+            Vector2 scale,
+            Vector2 pivotWorld,
+            out string updatedSource,
+            out string error)
+        {
+            updatedSource = string.Empty;
+            error = string.Empty;
+
+            SvgDocumentModel workingDocumentModel = Host?.CurrentDocument?.DocumentModel;
+            if (workingDocumentModel == null)
+            {
+                error = "Document model is unavailable.";
+                return false;
+            }
+
+            SvgDocumentModelMutationService mutationService = new();
+            foreach (string elementKey in selectedElementKeys)
+            {
+                if (string.IsNullOrWhiteSpace(elementKey) ||
+                    !Host.TryGetElementParentWorldTransform(elementKey, out Matrix2D parentWorldTransform))
+                {
+                    error = $"Could not resolve parent transform for '{elementKey}'.";
+                    return false;
+                }
+
+                if (!mutationService.TryPrependElementScale(
+                        workingDocumentModel,
+                        new ScaleElementRequest(elementKey, scale, ElementRotationUtility.ToParentSpacePoint(parentWorldTransform, pivotWorld)),
+                        out MutationResult result))
+                {
+                    error = result.Error;
+                    return false;
+                }
+
+                workingDocumentModel = result.UpdatedDocumentModel;
+            }
+
+            updatedSource = workingDocumentModel?.SourceText ?? string.Empty;
+            return !string.IsNullOrWhiteSpace(updatedSource);
         }
 
         private string ResolveSelectedTargetKey()
