@@ -325,9 +325,7 @@ namespace SvgEditor.Workspace.HierarchyPanel
 
         private void ApplyRangeSelection(string pressedHierarchyElementKey)
         {
-            string anchorElementKey = !string.IsNullOrWhiteSpace(_selectionAnchorElementKey)
-                ? _selectionAnchorElementKey
-                : pressedHierarchyElementKey;
+            string anchorElementKey = ResolveSelectionAnchor(pressedHierarchyElementKey);
             IReadOnlyList<string> rangeKeys = HierarchyTreeUtility.BuildElementKeyRange(
                 _treeView,
                 _host.HierarchyItems,
@@ -339,32 +337,23 @@ namespace SvgEditor.Workspace.HierarchyPanel
                 return;
             }
 
-            var selectionKeys = GetCurrentSelectionKeys();
-            foreach (string rangeKey in rangeKeys)
-            {
-                if (!selectionKeys.Contains(rangeKey))
-                {
-                    selectionKeys.Add(rangeKey);
-                }
-            }
-
+            List<string> selectionKeys = GetCurrentSelectionKeys();
+            AddMissingSelectionKeys(selectionKeys, rangeKeys);
             ApplySelectionKeys(selectionKeys, pressedHierarchyElementKey, anchorElementKey);
         }
 
         private void ApplyToggleSelection(string pressedHierarchyElementKey)
         {
-            var selectionKeys = GetCurrentSelectionKeys();
-            if (selectionKeys.Remove(pressedHierarchyElementKey))
+            List<string> selectionKeys = GetCurrentSelectionKeys();
+            if (!selectionKeys.Remove(pressedHierarchyElementKey))
             {
-                string fallbackPrimaryElementKey = selectionKeys.Count > 0
-                    ? selectionKeys[selectionKeys.Count - 1]
-                    : string.Empty;
-                ApplySelectionKeys(selectionKeys, fallbackPrimaryElementKey, fallbackPrimaryElementKey);
+                selectionKeys.Add(pressedHierarchyElementKey);
+                ApplySelectionKeys(selectionKeys, pressedHierarchyElementKey, pressedHierarchyElementKey);
                 return;
             }
 
-            selectionKeys.Add(pressedHierarchyElementKey);
-            ApplySelectionKeys(selectionKeys, pressedHierarchyElementKey, pressedHierarchyElementKey);
+            string fallbackPrimaryElementKey = ResolveFallbackPrimaryElementKey(selectionKeys);
+            ApplySelectionKeys(selectionKeys, fallbackPrimaryElementKey, fallbackPrimaryElementKey);
         }
 
         private void ApplySelectionKeys(
@@ -396,6 +385,29 @@ namespace SvgEditor.Workspace.HierarchyPanel
             }
 
             return selectedKeys;
+        }
+
+        private string ResolveSelectionAnchor(string pressedHierarchyElementKey)
+        {
+            return !string.IsNullOrWhiteSpace(_selectionAnchorElementKey)
+                ? _selectionAnchorElementKey
+                : pressedHierarchyElementKey;
+        }
+
+        private static string ResolveFallbackPrimaryElementKey(IReadOnlyList<string> selectionKeys)
+        {
+            return selectionKeys.Count > 0
+                ? selectionKeys[selectionKeys.Count - 1]
+                : string.Empty;
+        }
+
+        private static void AddMissingSelectionKeys(List<string> selectionKeys, IReadOnlyList<string> rangeKeys)
+        {
+            foreach (string rangeKey in rangeKeys)
+            {
+                if (!selectionKeys.Contains(rangeKey))
+                    selectionKeys.Add(rangeKey);
+            }
         }
     }
 }

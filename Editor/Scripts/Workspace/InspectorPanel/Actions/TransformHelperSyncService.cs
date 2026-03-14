@@ -32,7 +32,7 @@ namespace SvgEditor.Workspace.InspectorPanel
 
         public void BuildTransformFromHelper()
         {
-            string transform = SyncTransformTextFromHelper();
+            string transform = BuildAndApplyTransformToView();
 
             Host?.UpdateSourceStatus(string.IsNullOrWhiteSpace(transform)
                 ? "Transform helper produced an empty value."
@@ -42,55 +42,35 @@ namespace SvgEditor.Workspace.InspectorPanel
 
         public string SyncTransformTextFromHelper()
         {
-            if (!_view.IsBound)
-            {
+            if (!TryCaptureBoundState())
                 return string.Empty;
-            }
 
-            _view.CaptureState(_inspectorPanelState);
-            string transform = _inspectorPanelState.BuildTransformFromHelper();
-            _inspectorPanelState.Transform = transform;
-            _view.ApplyState(_inspectorPanelState);
-            return transform;
+            return BuildAndApplyTransformToView();
         }
 
         public bool SyncTransformHelperFromText()
         {
-            if (!_view.IsBound)
-            {
+            if (!TryCaptureBoundState())
                 return false;
-            }
 
-            _view.CaptureState(_inspectorPanelState);
             if (!_inspectorPanelState.TrySyncTransformHelperFromText())
-            {
                 return false;
-            }
 
-            _inspectorPanelState.Transform = _inspectorPanelState.BuildTransformFromHelper();
-            _view.ApplyState(_inspectorPanelState);
+            BuildAndApplyTransformToView();
             return true;
         }
 
         public void ApplyStandardTransformFromHelper()
         {
-            if (Host?.CurrentDocument == null || !_view.IsBound)
-            {
+            if (!TryGetBoundHostWithDocument(out IPanelHost host))
                 return;
-            }
 
             string targetKey = ResolveSelectedTargetKey();
-            if (string.IsNullOrWhiteSpace(targetKey))
-            {
+            if (string.IsNullOrWhiteSpace(targetKey) || !TryCaptureBoundState())
                 return;
-            }
 
-            _view.CaptureState(_inspectorPanelState);
-            string transform = _inspectorPanelState.BuildTransformFromHelper();
-            _inspectorPanelState.Transform = transform;
-            _inspectorPanelState.TransformEnabled = true;
-            _view.ApplyState(_inspectorPanelState);
-            Host.TryApplyPatchRequest(
+            string transform = BuildAndApplyTransformToView(enableTransformEditing: true);
+            host.TryApplyPatchRequest(
                 new AttributePatchRequest
                 {
                     TargetKey = targetKey,
@@ -103,6 +83,32 @@ namespace SvgEditor.Workspace.InspectorPanel
         private string ResolveSelectedTargetKey()
         {
             return _selectedTargetKeyAccessor?.Invoke() ?? string.Empty;
+        }
+
+        private bool TryGetBoundHostWithDocument(out IPanelHost host)
+        {
+            host = Host;
+            return host?.CurrentDocument != null && _view.IsBound;
+        }
+
+        private bool TryCaptureBoundState()
+        {
+            if (!_view.IsBound)
+                return false;
+
+            _view.CaptureState(_inspectorPanelState);
+            return true;
+        }
+
+        private string BuildAndApplyTransformToView(bool enableTransformEditing = false)
+        {
+            string transform = _inspectorPanelState.BuildTransformFromHelper();
+            _inspectorPanelState.Transform = transform;
+            if (enableTransformEditing)
+                _inspectorPanelState.TransformEnabled = true;
+
+            _view.ApplyState(_inspectorPanelState);
+            return transform;
         }
     }
 }

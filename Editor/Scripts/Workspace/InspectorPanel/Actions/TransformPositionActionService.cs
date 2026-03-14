@@ -14,6 +14,14 @@ namespace SvgEditor.Workspace.InspectorPanel
 {
     internal sealed class TransformPositionActionService
     {
+        private delegate bool TryMutateSelectedElement(
+            SvgDocumentModelMutationService mutationService,
+            SvgDocumentModel workingDocumentModel,
+            string elementKey,
+            out MutationResult result,
+            out bool applied,
+            out string error);
+
         private readonly PanelState _inspectorPanelState;
         private readonly PanelView _view;
         private readonly Func<IPanelHost> _hostAccessor;
@@ -300,53 +308,6 @@ namespace SvgEditor.Workspace.InspectorPanel
                 : Array.Empty<string>();
         }
 
-        private bool TryBuildMultiTranslationSource(
-            IReadOnlyList<string> selectedElementKeys,
-            Vector2 sceneDelta,
-            out string updatedSource,
-            out string error)
-        {
-            updatedSource = string.Empty;
-            error = string.Empty;
-
-            if (sceneDelta.sqrMagnitude <= Mathf.Epsilon)
-            {
-                return false;
-            }
-
-            SvgDocumentModel workingDocumentModel = Host?.CurrentDocument?.DocumentModel;
-            if (workingDocumentModel == null)
-            {
-                error = "Document model is unavailable.";
-                return false;
-            }
-
-            SvgDocumentModelMutationService mutationService = new();
-            foreach (string elementKey in selectedElementKeys)
-            {
-                if (string.IsNullOrWhiteSpace(elementKey) ||
-                    !Host.TryGetElementParentWorldTransform(elementKey, out Matrix2D parentWorldTransform))
-                {
-                    error = $"Could not resolve parent transform for '{elementKey}'.";
-                    return false;
-                }
-
-                if (!mutationService.TryPrependElementTranslation(
-                        workingDocumentModel,
-                        new TranslateElementRequest(elementKey, parentWorldTransform.Inverse().MultiplyVector(sceneDelta)),
-                        out MutationResult result))
-                {
-                    error = result.Error;
-                    return false;
-                }
-
-                workingDocumentModel = result.UpdatedDocumentModel;
-            }
-
-            updatedSource = workingDocumentModel?.SourceText ?? string.Empty;
-            return !string.IsNullOrWhiteSpace(updatedSource);
-        }
-
         private bool TryBuildAlignedSelectionSource(
             IReadOnlyList<string> selectedElementKeys,
             Rect selectionRect,
@@ -354,64 +315,53 @@ namespace SvgEditor.Workspace.InspectorPanel
             out string updatedSource,
             out string error)
         {
-            updatedSource = string.Empty;
-            error = string.Empty;
-
-            SvgDocumentModel workingDocumentModel = Host?.CurrentDocument?.DocumentModel;
-            if (workingDocumentModel == null)
-            {
-                error = "Document model is unavailable.";
-                return false;
-            }
-
-            SvgDocumentModelMutationService mutationService = new();
-            bool appliedAny = false;
-            foreach (string elementKey in selectedElementKeys)
-            {
-                if (string.IsNullOrWhiteSpace(elementKey) ||
-                    !Host.TryGetElementSceneRect(elementKey, out Rect elementRect) ||
-                    !Host.TryGetElementParentWorldTransform(elementKey, out Matrix2D parentWorldTransform))
+            return TryBuildSelectionSource(
+                selectedElementKeys,
+                (
+                    SvgDocumentModelMutationService mutationService,
+                    SvgDocumentModel workingDocumentModel,
+                    string elementKey,
+                    out MutationResult result,
+                    out bool applied,
+                    out string mutationError) =>
                 {
-                    error = $"Could not resolve preview geometry for '{elementKey}'.";
-                    return false;
-                }
+                    result = default;
+                    applied = false;
+                    mutationError = string.Empty;
 
-                Vector2 sceneDelta = action switch
-                {
-                    PanelView.PositionAction.AlignLeft => new Vector2(selectionRect.xMin - elementRect.xMin, 0f),
-                    PanelView.PositionAction.AlignCenter => new Vector2(selectionRect.center.x - elementRect.center.x, 0f),
-                    PanelView.PositionAction.AlignRight => new Vector2(selectionRect.xMax - elementRect.xMax, 0f),
-                    PanelView.PositionAction.AlignTop => new Vector2(0f, selectionRect.yMin - elementRect.yMin),
-                    PanelView.PositionAction.AlignMiddle => new Vector2(0f, selectionRect.center.y - elementRect.center.y),
-                    PanelView.PositionAction.AlignBottom => new Vector2(0f, selectionRect.yMax - elementRect.yMax),
-                    _ => Vector2.zero
-                };
+                    if (string.IsNullOrWhiteSpace(elementKey) ||
+                        !Host.TryGetElementSceneRect(elementKey, out Rect elementRect) ||
+                        !Host.TryGetElementParentWorldTransform(elementKey, out Matrix2D parentWorldTransform))
+                    {
+                        mutationError = $"Could not resolve preview geometry for '{elementKey}'.";
+                        return false;
+                    }
 
-                if (sceneDelta.sqrMagnitude <= Mathf.Epsilon)
-                {
-                    continue;
-                }
+                    Vector2 sceneDelta = action switch
+                    {
+                        PanelView.PositionAction.AlignLeft => new Vector2(selectionRect.xMin - elementRect.xMin, 0f),
+                        PanelView.PositionAction.AlignCenter => new Vector2(selectionRect.center.x - elementRect.center.x, 0f),
+                        PanelView.PositionAction.AlignRight => new Vector2(selectionRect.xMax - elementRect.xMax, 0f),
+                        PanelView.PositionAction.AlignTop => new Vector2(0f, selectionRect.yMin - elementRect.yMin),
+                        PanelView.PositionAction.AlignMiddle => new Vector2(0f, selectionRect.center.y - elementRect.center.y),
+                        PanelView.PositionAction.AlignBottom => new Vector2(0f, selectionRect.yMax - elementRect.yMax),
+                        _ => Vector2.zero
+                    };
 
-                if (!mutationService.TryPrependElementTranslation(
+                    if (sceneDelta.sqrMagnitude <= Mathf.Epsilon)
+                        return true;
+
+                    applied = mutationService.TryPrependElementTranslation(
                         workingDocumentModel,
                         new TranslateElementRequest(elementKey, parentWorldTransform.Inverse().MultiplyVector(sceneDelta)),
-                        out MutationResult result))
-                {
-                    error = result.Error;
-                    return false;
-                }
+                        out result);
+                    if (!applied)
+                        mutationError = result.Error;
 
-                workingDocumentModel = result.UpdatedDocumentModel;
-                appliedAny = true;
-            }
-
-            if (!appliedAny)
-            {
-                return false;
-            }
-
-            updatedSource = workingDocumentModel?.SourceText ?? string.Empty;
-            return !string.IsNullOrWhiteSpace(updatedSource);
+                    return applied;
+                },
+                out updatedSource,
+                out error);
         }
 
         private bool TryBuildMultiRotationSource(
@@ -421,40 +371,38 @@ namespace SvgEditor.Workspace.InspectorPanel
             out string updatedSource,
             out string error)
         {
-            updatedSource = string.Empty;
-            error = string.Empty;
-
-            SvgDocumentModel workingDocumentModel = Host?.CurrentDocument?.DocumentModel;
-            if (workingDocumentModel == null)
-            {
-                error = "Document model is unavailable.";
-                return false;
-            }
-
-            SvgDocumentModelMutationService mutationService = new();
-            foreach (string elementKey in selectedElementKeys)
-            {
-                if (string.IsNullOrWhiteSpace(elementKey) ||
-                    !Host.TryGetElementParentWorldTransform(elementKey, out Matrix2D parentWorldTransform))
+            return TryBuildSelectionSource(
+                selectedElementKeys,
+                (
+                    SvgDocumentModelMutationService mutationService,
+                    SvgDocumentModel workingDocumentModel,
+                    string elementKey,
+                    out MutationResult result,
+                    out bool applied,
+                    out string mutationError) =>
                 {
-                    error = $"Could not resolve parent transform for '{elementKey}'.";
-                    return false;
-                }
+                    result = default;
+                    applied = false;
+                    mutationError = string.Empty;
 
-                if (!mutationService.TryPrependElementRotation(
+                    if (string.IsNullOrWhiteSpace(elementKey) ||
+                        !Host.TryGetElementParentWorldTransform(elementKey, out Matrix2D parentWorldTransform))
+                    {
+                        mutationError = $"Could not resolve parent transform for '{elementKey}'.";
+                        return false;
+                    }
+
+                    applied = mutationService.TryPrependElementRotation(
                         workingDocumentModel,
                         new RotateElementRequest(elementKey, deltaDegrees, ElementRotationUtility.ToParentSpacePoint(parentWorldTransform, pivotWorld)),
-                        out MutationResult result))
-                {
-                    error = result.Error;
-                    return false;
-                }
+                        out result);
+                    if (!applied)
+                        mutationError = result.Error;
 
-                workingDocumentModel = result.UpdatedDocumentModel;
-            }
-
-            updatedSource = workingDocumentModel?.SourceText ?? string.Empty;
-            return !string.IsNullOrWhiteSpace(updatedSource);
+                    return applied;
+                },
+                out updatedSource,
+                out error);
         }
 
         private bool TryBuildMultiScaleSource(
@@ -464,40 +412,90 @@ namespace SvgEditor.Workspace.InspectorPanel
             out string updatedSource,
             out string error)
         {
+            return TryBuildSelectionSource(
+                selectedElementKeys,
+                (
+                    SvgDocumentModelMutationService mutationService,
+                    SvgDocumentModel workingDocumentModel,
+                    string elementKey,
+                    out MutationResult result,
+                    out bool applied,
+                    out string mutationError) =>
+                {
+                    result = default;
+                    applied = false;
+                    mutationError = string.Empty;
+
+                    if (string.IsNullOrWhiteSpace(elementKey) ||
+                        !Host.TryGetElementParentWorldTransform(elementKey, out Matrix2D parentWorldTransform))
+                    {
+                        mutationError = $"Could not resolve parent transform for '{elementKey}'.";
+                        return false;
+                    }
+
+                    applied = mutationService.TryPrependElementScale(
+                        workingDocumentModel,
+                        new ScaleElementRequest(elementKey, scale, ElementRotationUtility.ToParentSpacePoint(parentWorldTransform, pivotWorld)),
+                        out result);
+                    if (!applied)
+                        mutationError = result.Error;
+
+                    return applied;
+                },
+                out updatedSource,
+                out error);
+        }
+
+        private bool TryBuildSelectionSource(
+            IReadOnlyList<string> selectedElementKeys,
+            TryMutateSelectedElement tryMutate,
+            out string updatedSource,
+            out string error)
+        {
             updatedSource = string.Empty;
             error = string.Empty;
 
-            SvgDocumentModel workingDocumentModel = Host?.CurrentDocument?.DocumentModel;
-            if (workingDocumentModel == null)
-            {
-                error = "Document model is unavailable.";
+            if (!TryGetWorkingDocumentModel(out SvgDocumentModel workingDocumentModel, out error))
                 return false;
-            }
 
             SvgDocumentModelMutationService mutationService = new();
+            bool appliedAny = false;
             foreach (string elementKey in selectedElementKeys)
             {
-                if (string.IsNullOrWhiteSpace(elementKey) ||
-                    !Host.TryGetElementParentWorldTransform(elementKey, out Matrix2D parentWorldTransform))
+                if (!tryMutate(
+                        mutationService,
+                        workingDocumentModel,
+                        elementKey,
+                        out MutationResult result,
+                        out bool applied,
+                        out error))
                 {
-                    error = $"Could not resolve parent transform for '{elementKey}'.";
                     return false;
                 }
 
-                if (!mutationService.TryPrependElementScale(
-                        workingDocumentModel,
-                        new ScaleElementRequest(elementKey, scale, ElementRotationUtility.ToParentSpacePoint(parentWorldTransform, pivotWorld)),
-                        out MutationResult result))
-                {
-                    error = result.Error;
-                    return false;
-                }
+                if (!applied)
+                    continue;
 
                 workingDocumentModel = result.UpdatedDocumentModel;
+                appliedAny = true;
             }
+
+            if (!appliedAny)
+                return false;
 
             updatedSource = workingDocumentModel?.SourceText ?? string.Empty;
             return !string.IsNullOrWhiteSpace(updatedSource);
+        }
+
+        private bool TryGetWorkingDocumentModel(out SvgDocumentModel workingDocumentModel, out string error)
+        {
+            workingDocumentModel = Host?.CurrentDocument?.DocumentModel;
+            error = string.Empty;
+            if (workingDocumentModel != null)
+                return true;
+
+            error = "Document model is unavailable.";
+            return false;
         }
 
         private string ResolveSelectedTargetKey()

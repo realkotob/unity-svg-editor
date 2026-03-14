@@ -583,20 +583,9 @@ namespace SvgEditor.Workspace.Canvas
             IReadOnlyList<string> areaSelectionKeys = _selectionResolver.ResolveAreaSelectionKeys(sceneRect, EventModifiers.None);
             if (_isAreaSelectionAdditive)
             {
-                List<string> mergedKeys = new(_areaSelectionBaselineKeys);
-                foreach (string areaSelectionKey in areaSelectionKeys)
-                {
-                    if (ContainsElementKey(mergedKeys, areaSelectionKey))
-                    {
-                        RemoveElementKey(mergedKeys, areaSelectionKey);
-                    }
-                    else
-                    {
-                        mergedKeys.Add(areaSelectionKey);
-                    }
-                }
-
-                _selectionSyncService.ReplaceCanvasElements(mergedKeys, syncPatchTarget: false);
+                _selectionSyncService.ReplaceCanvasElements(
+                    BuildMergedAreaSelectionKeys(_areaSelectionBaselineKeys, areaSelectionKeys),
+                    syncPatchTarget: false);
             }
             else
             {
@@ -616,6 +605,32 @@ namespace SvgEditor.Workspace.Canvas
                 Mathf.Min(startPosition.y, currentPosition.y),
                 Mathf.Max(startPosition.x, currentPosition.x),
                 Mathf.Max(startPosition.y, currentPosition.y));
+        }
+
+        private static List<string> BuildMergedAreaSelectionKeys(
+            IReadOnlyList<string> baselineKeys,
+            IReadOnlyList<string> areaSelectionKeys)
+        {
+            List<string> mergedKeys = baselineKeys != null
+                ? new List<string>(baselineKeys)
+                : new List<string>();
+
+            if (areaSelectionKeys == null)
+                return mergedKeys;
+
+            foreach (string areaSelectionKey in areaSelectionKeys)
+            {
+                if (ContainsElementKey(mergedKeys, areaSelectionKey))
+                {
+                    RemoveElementKey(mergedKeys, areaSelectionKey);
+                }
+                else
+                {
+                    mergedKeys.Add(areaSelectionKey);
+                }
+            }
+
+            return mergedKeys;
         }
 
         private static bool ContainsElementKey(IReadOnlyList<string> selectedElementKeys, string elementKey)

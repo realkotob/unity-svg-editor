@@ -114,69 +114,32 @@ namespace SvgEditor.Workspace.InspectorPanel
 
         private void ApplyRotationFromHelper(float deltaDegrees)
         {
-            if (Host?.CurrentDocument == null || !_view.IsBound)
-            {
+            if (!TryGetBoundHostWithDocument(out IPanelHost host))
                 return;
-            }
 
             string targetKey = ResolveSelectedTargetKey();
-            if (string.IsNullOrWhiteSpace(targetKey) ||
-                string.Equals(targetKey, SvgDocumentTargets.RootTargetKey, StringComparison.Ordinal))
-            {
-                Host?.UpdateSourceStatus("Rotation requires a non-root target.");
+            if (!TryValidateRotationTargetKey(targetKey))
                 return;
-            }
 
             if (Mathf.Approximately(deltaDegrees, 0f))
-            {
                 return;
-            }
 
             _view.CaptureState(_inspectorPanelState);
-            string transform = string.Empty;
-            string error = string.Empty;
-
             bool useDragSession = _isRotationDragActive &&
                                   string.Equals(_rotationDragTargetKey, targetKey, StringComparison.Ordinal);
-            if (!useDragSession)
-            {
-                if (!Host.TryGetRotationPivotParentSpace(targetKey, out _rotationDragParentPivot))
-                {
-                    Host?.UpdateSourceStatus("Rotation failed: stable pivot is unavailable.");
-                    return;
-                }
-
-                if (!_rotationSession.TryBegin(Host.CurrentDocument, targetKey, _rotationDragParentPivot))
-                {
-                    Host?.UpdateSourceStatus("Rotation failed: transform update could not be prepared.");
-                    return;
-                }
-            }
-
-            if (!_rotationSession.TryBuildTransform(deltaDegrees, out transform, out error))
-            {
-                Host?.UpdateSourceStatus(
-                    string.IsNullOrWhiteSpace(error)
-                        ? "Rotation failed: transform update could not be prepared."
-                        : $"Rotation failed: {error}");
-                if (!useDragSession)
-                {
-                    _rotationSession.End();
-                }
-
+            if (!TryPrepareRotationSession(host, targetKey, useDragSession))
                 return;
-            }
+
+            if (!TryBuildRotationTransform(deltaDegrees, useDragSession, out string transform))
+                return;
 
             _inspectorPanelState.Transform = transform;
             _inspectorPanelState.TransformEnabled = true;
             _inspectorPanelState.TrySyncTransformHelperFromText();
             _view.ApplyState(_inspectorPanelState);
-            if (!useDragSession)
-            {
-                _rotationSession.End();
-            }
+            EndStandaloneRotationSession(useDragSession);
 
-            Host.TryApplyPatchRequest(
+            host.TryApplyPatchRequest(
                 new AttributePatchRequest
                 {
                     TargetKey = targetKey,
@@ -184,6 +147,62 @@ namespace SvgEditor.Workspace.InspectorPanel
                 },
                 "Rotation updated.",
                 HistoryRecordingMode.Coalesced);
+        }
+
+        private bool TryGetBoundHostWithDocument(out IPanelHost host)
+        {
+            host = Host;
+            return host?.CurrentDocument != null && _view.IsBound;
+        }
+
+        private bool TryValidateRotationTargetKey(string targetKey)
+        {
+            if (!string.IsNullOrWhiteSpace(targetKey) &&
+                !string.Equals(targetKey, SvgDocumentTargets.RootTargetKey, StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            Host?.UpdateSourceStatus("Rotation requires a non-root target.");
+            return false;
+        }
+
+        private bool TryPrepareRotationSession(IPanelHost host, string targetKey, bool useDragSession)
+        {
+            if (useDragSession)
+                return true;
+
+            if (!host.TryGetRotationPivotParentSpace(targetKey, out _rotationDragParentPivot))
+            {
+                host.UpdateSourceStatus("Rotation failed: stable pivot is unavailable.");
+                return false;
+            }
+
+            if (_rotationSession.TryBegin(host.CurrentDocument, targetKey, _rotationDragParentPivot))
+                return true;
+
+            host.UpdateSourceStatus("Rotation failed: transform update could not be prepared.");
+            return false;
+        }
+
+        private bool TryBuildRotationTransform(float deltaDegrees, bool useDragSession, out string transform)
+        {
+            transform = string.Empty;
+            if (_rotationSession.TryBuildTransform(deltaDegrees, out transform, out string error))
+                return true;
+
+            Host?.UpdateSourceStatus(
+                string.IsNullOrWhiteSpace(error)
+                    ? "Rotation failed: transform update could not be prepared."
+                    : $"Rotation failed: {error}");
+            EndStandaloneRotationSession(useDragSession);
+            return false;
+        }
+
+        private void EndStandaloneRotationSession(bool useDragSession)
+        {
+            if (!useDragSession)
+                _rotationSession.End();
         }
     }
 }

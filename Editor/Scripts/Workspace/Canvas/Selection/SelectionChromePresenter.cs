@@ -122,43 +122,24 @@ namespace SvgEditor.Workspace.Canvas
         {
             _currentSelection = null;
 
-            if (_selectionBox != null)
-            {
-                _selectionBox.style.display = DisplayStyle.None;
-                _selectionBox.style.rotate = new Rotate(new Angle(0f));
-            }
-
-            if (_sizeBadge != null)
-            {
-                _sizeBadge.style.display = DisplayStyle.None;
-            }
-
-            if (_verticalGuide != null)
-            {
-                _verticalGuide.style.display = DisplayStyle.None;
-            }
-
-            if (_horizontalGuide != null)
-            {
-                _horizontalGuide.style.display = DisplayStyle.None;
-            }
+            HideElement(_selectionBox, resetRotation: true);
+            HideElement(_sizeBadge);
+            HideElement(_verticalGuide);
+            HideElement(_horizontalGuide);
 
             foreach (var handle in _handles.Values)
             {
-                handle.style.display = DisplayStyle.None;
-                handle.style.rotate = new Rotate(new Angle(0f));
+                HideElement(handle, resetRotation: true);
             }
 
             foreach (var edgeZone in _edgeZones.Values)
             {
-                edgeZone.style.display = DisplayStyle.None;
-                edgeZone.style.rotate = new Rotate(new Angle(0f));
+                HideElement(edgeZone, resetRotation: true);
             }
 
             foreach (var rotationZone in _rotationZones)
             {
-                rotationZone.style.display = DisplayStyle.None;
-                rotationZone.style.rotate = new Rotate(new Angle(0f));
+                HideElement(rotationZone, resetRotation: true);
             }
         }
 
@@ -172,11 +153,7 @@ namespace SvgEditor.Workspace.Canvas
 
         public void ClearMarquee()
         {
-            if (_marqueeBox != null)
-            {
-                _marqueeBox.style.display = DisplayStyle.None;
-                _marqueeBox.style.rotate = new Rotate(new Angle(0f));
-            }
+            HideElement(_marqueeBox, resetRotation: true);
         }
 
         public void SetMarquee(Rect viewportRect)
@@ -186,11 +163,7 @@ namespace SvgEditor.Workspace.Canvas
                 return;
             }
 
-            _marqueeBox.style.display = DisplayStyle.Flex;
-            _marqueeBox.style.left = viewportRect.xMin;
-            _marqueeBox.style.top = viewportRect.yMin;
-            _marqueeBox.style.width = viewportRect.width;
-            _marqueeBox.style.height = viewportRect.height;
+            ApplyViewportRect(_marqueeBox, viewportRect);
         }
 
         public void SetHover(Rect viewportRect)
@@ -200,11 +173,7 @@ namespace SvgEditor.Workspace.Canvas
                 return;
             }
 
-            _hoverBox.style.display = DisplayStyle.Flex;
-            _hoverBox.style.left = viewportRect.xMin;
-            _hoverBox.style.top = viewportRect.yMin;
-            _hoverBox.style.width = viewportRect.width;
-            _hoverBox.style.height = viewportRect.height;
+            ApplyViewportRect(_hoverBox, viewportRect);
         }
 
         public void SetSelection(CanvasSelectionVisual selection)
@@ -217,12 +186,8 @@ namespace SvgEditor.Workspace.Canvas
                 return;
             }
 
-            _selectionBox.style.display = DisplayStyle.Flex;
+            ApplyViewportRect(_selectionBox, selection.Rect);
             _selectionBox.EnableClass(OverlayClassName.SELECTION_BOX_FRAME, selection.Kind == SelectionKind.Frame);
-            _selectionBox.style.left = selection.Rect.xMin;
-            _selectionBox.style.top = selection.Rect.yMin;
-            _selectionBox.style.width = selection.Rect.width;
-            _selectionBox.style.height = selection.Rect.height;
 
             if (_sizeBadge != null && !string.IsNullOrWhiteSpace(selection.SizeText))
             {
@@ -267,6 +232,28 @@ namespace SvgEditor.Workspace.Canvas
             SelectionChromeGeometry.PositionEdgeZones(_edgeZones, selection.Rect, selection.ShowSelectionHandles);
             SelectionChromeGeometry.PositionRotationZones(_rotationZones, selection.Rect, selection.ShowSelectionHandles);
             ApplySelectionRotation(selection);
+        }
+
+        private static void ApplyViewportRect(VisualElement element, Rect viewportRect)
+        {
+            if (element == null)
+                return;
+
+            element.style.display = DisplayStyle.Flex;
+            element.style.left = viewportRect.xMin;
+            element.style.top = viewportRect.yMin;
+            element.style.width = viewportRect.width;
+            element.style.height = viewportRect.height;
+        }
+
+        private static void HideElement(VisualElement element, bool resetRotation = false)
+        {
+            if (element == null)
+                return;
+
+            element.style.display = DisplayStyle.None;
+            if (resetRotation)
+                element.style.rotate = new Rotate(new Angle(0f));
         }
 
         public bool TryHitTestSelectionHandle(Vector2 localPoint, out SelectionHandle handle)
