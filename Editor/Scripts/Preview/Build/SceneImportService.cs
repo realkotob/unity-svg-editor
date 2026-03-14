@@ -13,17 +13,9 @@ namespace SvgEditor.Preview.Build
 {
     internal static class SceneImportService
     {
-        private static readonly MethodInfo InternalBuildVectorImageMethod = typeof(VectorUtils).GetMethod(
-            "BuildVectorImage",
-            BindingFlags.Static | BindingFlags.NonPublic,
-            null,
-            new[]
-            {
-                typeof(IEnumerable<VectorUtils.Geometry>),
-                typeof(Rect),
-                typeof(uint)
-            },
-            null);
+        private const string PREVIEW_VECTOR_IMAGE_NAME = "VectorEditorPreview";
+        private static readonly MethodInfo InternalBuildVectorImageMethod = ResolveInternalBuildVectorImageMethod();
+        private static bool _loggedInternalBuildVectorImageFallback;
 
         public static bool TryImportScene(string sourceText, out SVGParser.SceneInfo sceneInfo, out string error)
         {
@@ -62,24 +54,15 @@ namespace SvgEditor.Preview.Build
 
         public static VectorImage BuildPreviewVectorImage(SVGParser.SceneInfo sceneInfo, Rect previewRect)
         {
-            if (InternalBuildVectorImageMethod == null)
-                return FinalizePreviewVectorImage(VectorUtils.BuildVectorImage(sceneInfo));
-
             IEnumerable<VectorUtils.Geometry> geometries = VectorUtils.TessellateScene(
                 sceneInfo.Scene,
                 BuildOptions.CreateTessellationOptions(),
                 sceneInfo.NodeOpacity);
 
-            VectorImage vectorImage = InternalBuildVectorImageMethod.Invoke(
-                null,
-                new object[]
-                {
-                    geometries,
-                    previewRect,
-                    BuildOptions.GRADIENT_RESOLUTION
-                }) as VectorImage;
-
-            return FinalizePreviewVectorImage(vectorImage ?? VectorUtils.BuildVectorImage(sceneInfo));
+            return BuildPreviewVectorImage(
+                geometries,
+                previewRect,
+                () => VectorUtils.BuildVectorImage(sceneInfo));
         }
 
         public static VectorImage BuildPreviewVectorImage(Scene scene, Dictionary<SceneNode, float> nodeOpacity, Rect previewRect)
@@ -89,19 +72,87 @@ namespace SvgEditor.Preview.Build
                 BuildOptions.CreateTessellationOptions(),
                 nodeOpacity);
 
-            if (InternalBuildVectorImageMethod == null)
-                return FinalizePreviewVectorImage(VectorUtils.BuildVectorImage(geometries, BuildOptions.GRADIENT_RESOLUTION));
+            return BuildPreviewVectorImage(
+                geometries,
+                previewRect,
+                () => VectorUtils.BuildVectorImage(geometries, BuildOptions.GRADIENT_RESOLUTION));
+        }
 
-            VectorImage vectorImage = InternalBuildVectorImageMethod.Invoke(
+        private static MethodInfo ResolveInternalBuildVectorImageMethod()
+        {
+            return typeof(VectorUtils).GetMethod(
+                "BuildVectorImage",
+                BindingFlags.Static | BindingFlags.NonPublic,
                 null,
-                new object[]
+                new[]
                 {
-                    geometries,
-                    previewRect,
-                    BuildOptions.GRADIENT_RESOLUTION
-                }) as VectorImage;
+                    typeof(IEnumerable<VectorUtils.Geometry>),
+                    typeof(Rect),
+                    typeof(uint)
+                },
+                null);
+        }
 
-            return FinalizePreviewVectorImage(vectorImage ?? VectorUtils.BuildVectorImage(geometries, BuildOptions.GRADIENT_RESOLUTION));
+        private static VectorImage BuildPreviewVectorImage(
+            IEnumerable<VectorUtils.Geometry> geometries,
+            Rect previewRect,
+            Func<VectorImage> fallbackBuilder)
+        {
+            string reflectionError = string.Empty;
+            VectorImage vectorImage = TryBuildVectorImageWithPreviewRect(geometries, previewRect, out reflectionError);
+            if (vectorImage == null)
+            {
+                LogReflectionFallback(reflectionError);
+                vectorImage = fallbackBuilder();
+            }
+
+            return FinalizePreviewVectorImage(vectorImage);
+        }
+
+        private static VectorImage TryBuildVectorImageWithPreviewRect(
+            IEnumerable<VectorUtils.Geometry> geometries,
+            Rect previewRect,
+            out string error)
+        {
+            error = string.Empty;
+            if (InternalBuildVectorImageMethod == null)
+                return null;
+
+            try
+            {
+                VectorImage vectorImage = InternalBuildVectorImageMethod.Invoke(
+                    null,
+                    new object[]
+                    {
+                        geometries,
+                        previewRect,
+                        BuildOptions.GRADIENT_RESOLUTION
+                    }) as VectorImage;
+
+                if (vectorImage == null)
+                    error = "Internal BuildVectorImage returned null.";
+
+                return vectorImage;
+            }
+            catch (TargetInvocationException ex)
+            {
+                error = ex.InnerException?.Message ?? ex.Message;
+                return null;
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+                return null;
+            }
+        }
+
+        private static void LogReflectionFallback(string error)
+        {
+            if (string.IsNullOrWhiteSpace(error) || _loggedInternalBuildVectorImageFallback)
+                return;
+
+            _loggedInternalBuildVectorImageFallback = true;
+            Debug.LogWarning($"SceneImportService falling back to the public VectorImage builder: {error}");
         }
 
         private static VectorImage FinalizePreviewVectorImage(VectorImage vectorImage)
@@ -110,7 +161,7 @@ namespace SvgEditor.Preview.Build
                 return null;
 
             vectorImage.hideFlags = HideFlags.HideAndDontSave;
-            vectorImage.name = "VectorEditorPreview";
+            vectorImage.name = PREVIEW_VECTOR_IMAGE_NAME;
             return vectorImage;
         }
     }

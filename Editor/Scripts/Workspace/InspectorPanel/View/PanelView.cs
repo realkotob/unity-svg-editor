@@ -97,8 +97,8 @@ namespace SvgEditor.Workspace.InspectorPanel
         public VisualElement FrameYControl => _form.FrameYField;
         public VisualElement FrameWidthControl => _form.FrameWidthField;
         public VisualElement FrameHeightControl => _form.FrameHeightField;
-        public VisualElement LinecapControl => (VisualElement)_form.LinecapPopup ?? _form.LinecapLegacyPopup;
-        public VisualElement LinejoinControl => (VisualElement)_form.LinejoinPopup ?? _form.LinejoinLegacyPopup;
+        public VisualElement LinecapControl => _form.LinecapControl;
+        public VisualElement LinejoinControl => _form.LinejoinControl;
         public VisualElement TranslateXControl => _form.TranslateXField;
         public VisualElement TranslateYControl => _form.TranslateYField;
         public VisualElement RotateControl => _form.RotateField;

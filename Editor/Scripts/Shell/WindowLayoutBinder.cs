@@ -13,6 +13,33 @@ using SvgEditor.Workspace.InspectorPanel;
 
 namespace SvgEditor.Shell
 {
+    internal static class WindowLayoutResources
+    {
+        private const string THEME_RESOURCE_PATH = "Theme/SvgEditorTheme";
+        private const string WINDOW_RESOURCE_PATH = "UXML/SvgEditorWindow";
+
+        public static bool TryBuildRootVisualTree(VisualElement root, out string error)
+        {
+            error = string.Empty;
+            if (root == null)
+            {
+                error = "Root visual element is unavailable.";
+                return false;
+            }
+
+            VisualTreeAsset visualTree = Resources.Load<VisualTreeAsset>(WINDOW_RESOURCE_PATH);
+            if (visualTree == null)
+            {
+                error = "SvgEditorWindow.uxml not found.";
+                return false;
+            }
+
+            visualTree.CloneTree(root);
+            EditorThemeUtility.ApplyThemeStyleSheet(root, THEME_RESOURCE_PATH);
+            return true;
+        }
+    }
+
     internal sealed class WindowLayoutBinder
     {
         private static class ElementName
@@ -30,8 +57,6 @@ namespace SvgEditor.Shell
             public const string INSPECTOR_CARD_ACCENT = INSPECTOR_CARD + "--accent";
         }
 
-        private const string THEME_RESOURCE_PATH = "Theme/SvgEditorTheme";
-        private const string WINDOW_RESOURCE_PATH = "UXML/SvgEditorWindow";
         private static readonly InspectorSectionClasses InspectorSectionChrome = new()
         {
             rootClass = UssClassName.INSPECTOR_CARD,
@@ -75,17 +100,14 @@ namespace SvgEditor.Shell
             DetachLayout();
             _root.Clear();
 
-            var visualTree = FindVisualTreeAsset();
-            if (visualTree == null)
+            if (!WindowLayoutResources.TryBuildRootVisualTree(_root, out string error))
             {
-                _root.Add(new HelpBox("SvgEditorWindow.uxml not found.", HelpBoxMessageType.Error));
+                _root.Add(new HelpBox(error, HelpBoxMessageType.Error));
                 return false;
             }
 
-            visualTree.CloneTree(_root);
             _root.RegisterCallback<KeyDownEvent>(_rootKeyDownHandler, TrickleDown.TrickleDown);
             BindUxmlLayout();
-            ApplyThemeStyleSheet();
             _assetLibraryBrowser.RefreshAssetList(selectFirst: false);
             return true;
         }
@@ -103,7 +125,13 @@ namespace SvgEditor.Shell
             ApplyToolbarIcons();
             ApplyPositionIcons();
             ApplyAttributeIcons();
+            BindPanels();
+            BindCanvasStage();
+            _inspectorPanelController.Bind(_root, PanelHost);
+        }
 
+        private void BindPanels()
+        {
             _assetLibraryBrowser.Bind(
                 _root,
                 _documentLifecycleController.LoadAsset,
@@ -112,7 +140,10 @@ namespace SvgEditor.Shell
 
             _documentLifecycleController.Bind(_root);
             BuildInspectorSections();
+        }
 
+        private void BindCanvasStage()
+        {
             CanvasStageView canvasStageView = _root.Q<CanvasStageView>(ElementName.CANVAS_STAGE_VIEW);
             if (canvasStageView != null)
             {
@@ -120,8 +151,6 @@ namespace SvgEditor.Shell
                 canvasStageView.DocumentResetRequested += _documentLifecycleController.ReloadCurrentDocument;
                 WorkspaceCoordinator?.Bind(canvasStageView, _root.Q<Toggle>(ElementName.MOVE_TOOL));
             }
-
-            _inspectorPanelController.Bind(_root, PanelHost);
         }
 
         private void BuildInspectorSections()
@@ -138,16 +167,6 @@ namespace SvgEditor.Shell
                 fallbackTitle,
                 InspectorSectionChrome,
                 accent);
-        }
-
-        private static VisualTreeAsset FindVisualTreeAsset()
-        {
-            return Resources.Load<VisualTreeAsset>(WINDOW_RESOURCE_PATH);
-        }
-
-        private void ApplyThemeStyleSheet()
-        {
-            EditorThemeUtility.ApplyThemeStyleSheet(_root, THEME_RESOURCE_PATH);
         }
 
         private void ApplyToolbarIcons()

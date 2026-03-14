@@ -111,18 +111,18 @@ namespace SvgEditor.Shell
 
         #region Help Methods
 
-        private WindowLayoutBinder LayoutBinder => _layoutBinder ??= new WindowLayoutBinder(
-            rootVisualElement,
-            _assetLibraryBrowser,
-            _documentLifecycleController,
-            _inspectorPanelController,
-            () => WorkspaceCoordinator,
-            () => this,
-            OnRootKeyDown);
+        private WindowLayoutBinder LayoutBinder => _layoutBinder ??= CreateLayoutBinder();
 
         private EditorWorkspaceCoordinator WorkspaceCoordinator => _workspaceCoordinator ??= new EditorWorkspaceCoordinator(this);
 
         private void EnsureInitialized()
+        {
+            EnsureDocumentServicesInitialized();
+            EnsureWorkspaceServicesInitialized();
+            EnsureShellServicesInitialized();
+        }
+
+        private void EnsureDocumentServicesInitialized()
         {
             _documentRepository ??= new DocumentRepository();
             _previewSnapshotBuilder ??= new SnapshotBuilder();
@@ -135,15 +135,40 @@ namespace SvgEditor.Shell
                 _inspectorPanelController,
                 () => WorkspaceCoordinator,
                 UpdateEditorInteractivity);
-            _shortcutRouter ??= new WindowShortcutRouter(
+        }
+
+        private void EnsureWorkspaceServicesInitialized()
+        {
+            _previewGeometryLookupService ??= new GeometryLookupService(
+                () => _documentLifecycleController.PreviewSnapshot,
+                () => WorkspaceCoordinator.SelectedElementKeys);
+        }
+
+        private void EnsureShellServicesInitialized()
+        {
+            _shortcutRouter ??= CreateShortcutRouter();
+        }
+
+        private WindowLayoutBinder CreateLayoutBinder()
+        {
+            return new WindowLayoutBinder(
+                rootVisualElement,
+                _assetLibraryBrowser,
+                _documentLifecycleController,
+                _inspectorPanelController,
+                () => WorkspaceCoordinator,
+                () => this,
+                OnRootKeyDown);
+        }
+
+        private WindowShortcutRouter CreateShortcutRouter()
+        {
+            return new WindowShortcutRouter(
                 () => _documentLifecycleController.CurrentDocument,
                 () => WorkspaceCoordinator.TryCancelActiveDrag(),
                 () => _documentLifecycleController.TryUndo(),
                 () => _documentLifecycleController.TryRedo(),
                 _documentLifecycleController.SaveCurrentDocument);
-            _previewGeometryLookupService ??= new GeometryLookupService(
-                () => _documentLifecycleController.PreviewSnapshot,
-                () => WorkspaceCoordinator.SelectedElementKeys);
         }
 
         private string ResolveSelectedPatchTargetKey()

@@ -26,38 +26,18 @@ namespace SvgEditor.Document
             document = null;
             error = string.Empty;
 
-            if (string.IsNullOrWhiteSpace(assetPath))
-            {
-                error = "SVG asset path is empty.";
-                return false;
-            }
-
-            if (!_assetPathResolver.TryResolveAbsolutePath(assetPath, out string absolutePath, out error))
-            {
-                return false;
-            }
-
-            if (!File.Exists(absolutePath))
-            {
-                error = $"SVG file does not exist: {absolutePath}";
-                return false;
-            }
-
-            if (!SvgSourceEncodingUtility.TryReadAllText(absolutePath, out string sourceText, out var sourceEncoding, out error))
-            {
-                return false;
-            }
-
-            if (!SvgSafeMaskArtifactSanitizer.TrySanitize(sourceText, out sourceText, out _, out error))
+            if (!TryResolveDocumentPath(assetPath, out string normalizedAssetPath, out string absolutePath, out error))
                 return false;
 
-            var vectorImageAsset = AssetDatabase.LoadAssetAtPath<VectorImage>(assetPath);
+            if (!TryReadDocumentSource(absolutePath, out string sourceText, out var sourceEncoding, out error))
+                return false;
+
             document = new DocumentSession
             {
-                AssetPath = assetPath,
+                AssetPath = normalizedAssetPath,
                 AbsolutePath = absolutePath,
                 SourceEncoding = sourceEncoding,
-                VectorImageAsset = vectorImageAsset,
+                VectorImageAsset = LoadVectorImageAsset(normalizedAssetPath),
                 OriginalSourceText = sourceText,
                 WorkingSourceText = sourceText
             };
@@ -85,10 +65,8 @@ namespace SvgEditor.Document
                 return false;
             }
 
-            if (!_assetPathResolver.TryResolveAbsolutePath(document.AssetPath, out string absolutePath, out error))
-            {
+            if (!TryResolveDocumentPath(document.AssetPath, out string normalizedAssetPath, out string absolutePath, out error))
                 return false;
-            }
 
             try
             {
@@ -97,17 +75,18 @@ namespace SvgEditor.Document
                     return false;
                 }
 
-                AssetDatabase.ImportAsset(document.AssetPath, ImportAssetOptions.ForceUpdate);
+                AssetDatabase.ImportAsset(normalizedAssetPath, ImportAssetOptions.ForceUpdate);
+                document.AssetPath = normalizedAssetPath;
                 document.AbsolutePath = absolutePath;
                 document.WorkingSourceText = sourceTextToPersist;
                 document.OriginalSourceText = sourceTextToPersist;
-                document.VectorImageAsset = AssetDatabase.LoadAssetAtPath<VectorImage>(document.AssetPath);
+                document.VectorImageAsset = LoadVectorImageAsset(normalizedAssetPath);
                 _documentSourceService.RefreshDocumentModelSnapshot(document, sourceTextToPersist);
                 return true;
             }
             catch (Exception ex)
             {
-                error = ex.Message;
+                error = $"SVG save failed: {ex.Message}";
                 return false;
             }
         }
@@ -127,5 +106,43 @@ namespace SvgEditor.Document
         }
 
         #endregion Internal Methods
+
+        private bool TryResolveDocumentPath(string assetPath, out string normalizedAssetPath, out string absolutePath, out string error)
+        {
+            normalizedAssetPath = assetPath?.Replace('\\', '/').Trim();
+            absolutePath = string.Empty;
+            error = string.Empty;
+
+            if (string.IsNullOrWhiteSpace(normalizedAssetPath))
+            {
+                error = "SVG asset path is empty.";
+                return false;
+            }
+
+            return _assetPathResolver.TryResolveAbsolutePath(normalizedAssetPath, out absolutePath, out error);
+        }
+
+        private static bool TryReadDocumentSource(string absolutePath, out string sourceText, out System.Text.Encoding sourceEncoding, out string error)
+        {
+            sourceText = string.Empty;
+            sourceEncoding = null;
+            error = string.Empty;
+
+            if (!File.Exists(absolutePath))
+            {
+                error = $"SVG file does not exist: {absolutePath}";
+                return false;
+            }
+
+            if (!SvgSourceEncodingUtility.TryReadAllText(absolutePath, out sourceText, out sourceEncoding, out error))
+                return false;
+
+            return SvgSafeMaskArtifactSanitizer.TrySanitize(sourceText, out sourceText, out _, out error);
+        }
+
+        private static VectorImage LoadVectorImageAsset(string assetPath)
+        {
+            return AssetDatabase.LoadAssetAtPath<VectorImage>(assetPath);
+        }
     }
 }

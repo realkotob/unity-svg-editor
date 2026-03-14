@@ -29,8 +29,8 @@ namespace SvgEditor.Workspace.InspectorPanel
                 ? Mathf.Clamp01(opacityValue)
                 : Mathf.Clamp01(opacityValue / 100f);
             inspectorPanelState.CornerRadius = Mathf.Max(0f, form.CornerRadiusField?.value ?? 0f);
-            inspectorPanelState.StrokeLinecap = NormalizeLinecapValue(form.LinecapPopup?.Value ?? form.LinecapLegacyPopup?.value);
-            inspectorPanelState.StrokeLinejoin = NormalizeLinejoinValue(form.LinejoinPopup?.Value ?? form.LinejoinLegacyPopup?.value);
+            inspectorPanelState.StrokeLinecap = NormalizeLinecapValue(form.LinecapValue);
+            inspectorPanelState.StrokeLinejoin = NormalizeLinejoinValue(form.LinejoinValue);
             inspectorPanelState.DasharrayEnabled = form.StrokeEnabled && (form.DashLengthField != null || form.DashGapField != null);
             inspectorPanelState.DashLength = form.DashLengthField?.value ?? 4f;
             inspectorPanelState.DashGap = form.DashGapField?.value ?? 2f;
@@ -66,10 +66,8 @@ namespace SvgEditor.Workspace.InspectorPanel
                 ? inspectorPanelState.Opacity
                 : inspectorPanelState.Opacity * 100f);
             form.CornerRadiusField?.SetValueWithoutNotify(inspectorPanelState.CornerRadius);
-            SetPopupValue(form.LinecapPopup, string.IsNullOrEmpty(inspectorPanelState.StrokeLinecap) ? LinecapActualDefaultValue : inspectorPanelState.StrokeLinecap);
-            SetPopupValue(form.LinecapLegacyPopup, string.IsNullOrEmpty(inspectorPanelState.StrokeLinecap) ? LinecapActualDefaultValue : inspectorPanelState.StrokeLinecap);
-            SetPopupValue(form.LinejoinPopup, string.IsNullOrEmpty(inspectorPanelState.StrokeLinejoin) ? LinejoinActualDefaultValue : inspectorPanelState.StrokeLinejoin);
-            SetPopupValue(form.LinejoinLegacyPopup, string.IsNullOrEmpty(inspectorPanelState.StrokeLinejoin) ? LinejoinActualDefaultValue : inspectorPanelState.StrokeLinejoin);
+            form.SetLinecapWithoutNotify(string.IsNullOrEmpty(inspectorPanelState.StrokeLinecap) ? LinecapActualDefaultValue : inspectorPanelState.StrokeLinecap);
+            form.SetLinejoinWithoutNotify(string.IsNullOrEmpty(inspectorPanelState.StrokeLinejoin) ? LinejoinActualDefaultValue : inspectorPanelState.StrokeLinejoin);
             form.DashLengthField?.SetValueWithoutNotify(inspectorPanelState.DashLength);
             form.DashGapField?.SetValueWithoutNotify(inspectorPanelState.DashGap);
             form.TransformField?.SetValueWithoutNotify(inspectorPanelState.Transform);
@@ -82,27 +80,6 @@ namespace SvgEditor.Workspace.InspectorPanel
             form.RotateField?.SetValueWithoutNotify(inspectorPanelState.Rotate);
             form.ScaleXField?.SetValueWithoutNotify(inspectorPanelState.ScaleX);
             form.ScaleYField?.SetValueWithoutNotify(inspectorPanelState.ScaleY);
-        }
-
-        private static void SetPopupValue(SelectElement popup, string value)
-        {
-            if (popup == null)
-                return;
-
-            string[] choices = string.IsNullOrWhiteSpace(popup.Choices)
-                ? System.Array.Empty<string>()
-                : popup.Choices.Split(',');
-
-            int index = System.Array.IndexOf(choices, value ?? string.Empty);
-            popup.Index = index;
-        }
-
-        private static void SetPopupValue(DropdownField popup, string value)
-        {
-            if (popup == null)
-                return;
-
-            popup.SetValueWithoutNotify(string.IsNullOrEmpty(value) ? RemovePlaceholder : value);
         }
 
         private static string NormalizePopupValue(string value)

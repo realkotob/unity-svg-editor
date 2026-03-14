@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Core.UI.Foundation;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -8,6 +9,9 @@ namespace SvgEditor.Document
 {
     internal sealed class SvgAssetPathResolver
     {
+        private const string ASSETS_ROOT = "Assets";
+        private const string PACKAGES_ROOT = "Packages/";
+
         public IReadOnlyList<string> FindEditableSvgAssetPaths(string searchRoot = null)
         {
             string[] searchRoots = string.IsNullOrWhiteSpace(searchRoot)
@@ -23,7 +27,7 @@ namespace SvgEditor.Document
             {
                 string assetPath = AssetDatabase.GUIDToAssetPath(guid);
                 if (string.IsNullOrWhiteSpace(assetPath) ||
-                    !assetPath.EndsWith(".svg", StringComparison.OrdinalIgnoreCase) ||
+                    !IsSvgAssetPath(assetPath) ||
                     !IsEditableSvgAssetPath(assetPath))
                 {
                     continue;
@@ -48,6 +52,12 @@ namespace SvgEditor.Document
                 return false;
             }
 
+            if (!IsSvgAssetPath(normalizedAssetPath))
+            {
+                error = $"Asset is not an editable SVG file: {assetPath}";
+                return false;
+            }
+
             string projectRoot = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
             if (IsProjectAssetPath(normalizedAssetPath))
             {
@@ -55,24 +65,14 @@ namespace SvgEditor.Document
                 return true;
             }
 
-            if (!normalizedAssetPath.StartsWith("Packages/", StringComparison.OrdinalIgnoreCase))
+            if (!normalizedAssetPath.StartsWith(PACKAGES_ROOT, StringComparison.OrdinalIgnoreCase))
             {
                 error = $"Unsupported SVG asset location: {assetPath}";
                 return false;
             }
 
-            UnityEditor.PackageManager.PackageInfo packageInfo = UnityEditor.PackageManager.PackageInfo.FindForAssetPath(normalizedAssetPath);
-            if (packageInfo == null)
-            {
-                error = $"Unable to resolve package asset path: {assetPath}";
+            if (!TryResolveEditablePackageInfo(normalizedAssetPath, out UnityEditor.PackageManager.PackageInfo packageInfo, out error))
                 return false;
-            }
-
-            if (!IsEditablePackageSource(packageInfo.source))
-            {
-                error = $"SVG package assets are only editable for embedded/local packages: {assetPath}";
-                return false;
-            }
 
             string packageRoot = NormalizeAssetPath(packageInfo.assetPath);
             if (string.IsNullOrWhiteSpace(packageRoot))
@@ -81,9 +81,13 @@ namespace SvgEditor.Document
                 return false;
             }
 
-            string relativePath = normalizedAssetPath.StartsWith(packageRoot + "/", StringComparison.OrdinalIgnoreCase)
-                ? normalizedAssetPath.Substring(packageRoot.Length + 1)
-                : Path.GetFileName(normalizedAssetPath);
+            if (!normalizedAssetPath.StartsWith(packageRoot + "/", StringComparison.OrdinalIgnoreCase))
+            {
+                error = $"Unable to resolve package-relative SVG path: {assetPath}";
+                return false;
+            }
+
+            string relativePath = normalizedAssetPath.Substring(packageRoot.Length + 1);
 
             absolutePath = Path.GetFullPath(Path.Combine(packageInfo.resolvedPath, relativePath));
             return true;
@@ -97,25 +101,48 @@ namespace SvgEditor.Document
                 return true;
             }
 
-            if (!normalizedAssetPath.StartsWith("Packages/", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            UnityEditor.PackageManager.PackageInfo packageInfo = UnityEditor.PackageManager.PackageInfo.FindForAssetPath(normalizedAssetPath);
-            return packageInfo != null && IsEditablePackageSource(packageInfo.source);
+            return normalizedAssetPath.StartsWith(PACKAGES_ROOT, StringComparison.OrdinalIgnoreCase) &&
+                   TryResolveEditablePackageInfo(normalizedAssetPath, out _, out _);
         }
 
         private static bool IsProjectAssetPath(string assetPath)
         {
-            return string.Equals(assetPath, "Assets", StringComparison.OrdinalIgnoreCase) ||
-                   assetPath.StartsWith("Assets/", StringComparison.OrdinalIgnoreCase);
+            return string.Equals(assetPath, ASSETS_ROOT, StringComparison.OrdinalIgnoreCase) ||
+                   assetPath.StartsWith(ASSETS_ROOT + "/", StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool IsEditablePackageSource(UnityEditor.PackageManager.PackageSource source)
         {
             return source == UnityEditor.PackageManager.PackageSource.Embedded ||
                    source == UnityEditor.PackageManager.PackageSource.Local;
+        }
+
+        private static bool IsSvgAssetPath(string assetPath)
+        {
+            return !string.IsNullOrWhiteSpace(assetPath) &&
+                   assetPath.EndsWith(AssetFileExtension.SVG, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool TryResolveEditablePackageInfo(
+            string normalizedAssetPath,
+            out UnityEditor.PackageManager.PackageInfo packageInfo,
+            out string error)
+        {
+            packageInfo = UnityEditor.PackageManager.PackageInfo.FindForAssetPath(normalizedAssetPath);
+            if (packageInfo == null)
+            {
+                error = $"Unable to resolve package asset path: {normalizedAssetPath}";
+                return false;
+            }
+
+            if (!IsEditablePackageSource(packageInfo.source))
+            {
+                error = $"SVG package assets are only editable for embedded/local packages: {normalizedAssetPath}";
+                return false;
+            }
+
+            error = string.Empty;
+            return true;
         }
 
         private static string NormalizeAssetPath(string assetPath)

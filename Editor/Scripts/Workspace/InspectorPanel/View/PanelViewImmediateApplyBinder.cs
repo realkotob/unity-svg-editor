@@ -1,6 +1,4 @@
 using System;
-using Core.UI.Foundation.Components.ColorPercentField;
-using SelectElement = Core.UI.Foundation.Components.Select.Select;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -68,19 +66,15 @@ namespace SvgEditor.Workspace.InspectorPanel
 
         private void ToggleImmediateApplyCallbacks(bool register)
         {
-            ToggleImmediateApplyCallback(_form.FillColorField, OnFillColorChanged, register);
-            ToggleImmediateApplyCallback(_form.FillColorLegacyField, OnFillColorChanged, register);
-            ToggleImmediateApplyCallback(_form.StrokeColorField, OnStrokeColorChanged, register);
-            ToggleImmediateApplyCallback(_form.StrokeColorLegacyField, OnStrokeColorChanged, register);
-            ToggleImmediateApplyCallback(_form.StrokeWidthField, OnStrokeWidthChanged, register);
-            ToggleImmediateApplyCallback(_form.OpacityField, OnOpacityChanged, register);
-            ToggleImmediateApplyCallback(_form.CornerRadiusField, OnCornerRadiusChanged, register);
-            ToggleImmediateApplyCallback(_form.DashLengthField, OnStrokeDasharrayChanged, register);
-            ToggleImmediateApplyCallback(_form.DashGapField, OnStrokeDasharrayChanged, register);
-            ToggleImmediateApplyCallback(_form.LinecapPopup, OnStrokeLinecapChanged, register);
-            ToggleImmediateApplyCallback(_form.LinecapLegacyPopup, OnStrokeLinecapChanged, register);
-            ToggleImmediateApplyCallback(_form.LinejoinPopup, OnStrokeLinejoinChanged, register);
-            ToggleImmediateApplyCallback(_form.LinejoinLegacyPopup, OnStrokeLinejoinChanged, register);
+            _form.ToggleFillColorChanged(OnFillColorChanged, register);
+            _form.ToggleStrokeColorChanged(OnStrokeColorChanged, register);
+            ToggleValueChangedCallback(_form.StrokeWidthField, OnStrokeWidthChanged, register);
+            _form.ToggleOpacityChanged(OnOpacityChanged, register);
+            ToggleValueChangedCallback(_form.CornerRadiusField, OnCornerRadiusChanged, register);
+            ToggleValueChangedCallback(_form.DashLengthField, OnStrokeDasharrayChanged, register);
+            ToggleValueChangedCallback(_form.DashGapField, OnStrokeDasharrayChanged, register);
+            _form.ToggleLinecapChanged(OnStrokeLinecapChanged, register);
+            _form.ToggleLinejoinChanged(OnStrokeLinejoinChanged, register);
         }
 
         private void ToggleFrameRectCallbacks(bool register)
@@ -97,46 +91,6 @@ namespace SvgEditor.Workspace.InspectorPanel
             ToggleValueChangedCallback(_form.TranslateYField, OnTranslateYChanged, register);
             ToggleValueChangedCallback(_form.ScaleXField, OnScaleXChanged, register);
             ToggleValueChangedCallback(_form.ScaleYField, OnScaleYChanged, register);
-        }
-
-        private static void ToggleImmediateApplyCallback(
-            ColorPercentField field,
-            EventCallback<ChangeEvent<Color>> callback,
-            bool register)
-        {
-            CallbackBindingUtility.ToggleCallback(field, callback, register);
-        }
-
-        private static void ToggleImmediateApplyCallback(
-            ColorField field,
-            EventCallback<ChangeEvent<Color>> callback,
-            bool register)
-        {
-            CallbackBindingUtility.ToggleValueChangedCallback(field, callback, register);
-        }
-
-        private static void ToggleImmediateApplyCallback(
-            BaseField<float> field,
-            EventCallback<ChangeEvent<float>> callback,
-            bool register)
-        {
-            ToggleValueChangedCallback(field, callback, register);
-        }
-
-        private static void ToggleImmediateApplyCallback(
-            SelectElement field,
-            EventCallback<ChangeEvent<string>> callback,
-            bool register)
-        {
-            CallbackBindingUtility.ToggleCallback(field, callback, register);
-        }
-
-        private static void ToggleImmediateApplyCallback(
-            DropdownField field,
-            EventCallback<ChangeEvent<string>> callback,
-            bool register)
-        {
-            CallbackBindingUtility.ToggleValueChangedCallback(field, callback, register);
         }
 
         private static void ToggleValueChangedCallback(

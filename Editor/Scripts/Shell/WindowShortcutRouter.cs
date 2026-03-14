@@ -46,7 +46,7 @@ namespace SvgEditor.Shell
             }
 
             EventModifiers normalizedModifiers = NormalizeShortcutModifiers(modifiers);
-            if ((normalizedModifiers & (EventModifiers.Command | EventModifiers.Control)) == 0)
+            if (!HasDocumentShortcutModifiers(normalizedModifiers))
             {
                 return false;
             }
@@ -56,18 +56,7 @@ namespace SvgEditor.Shell
                 return true;
             }
 
-            bool handled = false;
-            if (keyCode == KeyCode.Z)
-            {
-                handled = (normalizedModifiers & EventModifiers.Shift) != 0
-                    ? (_tryRedo?.Invoke() ?? false)
-                    : (_tryUndo?.Invoke() ?? false);
-            }
-            else if (keyCode == KeyCode.S)
-            {
-                _saveCurrentDocument?.Invoke();
-                handled = true;
-            }
+            bool handled = TryHandleDocumentShortcut(keyCode, normalizedModifiers);
 
             if (handled)
             {
@@ -75,6 +64,22 @@ namespace SvgEditor.Shell
             }
 
             return handled;
+        }
+
+        private bool TryHandleDocumentShortcut(KeyCode keyCode, EventModifiers normalizedModifiers)
+        {
+            if (keyCode == KeyCode.Z)
+            {
+                return (normalizedModifiers & EventModifiers.Shift) != 0
+                    ? (_tryRedo?.Invoke() ?? false)
+                    : (_tryUndo?.Invoke() ?? false);
+            }
+
+            if (keyCode != KeyCode.S)
+                return false;
+
+            _saveCurrentDocument?.Invoke();
+            return true;
         }
 
         private bool IsDuplicateShortcut(KeyCode keyCode, EventModifiers modifiers)
@@ -94,6 +99,11 @@ namespace SvgEditor.Shell
         private static EventModifiers NormalizeShortcutModifiers(EventModifiers modifiers)
         {
             return modifiers & (EventModifiers.Command | EventModifiers.Control | EventModifiers.Shift);
+        }
+
+        private static bool HasDocumentShortcutModifiers(EventModifiers normalizedModifiers)
+        {
+            return (normalizedModifiers & (EventModifiers.Command | EventModifiers.Control)) != 0;
         }
     }
 }

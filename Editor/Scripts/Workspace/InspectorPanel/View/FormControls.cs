@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 using SvgEditor;
+using SvgEditor.Shared;
 
 namespace SvgEditor.Workspace.InspectorPanel
 {
@@ -58,9 +59,13 @@ namespace SvgEditor.Workspace.InspectorPanel
             public const string POSITION_FLIP_VERTICAL = "position-flip-vertical";
         }
 
-        private VisualElement _root;
         private bool _isFillVisible = true;
         private bool _isStrokeVisible = true;
+        private VisualElement _fillColorControl;
+        private VisualElement _strokeColorControl;
+        private BaseField<float> _opacityControl;
+        private VisualElement _linecapControl;
+        private VisualElement _linejoinControl;
 
         public VisualElement FillColorRow { get; private set; }
         public Button FillAddButton { get; private set; }
@@ -103,13 +108,17 @@ namespace SvgEditor.Workspace.InspectorPanel
         public Button PositionFlipHorizontalButton { get; private set; }
         public Button PositionFlipVerticalButton { get; private set; }
 
-        public VisualElement FillColorControl => ResolveColorControl(ElementName.FILL_COLOR, FillColorField, FillColorLegacyField);
-        public VisualElement StrokeColorControl => ResolveColorControl(ElementName.STROKE_COLOR, StrokeColorField, StrokeColorLegacyField);
-        public VisualElement OpacityControl => ResolveOpacityField();
-        public Color FillColorValue => ResolveColorValue(ElementName.FILL_COLOR, FillColorField, FillColorLegacyField, Color.black);
-        public Color StrokeColorValue => ResolveColorValue(ElementName.STROKE_COLOR, StrokeColorField, StrokeColorLegacyField, Color.black);
-        public float OpacityValue => ResolveOpacityField()?.value ?? 1f;
-        public bool IsOpacitySlider => ResolveOpacityField() is Slider;
+        public VisualElement FillColorControl => _fillColorControl;
+        public VisualElement StrokeColorControl => _strokeColorControl;
+        public BaseField<float> OpacityControl => _opacityControl;
+        public VisualElement LinecapControl => _linecapControl;
+        public VisualElement LinejoinControl => _linejoinControl;
+        public string LinecapValue => LinecapPopup?.Value ?? LinecapLegacyPopup?.value ?? string.Empty;
+        public string LinejoinValue => LinejoinPopup?.Value ?? LinejoinLegacyPopup?.value ?? string.Empty;
+        public Color FillColorValue => ResolveColorValue(_fillColorControl, FillColorField, FillColorLegacyField, Color.black);
+        public Color StrokeColorValue => ResolveColorValue(_strokeColorControl, StrokeColorField, StrokeColorLegacyField, Color.black);
+        public float OpacityValue => _opacityControl?.value ?? 1f;
+        public bool IsOpacitySlider => _opacityControl is Slider;
 
         public bool IsBound =>
             FillColorControl != null ||
@@ -132,32 +141,31 @@ namespace SvgEditor.Workspace.InspectorPanel
             if (root == null)
                 return;
 
-            _root = root;
             FillColorRow = root.Q<VisualElement>(ElementName.FILL_COLOR_ROW);
             FillAddButton = root.Q<Button>(ElementName.FILL_ADD_BUTTON);
             FillRemoveButton = root.Q<Button>(ElementName.FILL_REMOVE_BUTTON);
-            VisualElement fillColorElement = root.Q<VisualElement>(ElementName.FILL_COLOR);
-            FillColorField = fillColorElement as ColorPercentField;
-            FillColorLegacyField = fillColorElement as ColorField;
+            _fillColorControl = root.Q<VisualElement>(ElementName.FILL_COLOR);
+            FillColorField = _fillColorControl as ColorPercentField;
+            FillColorLegacyField = _fillColorControl as ColorField;
             StrokeColorRow = root.Q<VisualElement>(ElementName.STROKE_COLOR_ROW);
             StrokeMetricsRow = root.Q<VisualElement>(ElementName.STROKE_METRICS_ROW);
             StrokeLineStyleRow = root.Q<VisualElement>(ElementName.STROKE_LINE_STYLE_ROW);
             StrokeAddButton = root.Q<Button>(ElementName.STROKE_ADD_BUTTON);
             StrokeRemoveButton = root.Q<Button>(ElementName.STROKE_REMOVE_BUTTON);
-            VisualElement strokeColorElement = root.Q<VisualElement>(ElementName.STROKE_COLOR);
-            StrokeColorField = strokeColorElement as ColorPercentField;
-            StrokeColorLegacyField = strokeColorElement as ColorField;
+            _strokeColorControl = root.Q<VisualElement>(ElementName.STROKE_COLOR);
+            StrokeColorField = _strokeColorControl as ColorPercentField;
+            StrokeColorLegacyField = _strokeColorControl as ColorField;
             StrokeWidthField = root.Q<FloatField>(ElementName.STROKE_WIDTH);
-            VisualElement opacityElement = root.Q<VisualElement>(ElementName.OPACITY);
-            OpacityField = opacityElement as BaseField<float>;
+            _opacityControl = root.Q<VisualElement>(ElementName.OPACITY) as BaseField<float>;
+            OpacityField = _opacityControl;
             CornerRadiusField = root.Q<FloatField>(ElementName.CORNER_RADIUS);
-            VisualElement linecapElement = root.Q<VisualElement>(ElementName.LINECAP);
-            LinecapPopup = linecapElement as SelectElement;
-            LinecapLegacyPopup = linecapElement as DropdownField;
+            _linecapControl = root.Q<VisualElement>(ElementName.LINECAP);
+            LinecapPopup = _linecapControl as SelectElement;
+            LinecapLegacyPopup = _linecapControl as DropdownField;
             ConfigureLinecapDropdown(LinecapLegacyPopup);
-            VisualElement linejoinElement = root.Q<VisualElement>(ElementName.LINEJOIN);
-            LinejoinPopup = linejoinElement as SelectElement;
-            LinejoinLegacyPopup = linejoinElement as DropdownField;
+            _linejoinControl = root.Q<VisualElement>(ElementName.LINEJOIN);
+            LinejoinPopup = _linejoinControl as SelectElement;
+            LinejoinLegacyPopup = _linejoinControl as DropdownField;
             ConfigureLinejoinDropdown(LinejoinLegacyPopup);
             DashLengthField = root.Q<FloatField>(ElementName.DASH_LENGTH);
             DashGapField = root.Q<FloatField>(ElementName.DASH_GAP);
@@ -204,6 +212,7 @@ namespace SvgEditor.Workspace.InspectorPanel
             FillColorRow = null;
             FillAddButton = null;
             FillRemoveButton = null;
+            _fillColorControl = null;
             FillColorField = null;
             FillColorLegacyField = null;
             StrokeColorRow = null;
@@ -211,16 +220,19 @@ namespace SvgEditor.Workspace.InspectorPanel
             StrokeLineStyleRow = null;
             StrokeAddButton = null;
             StrokeRemoveButton = null;
+            _strokeColorControl = null;
             StrokeColorField = null;
             StrokeColorLegacyField = null;
-            _root = null;
             _isFillVisible = true;
             _isStrokeVisible = true;
             StrokeWidthField = null;
+            _opacityControl = null;
             OpacityField = null;
             CornerRadiusField = null;
+            _linecapControl = null;
             LinecapPopup = null;
             LinecapLegacyPopup = null;
+            _linejoinControl = null;
             LinejoinPopup = null;
             LinejoinLegacyPopup = null;
             DashLengthField = null;
@@ -271,6 +283,43 @@ namespace SvgEditor.Workspace.InspectorPanel
         public void SetTransformText(string transform)
         {
             TransformField?.SetValueWithoutNotify(transform ?? string.Empty);
+        }
+
+        public void SetLinecapWithoutNotify(string value)
+        {
+            SetPopupValue(LinecapPopup, value);
+            SetPopupValue(LinecapLegacyPopup, value);
+        }
+
+        public void SetLinejoinWithoutNotify(string value)
+        {
+            SetPopupValue(LinejoinPopup, value);
+            SetPopupValue(LinejoinLegacyPopup, value);
+        }
+
+        public void ToggleFillColorChanged(EventCallback<ChangeEvent<Color>> callback, bool register)
+        {
+            ToggleColorChanged(FillColorField, FillColorLegacyField, callback, register);
+        }
+
+        public void ToggleStrokeColorChanged(EventCallback<ChangeEvent<Color>> callback, bool register)
+        {
+            ToggleColorChanged(StrokeColorField, StrokeColorLegacyField, callback, register);
+        }
+
+        public void ToggleOpacityChanged(EventCallback<ChangeEvent<float>> callback, bool register)
+        {
+            ToggleValueChangedCallback(OpacityField, callback, register);
+        }
+
+        public void ToggleLinecapChanged(EventCallback<ChangeEvent<string>> callback, bool register)
+        {
+            TogglePopupChanged(LinecapPopup, LinecapLegacyPopup, callback, register);
+        }
+
+        public void ToggleLinejoinChanged(EventCallback<ChangeEvent<string>> callback, bool register)
+        {
+            TogglePopupChanged(LinejoinPopup, LinejoinLegacyPopup, callback, register);
         }
 
         public void SetFillVisible(bool visible)
@@ -329,12 +378,7 @@ namespace SvgEditor.Workspace.InspectorPanel
                 : value ?? string.Empty;
         }
 
-        private VisualElement ResolveColorControl(string name, ColorPercentField colorPercentField, ColorField colorField)
-        {
-            return (VisualElement)colorPercentField ?? colorField ?? _root?.Q<VisualElement>(name);
-        }
-
-        private Color ResolveColorValue(string name, ColorPercentField colorPercentField, ColorField colorField, Color fallback)
+        private static Color ResolveColorValue(VisualElement colorControl, ColorPercentField colorPercentField, ColorField colorField, Color fallback)
         {
             if (colorPercentField != null)
             {
@@ -346,13 +390,12 @@ namespace SvgEditor.Workspace.InspectorPanel
                 return colorField.value;
             }
 
-            VisualElement element = _root?.Q<VisualElement>(name);
-            if (element is ColorPercentField queriedColorPercentField)
+            if (colorControl is ColorPercentField queriedColorPercentField)
             {
                 return queriedColorPercentField.ColorValue;
             }
 
-            if (element is ColorField queriedColorField)
+            if (colorControl is ColorField queriedColorField)
             {
                 return queriedColorField.value;
             }
@@ -360,9 +403,53 @@ namespace SvgEditor.Workspace.InspectorPanel
             return fallback;
         }
 
-        private BaseField<float> ResolveOpacityField()
+        private static void SetPopupValue(SelectElement popup, string value)
         {
-            return OpacityField ?? _root?.Q<VisualElement>(ElementName.OPACITY) as BaseField<float>;
+            if (popup == null)
+                return;
+
+            string[] choices = string.IsNullOrWhiteSpace(popup.Choices)
+                ? System.Array.Empty<string>()
+                : popup.Choices.Split(',');
+
+            int index = System.Array.IndexOf(choices, value ?? string.Empty);
+            popup.Index = index;
+        }
+
+        private static void SetPopupValue(DropdownField popup, string value)
+        {
+            if (popup == null)
+                return;
+
+            popup.SetValueWithoutNotify(string.IsNullOrEmpty(value) ? "none" : value);
+        }
+
+        private static void ToggleColorChanged(
+            ColorPercentField colorPercentField,
+            ColorField colorField,
+            EventCallback<ChangeEvent<Color>> callback,
+            bool register)
+        {
+            CallbackBindingUtility.ToggleCallback(colorPercentField, callback, register);
+            CallbackBindingUtility.ToggleValueChangedCallback(colorField, callback, register);
+        }
+
+        private static void TogglePopupChanged(
+            SelectElement popup,
+            DropdownField legacyPopup,
+            EventCallback<ChangeEvent<string>> callback,
+            bool register)
+        {
+            CallbackBindingUtility.ToggleCallback(popup, callback, register);
+            CallbackBindingUtility.ToggleValueChangedCallback(legacyPopup, callback, register);
+        }
+
+        private static void ToggleValueChangedCallback(
+            BaseField<float> field,
+            EventCallback<ChangeEvent<float>> callback,
+            bool register)
+        {
+            CallbackBindingUtility.ToggleValueChangedCallback(field, callback, register);
         }
 
         private static void SetDisplay(VisualElement element, bool visible)
