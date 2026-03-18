@@ -6,6 +6,7 @@ using SvgEditor.Workspace.Coordination;
 using SvgEditor.Workspace.InspectorPanel;
 using SvgEditor.DocumentModel;
 using SvgEditor.Document;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Workspace.Document
 {

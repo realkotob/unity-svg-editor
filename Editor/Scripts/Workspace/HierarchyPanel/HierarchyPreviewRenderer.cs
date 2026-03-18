@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using Core.UI.Foundation;
 using UnityEngine.UIElements;
 using SvgEditor.Document;
 using SvgEditor.Document.Structure.Hierarchy;
 using SvgEditor.Shared;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Workspace.HierarchyPanel
 {

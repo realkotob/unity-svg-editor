@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using SvgEditor.DocumentModel;
+using Core.UI.Extensions;
 
 namespace SvgEditor.RenderModel
 {

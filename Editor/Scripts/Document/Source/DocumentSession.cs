@@ -3,6 +3,7 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.UIElements;
 using SvgEditor.DocumentModel;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Document
 {

@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.UIElements;
-using SelectElement = Core.UI.Foundation.Components.Select.Select;
+using Core.UI.Extensions;
 
 using SvgEditor;
 

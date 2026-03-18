@@ -7,6 +7,7 @@ using SvgEditor.Workspace.Document;
 using SvgEditor.Workspace.Host;
 using SvgEditor.DocumentModel;
 using SvgEditor.Document;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Workspace.Coordination
 {

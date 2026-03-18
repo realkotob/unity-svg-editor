@@ -7,6 +7,7 @@ using SvgEditor.DocumentModel;
 using SvgEditor.Workspace.Coordination;
 using SvgEditor.Workspace.Document;
 using SvgEditor.Workspace.Transforms;
+using Core.UI.Extensions;
 
 using SvgEditor;
 

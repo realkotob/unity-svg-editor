@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using Core.UI.Foundation;
-using Core.UI.Foundation.Tooling;
 using UnityEngine;
 using UnityEngine.UIElements;
 using SvgEditor.Shared;
@@ -12,9 +10,9 @@ namespace SvgEditor.Workspace.AssetLibrary.Grid
     {
         private static readonly string[] PREVIEW_RESOURCE_PATHS =
         {
-            IconPath.Lucide.FileText,
-            IconPath.Lucide.Pen,
-            IconPath.Lucide.Circle
+            SvgEditorIconPath.Lucide.FileText,
+            SvgEditorIconPath.Lucide.Pen,
+            SvgEditorIconPath.Lucide.Circle
         };
 
         protected override void ApplyPreviewItems(VirtualizedGridView gridView, List<GridViewItem> gridItems)

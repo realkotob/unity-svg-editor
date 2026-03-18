@@ -1,7 +1,7 @@
 using System;
-using Core.UI.Foundation.Components.ColorPercentField;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Core.UI.Extensions;
 
 using SvgEditor;
 

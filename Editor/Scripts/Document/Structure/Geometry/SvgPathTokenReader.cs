@@ -1,5 +1,6 @@
 using UnityEngine;
 using SvgEditor.Document.Structure.Lookup;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Document.Structure.Geometry
 {

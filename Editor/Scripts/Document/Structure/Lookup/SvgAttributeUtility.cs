@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using UnityEngine;
 using SvgEditor.Shared;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Document.Structure.Lookup
 {

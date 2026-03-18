@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Preview.Geometry
 {

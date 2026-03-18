@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
-using Core.UI.Foundation;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using Core.UI.Extensions;
+using SvgEditor.Shared;
 
 namespace SvgEditor.Document
 {
@@ -120,7 +121,7 @@ namespace SvgEditor.Document
         private static bool IsSvgAssetPath(string assetPath)
         {
             return !string.IsNullOrWhiteSpace(assetPath) &&
-                   assetPath.EndsWith(AssetFileExtension.SVG, StringComparison.OrdinalIgnoreCase);
+                   assetPath.EndsWith(SvgEditorAssetFileExtension.SVG, StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool TryResolveEditablePackageInfo(

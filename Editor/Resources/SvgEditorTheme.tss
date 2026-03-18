@@ -1,0 +1,27 @@
+@import url("unity-theme://default");
+
+@import url("/Assets/unity-svg-editor/Editor/UI/USS/Shared/Initialize.uss");
+@import url("/Assets/unity-svg-editor/Editor/UI/USS/Shared/Dimensions.uss");
+@import url("/Assets/unity-svg-editor/Editor/UI/USS/Shared/Variables.uss");
+@import url("/Assets/unity-svg-editor/Editor/UI/USS/Shared/Cursor.uss");
+@import url("/Assets/unity-svg-editor/Editor/UI/USS/Shared/Icon.uss");
+@import url("/Assets/unity-svg-editor/Editor/UI/USS/Shared/Layout.uss");
+@import url("/Assets/unity-svg-editor/Editor/UI/USS/Button/Button.uss");
+@import url("/Assets/unity-svg-editor/Editor/UI/USS/Button/ButtonGroup.uss");
+@import url("/Assets/unity-svg-editor/Editor/UI/USS/Asset/AssetHierarchy.uss");
+@import url("/Assets/unity-svg-editor/Editor/UI/USS/Asset/AssetLibraryGrid.uss");
+@import url("/Assets/unity-svg-editor/Editor/UI/USS/Asset/AssetPanel.uss");
+@import url("/Assets/unity-svg-editor/Editor/UI/USS/Canvas/CanvasHud.uss");
+@import url("/Assets/unity-svg-editor/Editor/UI/USS/Canvas/CanvasOverlay.uss");
+@import url("/Assets/unity-svg-editor/Editor/UI/USS/Canvas/CanvasPanel.uss");
+@import url("/Assets/unity-svg-editor/Editor/UI/USS/Inspector/InspectorControls.uss");
+@import url("/Assets/unity-svg-editor/Editor/UI/USS/Shell/Shell.uss");
+@import url("/Assets/unity-svg-editor/Editor/UI/USS/Shell/ToolbarPanel.uss");
+@import url("/Assets/unity-svg-editor/Editor/UI/Components/Separator/Separator.uss");
+@import url("/Assets/unity-svg-editor/Editor/UI/Components/DragNumberField/Input.uss");
+@import url("/Assets/unity-svg-editor/Editor/UI/Components/DragNumberField/DragNumberField.uss");
+@import url("/Assets/unity-svg-editor/Editor/UI/Components/ColorField/ColorField.uss");
+@import url("/Assets/unity-svg-editor/Editor/UI/USS/Inspector/InspectorPanel.uss");
+
+
+

@@ -1,0 +1,86 @@
+.unity-base-text-field {
+    --unity-cursor-color: var(--foreground);
+    --unity-selection-color: var(--input-30);
+    flex-direction: column;
+    margin: 0;
+}
+
+.unity-base-text-field__label {
+    margin: 0;
+    margin-bottom: var(--space-2);
+    padding: 0;
+    font-size: var(--font-size-sm);
+    -unity-font-definition: var(--font-weight-medium);
+    color: var(--foreground);
+}
+
+.unity-base-text-field:focus:enabled .unity-base-text-field__label {
+    color: var(--foreground);
+}
+
+.unity-base-text-field__input {
+    cursor: var(--cursor-text);
+    transition-property: border-color;
+    transition-duration: var(--transition-fast);
+    transition-timing-function: var(--ease-in-out);
+    overflow: visible;
+    height: var(--height-input-md);
+    padding: var(--space-1) var(--space-3);
+    background-color: var(--input-30);
+    border-radius: var(--radius);
+    border-color: var(--input);
+    font-size: var(--font-size-sm);
+    -unity-font-definition: var(--font-weight-regular);
+}
+.unity-base-text-field__input * { cursor: var(--cursor-text); }
+
+.unity-text-element--inner-input-field-component {
+    color: var(--foreground);
+}
+
+.unity-base-text-field__input--placeholder > .unity-text-element {
+    color: var(--muted-foreground);
+}
+
+.unity-base-text-field:hover:enabled .unity-base-text-field__input {
+    border-color: var(--border-hover);
+}
+
+.unity-base-text-field:focus:enabled .unity-base-text-field__input {
+    border-color: var(--primary);
+}
+
+.input__description {
+    color: var(--muted-foreground);
+    font-size: var(--font-size-sm);
+    -unity-font-definition: var(--font-weight-medium);
+    margin: 0;
+    margin-top: var(--space-2);
+    padding: 0;
+    white-space: normal;
+}
+
+.unity-base-text-field:disabled .unity-base-text-field__label {
+    color: var(--muted-foreground);
+}
+
+.unity-base-text-field:disabled .unity-base-text-field__input {
+    background-color: var(--input-30);
+    border-color: var(--border);
+}
+
+.unity-base-text-field:disabled .input__description {
+    color: var(--white);
+}
+
+.input--error .unity-base-text-field__input {
+    border-color: var(--destructive);
+}
+
+.input--error .input__description {
+    color: var(--destructive);
+}
+
+.input--error:focus:enabled .unity-base-text-field__input {
+    border-color: var(--destructive);
+}

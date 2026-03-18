@@ -1,0 +1,171 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:shared="SvgEditor.Shared" xmlns:svg="SvgEditor" xmlns:canvas="SvgEditor.Workspace.Canvas" xmlns:asset="SvgEditor.Workspace.AssetLibrary.Grid" xmlns:hierarchy="SvgEditor.Workspace.HierarchyPanel" editor-extension-mode="True">
+    <ui:VisualElement class="svg-editor">
+        <ui:TwoPaneSplitView name="main-split" fixed-pane-index="0" fixed-pane-initial-dimension="240" orientation="Horizontal" class="svg-editor__main-split">
+            <ui:VisualElement name="asset-panel" class="svg-editor__asset-panel">
+                <ui:TwoPaneSplitView name="asset-split" fixed-pane-index="0" fixed-pane-initial-dimension="220" orientation="Vertical" class="svg-editor__asset-split">
+                    <ui:VisualElement name="asset-panel-top" class="svg-editor__asset-panel-top">
+                        <ui:VisualElement class="svg-editor__asset-section-header editor__panel-header">
+                            <ui:Label text="Layers" class="svg-editor__asset-section-title"/>
+                        </ui:VisualElement>
+                        <hierarchy:HierarchyListView name="asset-hierarchy-list" show-preview="true" class="svg-editor__asset-hierarchy-list"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="asset-panel-bottom" class="svg-editor__asset-panel-bottom">
+                        <ui:VisualElement class="svg-editor__asset-section-header svg-editor__asset-section-header--flush editor__panel-header">
+                            <ui:Label text="Assets" class="svg-editor__asset-section-title"/>
+                            <ui:VisualElement class="svg-editor__asset-section-actions">
+                                <ui:Button name="asset-library-refresh-button" tooltip="Rescan local assets" class=" icon-refresh asset-refresh-button button-compact"/>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                        <shared:Accordion name="asset-library-filter-accordion" is-bordered="false" class="svg-editor__asset-filter-accordion">
+                            <shared:AccordionItem name="asset-library-filter-accordion-item" title="Libraries" class="svg-editor__asset-filter-accordion-item">
+                                <ui:VisualElement name="asset-library-filter-host" class="svg-editor__asset-filter-host"/>
+                            </shared:AccordionItem>
+                        </shared:Accordion>
+                        <asset:AssetGridView name="asset-grid-view" show-preview="true" class="svg-editor__asset-grid-view"/>
+                    </ui:VisualElement>
+                </ui:TwoPaneSplitView>
+            </ui:VisualElement>
+            <ui:VisualElement name="workspace-split" class="svg-editor__workspace-split">
+                <ui:VisualElement name="preview-panel" class="svg-editor__preview-panel">
+                    <canvas:CanvasStageView name="canvas-stage-view">
+                        <ui:VisualElement name="canvas-edit-hud" class="svg-editor__canvas-edit-hud">
+                            <ui:VisualElement name="canvas-dirty-badge" class="svg-editor__canvas-dirty-badge">
+                                <ui:VisualElement name="canvas-dirty-dot" class="svg-editor__canvas-dirty-dot"/>
+                                <ui:Label name="canvas-dirty-label" text="Edited" class="svg-editor__canvas-dirty-label"/>
+                            </ui:VisualElement>
+                            <ui:Button name="canvas-document-reset-button" text="Reset" class="svg-editor__canvas-document-reset-button"/>
+                        </ui:VisualElement>
+                        <ui:VisualElement name="canvas-zoom-hud" class="svg-editor__canvas-zoom-hud">
+                            <ui:Label name="canvas-zoom-label" text="100%" class="svg-editor__canvas-zoom-label"/>
+                            <ui:Button name="canvas-zoom-reset-button" text="1:1" class="svg-editor__canvas-zoom-reset-button"/>
+                        </ui:VisualElement>
+                    </canvas:CanvasStageView>
+                </ui:VisualElement>
+                <ui:ScrollView name="inspector-panel" mode="Vertical" vertical-scroller-visibility="Hidden" horizontal-scroller-visibility="Hidden" class="inspector-panel">
+                    <ui:VisualElement name="design-inspector">
+                        <ui:VisualElement name="position-panel" class="inspector-section">
+                            <ui:Label text="Position" name="" class="inspector-section__title"/>
+                            <ui:VisualElement name="alignment" style="flex-grow: 1;">
+                                <ui:Label text="Alignment" class="inspector-feature__title"/>
+                                <ui:VisualElement class="inspector-feature__control-container">
+                                    <ui:VisualElement class="button-group inspector-feature__control">
+                                        <ui:Button name="position-align-left" class=" icon-align-horizontal-left"/>
+                                        <ui:Button name="position-align-center" class=" icon-align-horizontal-center"/>
+                                        <ui:Button name="position-align-right" class=" icon-align-horizontal-right"/>
+                                    </ui:VisualElement>
+                                    <ui:VisualElement class="button-group inspector-feature__control--last inspector-feature__control">
+                                        <ui:Button name="position-align-top" class=" icon-align-vertical-top"/>
+                                        <ui:Button name="position-align-middle" class=" icon-align-vertical-center"/>
+                                        <ui:Button name="position-align-bottom" class=" icon-align-vertical-bottom"/>
+                                    </ui:VisualElement>
+                                </ui:VisualElement>
+                            </ui:VisualElement>
+                            <ui:VisualElement name="position" style="flex-grow: 1;">
+                                <ui:Label text="Position" class="inspector-feature__title"/>
+                                <ui:VisualElement class="inspector-feature__control-container">
+                                    <svg:SvgDragNumberField name="inspector-frame-x" prefix="X" value="0" drag-step="1" drag-sensitivity="0.25" class="inspector-feature__control"/>
+                                    <svg:SvgDragNumberField name="inspector-frame-y" prefix="Y" value="0" drag-step="1" drag-sensitivity="0.25" class="inspector-feature__control inspector-feature__control--last"/>
+                                </ui:VisualElement>
+                            </ui:VisualElement>
+                            <ui:VisualElement name="rotation" style="flex-grow: 1;">
+                                <ui:Label text="Rotation" name="Label" class="inspector-feature__title"/>
+                                <ui:VisualElement class="inspector-feature__control-container">
+                                    <svg:SvgDragNumberField name="inspector-rotate" prefix-icon-class="icon-angle-right" value="0" drag-step="1" drag-sensitivity="0.1" class="inspector-feature__control"/>
+                                    <ui:VisualElement class="button-group inspector-feature__control inspector-feature__control--last">
+                                        <ui:Button name="position-rotate-clockwise-90" class=" icon-rotate-90"/>
+                                        <ui:Button name="position-flip-horizontal" class=" icon-flip-horizontal"/>
+                                        <ui:Button name="position-flip-vertical" class=" icon-flip-vertical"/>
+                                    </ui:VisualElement>
+                                </ui:VisualElement>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                        <svg:Separator/>
+                        <ui:VisualElement name="layout-panel" class="inspector-section">
+                            <ui:Label text="Layout" class="inspector-section__title"/>
+                            <ui:Label text="Dimenssions" class="inspector-feature__title"/>
+                            <ui:VisualElement class="inspector-feature__control-container">
+                                <svg:SvgDragNumberField name="inspector-frame-width" prefix="W" value="0" min-value="0" drag-step="1" drag-sensitivity="0.25" class="inspector-feature__control"/>
+                                <svg:SvgDragNumberField name="inspector-frame-height" prefix="H" value="0" min-value="0" drag-step="1" drag-sensitivity="0.25" class="inspector-feature__control inspector-feature__control--last"/>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                        <svg:Separator class="svg-editor__inspector-separator"/>
+                        <ui:VisualElement name="appearance-panel" class="inspector-section">
+                            <ui:Label text="Appearance" class="inspector-section__title"/>
+                            <ui:VisualElement class="inspector-feature__control-container">
+                                <ui:VisualElement class="inspector-feature__control">
+                                    <ui:Label text="Opacity" class="inspector-feature__title"/>
+                                    <svg:SvgDragNumberField name="inspector-opacity" prefix-icon-class="icon-opacity" value="100" min-value="0" max-value="100" drag-step="1" drag-sensitivity="0.25"/>
+                                </ui:VisualElement>
+                                <ui:VisualElement class="inspector-feature__control inspector-feature__control--last">
+                                    <ui:Label text="Corner radius" class="inspector-feature__title"/>
+                                    <svg:SvgDragNumberField name="inspector-corner-radius" prefix-icon-class="icon-maximize" value="0" min-value="0" drag-step="1" drag-sensitivity="0.25"/>
+                                </ui:VisualElement>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                        <svg:Separator class="svg-editor__inspector-separator"/>
+                        <ui:VisualElement name="fill-panel" class="inspector-section">
+                            <ui:VisualElement class="inspector-section__title">
+                                <ui:Label text="Fill" class="svg-editor__subsection-title"/>
+                                <ui:Button name="fill-add-button" class=" icon-plus svg-editor__attribute-button svg-editor__attribute-button--header button-compact"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement name="fill-color-row" class="inspector-feature__control-container">
+                                <ui:VisualElement name="VisualElement" class="inspector-feature__control">
+                                    <svg:SvgColorField name="inspector-fill-color" class="svg-editor__inspector-color-field"/>
+                                </ui:VisualElement>
+                                <ui:Button name="fill-remove-button" class=" icon-minus svg-editor__attribute-button svg-editor__attribute-button--last button-compact" style="flex-grow: 0; white-space: pre-wrap;"/>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                        <svg:Separator class="svg-editor__inspector-separator"/>
+                        <ui:VisualElement name="stroke-panel" class="inspector-section">
+                            <ui:VisualElement class="inspector-section__title">
+                                <ui:Label text="Stroke" class="svg-editor__subsection-title"/>
+                                <ui:Button name="stroke-add-button" class=" icon-plus svg-editor__attribute-button svg-editor__attribute-button--header button-compact"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement name="stroke-color-row" class="inspector-feature__control-container">
+                                <ui:VisualElement class="inspector-feature__control">
+                                    <svg:SvgColorField name="inspector-stroke-color" class="svg-editor__inspector-color-field"/>
+                                </ui:VisualElement>
+                                <ui:Button name="stroke-remove-button" class=" icon-minus svg-editor__attribute-button svg-editor__attribute-button--last button-compact"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement name="stroke-metrics-row" class="inspector-feature__control-container">
+                                <ui:VisualElement class="inspector-feature__control">
+                                    <ui:Label text="Width" class="inspector-feature__title"/>
+                                    <svg:SvgDragNumberField name="inspector-stroke-width" prefix-icon-class="icon-border-width" value="1" min-value="0" drag-step="1" drag-sensitivity="0.25"/>
+                                </ui:VisualElement>
+                                <ui:VisualElement class="inspector-feature__control">
+                                    <ui:Label text="Dash" class="inspector-feature__title"/>
+                                    <svg:SvgDragNumberField name="inspector-dash-length" prefix-icon-class="icon-dash" value="4" min-value="0" drag-step="1" drag-sensitivity="0.25"/>
+                                </ui:VisualElement>
+                                <ui:VisualElement class="inspector-feature__control inspector-feature__control--last">
+                                    <ui:Label text="Gap" class="inspector-feature__title"/>
+                                    <svg:SvgDragNumberField name="inspector-dash-gap" prefix-icon-class="icon-gap" value="2" min-value="0" drag-step="1" drag-sensitivity="0.25"/>
+                                </ui:VisualElement>
+                            </ui:VisualElement>
+                            <ui:VisualElement name="stroke-line-style-row" class="inspector-feature__control-container">
+                                <ui:VisualElement class="inspector-feature__control">
+                                    <ui:Label text="Line Cap" class="inspector-feature__title"/>
+                                    <uie:DropdownField name="inspector-linecap" choices="butt,round,square" index="0" class="svg-editor__select-like-dropdown"/>
+                                </ui:VisualElement>
+                                <ui:VisualElement class="inspector-feature__control inspector-feature__control--last">
+                                    <ui:Label text="Line Join" class="inspector-feature__title"/>
+                                    <uie:DropdownField name="inspector-linejoin" choices="miter,round,bevel" index="0" class="svg-editor__select-like-dropdown"/>
+                                </ui:VisualElement>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:ScrollView>
+            </ui:VisualElement>
+        </ui:TwoPaneSplitView>
+        <ui:VisualElement name="floating-toolbar" class="svg-editor__floating-toolbar">
+            <ui:VisualElement class="svg-editor__floating-toolbar-left">
+                <ui:VisualElement name="toolbar-tools-group" class="svg-editor__tool-group">
+                    <ui:Toggle name="tool-move" tooltip="Move" value="true" class="toggle toggle--text toggle--sm svg-editor__tool-icon"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement class="svg-editor__floating-toolbar-right">
+                <ui:VisualElement class="svg-editor__floating-toolbar-divider"/>
+                <ui:Button name="document-save" text="Save"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

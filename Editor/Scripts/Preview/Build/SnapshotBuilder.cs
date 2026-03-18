@@ -7,6 +7,7 @@ using SvgEditor.DocumentModel;
 using SvgEditor.Preview;
 using SvgEditor.Preview.Geometry;
 using SvgEditor.Preview.Text;
+using Core.UI.Extensions;
 
 using SvgEditor;
 using SvgEditor.Renderer;

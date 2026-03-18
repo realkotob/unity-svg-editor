@@ -7,6 +7,7 @@ using SvgEditor.Workspace.HierarchyPanel;
 using SvgEditor.Workspace.Host;
 using SvgEditor.Document;
 using SvgEditor.Document.Structure.Hierarchy;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Workspace.Coordination
 {

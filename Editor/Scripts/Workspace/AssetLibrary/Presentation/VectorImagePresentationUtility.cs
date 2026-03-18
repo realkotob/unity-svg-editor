@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Workspace.AssetLibrary.Presentation
 {

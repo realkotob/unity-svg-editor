@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Xml;
+using Core.UI.Extensions;
 
 using SvgEditor;
 using SvgEditor.Preview;

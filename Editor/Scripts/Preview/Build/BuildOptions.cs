@@ -1,4 +1,5 @@
 using Unity.VectorGraphics;
+using Core.UI.Extensions;
 
 using SvgEditor;
 

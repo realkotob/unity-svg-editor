@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Unity.VectorGraphics;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Preview.Geometry
 {

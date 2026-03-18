@@ -4,6 +4,7 @@ using UnityEngine;
 using SvgEditor.Document;
 using SvgEditor.Preview;
 using SvgEditor.Workspace.Transforms;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Workspace.Canvas
 {

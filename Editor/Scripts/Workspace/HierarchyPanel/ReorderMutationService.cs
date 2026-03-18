@@ -1,5 +1,6 @@
 using System;
 using SvgEditor.DocumentModel;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Workspace.HierarchyPanel
 {

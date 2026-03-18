@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Core.UI.Extensions;
 
 using SvgEditor;
 using SvgEditor.Preview;

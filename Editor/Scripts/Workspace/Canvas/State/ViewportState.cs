@@ -1,6 +1,6 @@
-using Core.UI.Foundation.Tooling;
 using UnityEngine;
 using SvgEditor.Shared;
+using Core.UI.Extensions;
 
 using SvgEditor;
 using SvgEditor.Preview;

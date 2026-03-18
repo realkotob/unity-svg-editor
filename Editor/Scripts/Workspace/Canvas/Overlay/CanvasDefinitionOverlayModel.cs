@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Unity.VectorGraphics;
 using UnityEngine;
 using SvgEditor.Document.Structure.Hierarchy;
+using Core.UI.Extensions;
 
 using SvgEditor;
 using SvgEditor.Preview;

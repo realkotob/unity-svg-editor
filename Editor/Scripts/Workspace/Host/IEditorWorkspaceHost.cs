@@ -3,6 +3,7 @@ using SvgEditor.Preview;
 using SvgEditor.DocumentModel;
 using SvgEditor.Document;
 using SvgEditor.Workspace.Document;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Workspace.Host
 {

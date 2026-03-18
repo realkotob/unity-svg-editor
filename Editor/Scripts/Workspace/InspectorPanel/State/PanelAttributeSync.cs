@@ -6,6 +6,7 @@ using UnityEngine;
 using SvgEditor.Document;
 using SvgEditor.Document.Structure.Lookup;
 using SvgEditor.Shared;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Workspace.InspectorPanel
 {

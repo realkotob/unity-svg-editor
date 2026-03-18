@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine.UIElements;
-using Core.UI.Foundation;
 using SvgEditor.Workspace.Canvas;
 using SvgEditor.Shared;
 using SvgEditor.Document;
 using SvgEditor.Document.Structure.Hierarchy;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Workspace.HierarchyPanel
 {
@@ -40,13 +40,6 @@ namespace SvgEditor.Workspace.HierarchyPanel
             public const string ITEM_TEXT = ITEM + "--text";
             public const string EXPANDER_PLACEHOLDER = EXPANDER + "--placeholder";
             public const string EXPANDER_EXPANDED = EXPANDER + "--expanded";
-            public const string ICON_SQUARE = ICON + "--square";
-            public const string ICON_CIRCLE = ICON + "--circle";
-            public const string ICON_FILE_TEXT = ICON + "--file-text";
-            public const string ICON_MINUS = ICON + "--minus";
-            public const string ICON_PEN = ICON + "--pen";
-            public const string ICON_FOLDER = ICON + "--folder";
-            public const string ICON_FILE = ICON + "--file";
         }
 
         internal VisualElement Expander { get; }

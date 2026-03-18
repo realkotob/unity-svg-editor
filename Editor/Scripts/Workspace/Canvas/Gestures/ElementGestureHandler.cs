@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
-using Core.UI.Foundation;
 using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.UIElements;
 using SvgEditor.Shared;
 using SvgEditor.Document;
 using SvgEditor.Workspace.Transforms;
+using Core.UI.Extensions;
 
 using SvgEditor;
 using SvgEditor.Preview;

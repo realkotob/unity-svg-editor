@@ -1,4 +1,5 @@
 using SvgEditor;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Workspace.InspectorPanel
 {

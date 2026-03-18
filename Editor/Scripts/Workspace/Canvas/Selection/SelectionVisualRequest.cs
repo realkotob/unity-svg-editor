@@ -1,5 +1,6 @@
 using UnityEngine;
 using SvgEditor.Preview;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Workspace.Canvas
 {

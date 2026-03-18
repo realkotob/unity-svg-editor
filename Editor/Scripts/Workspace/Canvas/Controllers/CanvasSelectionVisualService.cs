@@ -2,6 +2,7 @@ using UnityEngine;
 using SvgEditor;
 using SvgEditor.Preview;
 using SvgEditor.Shared;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Workspace.Canvas
 {

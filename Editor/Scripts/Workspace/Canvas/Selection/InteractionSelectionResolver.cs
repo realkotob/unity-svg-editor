@@ -4,6 +4,7 @@ using UnityEngine;
 using SvgEditor.Shared;
 using SvgEditor.Document;
 using SvgEditor.Document.Structure.Hierarchy;
+using Core.UI.Extensions;
 
 using SvgEditor;
 using SvgEditor.Preview;

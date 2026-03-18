@@ -1,6 +1,7 @@
 using System.Globalization;
 using UnityEngine;
 using SvgEditor.Document;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Workspace.InspectorPanel
 {

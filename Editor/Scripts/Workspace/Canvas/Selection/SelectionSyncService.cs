@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using SvgEditor;
 using SvgEditor.Preview;
 using SvgEditor.Document;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Workspace.Canvas
 {

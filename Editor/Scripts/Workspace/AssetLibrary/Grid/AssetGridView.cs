@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Core.UI.Foundation;
-using Core.UI.Foundation.Tooling;
 using UnityEngine.UIElements;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Workspace.AssetLibrary.Grid
 {
@@ -10,7 +9,7 @@ namespace SvgEditor.Workspace.AssetLibrary.Grid
     public partial class AssetGridView : VisualElement
     {
         #region Constants
-        public static readonly GridLayoutMetrics DefaultGridMetrics = new(51f, 58f, 19f);
+        internal static readonly GridLayoutMetrics DefaultGridMetrics = new(51f, 58f, 19f);
 
         private static class UssClassName
         {

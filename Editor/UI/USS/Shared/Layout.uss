@@ -1,0 +1,4 @@
+.editor__panel-header{
+    /*background-color: var(--color-neutral-950);*/
+    padding: var(--space-2) var(--space-2);
+}

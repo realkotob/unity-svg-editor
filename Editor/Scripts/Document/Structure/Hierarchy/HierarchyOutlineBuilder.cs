@@ -4,6 +4,7 @@ using System.Xml;
 using UnityEngine.UIElements;
 using SvgEditor.Shared;
 using SvgEditor.Document.Structure.Xml;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Document.Structure.Hierarchy
 {

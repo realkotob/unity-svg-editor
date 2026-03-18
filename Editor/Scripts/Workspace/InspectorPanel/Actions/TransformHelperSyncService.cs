@@ -1,6 +1,7 @@
 using System;
 using SvgEditor.Document;
 using SvgEditor.Workspace.Document;
+using Core.UI.Extensions;
 
 using SvgEditor;
 

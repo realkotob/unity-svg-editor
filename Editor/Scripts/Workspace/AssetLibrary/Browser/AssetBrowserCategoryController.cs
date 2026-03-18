@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Core.UI.Foundation.Components.Accordion;
-using Core.UI.Foundation.Tooling;
 using SvgEditor.Workspace.AssetLibrary.Model;
+using Core.UI.Extensions;
+using SvgEditor.Shared;
 
 namespace SvgEditor.Workspace.AssetLibrary.Browser
 {

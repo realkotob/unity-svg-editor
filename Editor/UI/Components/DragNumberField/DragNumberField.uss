@@ -1,0 +1,67 @@
+.drag-number-field {
+    min-width: 0;
+    overflow: visible;
+    font-size: var(--font-size-xs);
+}
+
+.drag-number-field.unity-base-text-field{
+    --unity-selection-color: var(--input);
+    
+}
+
+.drag-number-field .unity-base-text-field__input {
+    height: 100%;
+    padding: 0;
+    flex-direction: row;
+    align-items: center;
+}
+
+.drag-number-field .drag-number-field__prefix {
+    flex-direction: row;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    margin-left:var(--space-0-5);
+    margin-right:var(--space-0-5);
+    cursor: var(--cursor-ew-resize);
+}
+
+.drag-number-field__prefix-label {
+    color: var(--muted-foreground);
+    -unity-font-definition: var(--font-weight-medium);
+}
+
+.drag-number-field__prefix-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    -unity-background-image-tint-color: var(--muted-foreground);
+}
+
+.drag-number-field__prefix--with-icon-text .drag-number-field__prefix-icon {
+    margin-right: var(--space-1);
+}
+
+.drag-number-field__prefix--dragging .drag-number-field__prefix-label {
+    color: var(--foreground);
+}
+
+.drag-number-field__prefix--dragging .drag-number-field__prefix-icon {
+    -unity-background-image-tint-color: var(--foreground);
+}
+
+.drag-number-field:enabled .drag-number-field__prefix,
+.drag-number-field:enabled .drag-number-field__prefix * {
+    cursor: var(--cursor-ew-resize);
+}
+
+.drag-number-field--dragging .unity-base-text-field__input {
+    border-color: var(--primary);
+}
+
+.unity-base-text-field:hover:enabled .unity-base-text-field__input,
+.unity-base-text-field:focus:enabled .unity-base-text-field__input {
+    padding: 0;
+}

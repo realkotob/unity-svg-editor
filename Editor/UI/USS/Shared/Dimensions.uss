@@ -1,0 +1,147 @@
+* {
+    /* ========================================
+     * Spacing Scale
+     * ======================================== */
+    --space-0: 0px;
+    --space-px: 1px;
+    --space-0-5: 2px;
+    --space-1: 4px;
+    --space-1-5: 6px;
+    --space-2: 8px;
+    --space-2-5: 10px;
+    --space-3: 12px;
+    --space-3-5: 14px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-7: 28px;
+    --space-8: 32px;
+    --space-9: 36px;
+    --space-10: 40px;
+    --space-11: 44px;
+    --space-12: 48px;
+    --space-14: 56px;
+    --space-16: 64px;
+    --space-20: 80px;
+    --space-24: 96px;
+    --space-32: 128px;
+
+    /* ========================================
+     * Component Heights
+     * ======================================== */
+
+    /* Button Heights */
+    --height-button-sm: 32px;   /* h-8 */
+    --height-button-md: 36px;   /* h-9 */
+    --height-button-lg: 40px;   /* h-10 */
+    --height-button-xl: 44px;   /* h-11 */
+    --height-button-icon: 36px; /* h-9 */
+
+    /* Input Heights */
+    --height-input-sm: 32px;    /* h-8 */
+    --height-input-md: 36px;    /* h-9 */
+    --height-input-lg: 40px;    /* h-10 */
+
+    /* Toggle Heights */
+    --height-xs: 24px;
+    --height-sm: 32px;
+    --height-md: 36px;
+    --height-lg: 40px;
+
+    /* Select Heights */
+    --height-select-sm: 32px;   /* h-8 */
+    --height-select-md: 36px;   /* h-9 */
+    --height-select-lg: 40px;   /* h-10 */
+
+    /* ========================================
+     * Icon Sizes
+     * ======================================== */
+
+    /* General Icon Sizes */
+    --icon-xs: 7px;
+    --icon-sm: 16px;
+    --icon-md: 16px;
+    --icon-lg: 16px;
+    --icon-xl: 20px;
+    --icon-2xl: 24px;
+
+    /* ========================================
+     * Border Radius (Shadcn v5: base --radius = 0.625rem = 10px)
+     * ======================================== */
+    --radius: 10px;
+    --radius-none: 0px;
+    --radius-sm: 6px;           /* calc(var(--radius) - 4px) */
+    --radius-md: 8px;           /* calc(var(--radius) - 2px) */
+    --radius-lg: 10px;          /* var(--radius) */
+    --radius-xl: 14px;          /* calc(var(--radius) + 4px) */
+
+    /* ========================================
+     * Border Width
+     * ======================================== */
+    --border-width: 1px;
+    --border-width-2: 2px;
+    --border-width-4: 4px;
+    --border-width-8: 8px;
+
+    /* ========================================
+     * Common Widths
+     * ======================================== */
+    --width-xs: 320px;
+    --width-sm: 384px;
+    --width-md: 448px;
+    --width-lg: 512px;
+    --width-xl: 576px;
+    --width-2xl: 672px;
+    --width-full: 100%;
+
+    /* ========================================
+     * Component Dimensions
+     * ======================================== */
+    --icon-base: 16px;
+    --slider-track-height: 6px;
+    --slider-thumb-size: 16px;
+    --scrollbar-size: 8px;
+    --scrollbar-thumb-min: 20px;
+    --progress-height: 8px;
+    --textarea-min-height: 54px;
+    --tab-trigger-height: 30px;
+    --popover-gap: 4px;
+    --radio-indicator-size: 8px;
+    --close-button-size: 24px;
+    --dialog-max-width: 500px;
+    --dropdown-min-width: 200px;
+    --table-cell-min-width: 100px;
+
+    /* ========================================
+     * Z-Index Layers
+     * ======================================== */
+    --z-base: 0;
+    --z-dropdown: 1000;
+    --z-sticky: 1020;
+    --z-fixed: 1030;
+    --z-overlay: 1040;
+    --z-modal: 1050;
+    --z-popover: 1060;
+    --z-tooltip: 1070;
+
+    /* ========================================
+     * Transitions
+     * ======================================== */
+    --transition-fast: 0.15s;
+    --transition-base: 0.2s;
+    --transition-slow: 0.3s;
+    --transition-slower: 0.5s;
+
+    /* Easing Functions */
+    --ease-linear: linear;
+    --ease-in: ease-in;
+    --ease-out: ease-out;
+    --ease-in-out: ease-in-out;
+
+    /* ========================================
+     * Opacity Levels
+     * ======================================== */
+    --opacity-disabled: 0.5;
+    --opacity-hover: 0.8;
+    --opacity-pressed: 0.7;
+}

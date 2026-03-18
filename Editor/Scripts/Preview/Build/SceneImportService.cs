@@ -5,6 +5,7 @@ using System.Reflection;
 using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Core.UI.Extensions;
 
 using SvgEditor;
 using SvgEditor.Preview;

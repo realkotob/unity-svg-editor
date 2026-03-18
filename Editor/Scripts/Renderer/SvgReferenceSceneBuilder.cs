@@ -8,6 +8,7 @@ using SvgEditor.Shared;
 using SvgEditor.Document;
 using SvgEditor.Document.Structure.Hierarchy;
 using SvgEditor.Document.Structure.Lookup;
+using Core.UI.Extensions;
 
 using SvgEditor;
 using SvgEditor.Preview;

@@ -1,8 +1,8 @@
 using System;
-using Core.UI.Foundation.Tooling;
 using UnityEngine;
 using UnityEngine.UIElements;
 using SvgEditor.Shared;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Workspace.Document
 {

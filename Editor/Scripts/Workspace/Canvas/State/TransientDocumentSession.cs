@@ -5,6 +5,7 @@ using SvgEditor.DocumentModel;
 using SvgEditor.Shared;
 using SvgEditor.Document;
 using SvgEditor.Document.Structure.Lookup;
+using Core.UI.Extensions;
 
 using SvgEditor;
 using SvgEditor.Preview;

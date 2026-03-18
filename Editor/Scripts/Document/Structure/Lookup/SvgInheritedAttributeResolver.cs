@@ -2,6 +2,7 @@ using System;
 using Unity.VectorGraphics;
 using UnityEngine;
 using SvgEditor.DocumentModel;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Document.Structure.Lookup
 {

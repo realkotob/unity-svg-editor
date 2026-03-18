@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Core.UI.Foundation.Editor;
 using Unity.VectorGraphics;
 using UnityEditor;
 using UnityEngine;
@@ -15,6 +14,8 @@ using SvgEditor.Workspace.Host;
 using SvgEditor.Workspace.InspectorPanel;
 using SvgEditor.DocumentModel;
 using SvgEditor.Document;
+using Core.UI.Extensions;
+using SvgEditor.Shared;
 
 namespace SvgEditor.Shell
 {

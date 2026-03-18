@@ -1,0 +1,83 @@
+.svg-editor__asset-panel {
+    flex-grow: 1;
+    min-width: 240px;
+    background-color: var(--panel-bg);
+}
+
+.svg-editor__asset-panel .unity-scroll-view__content-viewport {
+    margin: 0;
+}
+
+.svg-editor__asset-panel .unity-scroll-view {
+    border-radius: 0;
+}
+
+.svg-editor__asset-split {
+    flex-grow: 1;
+}
+
+.svg-editor__asset-panel-top,
+.svg-editor__asset-panel-bottom {
+    flex-grow: 1;
+    min-height: 200px;
+    background-color: var(--panel-bg);
+}
+
+.svg-editor__asset-panel-bottom {
+    flex-direction: column;
+}
+
+.svg-editor__asset-section-header,
+.svg-editor__asset-section-actions {
+    flex-direction: row;
+    align-items: center;
+}
+
+.svg-editor__asset-section-header--flush {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.svg-editor__asset-section-actions {
+    margin-left: auto;
+}
+
+.svg-editor__asset-section-title {
+    color: var(--muted-foreground);
+    font-size: var(--font-size-xs);
+    -unity-font-style: bold;
+}
+
+.svg-editor__asset-hierarchy-list,
+.svg-editor__asset-grid-view {
+    flex-grow: 1;
+}
+
+.svg-editor__asset-filter-host {
+    flex-shrink: 0;
+    min-height: 0;
+}
+
+.svg-editor__asset-filter-accordion {
+    flex-shrink: 0;
+    margin: 2px var(--space-1-5);
+}
+
+.svg-editor__asset-filter-accordion .accordion__item-header {
+    align-items: center;
+    padding: 2px 0;
+}
+
+.svg-editor__asset-filter-accordion .accordion__item-header-label {
+    color: var(--muted-foreground);
+    font-size: var(--font-size-xs);
+}
+
+.svg-editor__asset-filter-accordion .accordion__item-content-inner {
+    margin-bottom: var(--space-2);
+}
+
+.svg-editor__asset-filter-host .project-tab__filter-bar {
+    padding: 0;
+    background-color: var(--transparent);
+}

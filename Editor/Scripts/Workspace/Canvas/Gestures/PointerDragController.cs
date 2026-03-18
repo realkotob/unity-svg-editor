@@ -1,8 +1,9 @@
-using Core.UI.Foundation;
 using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.UIElements;
 using SvgEditor.Document;
+using Core.UI.Extensions;
+using SvgEditor.Shared;
 
 using SvgEditor;
 using SvgEditor.Preview;

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine.UIElements;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Document.Structure.Hierarchy
 {

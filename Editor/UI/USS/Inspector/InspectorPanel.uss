@@ -1,0 +1,60 @@
+.inspector-panel {
+    --inspector-panel-width: 230px;
+    
+    width: var(--inspector-panel-width);
+    min-width: var(--inspector-panel-width);
+    max-width: var(--inspector-panel-width);
+    border-radius: 0;
+    border-left-color: var(--border);
+    border-left-width: 1px;
+    background-color: var(--panel-bg);
+}
+
+.inspector-panel .unity-scroll-view__content-viewport {
+    margin: 0;
+}
+
+.inspector-panel Separator{
+    margin: var(--space-1) 0;
+}
+
+.inspector-section {
+    padding: var(--space-2) var(--space-2-5);
+    padding-bottom: 0;
+}
+
+.inspector-section__title{
+    margin-bottom: var(--space-2);
+
+    flex-direction: row;
+    align-items: center;
+
+    color: var(--foreground);
+    -unity-font-style: bold;
+    font-size: var(--font-size-xs);
+}
+
+.inspector-feature__title{
+    margin-bottom: var(--space-1-5);
+    color: var(--muted-foreground);
+    font-size: var(--font-size-xxs);
+}
+
+.inspector-feature__control-container{
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: var(--space-2-5);
+}
+.inspector-feature__control{
+    flex-basis: 0;
+    flex-grow: 1;
+    margin-right: var(--space-1-5);
+}
+.inspector-feature__control--last {
+    margin-right: 0;
+}
+
+.svg-editor__inspector-color-field {
+    width: 100%;
+}
+

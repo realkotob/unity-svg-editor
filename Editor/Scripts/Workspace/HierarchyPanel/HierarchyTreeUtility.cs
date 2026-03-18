@@ -1,27 +1,16 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine.UIElements;
-using Core.UI.Foundation;
 using SvgEditor.Shared;
 using SvgEditor.Document;
 using SvgEditor.Document.Structure.Hierarchy;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Workspace.HierarchyPanel
 {
     internal static class HierarchyTreeUtility
     {
-        private static readonly string[] HierarchyIconVariantClasses =
-        {
-            HierarchyTreeRow.UssClassName.ICON_SQUARE,
-            HierarchyTreeRow.UssClassName.ICON_CIRCLE,
-            HierarchyTreeRow.UssClassName.ICON_FILE_TEXT,
-            HierarchyTreeRow.UssClassName.ICON_MINUS,
-            HierarchyTreeRow.UssClassName.ICON_PEN,
-            HierarchyTreeRow.UssClassName.ICON_FOLDER,
-            HierarchyTreeRow.UssClassName.ICON_FILE
-        };
-
-        private static readonly string[] FoundationHierarchyIconClasses =
+        private static readonly string[] HierarchyIconClasses =
         {
             IconClass.SQUARE,
             IconClass.CIRCLE,
@@ -220,43 +209,24 @@ namespace SvgEditor.Workspace.HierarchyPanel
             if (iconElement == null)
                 return;
 
-            foreach (string className in HierarchyIconVariantClasses)
+            foreach (string className in HierarchyIconClasses)
                 iconElement.RemoveFromClassList(className);
 
-            foreach (string className in FoundationHierarchyIconClasses)
-                iconElement.RemoveFromClassList(className);
-
-            iconElement.AddClass(ResolveHierarchyVariantClass(iconKind));
-            iconElement.AddClass(ResolveFoundationHierarchyIcon(iconKind));
+            iconElement.AddClass(ResolveHierarchyIconClass(iconKind));
         }
 
-        private static string ResolveHierarchyVariantClass(IconKind iconKind)
+        private static string ResolveHierarchyIconClass(IconKind iconKind)
         {
             return iconKind switch
             {
-                IconKind.Square => HierarchyTreeRow.UssClassName.ICON_SQUARE,
-                IconKind.Circle => HierarchyTreeRow.UssClassName.ICON_CIRCLE,
-                IconKind.FileText => HierarchyTreeRow.UssClassName.ICON_FILE_TEXT,
-                IconKind.Minus => HierarchyTreeRow.UssClassName.ICON_MINUS,
-                IconKind.Pen => HierarchyTreeRow.UssClassName.ICON_PEN,
-                IconKind.Mask => HierarchyTreeRow.UssClassName.ICON_FILE,
-                IconKind.Folder => HierarchyTreeRow.UssClassName.ICON_FOLDER,
-                _ => HierarchyTreeRow.UssClassName.ICON_FILE
-            };
-        }
-
-        private static string ResolveFoundationHierarchyIcon(IconKind iconKind)
-        {
-            return iconKind switch
-            {
-                IconKind.Square => IconClass.SQUARE,
-                IconKind.Circle => IconClass.CIRCLE,
+                IconKind.Square   => IconClass.SQUARE,
+                IconKind.Circle   => IconClass.CIRCLE,
                 IconKind.FileText => IconClass.FILE_TEXT,
-                IconKind.Minus => IconClass.MINUS,
-                IconKind.Pen => IconClass.PEN,
-                IconKind.Mask => IconClass.MASK,
-                IconKind.Folder => IconClass.FOLDER,
-                _ => IconClass.FILE
+                IconKind.Minus    => IconClass.MINUS,
+                IconKind.Pen      => IconClass.PEN,
+                IconKind.Mask     => IconClass.MASK,
+                IconKind.Folder   => IconClass.FOLDER,
+                _                 => IconClass.FILE
             };
         }
 

@@ -2,6 +2,7 @@ using System;
 using System.Xml;
 using SvgEditor.DocumentModel;
 using SvgEditor.Document.Structure.Xml;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Document
 {

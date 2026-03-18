@@ -1,5 +1,6 @@
 using System;
 using SvgEditor.Document;
+using Core.UI.Extensions;
 
 namespace SvgEditor.DocumentModel
 {

@@ -1,0 +1,26 @@
+
+* {
+    --cursor-default: arrow;
+    --cursor-pointer: link;
+    --cursor-help: arrow;
+    --cursor-wait: arrow;
+    --cursor-progress: arrow;
+    --cursor-crosshair: move-arrow;
+    --cursor-link: link;
+    --cursor-rotate: rotate-arrow;
+    --cursor-not-allowed: arrow;
+    --cursor-grab: move-arrow;
+    --cursor-open-hand: move-arrow;
+    --cursor-text: text;
+    --cursor-vertical-text: text;
+    --cursor-ew-resize: resize-horizontal;
+    --cursor-ns-resize: resize-vertical;
+    --cursor-col-resize: resize-horizontal;
+    --cursor-row-resize: resize-vertical;
+    --cursor-nesw-resize: resize-up-right;
+    --cursor-nwse-resize: resize-up-left;
+    --cursor-move: move-arrow;
+}
+* {
+    cursor: var(--cursor-default);
+}

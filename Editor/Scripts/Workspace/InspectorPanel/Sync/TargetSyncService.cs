@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using SvgEditor.DocumentModel;
+using Core.UI.Extensions;
 
 using SvgEditor;
 

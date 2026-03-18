@@ -1,0 +1,57 @@
+
+* {
+    --icon-chevron-right: resource("Icons/lucide/chevron-right");
+    --icon-chevron-down: resource("Icons/lucide/chevron-down");
+    --icon-plus: resource("Icons/lucide/plus");
+    --icon-minus: resource("Icons/lucide/minus");
+    --icon-square: resource("Icons/lucide/square");
+    --icon-circle: resource("Icons/lucide/circle");
+    --icon-file-text: resource("Icons/lucide/file-text");
+    --icon-pen: resource("Icons/lucide/pen");
+    --icon-folder: resource("Icons/lucide/folder");
+    --icon-file: resource("Icons/lucide/file");
+    --icon-mask: resource("Icons/Custom/Mask");
+    --icon-align-horizontal-left: resource("Icons/material-symbols/align-horizontal-left-rounded");
+    --icon-align-horizontal-center: resource("Icons/material-symbols/align-horizontal-center-rounded");
+    --icon-align-horizontal-right: resource("Icons/material-symbols/align-horizontal-right-rounded");
+    --icon-align-vertical-top: resource("Icons/material-symbols/align-vertical-top-rounded");
+    --icon-align-vertical-center: resource("Icons/material-symbols/align-vertical-center-rounded");
+    --icon-align-vertical-bottom: resource("Icons/material-symbols/align-vertical-bottom-rounded");
+    --icon-flip-horizontal: resource("Icons/tabler/flip-horizontal");
+    --icon-flip-vertical: resource("Icons/tabler/flip-vertical");
+    --icon-rotate-90: resource("Icons/Custom/Rotate90");
+    --icon-opacity: resource("Icons/Custom/Opacity");
+    --icon-border-width: resource("Icons/Custom/BorderWidth");
+    --icon-dash: resource("Icons/Custom/Dash");
+    --icon-gap: resource("Icons/Custom/Gap");
+    --icon-angle-right: resource("Icons/mdi/angle-right");
+    --icon-maximize: resource("Icons/lucide/maximize");
+}
+
+.icon-chevron-right { background-image: var(--icon-chevron-right); }
+.icon-plus { background-image: var(--icon-plus); }
+.icon-minus { background-image: var(--icon-minus); }
+.icon-square { background-image: var(--icon-square); }
+.icon-circle { background-image: var(--icon-circle); }
+.icon-file-text { background-image: var(--icon-file-text); }
+.icon-pen { background-image: var(--icon-pen); }
+.icon-folder { background-image: var(--icon-folder); }
+.icon-file { background-image: var(--icon-file); }
+.icon-mask { background-image: var(--icon-mask); }
+
+.icon-align-horizontal-left { background-image: var(--icon-align-horizontal-left); }
+.icon-align-horizontal-center { background-image: var(--icon-align-horizontal-center); }
+.icon-align-horizontal-right { background-image: var(--icon-align-horizontal-right); }
+.icon-align-vertical-top { background-image: var(--icon-align-vertical-top); }
+.icon-align-vertical-center { background-image: var(--icon-align-vertical-center); }
+.icon-align-vertical-bottom { background-image: var(--icon-align-vertical-bottom); }
+.icon-flip-horizontal { background-image: var(--icon-flip-horizontal); }
+.icon-flip-vertical { background-image: var(--icon-flip-vertical); }
+.icon-rotate-90 { background-image: var(--icon-rotate-90); }
+
+.icon-opacity { background-image: var(--icon-opacity); }
+.icon-border-width { background-image: var(--icon-border-width); }
+.icon-dash { background-image: var(--icon-dash); }
+.icon-gap { background-image: var(--icon-gap); }
+.icon-angle-right { background-image: var(--icon-angle-right); }
+.icon-maximize { background-image: var(--icon-maximize); }

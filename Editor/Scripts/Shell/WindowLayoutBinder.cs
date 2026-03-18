@@ -1,7 +1,5 @@
 using System;
-using Core.UI.Foundation;
-using Core.UI.Foundation.Editor;
-using InspectorSectionClasses = Core.UI.Foundation.Tooling.InspectorSectionClasses;
+using InspectorSectionClasses = SvgEditor.Shared.InspectorSectionClasses;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -10,13 +8,15 @@ using SvgEditor.Workspace.Canvas;
 using SvgEditor.Workspace.Coordination;
 using SvgEditor.Workspace.Document;
 using SvgEditor.Workspace.InspectorPanel;
+using Core.UI.Extensions;
+using SvgEditor.Shared;
 
 namespace SvgEditor.Shell
 {
     internal static class WindowLayoutResources
     {
-        private const string THEME_RESOURCE_PATH = "Theme/SvgEditorTheme";
-        private const string WINDOW_RESOURCE_PATH = "UXML/SvgEditorWindow";
+        private const string THEME_RESOURCE_PATH = "SvgEditorTheme";
+        private const string WINDOW_RESOURCE_PATH = "SvgEditorWindow";
 
         public static bool TryBuildRootVisualTree(VisualElement root, out string error)
         {
@@ -44,6 +44,7 @@ namespace SvgEditor.Shell
     {
         private static class ElementName
         {
+            public const string ASSET_LIBRARY_REFRESH_BUTTON = "asset-library-refresh-button";
             public const string CANVAS_STAGE_VIEW = "canvas-stage-view";
             public const string MOVE_TOOL = "tool-move";
         }
@@ -123,8 +124,6 @@ namespace SvgEditor.Shell
         private void BindUxmlLayout()
         {
             ApplyToolbarIcons();
-            ApplyPositionIcons();
-            ApplyAttributeIcons();
             BindPanels();
             BindCanvasStage();
             _inspectorPanelController.Bind(_root, PanelHost);
@@ -171,28 +170,7 @@ namespace SvgEditor.Shell
 
         private void ApplyToolbarIcons()
         {
-            EditorFoundationIconUtility.ApplyToggleVectorImage(_root, ElementName.MOVE_TOOL, IconPath.Lucide.Move);
-        }
-
-        private void ApplyPositionIcons()
-        {
-            EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.POSITION_ALIGN_LEFT, IconClass.ALIGN_HORIZONTAL_LEFT);
-            EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.POSITION_ALIGN_CENTER, IconClass.ALIGN_HORIZONTAL_CENTER);
-            EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.POSITION_ALIGN_RIGHT, IconClass.ALIGN_HORIZONTAL_RIGHT);
-            EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.POSITION_ALIGN_TOP, IconClass.ALIGN_VERTICAL_TOP);
-            EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.POSITION_ALIGN_MIDDLE, IconClass.ALIGN_VERTICAL_CENTER);
-            EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.POSITION_ALIGN_BOTTOM, IconClass.ALIGN_VERTICAL_BOTTOM);
-            EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.POSITION_ROTATE_CLOCKWISE_90, IconClass.ROTATE_90);
-            EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.POSITION_FLIP_HORIZONTAL, IconClass.FLIP_HORIZONTAL);
-            EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.POSITION_FLIP_VERTICAL, IconClass.FLIP_VERTICAL);
-        }
-
-        private void ApplyAttributeIcons()
-        {
-            EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.FILL_ADD_BUTTON, IconClass.PLUS);
-            EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.FILL_REMOVE_BUTTON, IconClass.MINUS);
-            EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.STROKE_ADD_BUTTON, IconClass.PLUS);
-            EditorFoundationIconUtility.ApplyButtonIconClass(_root, FormControls.ElementName.STROKE_REMOVE_BUTTON, IconClass.MINUS);
+            EditorFoundationIconUtility.ApplyToggleVectorImage(_root, ElementName.MOVE_TOOL, SvgEditorIconPath.Lucide.Move);
         }
     }
 }

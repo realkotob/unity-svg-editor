@@ -3,6 +3,7 @@ using Unity.VectorGraphics;
 using UnityEngine;
 using SvgEditor.Preview;
 using SvgEditor.Workspace.Canvas;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Shell
 {

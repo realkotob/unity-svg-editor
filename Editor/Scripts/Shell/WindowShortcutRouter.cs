@@ -2,6 +2,7 @@ using System;
 using UnityEditor;
 using UnityEngine;
 using SvgEditor.Document;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Shell
 {

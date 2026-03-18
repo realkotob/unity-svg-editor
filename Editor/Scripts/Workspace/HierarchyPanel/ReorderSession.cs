@@ -1,6 +1,7 @@
-using Core.UI.Foundation;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Core.UI.Extensions;
+using SvgEditor.Shared;
 
 namespace SvgEditor.Workspace.HierarchyPanel
 {

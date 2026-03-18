@@ -1,6 +1,7 @@
 using System;
 using UnityEngine.UIElements;
 using SvgEditor.Workspace.HierarchyPanel;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Workspace.Coordination
 {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Xml;
 using SvgEditor.Shared;
 using SvgEditor.Document.Structure.Xml;
+using Core.UI.Extensions;
 
 using SvgEditor;
 using SvgEditor.Preview;

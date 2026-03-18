@@ -1,0 +1,135 @@
+.svg-color-field {
+    height: 30px;
+    min-width: 0;
+    margin: 0;
+}
+
+.svg-color-field > .unity-base-field__label {
+    display: none;
+}
+
+.svg-color-field > .svg-color-field__input {
+    flex-direction: row;
+    align-items: center;
+    padding: 0;
+    border-width: var(--border-width);
+    border-color: var(--input);
+    border-radius: var(--radius);
+    background-color: var(--input-30);
+}
+
+.svg-color-field:hover:enabled > .svg-color-field__input {
+    border-color: var(--border-hover);
+}
+
+.svg-color-field.unity-base-field__aligned--focus:enabled > .svg-color-field__input {
+    border-color: var(--primary);
+}
+
+.svg-color-field__swatch-field {
+    height: 100%;
+    padding: var(--space-1) var(--space-2) ;
+    margin:0;
+    overflow: hidden;
+    align-items: center;
+}
+
+.svg-color-field__swatch-field > .unity-base-field__label {
+    display: none;
+}
+
+.svg-color-field__swatch-field > .unity-base-field__input {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border-width: 0;
+    border-radius: 6px;
+    justify-content: center;
+    background-color: transparent;
+}
+
+.svg-color-field__swatch-field .unity-color-field__eyedropper,
+.svg-color-field__swatch-field .unity-color-field__hdr {
+    display: none;
+}
+
+.svg-color-field__swatch-field .unity-color-field__color-container {
+    margin: 0;
+}
+
+.svg-color-field__swatch-field .unity-color-field__color,
+.svg-color-field__swatch-field .unity-color-field__color-container {
+    width: 24px;
+    min-width: 24px;
+    height: 24px;
+}
+
+.svg-color-field__hex-field {
+    height: 100%;
+    flex-grow: 1;
+    margin: 0;
+}
+
+.svg-color-field__hex-field > .unity-base-field__label {
+    display: none;
+}
+
+.svg-color-field__hex-field > .unity-base-text-field__input {
+    height: 100%;
+    padding: 0;
+    border-width: 0;
+    background-color: transparent;
+    color: var(--foreground);
+    font-size: var(--font-size-sm);
+    -unity-font-definition: var(--font-weight-regular);
+}
+
+.svg-color-field__hex-field .unity-text-element--inner-input-field-component {
+    color: var(--foreground);
+}
+
+.svg-color-field__alpha-container {
+    height: 100%;
+    flex-direction: row;
+    align-items: stretch;
+    flex-shrink: 0;
+    margin-left: var(--space-2);
+}
+
+.svg-color-field__alpha-divider {
+    width: 1px;
+    margin-right: var(--space-2);
+    background-color: var(--border);
+}
+
+.svg-color-field__alpha-field {
+    width: 58px;
+    margin: 0;
+}
+
+.svg-color-field__alpha-field > .unity-base-field__label {
+    display: none;
+}
+
+.svg-color-field__alpha-field .unity-base-text-field__input {
+    padding: 0;
+    border-width: 0;
+    background-color: transparent;
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+}
+
+.svg-color-field__hex-field:hover:enabled .unity-text-field__input,
+.svg-color-field__alpha-field:hover:enabled .unity-base-text-field__input {
+    border-width: 0;
+    border-color: transparent;
+}
+
+.svg-color-field__alpha-field .drag-number-field__prefix {
+    width: auto;
+    margin: 0 var(--space-2);
+}
+
+.svg-color-field__alpha-field .unity-text-element--inner-input-field-component {
+    color: var(--foreground);
+}

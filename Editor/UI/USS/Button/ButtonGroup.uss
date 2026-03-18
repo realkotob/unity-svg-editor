@@ -1,0 +1,26 @@
+.button-group {
+    flex-direction: row;
+    align-self: flex-start;
+    background-color: var(--input-30);
+    border-radius: var(--radius);
+    border-width: var(--border-width);
+    border-color: var(--border);
+    overflow: hidden;
+}
+
+.button-group > .unity-button {
+    border-radius: 0;
+    border-width: 0;
+    border-left-width: var(--border-width);
+    border-left-color: var(--border);
+}
+
+.svg-editor__position-button-group {
+    flex-basis: 0;
+    flex-grow: 1;
+    margin-right: var(--space-1-5);
+}
+
+.svg-editor__position-button-group--last {
+    margin-right: 0;
+}

@@ -4,6 +4,7 @@ using System.Xml;
 using SvgEditor.Shared;
 using SvgEditor.Document;
 using SvgEditor.Document.Structure.Xml;
+using Core.UI.Extensions;
 
 namespace SvgEditor.DocumentModel
 {

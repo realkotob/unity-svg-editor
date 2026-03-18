@@ -5,6 +5,7 @@ using Unity.VectorGraphics;
 using UnityEngine;
 using SvgEditor.Document.Structure.Lookup;
 using SvgEditor.Shared;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Document
 {

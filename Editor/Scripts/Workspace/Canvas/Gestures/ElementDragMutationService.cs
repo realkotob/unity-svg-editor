@@ -6,6 +6,7 @@ using SvgEditor.DocumentModel;
 using SvgEditor.Document;
 using SvgEditor.Shared;
 using SvgEditor.Workspace.Transforms;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Workspace.Canvas
 {

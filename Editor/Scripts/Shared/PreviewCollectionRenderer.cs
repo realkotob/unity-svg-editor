@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using Core.UI.Foundation;
 using UnityEngine.UIElements;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Shared
 {

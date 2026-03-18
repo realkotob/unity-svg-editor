@@ -1,14 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Core.UI.Foundation.Components.Accordion;
-using Core.UI.Foundation.Tooling;
 using UnityEngine.UIElements;
 using SvgEditor.Document;
+using SvgEditor.Shared;
 using SvgEditor.Workspace.AssetLibrary.Grid;
 using SvgEditor.Workspace.AssetLibrary.Model;
 using SvgEditor.Workspace.AssetLibrary.Presentation;
-using SvgEditor.Shared;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Workspace.AssetLibrary.Browser
 {

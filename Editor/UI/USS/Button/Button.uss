@@ -1,0 +1,129 @@
+.unity-button {
+    /* Button-specific local variables that reference global theme */
+    --button-background-color: var(--transparent);
+    --button-background-color-hover: var(--input-30);
+    --button-background-color-active: var(--input-50);
+    --button-background-color-disabled: rgba(0, 0, 0, 0);
+    
+    --button-foreground-color: var(--foreground);
+    --button-foreground-color-hover: var(--foreground);
+    --button-border-color: var(--transparent);
+
+    --padding-x:0;
+    --padding-y:0;
+    --button-border-width: 0;
+
+    --button-size : 26px;
+
+    /* Layout */
+    --icon-size : 16px;
+    flex-direction: row;
+    flex-grow: 1;
+    margin: 0;
+    padding: 0 var(--padding-x);
+    height: var(--button-size);
+
+    /* Typography */
+    -unity-font-definition: var(--font-weight-medium);
+    -unity-font-style: normal;
+    -unity-text-align: middle-center;
+
+    /* Colors - Apply local variables directly */
+    background-color: var(--button-background-color);
+    background-size: var(--icon-size);
+    -unity-background-image-tint-color: var(--button-foreground-color);
+    color: var(--button-foreground-color);
+
+    /* Borders */
+    border-width: var(--button-border-width);
+    border-color: var(--button-border-color);
+    border-radius: var(--radius);
+
+    /* Cursor */
+    cursor: var(--cursor-pointer);
+
+    /* Transition */
+    transition-property: background-color;
+    transition-duration: var(--transition-fast);
+    transition-timing-function: var(--ease-in-out);
+}
+
+.unity-button:hover:enabled {
+    scale: 1.02 1.02;
+    background-color: var(--button-background-color-hover);
+    color: var(--button-foreground-color-hover);
+    border-color: var(--button-border-color);
+}
+
+/* Active state */
+.unity-button:active:enabled {
+    scale: 0.98;
+    background-color: var(--button-background-color-active);
+    border-color: var(--button-border-color);
+}
+
+/* Focus state */
+.unity-button:focus:enabled {
+    border-color: var(--button-border-color);
+}
+
+/* Disabled state */
+.unity-button:disabled{
+    opacity: var(--opacity-disabled);
+    cursor: var(--cursor-default);
+}
+
+.button-compact{
+    flex-grow: 0;
+    width: var(--button-size);
+}
+
+.asset-refresh-button {
+    margin-left: auto;
+    --button-size: 16px;
+    --icon-size: 12px;
+}
+
+.svg-editor__attribute-button--last {
+    margin-right: 0;
+}
+
+.svg-editor__attribute-button--header {
+    margin-left: auto;
+}
+
+.svg-editor__canvas-document-reset-button,
+.svg-editor__canvas-zoom-reset-button {
+    border-width: 0;
+    color: var(--foreground);
+    background-color: var(--editor-surface-soft);
+}
+
+.svg-editor__canvas-document-reset-button:enabled,
+.svg-editor__canvas-zoom-reset-button:enabled {
+    cursor: var(--cursor-link);
+}
+
+.svg-editor__canvas-document-reset-button:hover:enabled,
+.svg-editor__canvas-zoom-reset-button:hover:enabled {
+    background-color: var(--editor-surface-soft-strong);
+}
+
+.svg-editor__canvas-document-reset-button:disabled,
+.svg-editor__canvas-zoom-reset-button:disabled {
+    opacity: 0.45;
+}
+
+.svg-editor__canvas-document-reset-button {
+    height: 26px;
+    margin-right: var(--space-1-5);
+    padding: 0 10px;
+    border-radius: 9px;
+}
+
+.svg-editor__canvas-zoom-reset-button {
+    min-width: 34px;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: 9px;
+}

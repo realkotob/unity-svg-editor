@@ -1,5 +1,6 @@
 using System;
 using UnityEditor;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Shared
 {

@@ -5,6 +5,7 @@ using SvgEditor.Document;
 using SvgEditor.Document.Structure.Hierarchy;
 using SvgEditor.DocumentModel;
 using SvgEditor.Preview;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Workspace.Canvas
 {

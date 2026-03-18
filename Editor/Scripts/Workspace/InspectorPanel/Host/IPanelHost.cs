@@ -4,6 +4,7 @@ using UnityEngine;
 using SvgEditor.Document;
 using SvgEditor.Workspace.Coordination;
 using SvgEditor.Workspace.Document;
+using Core.UI.Extensions;
 
 using SvgEditor;
 

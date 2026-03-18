@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using UnityEngine;
+using Core.UI.Extensions;
 
 using SvgEditor;
 using SvgEditor.Preview;

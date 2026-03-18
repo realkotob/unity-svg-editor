@@ -2,9 +2,7 @@
     "name": "SvgEditor.Editor",
     "rootNamespace": "SvgEditor.Editor",
     "references": [
-        "Core.UI.Foundation.Tooling",
-        "Core.UI.Foundation.Editor",
-        "Core.UI.Foundation.Runtime"
+        "Core.UI.Extensions"
     ],
     "includePlatforms": [
         "Editor"
