@@ -74,6 +74,7 @@
     --radius-md: 8px;           /* calc(var(--radius) - 2px) */
     --radius-lg: 10px;          /* var(--radius) */
     --radius-xl: 14px;          /* calc(var(--radius) + 4px) */
+    --radius-full: 9999px;
 
     /* ========================================
      * Border Width

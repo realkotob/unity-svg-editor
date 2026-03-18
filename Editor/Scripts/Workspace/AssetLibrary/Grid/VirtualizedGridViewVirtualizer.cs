@@ -173,6 +173,10 @@ namespace SvgEditor.Workspace.AssetLibrary.Grid
 
             cell.Callback(OnCellMouseEnter);
             cell.Callback(OnCellMouseLeave);
+            cell.Callback(OnCellPointerDown);
+            cell.Callback(OnCellPointerUp);
+            cell.Callback(OnCellPointerCancel);
+            cell.Callback(OnCellPointerCaptureOut);
 
             _viewport.Add(cell);
             return cell;
@@ -258,6 +262,7 @@ namespace SvgEditor.Workspace.AssetLibrary.Grid
 
             bool isSelected = _selectedIndices != null && _selectedIndices.Contains(dataIndex);
             cell.EnableClass(VirtualizedGridView.UssClassName.CELL_SELECTED, isSelected);
+            cell.EnableClass(VirtualizedGridView.UssClassName.CELL_PRESSED, false);
 
             Button button = cell.Q<Button>(CellActionButtonName);
             if (button != null)
@@ -536,6 +541,38 @@ namespace SvgEditor.Workspace.AssetLibrary.Grid
             if (evt.currentTarget is VisualElement cell)
             {
                 ShowCellAction(cell, hovered: false);
+            }
+        }
+
+        private static void OnCellPointerDown(PointerDownEvent evt)
+        {
+            if (evt.currentTarget is VisualElement cell && evt.button == 0)
+            {
+                cell.EnableClass(VirtualizedGridView.UssClassName.CELL_PRESSED, true);
+            }
+        }
+
+        private static void OnCellPointerUp(PointerUpEvent evt)
+        {
+            if (evt.currentTarget is VisualElement cell)
+            {
+                cell.EnableClass(VirtualizedGridView.UssClassName.CELL_PRESSED, false);
+            }
+        }
+
+        private static void OnCellPointerCancel(PointerCancelEvent evt)
+        {
+            if (evt.currentTarget is VisualElement cell)
+            {
+                cell.EnableClass(VirtualizedGridView.UssClassName.CELL_PRESSED, false);
+            }
+        }
+
+        private static void OnCellPointerCaptureOut(PointerCaptureOutEvent evt)
+        {
+            if (evt.currentTarget is VisualElement cell)
+            {
+                cell.EnableClass(VirtualizedGridView.UssClassName.CELL_PRESSED, false);
             }
         }
     }

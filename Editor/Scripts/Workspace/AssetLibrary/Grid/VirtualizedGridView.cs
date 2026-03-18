@@ -18,10 +18,10 @@ namespace SvgEditor.Workspace.AssetLibrary.Grid
             public const string SCROLL = ElementPrefix + "scroll";
             public const string VIEWPORT = ElementPrefix + "viewport";
             public const string EMPTY = ElementPrefix + "empty";
-            public const string SELECTION_RECT = ElementPrefix + "selection-rect";
             public const string HEADER = ElementPrefix + "header";
             public const string CELL = ElementPrefix + "cell";
             public const string CELL_SELECTED = CELL + "--selected";
+            public const string CELL_PRESSED = CELL + "--pressed";
             public const string CELL_ICON = ElementPrefix + "cell-icon";
             public const string CELL_CHECK = ElementPrefix + "cell-check";
             public const string CELL_BADGE = ElementPrefix + "cell-badge";
@@ -36,7 +36,6 @@ namespace SvgEditor.Workspace.AssetLibrary.Grid
         private readonly ScrollView _scrollView;
         private readonly VisualElement _viewport;
         private readonly Label _emptyLabel;
-        private readonly VisualElement _selectionRect;
         private readonly GridLayoutEngine _layout;
         private readonly VirtualizedGridViewVirtualizer _virtualizer;
         private readonly List<GridViewItem> _displayItems = new();
@@ -74,12 +73,6 @@ namespace SvgEditor.Workspace.AssetLibrary.Grid
             _emptyLabel.AddClass(UssClassName.EMPTY);
             _emptyLabel.style.display = DisplayStyle.None;
             hierarchy.Add(_emptyLabel);
-
-            _selectionRect = new VisualElement();
-            _selectionRect.AddClass(UssClassName.SELECTION_RECT);
-            _selectionRect.style.position = Position.Absolute;
-            _selectionRect.pickingMode = PickingMode.Ignore;
-            _selectionRect.style.display = DisplayStyle.None;
 
             _virtualizer = new VirtualizedGridViewVirtualizer(_viewport, _scrollView);
             _virtualizer.OnItemActionTriggered += ForwardItemActionTriggered;
@@ -267,11 +260,9 @@ namespace SvgEditor.Workspace.AssetLibrary.Grid
         private void OnScrollViewGeometryChanged(GeometryChangedEvent _)
         {
             VisualElement viewport = _scrollView.contentViewport;
-            if (_selectionRect.parent == null)
+            if (_dragHandler == null)
             {
-                viewport.Add(_selectionRect);
-                _dragHandler = new DragSelectionHandler(viewport, _scrollView, _layout.DataIndexAtContent, _selectionRect);
-                _dragHandler.HitTestRect = _layout.HitTestRect;
+                _dragHandler = new DragSelectionHandler(viewport, _scrollView, _layout.DataIndexAtContent);
                 _dragHandler.OnItemClicked += OnDragItemClicked;
                 _dragHandler.OnItemDoubleClicked += OnDragItemDoubleClicked;
                 _dragHandler.OnSelectionChanged += OnDragSelectionChanged;

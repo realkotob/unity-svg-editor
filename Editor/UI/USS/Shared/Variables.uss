@@ -2,17 +2,36 @@
     --gray-800: rgb(39, 39, 42);
 }
 
-*{
-    --panel-bg: var(--gray-800);
+* {
+    --white: rgb(255, 255, 255);
+    --black: rgb(0, 0, 0);
+    --transparent: rgba(0, 0, 0, 0);
+}
+
+* {
+    --background: rgb(10, 10, 10);
     --foreground: rgb(250, 250, 250);
     --muted-foreground: rgb(161, 161, 161);
-    --border: rgba(255, 255, 255, 0.1);
 
+    --primary: rgb(229, 229, 229);
+    --primary-5: rgba(229, 229, 229, 0.05);
+    --primary-20: rgba(229, 229, 229, 0.2);
+    --primary-30: rgba(229, 229, 229, 0.3);
+
+    --secondary: rgb(38, 38, 38);
+    --accent: rgb(64, 64, 64);
+
+    --info: rgb(59, 130, 246);
+    --success: rgb(34, 197, 94);
     --warning: rgb(234, 179, 8);
 
+    --border: rgba(255, 255, 255, 0.1);
+    --border-hover: rgb(51, 51, 51);
     --input: rgba(255, 255, 255, 0.15);
-    --input-30: rgba(255, 255, 255, 0.045);           /* Input with 30% opacity */
-    --input-50: rgba(255, 255, 255, 0.075);           /* Input with 50% opacity */
+    --input-30: rgba(255, 255, 255, 0.045);
+    --input-50: rgba(255, 255, 255, 0.075);
+
+    --panel-bg: var(--gray-800);
 }
 
 *{

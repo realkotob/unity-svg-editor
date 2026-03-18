@@ -18,10 +18,10 @@
 @import url("/Assets/unity-svg-editor/Editor/UI/USS/Shell/Shell.uss");
 @import url("/Assets/unity-svg-editor/Editor/UI/USS/Shell/ToolbarPanel.uss");
 @import url("/Assets/unity-svg-editor/Editor/UI/Components/Separator/Separator.uss");
+@import url("/Assets/unity-svg-editor/Editor/UI/Components/Accordion/Accordion.uss");
 @import url("/Assets/unity-svg-editor/Editor/UI/Components/DragNumberField/Input.uss");
 @import url("/Assets/unity-svg-editor/Editor/UI/Components/DragNumberField/DragNumberField.uss");
 @import url("/Assets/unity-svg-editor/Editor/UI/Components/ColorField/ColorField.uss");
 @import url("/Assets/unity-svg-editor/Editor/UI/USS/Inspector/InspectorPanel.uss");
-
 
 
