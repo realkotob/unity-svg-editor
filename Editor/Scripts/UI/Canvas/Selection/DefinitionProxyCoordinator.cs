@@ -168,13 +168,6 @@ namespace SvgEditor.UI.Canvas
                 selectionVisual.RotationPivotViewport = rotationPivotViewport;
             }
 
-            if (pointerDragController.DragMode == DragMode.RotateElement)
-            {
-                selectionVisual.HasRotationPivot = true;
-                selectionVisual.RotationPivotViewport = pointerDragController.DragRotationPivotViewport;
-                selectionVisual.RotationDegrees = pointerDragController.CurrentRotationAngle;
-            }
-
             return true;
         }
 

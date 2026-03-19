@@ -99,7 +99,8 @@ namespace SvgEditor.UI.Canvas
                             rotatedViewportRect,
                             rotatedSceneRect.size,
                             false));
-                    ApplyDraggingRotationVisual(rotationVisual);
+                    // The live preview bounds already include the active rotation.
+                    // Reapplying the drag angle here skews the bbox until mouseup.
                     _overlayController.SetSelection(rotationVisual);
                     _overlayController.SetDefinitionOverlays(_definitionProxyCoordinator.BuildDraggedOverlays(_host, _pointerDragController, _sceneProjector));
                     return true;
