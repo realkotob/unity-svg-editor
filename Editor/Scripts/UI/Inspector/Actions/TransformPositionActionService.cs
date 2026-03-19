@@ -16,6 +16,12 @@ namespace SvgEditor.UI.Inspector
 {
     internal sealed class TransformPositionActionService
     {
+        private enum SelectionTransformMutationKind
+        {
+            Rotate,
+            Scale
+        }
+
         private delegate bool TryMutateSelectedElement(
             SvgMutator svgMutator,
             SvgDocumentModel workingDocumentModel,
@@ -223,7 +229,14 @@ namespace SvgEditor.UI.Inspector
                 return;
             }
 
-            if (!TryBuildMultiScaleSource(new[] { targetKey }, scale, sceneRect.center, out string updatedSource, out string error))
+            if (!TryBuildSelectionTransformSource(
+                    new[] { targetKey },
+                    SelectionTransformMutationKind.Scale,
+                    sceneRect.center,
+                    0f,
+                    scale,
+                    out string updatedSource,
+                    out string error))
             {
                 Host?.UpdateSourceStatus(
                     string.IsNullOrWhiteSpace(error)
@@ -274,7 +287,14 @@ namespace SvgEditor.UI.Inspector
             string error = string.Empty;
             if (Host == null ||
                 !Host.TryGetCurrentSelectionSceneRect(out Rect selectionRect) ||
-                !TryBuildMultiRotationSource(selectedElementKeys, deltaDegrees, selectionRect.center, out string updatedSource, out error))
+                !TryBuildSelectionTransformSource(
+                    selectedElementKeys,
+                    SelectionTransformMutationKind.Rotate,
+                    selectionRect.center,
+                    deltaDegrees,
+                    default,
+                    out string updatedSource,
+                    out error))
             {
                 Host?.UpdateSourceStatus(
                     string.IsNullOrWhiteSpace(error)
@@ -291,7 +311,14 @@ namespace SvgEditor.UI.Inspector
             string error = string.Empty;
             if (Host == null ||
                 !Host.TryGetCurrentSelectionSceneRect(out Rect selectionRect) ||
-                !TryBuildMultiScaleSource(selectedElementKeys, scale, selectionRect.center, out string updatedSource, out error))
+                !TryBuildSelectionTransformSource(
+                    selectedElementKeys,
+                    SelectionTransformMutationKind.Scale,
+                    selectionRect.center,
+                    0f,
+                    scale,
+                    out string updatedSource,
+                    out error))
             {
                 Host?.UpdateSourceStatus(
                     string.IsNullOrWhiteSpace(error)
@@ -366,51 +393,12 @@ namespace SvgEditor.UI.Inspector
                 out error);
         }
 
-        private bool TryBuildMultiRotationSource(
+        private bool TryBuildSelectionTransformSource(
             IReadOnlyList<string> selectedElementKeys,
+            SelectionTransformMutationKind kind,
+            Vector2 pivotWorld,
             float deltaDegrees,
-            Vector2 pivotWorld,
-            out string updatedSource,
-            out string error)
-        {
-            return TryBuildSelectionSource(
-                selectedElementKeys,
-                (
-                    SvgMutator svgMutator,
-                    SvgDocumentModel workingDocumentModel,
-                    string elementKey,
-                    out MutationResult result,
-                    out bool applied,
-                    out string mutationError) =>
-                {
-                    result = default;
-                    applied = false;
-                    mutationError = string.Empty;
-
-                    if (string.IsNullOrWhiteSpace(elementKey) ||
-                        !Host.TryGetElementParentWorldTransform(elementKey, out Matrix2D parentWorldTransform))
-                    {
-                        mutationError = $"Could not resolve parent transform for '{elementKey}'.";
-                        return false;
-                    }
-
-                    applied = svgMutator.TryPrependElementRotation(
-                        workingDocumentModel,
-                        new RotateElementRequest(elementKey, deltaDegrees, ElementRotationUtility.ToParentSpacePoint(parentWorldTransform, pivotWorld)),
-                        out result);
-                    if (!applied)
-                        mutationError = result.Error;
-
-                    return applied;
-                },
-                out updatedSource,
-                out error);
-        }
-
-        private bool TryBuildMultiScaleSource(
-            IReadOnlyList<string> selectedElementKeys,
             Vector2 scale,
-            Vector2 pivotWorld,
             out string updatedSource,
             out string error)
         {
@@ -435,10 +423,19 @@ namespace SvgEditor.UI.Inspector
                         return false;
                     }
 
-                    applied = svgMutator.TryPrependElementScale(
-                        workingDocumentModel,
-                        new ScaleElementRequest(elementKey, scale, ElementRotationUtility.ToParentSpacePoint(parentWorldTransform, pivotWorld)),
-                        out result);
+                    Vector2 parentSpacePivot = ElementRotationUtility.ToParentSpacePoint(parentWorldTransform, pivotWorld);
+                    applied = kind switch
+                    {
+                        SelectionTransformMutationKind.Rotate => svgMutator.TryPrependElementRotation(
+                            workingDocumentModel,
+                            new RotateElementRequest(elementKey, deltaDegrees, parentSpacePivot),
+                            out result),
+                        SelectionTransformMutationKind.Scale => svgMutator.TryPrependElementScale(
+                            workingDocumentModel,
+                            new ScaleElementRequest(elementKey, scale, parentSpacePivot),
+                            out result),
+                        _ => false
+                    };
                     if (!applied)
                         mutationError = result.Error;
 

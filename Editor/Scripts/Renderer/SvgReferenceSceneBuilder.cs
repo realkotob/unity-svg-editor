@@ -19,13 +19,18 @@ namespace SvgEditor.Renderer
     internal sealed class SvgReferenceSceneBuilder
     {
         private readonly SvgShapeBuilder _shapeBuilder;
+        private static readonly CanvasDefinitionOverlayKind[] ReferenceKinds =
+        {
+            CanvasDefinitionOverlayKind.Mask,
+            CanvasDefinitionOverlayKind.ClipPath
+        };
 
         public SvgReferenceSceneBuilder(SvgShapeBuilder shapeBuilder)
         {
             _shapeBuilder = shapeBuilder;
         }
 
-        public bool TryAttachMask(
+        public bool TryAttachReferenceClipper(
             SvgDocumentModel documentModel,
             IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
             SvgNodeModel node,
@@ -33,56 +38,19 @@ namespace SvgEditor.Renderer
             out string error)
         {
             error = string.Empty;
-            if (!AttributeUtility.TryGetAttribute(node?.RawAttributes, SvgAttributeName.MASK, out var maskValue))
+            if (sceneNode == null || node == null || nodesByXmlId == null)
             {
                 return true;
             }
 
-            if (!NodeLookup.TryExtractFragmentId(maskValue, out var fragmentId) ||
-                nodesByXmlId == null ||
-                !nodesByXmlId.TryGetValue(fragmentId, out var maskNode) ||
-                !string.Equals(maskNode.TagName, SvgTagName.MASK, StringComparison.OrdinalIgnoreCase))
+            for (int index = 0; index < ReferenceKinds.Length; index++)
             {
-                return false;
+                if (!TryAttachReferenceClipper(documentModel, nodesByXmlId, node, sceneNode, ReferenceKinds[index], out error))
+                {
+                    return false;
+                }
             }
 
-            if (!TryBuildMaskClipNode(documentModel, nodesByXmlId, maskNode, out var maskClipNode, out error))
-            {
-                return false;
-            }
-
-            sceneNode.Clipper = maskClipNode;
-            return true;
-        }
-
-        public bool TryAttachClipper(
-            SvgDocumentModel documentModel,
-            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
-            SvgNodeModel node,
-            SceneNode sceneNode,
-            out string error)
-        {
-            error = string.Empty;
-            if (!AttributeUtility.TryGetAttribute(node?.RawAttributes, SvgAttributeName.CLIP_PATH, out var clipPathValue))
-            {
-                return true;
-            }
-
-            if (!NodeLookup.TryExtractFragmentId(clipPathValue, out var fragmentId) ||
-                nodesByXmlId == null ||
-                !nodesByXmlId.TryGetValue(fragmentId, out var clipNode) ||
-                !string.Equals(clipNode.TagName, SvgTagName.CLIP_PATH, StringComparison.OrdinalIgnoreCase))
-            {
-                error = $"Direct renderer could not resolve clipPath for '{node?.LegacyElementKey}'.";
-                return false;
-            }
-
-            if (!TryBuildClipNode(documentModel, nodesByXmlId, clipNode, out var clipSceneNode, out error))
-            {
-                return false;
-            }
-
-            sceneNode.Clipper = clipSceneNode;
             return true;
         }
 
@@ -101,21 +69,12 @@ namespace SvgEditor.Renderer
                 return true;
             }
 
-            var attributeName = kind == CanvasDefinitionOverlayKind.Mask ? SvgAttributeName.MASK : SvgAttributeName.CLIP_PATH;
-            var expectedTag = kind == CanvasDefinitionOverlayKind.Mask ? SvgTagName.MASK : SvgTagName.CLIP_PATH;
-            if (!AttributeUtility.TryGetAttribute(node.RawAttributes, attributeName, out var rawValue) ||
-                !NodeLookup.TryExtractFragmentId(rawValue, out var fragmentId) ||
-                !nodesByXmlId.TryGetValue(fragmentId, out var referenceNode) ||
-                !string.Equals(referenceNode.TagName, expectedTag, StringComparison.OrdinalIgnoreCase))
+            if (!TryResolveReferenceNode(node, nodesByXmlId, kind, strictInvalidReference: false, out var fragmentId, out var referenceNode, out error))
             {
-                return true;
+                return string.IsNullOrWhiteSpace(error);
             }
 
-            SceneNode sceneNode;
-            var built = kind == CanvasDefinitionOverlayKind.Mask
-                ? TryBuildMaskClipNode(documentModel, nodesByXmlId, referenceNode, out sceneNode, out error)
-                : TryBuildClipNode(documentModel, nodesByXmlId, referenceNode, out sceneNode, out error);
-            if (!built)
+            if (!TryBuildReferenceSceneNode(documentModel, nodesByXmlId, referenceNode, kind, out SceneNode sceneNode, out error))
             {
                 return false;
             }
@@ -133,6 +92,78 @@ namespace SvgEditor.Renderer
                 RootNode = sceneNode
             };
             return true;
+        }
+
+        private bool TryAttachReferenceClipper(
+            SvgDocumentModel documentModel,
+            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
+            SvgNodeModel node,
+            SceneNode sceneNode,
+            CanvasDefinitionOverlayKind kind,
+            out string error)
+        {
+            error = string.Empty;
+            if (!TryResolveReferenceNode(node, nodesByXmlId, kind, strictInvalidReference: true, out _, out var referenceNode, out error))
+            {
+                return string.IsNullOrWhiteSpace(error);
+            }
+
+            if (!TryBuildReferenceSceneNode(documentModel, nodesByXmlId, referenceNode, kind, out SceneNode referenceSceneNode, out error))
+            {
+                return false;
+            }
+
+            sceneNode.Clipper = referenceSceneNode;
+            return true;
+        }
+
+        private static bool TryResolveReferenceNode(
+            SvgNodeModel node,
+            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
+            CanvasDefinitionOverlayKind kind,
+            bool strictInvalidReference,
+            out string fragmentId,
+            out SvgNodeModel referenceNode,
+            out string error)
+        {
+            fragmentId = string.Empty;
+            referenceNode = null;
+            error = string.Empty;
+
+            string attributeName = kind == CanvasDefinitionOverlayKind.Mask ? SvgAttributeName.MASK : SvgAttributeName.CLIP_PATH;
+            string expectedTag = kind == CanvasDefinitionOverlayKind.Mask ? SvgTagName.MASK : SvgTagName.CLIP_PATH;
+            if (!AttributeUtility.TryGetAttribute(node?.RawAttributes, attributeName, out var rawValue))
+            {
+                return false;
+            }
+
+            if (!NodeLookup.TryExtractFragmentId(rawValue, out fragmentId) ||
+                nodesByXmlId == null ||
+                !nodesByXmlId.TryGetValue(fragmentId, out referenceNode) ||
+                !string.Equals(referenceNode.TagName, expectedTag, StringComparison.OrdinalIgnoreCase))
+            {
+                if (strictInvalidReference && kind == CanvasDefinitionOverlayKind.ClipPath)
+                {
+                    error = $"Direct renderer could not resolve clipPath for '{node?.LegacyElementKey}'.";
+                }
+
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool TryBuildReferenceSceneNode(
+            SvgDocumentModel documentModel,
+            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
+            SvgNodeModel referenceNode,
+            CanvasDefinitionOverlayKind kind,
+            out SceneNode sceneNode,
+            out string error)
+        {
+            return kind == CanvasDefinitionOverlayKind.Mask
+                ? TryBuildMaskClipNode(documentModel, nodesByXmlId, referenceNode, out sceneNode, out error)
+                : TryBuildClipNode(documentModel, nodesByXmlId, referenceNode, out sceneNode, out error);
         }
 
         private bool TryBuildClipNode(

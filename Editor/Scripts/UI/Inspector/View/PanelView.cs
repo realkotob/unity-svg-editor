@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Core.UI.Extensions;
+using SvgEditor.UI.Inspector.State;
 
 using SvgEditor;
 
@@ -12,26 +13,6 @@ namespace SvgEditor.UI.Inspector
         private const string RemovePlaceholder = "none";
         private const string LinecapActualDefaultValue = "butt";
         private const string LinejoinActualDefaultValue = "miter";
-
-        internal enum ImmediateApplyField
-        {
-            Opacity,
-            CornerRadius,
-            FillColor,
-            StrokeColor,
-            StrokeWidth,
-            StrokeLinecap,
-            StrokeLinejoin,
-            StrokeDasharray
-        }
-
-        internal enum AttributeAction
-        {
-            AddFill,
-            RemoveFill,
-            AddStroke,
-            RemoveStroke
-        }
 
         internal enum PositionAction
         {

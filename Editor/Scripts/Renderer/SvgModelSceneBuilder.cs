@@ -20,6 +20,11 @@ namespace SvgEditor.Renderer
     {
         private readonly SvgShapeBuilder _shapeBuilder = new();
         private readonly SvgReferenceSceneBuilder _referenceSceneBuilder;
+        private static readonly CanvasDefinitionOverlayKind[] ReferenceKinds =
+        {
+            CanvasDefinitionOverlayKind.Mask,
+            CanvasDefinitionOverlayKind.ClipPath
+        };
 
         public SvgModelSceneBuilder()
         {
@@ -44,15 +49,24 @@ namespace SvgEditor.Renderer
             var nodesByXmlId = NodeLookup.BuildNodeLookupByXmlId(documentModel);
             var resolved = new List<CanvasDefinitionOverlayScene>();
 
-            if (!_referenceSceneBuilder.TryBuildReferenceOverlayScene(documentModel, nodesByXmlId, node, CanvasDefinitionOverlayKind.Mask, out CanvasDefinitionOverlayScene maskOverlay, out error))
-                return false;
-            if (maskOverlay != null)
-                resolved.Add(maskOverlay);
+            for (int index = 0; index < ReferenceKinds.Length; index++)
+            {
+                if (!_referenceSceneBuilder.TryBuildReferenceOverlayScene(
+                        documentModel,
+                        nodesByXmlId,
+                        node,
+                        ReferenceKinds[index],
+                        out CanvasDefinitionOverlayScene overlay,
+                        out error))
+                {
+                    return false;
+                }
 
-            if (!_referenceSceneBuilder.TryBuildReferenceOverlayScene(documentModel, nodesByXmlId, node, CanvasDefinitionOverlayKind.ClipPath, out CanvasDefinitionOverlayScene clipOverlay, out error))
-                return false;
-            if (clipOverlay != null)
-                resolved.Add(clipOverlay);
+                if (overlay != null)
+                {
+                    resolved.Add(overlay);
+                }
+            }
 
             overlays = resolved;
             return true;
@@ -143,10 +157,7 @@ namespace SvgEditor.Renderer
                 Transform = TransformParser.Parse(node.RawAttributes)
             };
 
-            if (!_referenceSceneBuilder.TryAttachMask(documentModel, nodesByXmlId, node, sceneNode, out error))
-                return false;
-
-            if (!_referenceSceneBuilder.TryAttachClipper(documentModel, nodesByXmlId, node, sceneNode, out error))
+            if (!_referenceSceneBuilder.TryAttachReferenceClipper(documentModel, nodesByXmlId, node, sceneNode, out error))
                 return false;
 
             if (!_shapeBuilder.TryBuildShapes(documentModel, nodesByXmlId, node, sceneNode, out error))

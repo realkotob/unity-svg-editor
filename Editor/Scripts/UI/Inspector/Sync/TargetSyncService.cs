@@ -80,9 +80,9 @@ namespace SvgEditor.UI.Inspector
 
         public void ApplyPatchToSource(string successStatus) => _patchApplyService.ApplyPatchToSource(successStatus);
 
-        public void ApplyImmediatePatch(PanelView.ImmediateApplyField field) => _patchApplyService.ApplyImmediatePatch(field);
+        public void ApplyImmediatePatch(State.ImmediateApplyField field) => _patchApplyService.ApplyImmediatePatch(field);
 
-        public void ApplyAttributeAction(PanelView.AttributeAction action) => _patchApplyService.ApplyAttributeAction(action);
+        public void ApplyAttributeAction(State.AttributeAction action) => _patchApplyService.ApplyAttributeAction(action);
 
         public void ApplyPositionAction(PanelView.PositionAction action) => _transformActionService.ApplyPositionAction(action);
     }

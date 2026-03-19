@@ -25,7 +25,7 @@
     --icon-border-width: resource("Icons/Custom/BorderWidth");
     --icon-dash: resource("Icons/Custom/Dash");
     --icon-gap: resource("Icons/Custom/Gap");
-    --icon-angle-right: resource("Icons/mdi/angle-right");
+    --icon-angle: resource("Icons/Custom/angle");
     --icon-maximize: resource("Icons/lucide/maximize");
 }
 
@@ -55,5 +55,5 @@
 .icon-border-width { background-image: var(--icon-border-width); }
 .icon-dash { background-image: var(--icon-dash); }
 .icon-gap { background-image: var(--icon-gap); }
-.icon-angle-right { background-image: var(--icon-angle-right); }
+.icon-angle { background-image: var(--icon-angle); }
 .icon-maximize { background-image: var(--icon-maximize); }

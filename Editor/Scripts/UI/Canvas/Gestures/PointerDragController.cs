@@ -12,9 +12,7 @@ namespace SvgEditor.UI.Canvas
 {
     internal sealed class PointerDragController
     {
-        private const float CanvasFrameMargin = 72f;
-        private const float CanvasFramePadding = 0f;
-        private const float CanvasFrameHeaderHeight = 0f;
+        private static readonly ViewportFrameLayoutSettings CanvasFrameLayout = new(72f, 0f, 0f);
 
         private readonly ICanvasPointerDragHost _host;
         private readonly ViewportState _viewportState;
@@ -90,9 +88,7 @@ namespace SvgEditor.UI.Canvas
             _viewportState.ResetToFit(
                 _sceneProjector.GetCanvasBounds(_canvasOverlay),
                 _sceneProjector.GetPreviewSceneRect(_host.PreviewSnapshot),
-                CanvasFrameMargin,
-                CanvasFramePadding,
-                CanvasFrameHeaderHeight);
+                CanvasFrameLayout);
         }
 
         public void ResetViewportToActualSize()
@@ -106,8 +102,8 @@ namespace SvgEditor.UI.Canvas
             _viewportState.ResetToActualSize(
                 _sceneProjector.GetCanvasBounds(_canvasOverlay),
                 _sceneProjector.GetPreviewSceneRect(_host.PreviewSnapshot),
-                CanvasFramePadding,
-                CanvasFrameHeaderHeight);
+                CanvasFrameLayout.Padding,
+                CanvasFrameLayout.HeaderHeight);
         }
 
         public void SyncFrameToPreview()
@@ -121,9 +117,7 @@ namespace SvgEditor.UI.Canvas
             _viewportState.EnsureFrame(
                 _sceneProjector.GetCanvasBounds(_canvasOverlay),
                 _sceneProjector.GetPreviewSceneRect(_host.PreviewSnapshot),
-                CanvasFrameMargin,
-                CanvasFramePadding,
-                CanvasFrameHeaderHeight);
+                CanvasFrameLayout);
         }
 
         public void Bind(CanvasStageView canvasStageView, Toggle moveToolToggle)

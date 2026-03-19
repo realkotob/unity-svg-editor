@@ -1,6 +1,7 @@
 using System;
 using UnityEngine.UIElements;
 using SvgEditor.Core.Shared;
+using SvgEditor.UI.Inspector.State;
 using Core.UI.Extensions;
 
 namespace SvgEditor.UI.Inspector
@@ -9,12 +10,12 @@ namespace SvgEditor.UI.Inspector
     {
         private readonly FormControls _form;
         private readonly Action<PanelView.PositionAction> _onPositionActionRequested;
-        private readonly Action<PanelView.AttributeAction> _onAttributeActionRequested;
+        private readonly Action<AttributeAction> _onAttributeActionRequested;
 
         public PanelViewActionBinder(
             FormControls form,
             Action<PanelView.PositionAction> onPositionActionRequested,
-            Action<PanelView.AttributeAction> onAttributeActionRequested)
+            Action<AttributeAction> onAttributeActionRequested)
         {
             _form = form;
             _onPositionActionRequested = onPositionActionRequested;
@@ -33,10 +34,10 @@ namespace SvgEditor.UI.Inspector
             ToggleAttributeActionCallbacks(register: false);
         }
 
-        private void OnFillAddRequested() => RequestAttributeAction(PanelView.AttributeAction.AddFill);
-        private void OnFillRemoveRequested() => RequestAttributeAction(PanelView.AttributeAction.RemoveFill);
-        private void OnStrokeAddRequested() => RequestAttributeAction(PanelView.AttributeAction.AddStroke);
-        private void OnStrokeRemoveRequested() => RequestAttributeAction(PanelView.AttributeAction.RemoveStroke);
+        private void OnFillAddRequested() => RequestAttributeAction(AttributeAction.AddFill);
+        private void OnFillRemoveRequested() => RequestAttributeAction(AttributeAction.RemoveFill);
+        private void OnStrokeAddRequested() => RequestAttributeAction(AttributeAction.AddStroke);
+        private void OnStrokeRemoveRequested() => RequestAttributeAction(AttributeAction.RemoveStroke);
 
         private void OnPositionAlignLeftRequested() => RequestPositionAction(PanelView.PositionAction.AlignLeft);
         private void OnPositionAlignCenterRequested() => RequestPositionAction(PanelView.PositionAction.AlignCenter);
@@ -48,7 +49,7 @@ namespace SvgEditor.UI.Inspector
         private void OnPositionFlipHorizontalRequested() => RequestPositionAction(PanelView.PositionAction.FlipHorizontal);
         private void OnPositionFlipVerticalRequested() => RequestPositionAction(PanelView.PositionAction.FlipVertical);
 
-        private void RequestAttributeAction(PanelView.AttributeAction action)
+        private void RequestAttributeAction(AttributeAction action)
         {
             _onAttributeActionRequested?.Invoke(action);
         }

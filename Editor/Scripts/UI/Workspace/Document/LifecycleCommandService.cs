@@ -59,11 +59,7 @@ namespace SvgEditor.UI.Workspace.Document
                 return;
             }
 
-            _setCurrentDocument?.Invoke(document);
-            _editHistory.Reset(document);
-            _previewService.ResetPreviewState();
-            _workspaceSyncService.ResetSelection();
-            _workspaceSyncService.HandleDocumentLoaded();
+            HandleLoadedDocument(document);
         }
 
         public void ApplyUpdatedSource(string updatedSource, string successStatus)
@@ -73,7 +69,7 @@ namespace SvgEditor.UI.Workspace.Document
 
         public void ApplyUpdatedSource(string updatedSource, string successStatus, HistoryRecordingMode recordingMode)
         {
-            ApplyUpdatedSource(updatedSource, successStatus, recordHistory: true, recordingMode);
+            CommitUpdatedSource(updatedSource, successStatus, recordHistory: true, recordingMode);
         }
 
         public bool TryUndo()
@@ -84,7 +80,7 @@ namespace SvgEditor.UI.Workspace.Document
                 return false;
             }
 
-            ApplyUpdatedSource(restoredSource, "Undo.", recordHistory: false, HistoryRecordingMode.Immediate);
+            CommitUpdatedSource(restoredSource, "Undo.", recordHistory: false, HistoryRecordingMode.Immediate);
             return true;
         }
 
@@ -96,7 +92,7 @@ namespace SvgEditor.UI.Workspace.Document
                 return false;
             }
 
-            ApplyUpdatedSource(restoredSource, "Redo.", recordHistory: false, HistoryRecordingMode.Immediate);
+            CommitUpdatedSource(restoredSource, "Redo.", recordHistory: false, HistoryRecordingMode.Immediate);
             return true;
         }
 
@@ -127,7 +123,16 @@ namespace SvgEditor.UI.Workspace.Document
             _workspaceSyncService.HandleSaveSucceeded();
         }
 
-        private void ApplyUpdatedSource(
+        private void HandleLoadedDocument(DocumentSession document)
+        {
+            _setCurrentDocument?.Invoke(document);
+            _editHistory.Reset(document);
+            _previewService.ResetPreviewState();
+            _workspaceSyncService.ResetSelection();
+            _workspaceSyncService.HandleDocumentLoaded();
+        }
+
+        private void CommitUpdatedSource(
             string updatedSource,
             string successStatus,
             bool recordHistory,

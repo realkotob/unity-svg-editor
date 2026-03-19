@@ -3,6 +3,7 @@ using UnityEngine;
 using SvgEditor.Core.Svg.Mutation;
 using SvgEditor.Core.Svg.Transforms;
 using Core.UI.Extensions;
+using SvgEditor.UI.Inspector.State;
 
 namespace SvgEditor.UI.Inspector
 {
@@ -31,33 +32,33 @@ namespace SvgEditor.UI.Inspector
             return request;
         }
 
-        public static AttributePatchRequest BuildPatchRequest(PanelState state, PanelView.ImmediateApplyField field)
+        public static AttributePatchRequest BuildPatchRequest(PanelState state, ImmediateApplyField field)
         {
             AttributePatchRequest request = CreatePatchRequest(state);
             switch (field)
             {
-                case PanelView.ImmediateApplyField.Opacity:
+                case ImmediateApplyField.Opacity:
                     request.Opacity = FormatNumber(Mathf.Clamp01(state.Opacity));
                     break;
-                case PanelView.ImmediateApplyField.CornerRadius:
+                case ImmediateApplyField.CornerRadius:
                     ApplyCornerRadius(request, state);
                     break;
-                case PanelView.ImmediateApplyField.FillColor:
+                case ImmediateApplyField.FillColor:
                     ApplyFill(request, state);
                     break;
-                case PanelView.ImmediateApplyField.StrokeColor:
+                case ImmediateApplyField.StrokeColor:
                     ApplyStroke(request, state);
                     break;
-                case PanelView.ImmediateApplyField.StrokeWidth:
+                case ImmediateApplyField.StrokeWidth:
                     request.StrokeWidth = FormatNumber(Mathf.Max(0f, state.StrokeWidth));
                     break;
-                case PanelView.ImmediateApplyField.StrokeLinecap:
+                case ImmediateApplyField.StrokeLinecap:
                     request.StrokeLinecap = state.StrokeLinecap;
                     break;
-                case PanelView.ImmediateApplyField.StrokeLinejoin:
+                case ImmediateApplyField.StrokeLinejoin:
                     request.StrokeLinejoin = state.StrokeLinejoin;
                     break;
-                case PanelView.ImmediateApplyField.StrokeDasharray:
+                case ImmediateApplyField.StrokeDasharray:
                     request.StrokeDasharray = BuildDasharrayValue(state);
                     break;
             }
@@ -65,23 +66,23 @@ namespace SvgEditor.UI.Inspector
             return request;
         }
 
-        public static AttributePatchRequest BuildPatchRequest(PanelState state, PanelView.AttributeAction action)
+        public static AttributePatchRequest BuildPatchRequest(PanelState state, AttributeAction action)
         {
             AttributePatchRequest request = CreatePatchRequest(state);
             switch (action)
             {
-                case PanelView.AttributeAction.AddFill:
+                case AttributeAction.AddFill:
                     ApplyFill(request, state);
                     break;
-                case PanelView.AttributeAction.RemoveFill:
+                case AttributeAction.RemoveFill:
                     request.Fill = "none";
                     request.FillOpacity = string.Empty;
                     break;
-                case PanelView.AttributeAction.AddStroke:
+                case AttributeAction.AddStroke:
                     ApplyStroke(request, state);
                     request.StrokeWidth = FormatNumber(Mathf.Max(0f, state.StrokeWidth));
                     break;
-                case PanelView.AttributeAction.RemoveStroke:
+                case AttributeAction.RemoveStroke:
                     request.Stroke = "none";
                     request.StrokeOpacity = string.Empty;
                     request.StrokeWidth = string.Empty;

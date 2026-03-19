@@ -3,6 +3,7 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using SvgEditor.Core.Shared;
+using SvgEditor.UI.Inspector.State;
 using Core.UI.Extensions;
 
 namespace SvgEditor.UI.Inspector
@@ -10,13 +11,13 @@ namespace SvgEditor.UI.Inspector
     internal sealed class PanelViewImmediateApplyBinder
     {
         private readonly FormControls _form;
-        private readonly Action<PanelView.ImmediateApplyField> _onImmediateApplyRequested;
+        private readonly Action<ImmediateApplyField> _onImmediateApplyRequested;
         private readonly Action _onFrameRectChanged;
         private readonly Action<PanelView.TransformHelperChange> _onTransformHelperChanged;
 
         public PanelViewImmediateApplyBinder(
             FormControls form,
-            Action<PanelView.ImmediateApplyField> onImmediateApplyRequested,
+            Action<ImmediateApplyField> onImmediateApplyRequested,
             Action onFrameRectChanged,
             Action<PanelView.TransformHelperChange> onTransformHelperChanged)
         {
@@ -40,14 +41,14 @@ namespace SvgEditor.UI.Inspector
             ToggleTransformHelperCallbacks(register: false);
         }
 
-        private void OnFillColorChanged(ChangeEvent<Color> evt) => RequestImmediateApply(PanelView.ImmediateApplyField.FillColor);
-        private void OnStrokeColorChanged(ChangeEvent<Color> evt) => RequestImmediateApply(PanelView.ImmediateApplyField.StrokeColor);
-        private void OnStrokeWidthChanged(ChangeEvent<float> evt) => RequestImmediateApply(PanelView.ImmediateApplyField.StrokeWidth);
-        private void OnOpacityChanged(ChangeEvent<float> evt) => RequestImmediateApply(PanelView.ImmediateApplyField.Opacity);
-        private void OnCornerRadiusChanged(ChangeEvent<float> evt) => RequestImmediateApply(PanelView.ImmediateApplyField.CornerRadius);
-        private void OnStrokeLinecapChanged(ChangeEvent<string> evt) => RequestImmediateApply(PanelView.ImmediateApplyField.StrokeLinecap);
-        private void OnStrokeLinejoinChanged(ChangeEvent<string> evt) => RequestImmediateApply(PanelView.ImmediateApplyField.StrokeLinejoin);
-        private void OnStrokeDasharrayChanged(ChangeEvent<float> evt) => RequestImmediateApply(PanelView.ImmediateApplyField.StrokeDasharray);
+        private void OnFillColorChanged(ChangeEvent<Color> evt) => RequestImmediateApply(ImmediateApplyField.FillColor);
+        private void OnStrokeColorChanged(ChangeEvent<Color> evt) => RequestImmediateApply(ImmediateApplyField.StrokeColor);
+        private void OnStrokeWidthChanged(ChangeEvent<float> evt) => RequestImmediateApply(ImmediateApplyField.StrokeWidth);
+        private void OnOpacityChanged(ChangeEvent<float> evt) => RequestImmediateApply(ImmediateApplyField.Opacity);
+        private void OnCornerRadiusChanged(ChangeEvent<float> evt) => RequestImmediateApply(ImmediateApplyField.CornerRadius);
+        private void OnStrokeLinecapChanged(ChangeEvent<string> evt) => RequestImmediateApply(ImmediateApplyField.StrokeLinecap);
+        private void OnStrokeLinejoinChanged(ChangeEvent<string> evt) => RequestImmediateApply(ImmediateApplyField.StrokeLinejoin);
+        private void OnStrokeDasharrayChanged(ChangeEvent<float> evt) => RequestImmediateApply(ImmediateApplyField.StrokeDasharray);
 
         private void OnFrameRectChanged(ChangeEvent<float> evt) => _onFrameRectChanged?.Invoke();
         private void OnTranslateXChanged(ChangeEvent<float> evt) => NotifyTransformHelperChanged(PanelView.TransformHelperField.TranslateX);
@@ -55,7 +56,7 @@ namespace SvgEditor.UI.Inspector
         private void OnScaleXChanged(ChangeEvent<float> evt) => NotifyTransformHelperChanged(PanelView.TransformHelperField.ScaleX);
         private void OnScaleYChanged(ChangeEvent<float> evt) => NotifyTransformHelperChanged(PanelView.TransformHelperField.ScaleY);
 
-        private void RequestImmediateApply(PanelView.ImmediateApplyField field)
+        private void RequestImmediateApply(ImmediateApplyField field)
         {
             _onImmediateApplyRequested?.Invoke(field);
         }

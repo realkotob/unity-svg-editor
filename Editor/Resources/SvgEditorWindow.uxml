@@ -12,7 +12,7 @@
                     <ui:VisualElement name="asset-panel-bottom" class="svg-editor__asset-panel-bottom">
                         <ui:VisualElement class="svg-editor__asset-section-header svg-editor__asset-section-header--flush editor__panel-header">
                             <ui:Label text="Assets" class="svg-editor__asset-section-title"/>
-                            <ui:VisualElement class="svg-editor__asset-section-actions">
+                            <ui:VisualElement name="VisualElement" class="svg-editor__asset-section-actions">
                                 <ui:Button name="asset-library-refresh-button" tooltip="Rescan local assets" class=" icon-refresh asset-refresh-button button-compact"/>
                             </ui:VisualElement>
                         </ui:VisualElement>
@@ -70,7 +70,7 @@
                             <ui:VisualElement name="rotation" style="flex-grow: 1;">
                                 <ui:Label text="Rotation" name="Label" class="inspector-feature__title"/>
                                 <ui:VisualElement class="inspector-feature__control-container">
-                                    <svg:SvgDragNumberField name="inspector-rotate" prefix-icon-class="icon-angle-right" value="0" drag-step="1" drag-sensitivity="0.1" class="inspector-feature__control"/>
+                                    <svg:SvgDragNumberField name="inspector-rotate" prefix-icon-class="icon-angle" value="0" drag-step="1" drag-sensitivity="0.1" class="inspector-feature__control"/>
                                     <ui:VisualElement class="button-group inspector-feature__control inspector-feature__control--last">
                                         <ui:Button name="position-rotate-clockwise-90" class=" icon-rotate-90"/>
                                         <ui:Button name="position-flip-horizontal" class=" icon-flip-horizontal"/>

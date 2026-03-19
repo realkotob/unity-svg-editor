@@ -88,12 +88,12 @@ namespace SvgEditor.UI.Inspector
             return PanelPatchBuilder.BuildPatchRequest(this);
         }
 
-        public AttributePatchRequest BuildPatchRequest(PanelView.ImmediateApplyField field)
+        public AttributePatchRequest BuildPatchRequest(ImmediateApplyField field)
         {
             return PanelPatchBuilder.BuildPatchRequest(this, field);
         }
 
-        public AttributePatchRequest BuildPatchRequest(PanelView.AttributeAction action)
+        public AttributePatchRequest BuildPatchRequest(AttributeAction action)
         {
             return PanelPatchBuilder.BuildPatchRequest(this, action);
         }

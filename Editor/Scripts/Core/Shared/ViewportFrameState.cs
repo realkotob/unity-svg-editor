@@ -19,28 +19,28 @@ namespace SvgEditor.Core.Shared
             FrameRect = default;
         }
 
-        public void ResetToFit(Rect canvasBounds, Rect sceneRect, float margin, float padding, float headerHeight)
+        public void ResetToFit(Rect canvasBounds, Rect sceneRect, ViewportFrameLayoutSettings layoutSettings)
         {
             Zoom = 1f;
             Pan = Vector2.zero;
 
             Vector2 availableSize = new(
-                Mathf.Max(1f, canvasBounds.width - (margin * 2f)),
-                Mathf.Max(1f, canvasBounds.height - (margin * 2f) - headerHeight));
+                Mathf.Max(1f, canvasBounds.width - (layoutSettings.Margin * 2f)),
+                Mathf.Max(1f, canvasBounds.height - (layoutSettings.Margin * 2f) - layoutSettings.HeaderHeight));
 
             Vector2 fittedContentSize = FitSizeWithin(sceneRect.size, availableSize);
             FrameRect = new Rect(
-                (canvasBounds.width - (fittedContentSize.x + (padding * 2f))) * 0.5f,
-                (canvasBounds.height - (fittedContentSize.y + (padding * 2f) + headerHeight)) * 0.5f,
-                fittedContentSize.x + (padding * 2f),
-                fittedContentSize.y + (padding * 2f) + headerHeight);
+                (canvasBounds.width - (fittedContentSize.x + (layoutSettings.Padding * 2f))) * 0.5f,
+                (canvasBounds.height - (fittedContentSize.y + (layoutSettings.Padding * 2f) + layoutSettings.HeaderHeight)) * 0.5f,
+                fittedContentSize.x + (layoutSettings.Padding * 2f),
+                fittedContentSize.y + (layoutSettings.Padding * 2f) + layoutSettings.HeaderHeight);
         }
 
-        public void EnsureFrame(Rect canvasBounds, Rect sceneRect, float margin, float padding, float headerHeight)
+        public void EnsureFrame(Rect canvasBounds, Rect sceneRect, ViewportFrameLayoutSettings layoutSettings)
         {
             if (!HasFrame)
             {
-                ResetToFit(canvasBounds, sceneRect, margin, padding, headerHeight);
+                ResetToFit(canvasBounds, sceneRect, layoutSettings);
             }
         }
 
@@ -79,8 +79,9 @@ namespace SvgEditor.Core.Shared
                 return;
             }
 
+            ViewportFrameLayoutSettings zoomLayout = new(0f, padding, headerHeight);
             Rect previousFrameViewportRect = CanvasToViewport(FrameRect);
-            Rect previousContentViewportRect = FitRectInto(previousFrameViewportRect, sceneRect.size, padding, headerHeight);
+            Rect previousContentViewportRect = FitRectInto(previousFrameViewportRect, sceneRect.size, zoomLayout);
             float previousContentScale = previousContentViewportRect.width / Mathf.Max(sceneRect.width, Mathf.Epsilon);
             if (previousContentScale <= Mathf.Epsilon)
             {
@@ -101,7 +102,7 @@ namespace SvgEditor.Core.Shared
             Zoom = nextZoom;
 
             Rect nextFrameViewportRect = CanvasToViewport(FrameRect);
-            Rect nextContentViewportRect = FitRectInto(nextFrameViewportRect, sceneRect.size, padding, headerHeight);
+            Rect nextContentViewportRect = FitRectInto(nextFrameViewportRect, sceneRect.size, zoomLayout);
             float nextContentScale = nextContentViewportRect.width / Mathf.Max(sceneRect.width, Mathf.Epsilon);
             Vector2 desiredContentOrigin = viewportPoint - ((scenePoint - sceneRect.min) * nextContentScale);
             Vector2 adjustedFrameOrigin = desiredContentOrigin - (nextContentViewportRect.position - nextFrameViewportRect.position);
@@ -139,18 +140,18 @@ namespace SvgEditor.Core.Shared
             return viewportDelta / Mathf.Max(Zoom, Mathf.Epsilon);
         }
 
-        public Rect GetFrameContentViewportRect(Rect sceneRect, float padding, float headerHeight)
+        public Rect GetFrameContentViewportRect(Rect sceneRect, ViewportFrameLayoutSettings layoutSettings)
         {
-            return FitRectInto(CanvasToViewport(FrameRect), sceneRect.size, padding, headerHeight);
+            return FitRectInto(CanvasToViewport(FrameRect), sceneRect.size, layoutSettings);
         }
 
-        private static Rect FitRectInto(Rect frameViewportRect, Vector2 contentSize, float padding, float headerHeight)
+        private static Rect FitRectInto(Rect frameViewportRect, Vector2 contentSize, ViewportFrameLayoutSettings layoutSettings)
         {
             Rect innerRect = new(
-                frameViewportRect.xMin + padding,
-                frameViewportRect.yMin + headerHeight + padding,
-                Mathf.Max(1f, frameViewportRect.width - (padding * 2f)),
-                Mathf.Max(1f, frameViewportRect.height - headerHeight - (padding * 2f)));
+                frameViewportRect.xMin + layoutSettings.Padding,
+                frameViewportRect.yMin + layoutSettings.HeaderHeight + layoutSettings.Padding,
+                Mathf.Max(1f, frameViewportRect.width - (layoutSettings.Padding * 2f)),
+                Mathf.Max(1f, frameViewportRect.height - layoutSettings.HeaderHeight - (layoutSettings.Padding * 2f)));
 
             return FitRectWithin(innerRect, contentSize);
         }

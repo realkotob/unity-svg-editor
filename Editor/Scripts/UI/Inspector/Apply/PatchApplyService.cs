@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using SvgEditor.Core.Svg.Mutation;
+using SvgEditor.UI.Inspector.State;
 using SvgEditor.UI.Workspace.Document;
 using Core.UI.Extensions;
 
@@ -48,7 +49,7 @@ namespace SvgEditor.UI.Inspector
                 string.IsNullOrWhiteSpace(successStatus) ? "Patch applied to source." : successStatus);
         }
 
-        public void ApplyImmediatePatch(PanelView.ImmediateApplyField field)
+        public void ApplyImmediatePatch(ImmediateApplyField field)
         {
             if (Host?.CurrentDocument == null || !_view.IsBound)
             {
@@ -60,7 +61,7 @@ namespace SvgEditor.UI.Inspector
             Host.TryApplyPatchRequest(request, "Inspector changes applied.", HistoryRecordingMode.Coalesced);
         }
 
-        public void ApplyAttributeAction(PanelView.AttributeAction action)
+        public void ApplyAttributeAction(AttributeAction action)
         {
             if (Host?.CurrentDocument == null || !_view.IsBound)
             {

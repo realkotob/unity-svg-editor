@@ -130,7 +130,7 @@ namespace SvgEditor.UI.Inspector
             _interactivityApplier.Apply(hasDocument);
         }
 
-        private void OnImmediateApplyRequested(PanelView.ImmediateApplyField field) => _targetSyncService.ApplyImmediatePatch(field);
+        private void OnImmediateApplyRequested(State.ImmediateApplyField field) => _targetSyncService.ApplyImmediatePatch(field);
 
         private void OnFrameRectChanged() => QueueFrameRectApply();
 
@@ -146,7 +146,7 @@ namespace SvgEditor.UI.Inspector
 
         private void OnPositionActionRequested(PanelView.PositionAction action) => _targetSyncService.ApplyPositionAction(action);
 
-        private void OnAttributeActionRequested(PanelView.AttributeAction action) => _targetSyncService.ApplyAttributeAction(action);
+        private void OnAttributeActionRequested(State.AttributeAction action) => _targetSyncService.ApplyAttributeAction(action);
 
         private void ProcessPendingRefresh()
         {

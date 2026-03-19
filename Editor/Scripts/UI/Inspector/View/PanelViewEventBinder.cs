@@ -1,5 +1,6 @@
 using System;
 using Core.UI.Extensions;
+using SvgEditor.UI.Inspector.State;
 
 namespace SvgEditor.UI.Inspector
 {
@@ -11,13 +12,13 @@ namespace SvgEditor.UI.Inspector
 
         public PanelViewEventBinder(
             FormControls form,
-            Action<PanelView.ImmediateApplyField> onImmediateApplyRequested,
+            Action<ImmediateApplyField> onImmediateApplyRequested,
             Action onFrameRectChanged,
             Action<PanelView.TransformHelperChange> onTransformHelperChanged,
             Action onRotationDragStarted,
             Action onRotationDragEnded,
             Action<PanelView.PositionAction> onPositionActionRequested,
-            Action<PanelView.AttributeAction> onAttributeActionRequested)
+            Action<AttributeAction> onAttributeActionRequested)
         {
             _immediateApplyBinder = new PanelViewImmediateApplyBinder(
                 form,

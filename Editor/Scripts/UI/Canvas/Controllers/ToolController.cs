@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Core.UI.Extensions;
+using SvgEditor.Core.Shared;
 
 using SvgEditor;
 using SvgEditor.Core.Preview;
@@ -22,9 +23,7 @@ namespace SvgEditor.UI.Canvas
 
         private const float MIN_CANVAS_ZOOM = 0.25f;
         private const float MAX_CANVAS_ZOOM = 16f;
-        private const float CANVAS_FRAME_PADDING = 0f;
-        private const float CANVAS_FRAME_HEADER_HEIGHT = 0f;
-        private const float CANVAS_FRAME_MARGIN = 72f;
+        private static readonly ViewportFrameLayoutSettings CanvasFrameLayout = new(72f, 0f, 0f);
 
         private readonly Dictionary<ToolKind, Toggle> _toolButtons = new();
         private Toggle _moveToolToggle;
@@ -115,8 +114,8 @@ namespace SvgEditor.UI.Canvas
                 evt.delta.y,
                 MIN_CANVAS_ZOOM,
                 MAX_CANVAS_ZOOM,
-                CANVAS_FRAME_PADDING,
-                CANVAS_FRAME_HEADER_HEIGHT);
+                CanvasFrameLayout.Padding,
+                CanvasFrameLayout.HeaderHeight);
 
             updateCanvasVisualState?.Invoke();
             evt.StopPropagation();
@@ -173,9 +172,7 @@ namespace SvgEditor.UI.Canvas
                 viewportState.ResetToFit(
                     sceneProjector.GetCanvasBounds(canvasOverlay),
                     sceneProjector.GetPreviewSceneRect(previewSnapshot),
-                    CANVAS_FRAME_MARGIN,
-                    CANVAS_FRAME_PADDING,
-                    CANVAS_FRAME_HEADER_HEIGHT);
+                    CanvasFrameLayout);
                 updateCanvasVisualState?.Invoke();
                 evt.StopPropagation();
                 return true;
@@ -186,8 +183,8 @@ namespace SvgEditor.UI.Canvas
                 viewportState.ResetToActualSize(
                     sceneProjector.GetCanvasBounds(canvasOverlay),
                     sceneProjector.GetPreviewSceneRect(previewSnapshot),
-                    CANVAS_FRAME_PADDING,
-                    CANVAS_FRAME_HEADER_HEIGHT);
+                    CanvasFrameLayout.Padding,
+                    CanvasFrameLayout.HeaderHeight);
                 updateCanvasVisualState?.Invoke();
                 evt.StopPropagation();
                 return true;
