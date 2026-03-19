@@ -1,10 +1,6 @@
 using System.Collections.Generic;
 using Unity.VectorGraphics;
 using UnityEngine;
-using Core.UI.Extensions;
-
-using SvgEditor;
-using SvgEditor.Core.Preview;
 
 namespace SvgEditor.Core.Preview.Geometry
 {

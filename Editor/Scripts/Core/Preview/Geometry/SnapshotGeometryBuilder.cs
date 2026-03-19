@@ -2,26 +2,35 @@ using System;
 using System.Collections.Generic;
 using Unity.VectorGraphics;
 using UnityEngine;
-using Core.UI.Extensions;
-
-using SvgEditor;
-using SvgEditor.Core.Preview;
 
 namespace SvgEditor.Core.Preview.Geometry
 {
     internal static class SnapshotGeometryBuilder
     {
-        public static bool TryBuildVisualContentBounds(
-            IReadOnlyList<PreviewElementGeometry> elements,
-            out Rect visualContentBounds)
+        #region Types
+        private readonly struct MappedPreviewNode
         {
-            return GeometryBoundsUtility.TryBuildVisualContentBounds(elements, out visualContentBounds);
-        }
+            public MappedPreviewNode(SceneNode node, string key, string targetKey)
+            {
+                Node = node;
+                Key = key;
+                TargetKey = targetKey;
+            }
 
+            public SceneNode Node { get; }
+            public string Key { get; }
+            public string TargetKey { get; }
+        }
+        #endregion Types
+
+        #region Public Methods
         public static IReadOnlyList<PreviewElementGeometry> BuildElementBounds(
             SVGParser.SceneInfo sceneInfo,
             IReadOnlyDictionary<string, (string Key, string TargetKey)> keyByNodeId)
         {
+            if (sceneInfo.Scene?.Root == null || keyByNodeId == null || keyByNodeId.Count == 0)
+                return Array.Empty<PreviewElementGeometry>();
+
             GeometryWorldContext context = GeometryWorldContextBuilder.Build(sceneInfo);
             return BuildElementBounds(BuildMappedNodes(sceneInfo, keyByNodeId), context);
         }
@@ -95,12 +104,14 @@ namespace SvgEditor.Core.Preview.Geometry
             GeometryWorldContext context = GeometryWorldContextBuilder.Build(scene, nodeOpacity);
             return TryBuildSceneRootBounds(scene.Root, context, out worldBounds);
         }
+        #endregion Public Methods
 
-        private static List<(SceneNode Node, string Key, string TargetKey)> BuildMappedNodes(
+        #region Help Methods
+        private static List<MappedPreviewNode> BuildMappedNodes(
             SVGParser.SceneInfo sceneInfo,
             IReadOnlyDictionary<string, (string Key, string TargetKey)> keyByNodeId)
         {
-            List<(SceneNode Node, string Key, string TargetKey)> mappedNodes = new();
+            List<MappedPreviewNode> mappedNodes = new();
 
             foreach (KeyValuePair<string, SceneNode> pair in sceneInfo.NodeIDs)
             {
@@ -111,16 +122,16 @@ namespace SvgEditor.Core.Preview.Geometry
                     continue;
                 }
 
-                mappedNodes.Add((pair.Value, mapping.Key, mapping.TargetKey));
+                mappedNodes.Add(new MappedPreviewNode(pair.Value, mapping.Key, mapping.TargetKey));
             }
 
             return mappedNodes;
         }
 
-        private static List<(SceneNode Node, string Key, string TargetKey)> BuildMappedNodes(
+        private static List<MappedPreviewNode> BuildMappedNodes(
             IReadOnlyDictionary<SceneNode, (string Key, string TargetKey)> keyByNode)
         {
-            List<(SceneNode Node, string Key, string TargetKey)> mappedNodes = new(keyByNode.Count);
+            List<MappedPreviewNode> mappedNodes = new(keyByNode.Count);
 
             foreach (KeyValuePair<SceneNode, (string Key, string TargetKey)> pair in keyByNode)
             {
@@ -129,14 +140,14 @@ namespace SvgEditor.Core.Preview.Geometry
                     continue;
                 }
 
-                mappedNodes.Add((pair.Key, pair.Value.Key, pair.Value.TargetKey));
+                mappedNodes.Add(new MappedPreviewNode(pair.Key, pair.Value.Key, pair.Value.TargetKey));
             }
 
             return mappedNodes;
         }
 
         private static IReadOnlyList<PreviewElementGeometry> BuildElementBounds(
-            IReadOnlyList<(SceneNode Node, string Key, string TargetKey)> mappedNodes,
+            IReadOnlyList<MappedPreviewNode> mappedNodes,
             GeometryWorldContext context)
         {
             List<PreviewElementGeometry> elements = new();
@@ -225,5 +236,6 @@ namespace SvgEditor.Core.Preview.Geometry
                 context.WorldTransformByNode,
                 out worldBounds);
         }
+        #endregion Help Methods
     }
 }

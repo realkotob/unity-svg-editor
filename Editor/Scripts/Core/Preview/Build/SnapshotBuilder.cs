@@ -6,34 +6,21 @@ using UnityEngine.UIElements;
 using SvgEditor.Core.Svg.Model;
 using SvgEditor.Core.Svg.Serialization;
 using SvgEditor.Core.Shared;
-using SvgEditor.Core.Preview;
 using SvgEditor.Core.Preview.Geometry;
 using SvgEditor.Core.Preview.Rendering;
 using SvgEditor.Core.Preview.Text;
-using Core.UI.Extensions;
-
-using SvgEditor;
 using SvgEditor.Renderer;
 
 namespace SvgEditor.Core.Preview.Build
 {
     internal sealed class SnapshotBuilder
     {
+        #region Variables
         private readonly SvgSerializer _serializer = new();
         private readonly SvgModelSceneBuilder _sceneBuilder = new();
+        #endregion Variables
 
-        public bool TryBuildSnapshot(
-            string sourceText,
-            Rect preferredViewportRect,
-            out PreviewSnapshot snapshot,
-            out string error)
-        {
-            Result<PreviewSnapshot> result = BuildImportedSnapshot(sourceText, preferredViewportRect);
-            snapshot = result.GetValueOrDefault(new PreviewSnapshot());
-            error = result.Error ?? string.Empty;
-            return result.IsSuccess;
-        }
-
+        #region Public Methods
         public bool TryBuildSnapshot(
             SvgDocumentModel documentModel,
             Rect preferredViewportRect,
@@ -45,7 +32,9 @@ namespace SvgEditor.Core.Preview.Build
             error = result.Error ?? string.Empty;
             return result.IsSuccess;
         }
+        #endregion Public Methods
 
+        #region Help Methods
         private Result<PreviewSnapshot> BuildSnapshot(SvgDocumentModel documentModel, Rect preferredViewportRect)
         {
             if (documentModel?.Root == null)
@@ -96,7 +85,7 @@ namespace SvgEditor.Core.Preview.Build
                     out Rect sceneRootBounds)
                     ? sceneRootBounds
                     : default;
-                Rect visualContentBounds = SnapshotGeometryBuilder.TryBuildVisualContentBounds(elements, out Rect resolvedVisualContentBounds)
+                Rect visualContentBounds = GeometryBoundsUtility.TryBuildVisualContentBounds(elements, out Rect resolvedVisualContentBounds)
                     ? resolvedVisualContentBounds
                     : fallbackVisualContentBounds;
                 Rect projectionRect = SceneImportService.ResolveProjectionRect(
@@ -131,18 +120,6 @@ namespace SvgEditor.Core.Preview.Build
             }
         }
 
-        internal static bool TryBuildImportedSnapshot(
-            string sourceText,
-            Rect preferredViewportRect,
-            out PreviewSnapshot snapshot,
-            out string error)
-        {
-            Result<PreviewSnapshot> result = BuildImportedSnapshot(sourceText, preferredViewportRect);
-            snapshot = result.GetValueOrDefault(new PreviewSnapshot());
-            error = result.Error ?? string.Empty;
-            return result.IsSuccess;
-        }
-
         private static Result<PreviewSnapshot> BuildImportedSnapshot(string sourceText, Rect preferredViewportRect)
         {
             return PreviewDocumentPreparation
@@ -164,7 +141,7 @@ namespace SvgEditor.Core.Preview.Build
                 var fallbackVisualContentBounds = SnapshotGeometryBuilder.TryBuildSceneRootBounds(sceneInfo, out Rect sceneRootBounds)
                     ? sceneRootBounds
                     : VectorUtils.SceneNodeBounds(sceneInfo.Scene.Root);
-                var visualContentBounds = SnapshotGeometryBuilder.TryBuildVisualContentBounds(elements, out Rect resolvedVisualContentBounds)
+                var visualContentBounds = GeometryBoundsUtility.TryBuildVisualContentBounds(elements, out Rect resolvedVisualContentBounds)
                     ? resolvedVisualContentBounds
                     : fallbackVisualContentBounds;
                 Rect documentViewportRect = sceneInfo.SceneViewport;
@@ -183,7 +160,9 @@ namespace SvgEditor.Core.Preview.Build
                     PreserveAspectRatioMode = preparedDocument.PreserveAspectRatioMode,
                     Elements = elements
                 };
-                return Result.Success(previewSnapshot);
+                return previewVectorImage != null
+                    ? Result.Success(previewSnapshot)
+                    : Result.Failure<PreviewSnapshot>("Preview vector image was not created.");
             }
             catch (Exception ex)
             {
@@ -215,7 +194,7 @@ namespace SvgEditor.Core.Preview.Build
                 mergedElements.AddRange(textElements);
                 snapshot.Elements = mergedElements;
 
-                if (SnapshotGeometryBuilder.TryBuildVisualContentBounds(snapshot.Elements, out Rect visualContentBounds))
+                if (GeometryBoundsUtility.TryBuildVisualContentBounds(snapshot.Elements, out Rect visualContentBounds))
                 {
                     snapshot.VisualContentBounds = visualContentBounds;
                     snapshot.ProjectionRect = SceneImportService.ResolveProjectionRect(
@@ -228,5 +207,6 @@ namespace SvgEditor.Core.Preview.Build
             snapshot.TextOverlays = textOverlays;
             return snapshot;
         }
+        #endregion Help Methods
     }
 }

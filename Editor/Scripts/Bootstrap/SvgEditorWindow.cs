@@ -16,7 +16,6 @@ using SvgEditor.UI.Inspector;
 using SvgEditor.Core.Svg.Model;
 using SvgEditor.Core.Svg.Mutation;
 using SvgEditor.Core.Svg.Source;
-using Core.UI.Extensions;
 using SvgEditor.Core.Shared;
 using SvgEditor.UI.Shell;
 

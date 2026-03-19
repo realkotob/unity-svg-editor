@@ -1,6 +1,6 @@
 namespace SvgEditor.Core.Shared
 {
-    internal static class SvgEditorAssetFileExtension
+    internal static class FileExtension
     {
         public const string SVG = ".svg";
     }

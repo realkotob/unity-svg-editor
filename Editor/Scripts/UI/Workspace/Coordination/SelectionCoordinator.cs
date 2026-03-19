@@ -14,34 +14,35 @@ namespace SvgEditor.UI.Workspace.Coordination
 {
     internal sealed class SelectionCoordinator
     {
+        private const string HierarchyListElementName = "asset-hierarchy-list";
+
         private readonly IEditorWorkspaceHost _host;
         private readonly WorkspaceController _canvasWorkspaceController;
-        private readonly WorkspaceViewBinder _workspaceViewBinder;
         private readonly HierarchyState _structurePanelState = new();
         private readonly HierarchyInteractionController _structureHierarchyInteractionController = new();
 
         private bool _isUpdatingStructureSelection;
+        private HierarchyListView _hierarchyListView;
 
         public SelectionCoordinator(
             IEditorWorkspaceHost host,
-            WorkspaceController canvasWorkspaceController,
-            WorkspaceViewBinder workspaceViewBinder)
+            WorkspaceController canvasWorkspaceController)
         {
             _host = host;
             _canvasWorkspaceController = canvasWorkspaceController;
-            _workspaceViewBinder = workspaceViewBinder;
         }
 
         private DocumentSession CurrentDocument => _host.CurrentDocument;
-        private HierarchyListView HierarchyListView => _workspaceViewBinder.HierarchyListView;
+        private HierarchyListView HierarchyListView => _hierarchyListView;
 
         public IReadOnlyList<TreeViewItemData<HierarchyNode>> HierarchyItems => _structurePanelState.HierarchyItems;
         public IReadOnlyList<string> SelectedElementKeys => _structurePanelState.SelectedElementKeys;
         public string SelectionRangeAnchorKey => _structurePanelState.SelectionRangeAnchorKey;
         public HierarchyNode SelectedHierarchyNode => FindHierarchyNode(_structurePanelState.SelectedElementKey);
 
-        public void Bind(IHierarchyHost hierarchyHost)
+        public void Bind(IHierarchyHost hierarchyHost, VisualElement root)
         {
+            _hierarchyListView = root?.Q<HierarchyListView>(HierarchyListElementName);
             HierarchyListView?.BindRuntime(hierarchyHost, _structureHierarchyInteractionController, OnStructureElementSelectionChanged);
             HierarchyListView?.SetHierarchyItems(_structurePanelState.HierarchyItems);
         }
@@ -49,11 +50,12 @@ namespace SvgEditor.UI.Workspace.Coordination
         public void Unbind()
         {
             HierarchyListView?.UnbindRuntime();
+            _hierarchyListView = null;
         }
 
         public void RefreshStructureViews()
         {
-            if (!_workspaceViewBinder.IsBound)
+            if (HierarchyListView == null)
                 return;
 
             if (CurrentDocument == null)

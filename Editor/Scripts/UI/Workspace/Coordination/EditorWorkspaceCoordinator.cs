@@ -19,7 +19,6 @@ namespace SvgEditor.UI.Workspace.Coordination
     {
         private readonly IEditorWorkspaceHost _host;
         private readonly WorkspaceController _canvasWorkspaceController;
-        private readonly WorkspaceViewBinder _workspaceViewBinder = new();
         private readonly MutationCoordinator _mutationCoordinator;
         private readonly SelectionCoordinator _selectionCoordinator;
 
@@ -33,23 +32,20 @@ namespace SvgEditor.UI.Workspace.Coordination
             _mutationCoordinator = new MutationCoordinator(host);
             _selectionCoordinator = new SelectionCoordinator(
                 host,
-                _canvasWorkspaceController,
-                _workspaceViewBinder);
+                _canvasWorkspaceController);
         }
 
         public void Bind(CanvasStageView canvasStageView, Toggle moveToolToggle)
         {
             Dispose();
             _canvasWorkspaceController.Bind(canvasStageView, moveToolToggle);
-            _workspaceViewBinder.Bind(RootVisualElement);
-            _selectionCoordinator.Bind(this);
+            _selectionCoordinator.Bind(this, RootVisualElement);
             _selectionCoordinator.UpdateStructureInteractivity(CurrentDocument != null);
         }
 
         public void Dispose()
         {
             _selectionCoordinator.Unbind();
-            _workspaceViewBinder.Unbind();
             _canvasWorkspaceController.Dispose();
         }
 

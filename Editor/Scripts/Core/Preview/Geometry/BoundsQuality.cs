@@ -1,6 +1,3 @@
-using SvgEditor;
-using Core.UI.Extensions;
-
 namespace SvgEditor.Core.Preview
 {
     internal enum BoundsQuality

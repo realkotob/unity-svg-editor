@@ -118,7 +118,7 @@ namespace SvgEditor.Core.Svg.Source
         private static bool IsSvgAssetPath(string assetPath)
         {
             return !string.IsNullOrWhiteSpace(assetPath) &&
-                   assetPath.EndsWith(SvgEditorAssetFileExtension.SVG, StringComparison.OrdinalIgnoreCase);
+                   assetPath.EndsWith(FileExtension.SVG, StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool TryResolveEditablePackageInfo(

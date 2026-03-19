@@ -4,30 +4,32 @@ using UnityEngine;
 using Core.UI.Extensions;
 
 using SvgEditor;
-using SvgEditor.Core.Preview.Build;
 
 namespace SvgEditor.Core.Preview.Geometry
 {
     internal static class GeometryWorldContextBuilder
     {
+        #region Variables
+        private static readonly VectorUtils.TessellationOptions DefaultTessellationOptions = new()
+        {
+            StepDistance = 1f,
+            SamplingStepSize = 0.1f,
+            MaxCordDeviation = 0.05f,
+            MaxTanAngleDeviation = 0.02f
+        };
+        #endregion Variables
+
+        #region Public Methods
         public static GeometryWorldContext Build(SVGParser.SceneInfo sceneInfo)
         {
-            Dictionary<SceneNode, int> drawOrderByNode = BuildDrawOrderLookup(sceneInfo.Scene.Root);
             Dictionary<SceneNode, Matrix2D> worldTransformByNode = BuildWorldTransformLookup(sceneInfo);
-            Dictionary<SceneNode, TessellatedNodeGeometry> worldGeometryByNode = BuildWorldGeometryLookup(
-                sceneInfo.Scene.Root,
-                worldTransformByNode);
-            return new GeometryWorldContext(drawOrderByNode, worldTransformByNode, worldGeometryByNode);
+            return Build(sceneInfo.Scene.Root, worldTransformByNode);
         }
 
         public static GeometryWorldContext Build(Scene scene, Dictionary<SceneNode, float> nodeOpacity)
         {
-            Dictionary<SceneNode, int> drawOrderByNode = BuildDrawOrderLookup(scene.Root);
             Dictionary<SceneNode, Matrix2D> worldTransformByNode = BuildWorldTransformLookup(scene, nodeOpacity);
-            Dictionary<SceneNode, TessellatedNodeGeometry> worldGeometryByNode = BuildWorldGeometryLookup(
-                scene.Root,
-                worldTransformByNode);
-            return new GeometryWorldContext(drawOrderByNode, worldTransformByNode, worldGeometryByNode);
+            return Build(scene.Root, worldTransformByNode);
         }
 
         public static IReadOnlyList<Vector2[]> BuildHitTriangles(
@@ -60,6 +62,19 @@ namespace SvgEditor.Core.Preview.Geometry
             }
 
             return triangles ?? (IReadOnlyList<Vector2[]>)System.Array.Empty<Vector2[]>();
+        }
+        #endregion Public Methods
+
+        #region Help Methods
+        private static GeometryWorldContext Build(
+            SceneNode root,
+            Dictionary<SceneNode, Matrix2D> worldTransformByNode)
+        {
+            Dictionary<SceneNode, int> drawOrderByNode = BuildDrawOrderLookup(root);
+            Dictionary<SceneNode, TessellatedNodeGeometry> worldGeometryByNode = BuildWorldGeometryLookup(
+                root,
+                worldTransformByNode);
+            return new GeometryWorldContext(drawOrderByNode, worldTransformByNode, worldGeometryByNode);
         }
 
         private static Dictionary<SceneNode, int> BuildDrawOrderLookup(SceneNode root)
@@ -149,7 +164,7 @@ namespace SvgEditor.Core.Preview.Geometry
             List<Vector2[]> triangles = new();
             IEnumerable<VectorUtils.Geometry> geometries = VectorUtils.TessellateScene(
                 tempScene,
-                PreviewBuildOptions.CreateTessellationOptions());
+                DefaultTessellationOptions);
 
             foreach (var geometry in geometries)
             {
@@ -175,5 +190,6 @@ namespace SvgEditor.Core.Preview.Geometry
                 destination.Add(source[index]);
             }
         }
+        #endregion Help Methods
     }
 }

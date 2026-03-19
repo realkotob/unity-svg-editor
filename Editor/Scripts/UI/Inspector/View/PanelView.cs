@@ -9,6 +9,10 @@ namespace SvgEditor.UI.Inspector
 {
     internal sealed class PanelView
     {
+        private const string RemovePlaceholder = "none";
+        private const string LinecapActualDefaultValue = "butt";
+        private const string LinejoinActualDefaultValue = "miter";
+
         internal enum ImmediateApplyField
         {
             Opacity,
@@ -145,17 +149,98 @@ namespace SvgEditor.UI.Inspector
 
         public void CaptureState(PanelState inspectorPanelState)
         {
-            StateBinder.CaptureState(_form, inspectorPanelState);
+            if (_form == null || inspectorPanelState == null)
+                return;
+
+            inspectorPanelState.FillEnabled = _form.FillEnabled;
+            inspectorPanelState.FillColor = _form.FillColorValue;
+            inspectorPanelState.StrokeEnabled = _form.StrokeEnabled;
+            inspectorPanelState.StrokeColor = _form.StrokeColorValue;
+            inspectorPanelState.StrokeWidthEnabled = _form.StrokeEnabled && _form.StrokeWidthField != null;
+            inspectorPanelState.StrokeWidth = _form.StrokeWidthField?.value ?? 1f;
+            inspectorPanelState.OpacityEnabled = _form.OpacityControl != null;
+            float opacityValue = _form.OpacityValue;
+            inspectorPanelState.Opacity = _form.IsOpacitySlider
+                ? Mathf.Clamp01(opacityValue)
+                : Mathf.Clamp01(opacityValue / 100f);
+            inspectorPanelState.CornerRadius = Mathf.Max(0f, _form.CornerRadiusField?.value ?? 0f);
+            inspectorPanelState.StrokeLinecap = NormalizeLinecapValue(_form.LinecapValue);
+            inspectorPanelState.StrokeLinejoin = NormalizeLinejoinValue(_form.LinejoinValue);
+            inspectorPanelState.DasharrayEnabled = _form.StrokeEnabled && (_form.DashLengthField != null || _form.DashGapField != null);
+            inspectorPanelState.DashLength = _form.DashLengthField?.value ?? 4f;
+            inspectorPanelState.DashGap = _form.DashGapField?.value ?? 2f;
+            inspectorPanelState.TransformEnabled = _form.TransformField != null;
+            inspectorPanelState.Transform = _form.TransformField?.value ?? string.Empty;
+            inspectorPanelState.FrameX = _form.FrameXField?.value ?? 0f;
+            inspectorPanelState.FrameY = _form.FrameYField?.value ?? 0f;
+            inspectorPanelState.FrameWidth = _form.FrameWidthField?.value ?? 0f;
+            inspectorPanelState.FrameHeight = _form.FrameHeightField?.value ?? 0f;
+            if (_form.TranslateXField != null)
+                inspectorPanelState.TranslateX = _form.TranslateXField.value;
+            if (_form.TranslateYField != null)
+                inspectorPanelState.TranslateY = _form.TranslateYField.value;
+            if (_form.RotateField != null)
+                inspectorPanelState.Rotate = _form.RotateField.value;
+            if (_form.ScaleXField != null)
+                inspectorPanelState.ScaleX = _form.ScaleXField.value;
+            if (_form.ScaleYField != null)
+                inspectorPanelState.ScaleY = _form.ScaleYField.value;
         }
 
         public void ApplyState(PanelState inspectorPanelState)
         {
-            StateBinder.ApplyState(_form, inspectorPanelState);
+            if (_form == null || inspectorPanelState == null)
+                return;
+
+            _form.SetFillVisible(inspectorPanelState.FillEnabled);
+            _form.SetStrokeVisible(inspectorPanelState.StrokeEnabled);
+            _form.SetFillColorWithoutNotify(inspectorPanelState.FillColor);
+            _form.SetStrokeColorWithoutNotify(inspectorPanelState.StrokeColor);
+            _form.StrokeWidthField?.SetValueWithoutNotify(inspectorPanelState.StrokeWidth);
+            _form.OpacityField?.SetValueWithoutNotify(_form.IsOpacitySlider
+                ? inspectorPanelState.Opacity
+                : inspectorPanelState.Opacity * 100f);
+            _form.CornerRadiusField?.SetValueWithoutNotify(inspectorPanelState.CornerRadius);
+            _form.SetLinecapWithoutNotify(string.IsNullOrEmpty(inspectorPanelState.StrokeLinecap) ? LinecapActualDefaultValue : inspectorPanelState.StrokeLinecap);
+            _form.SetLinejoinWithoutNotify(string.IsNullOrEmpty(inspectorPanelState.StrokeLinejoin) ? LinejoinActualDefaultValue : inspectorPanelState.StrokeLinejoin);
+            _form.DashLengthField?.SetValueWithoutNotify(inspectorPanelState.DashLength);
+            _form.DashGapField?.SetValueWithoutNotify(inspectorPanelState.DashGap);
+            _form.TransformField?.SetValueWithoutNotify(inspectorPanelState.Transform);
+            _form.FrameXField?.SetValueWithoutNotify(inspectorPanelState.FrameX);
+            _form.FrameYField?.SetValueWithoutNotify(inspectorPanelState.FrameY);
+            _form.FrameWidthField?.SetValueWithoutNotify(inspectorPanelState.FrameWidth);
+            _form.FrameHeightField?.SetValueWithoutNotify(inspectorPanelState.FrameHeight);
+            _form.TranslateXField?.SetValueWithoutNotify(inspectorPanelState.TranslateX);
+            _form.TranslateYField?.SetValueWithoutNotify(inspectorPanelState.TranslateY);
+            _form.RotateField?.SetValueWithoutNotify(inspectorPanelState.Rotate);
+            _form.ScaleXField?.SetValueWithoutNotify(inspectorPanelState.ScaleX);
+            _form.ScaleYField?.SetValueWithoutNotify(inspectorPanelState.ScaleY);
         }
 
         public void SetTransformText(string transform)
         {
             _form.SetTransformText(transform);
+        }
+
+        private static string NormalizePopupValue(string value)
+        {
+            return string.Equals(value, RemovePlaceholder, System.StringComparison.Ordinal)
+                ? string.Empty
+                : value ?? string.Empty;
+        }
+
+        private static string NormalizeLinecapValue(string value)
+        {
+            return string.Equals(value, LinecapActualDefaultValue, System.StringComparison.Ordinal)
+                ? string.Empty
+                : NormalizePopupValue(value);
+        }
+
+        private static string NormalizeLinejoinValue(string value)
+        {
+            return string.Equals(value, LinejoinActualDefaultValue, System.StringComparison.Ordinal)
+                ? string.Empty
+                : NormalizePopupValue(value);
         }
     }
 }

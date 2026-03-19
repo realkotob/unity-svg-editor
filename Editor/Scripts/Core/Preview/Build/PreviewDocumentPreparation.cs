@@ -3,17 +3,16 @@ using System.Collections.Generic;
 using System.Xml;
 using SvgEditor.Core.Svg.Structure.Xml;
 using SvgEditor.Core.Shared;
-using Core.UI.Extensions;
-
-using SvgEditor;
-using SvgEditor.Core.Preview;
 
 namespace SvgEditor.Core.Preview.Build
 {
     internal static class PreviewDocumentPreparation
     {
+        #region Constants
         private const string SyntheticIdPrefix = "__unity_svg_editor_preview__";
+        #endregion Constants
 
+        #region Public Methods
         public static Result<PreparedPreviewDocument> Prepare(string sourceText)
         {
             if (string.IsNullOrWhiteSpace(sourceText))
@@ -49,7 +48,7 @@ namespace SvgEditor.Core.Preview.Build
                 }
 
                 bool hasStableId = XmlUtility.TryGetId(element, out string stableId);
-                if (ShouldRegisterPreviewElement(element, root, hasStableId))
+                if (!ReferenceEquals(element, root))
                 {
                     string key = XmlUtility.BuildElementKey(element, root);
                     string targetKey = key;
@@ -69,18 +68,9 @@ namespace SvgEditor.Core.Preview.Build
                 }
             }
         }
+        #endregion Public Methods
 
-        public static bool TryPrepare(
-            string sourceText,
-            out PreparedPreviewDocument preparedDocument,
-            out string error)
-        {
-            Result<PreparedPreviewDocument> result = Prepare(sourceText);
-            preparedDocument = result.GetValueOrDefault();
-            error = result.Error ?? string.Empty;
-            return result.IsSuccess;
-        }
-
+        #region Help Methods
         private static SvgPreserveAspectRatioMode ResolvePreserveAspectRatioMode(XmlElement root)
         {
             return SvgPreserveAspectRatioMode.Parse(root?.GetAttribute(SvgAttributeName.PRESERVE_ASPECT_RATIO));
@@ -98,17 +88,6 @@ namespace SvgEditor.Core.Preview.Build
                 CollectExistingIds(child, usedIds);
         }
 
-        private static bool ShouldRegisterPreviewElement(XmlElement element, XmlElement root, bool hasStableId)
-        {
-            if (ReferenceEquals(element, root))
-                return false;
-
-            if (hasStableId)
-                return true;
-
-            return true;
-        }
-
         private static string CreateSyntheticId(ISet<string> usedIds, ref int syntheticIdCounter)
         {
             string syntheticId;
@@ -121,5 +100,6 @@ namespace SvgEditor.Core.Preview.Build
             usedIds.Add(syntheticId);
             return syntheticId;
         }
+        #endregion Help Methods
     }
 }

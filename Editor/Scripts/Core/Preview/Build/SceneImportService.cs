@@ -15,10 +15,25 @@ namespace SvgEditor.Core.Preview.Build
 {
     internal static class SceneImportService
     {
+        #region Constants
         private const string PREVIEW_VECTOR_IMAGE_NAME = "VectorEditorPreview";
+        private const uint GRADIENT_RESOLUTION = 32u;
+        #endregion Constants
+
+        #region Variables
+        private static readonly VectorUtils.TessellationOptions DefaultTessellationOptions = new()
+        {
+            StepDistance = 1f,
+            SamplingStepSize = 0.1f,
+            MaxCordDeviation = 0.05f,
+            MaxTanAngleDeviation = 0.02f
+        };
+
         private static readonly MethodInfo InternalBuildVectorImageMethod = ResolveInternalBuildVectorImageMethod();
         private static bool _loggedInternalBuildVectorImageFallback;
+        #endregion Variables
 
+        #region Public Methods
         public static Result<SVGParser.SceneInfo> ImportScene(string sourceText)
         {
             Result<SVGParser.SceneInfo> result;
@@ -33,14 +48,6 @@ namespace SvgEditor.Core.Preview.Build
             }
 
             return result.Ensure(sceneInfo => sceneInfo.Scene?.Root != null, "Preview scene root was not created.");
-        }
-
-        public static bool TryImportScene(string sourceText, out SVGParser.SceneInfo sceneInfo, out string error)
-        {
-            Result<SVGParser.SceneInfo> result = ImportScene(sourceText);
-            sceneInfo = result.GetValueOrDefault();
-            error = result.Error ?? string.Empty;
-            return result.IsSuccess;
         }
 
         public static Rect ResolveProjectionRect(
@@ -59,7 +66,7 @@ namespace SvgEditor.Core.Preview.Build
         {
             IEnumerable<VectorUtils.Geometry> geometries = VectorUtils.TessellateScene(
                 sceneInfo.Scene,
-                PreviewBuildOptions.CreateTessellationOptions(),
+                DefaultTessellationOptions,
                 sceneInfo.NodeOpacity);
 
             return BuildPreviewVectorImage(
@@ -72,13 +79,13 @@ namespace SvgEditor.Core.Preview.Build
         {
             IEnumerable<VectorUtils.Geometry> geometries = VectorUtils.TessellateScene(
                 scene,
-                PreviewBuildOptions.CreateTessellationOptions(),
+                DefaultTessellationOptions,
                 nodeOpacity);
 
             return BuildPreviewVectorImage(
                 geometries,
                 previewRect,
-                () => VectorUtils.BuildVectorImage(geometries, PreviewBuildOptions.GRADIENT_RESOLUTION));
+                () => VectorUtils.BuildVectorImage(geometries, GRADIENT_RESOLUTION));
         }
 
         private static MethodInfo ResolveInternalBuildVectorImageMethod()
@@ -101,25 +108,24 @@ namespace SvgEditor.Core.Preview.Build
             Rect previewRect,
             Func<VectorImage> fallbackBuilder)
         {
-            string reflectionError = string.Empty;
-            VectorImage vectorImage = TryBuildVectorImageWithPreviewRect(geometries, previewRect, out reflectionError);
-            if (vectorImage == null)
+            Result<VectorImage> reflectionResult = BuildVectorImageWithPreviewRect(geometries, previewRect);
+            if (reflectionResult.IsFailure)
             {
-                LogReflectionFallback(reflectionError);
-                vectorImage = fallbackBuilder();
+                LogReflectionFallback(reflectionResult.Error);
+                return FinalizePreviewVectorImage(fallbackBuilder());
             }
 
-            return FinalizePreviewVectorImage(vectorImage);
+            return FinalizePreviewVectorImage(reflectionResult.Value);
         }
+        #endregion Public Methods
 
-        private static VectorImage TryBuildVectorImageWithPreviewRect(
+        #region Help Methods
+        private static Result<VectorImage> BuildVectorImageWithPreviewRect(
             IEnumerable<VectorUtils.Geometry> geometries,
-            Rect previewRect,
-            out string error)
+            Rect previewRect)
         {
-            error = string.Empty;
             if (InternalBuildVectorImageMethod == null)
-                return null;
+                return Result.Failure<VectorImage>("Internal BuildVectorImage method is unavailable.");
 
             try
             {
@@ -129,23 +135,20 @@ namespace SvgEditor.Core.Preview.Build
                     {
                         geometries,
                         previewRect,
-                        PreviewBuildOptions.GRADIENT_RESOLUTION
+                        GRADIENT_RESOLUTION
                     }) as VectorImage;
 
-                if (vectorImage == null)
-                    error = "Internal BuildVectorImage returned null.";
-
-                return vectorImage;
+                return vectorImage != null
+                    ? Result.Success(vectorImage)
+                    : Result.Failure<VectorImage>("Internal BuildVectorImage returned null.");
             }
             catch (TargetInvocationException ex)
             {
-                error = ex.InnerException?.Message ?? ex.Message;
-                return null;
+                return Result.Failure<VectorImage>(ex.InnerException?.Message ?? ex.Message);
             }
             catch (Exception ex)
             {
-                error = ex.Message;
-                return null;
+                return Result.Failure<VectorImage>(ex.Message);
             }
         }
 
@@ -167,5 +170,6 @@ namespace SvgEditor.Core.Preview.Build
             vectorImage.name = PREVIEW_VECTOR_IMAGE_NAME;
             return vectorImage;
         }
+        #endregion Help Methods
     }
 }

@@ -17,10 +17,8 @@ namespace SvgEditor.Core.Preview.Rendering
         private readonly SvgShapeStyleBuilder _shapeStyleBuilder = new();
 
         public bool TryAddRectShape(
-            SvgDocumentModel documentModel,
+            SvgShapeBuilder.RenderBuildContext context,
             SvgNodeModel node,
-            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
-            SceneNode sceneNode,
             out string error)
         {
             error = string.Empty;
@@ -35,7 +33,7 @@ namespace SvgEditor.Core.Preview.Rendering
                 return false;
             }
 
-            var shape = _shapeStyleBuilder.CreateStyledShape(documentModel, node, nodesByXmlId);
+            var shape = _shapeStyleBuilder.CreateStyledShape(context.DocumentModel, node, context.NodesByXmlId);
             var rx = 0f;
             var ry = 0f;
             AttributeUtility.TryGetFloat(node.RawAttributes, SvgAttributeName.RX, out rx);
@@ -52,15 +50,13 @@ namespace SvgEditor.Core.Preview.Rendering
                 new Vector2(rx, ry),
                 new Vector2(rx, ry),
                 new Vector2(rx, ry));
-            sceneNode.Shapes.Add(shape);
+            context.SceneNode.Shapes.Add(shape);
             return true;
         }
 
         public bool TryAddCircleShape(
-            SvgDocumentModel documentModel,
+            SvgShapeBuilder.RenderBuildContext context,
             SvgNodeModel node,
-            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
-            SceneNode sceneNode,
             out string error)
         {
             error = string.Empty;
@@ -74,17 +70,15 @@ namespace SvgEditor.Core.Preview.Rendering
                 return false;
             }
 
-            var shape = _shapeStyleBuilder.CreateStyledShape(documentModel, node, nodesByXmlId);
+            var shape = _shapeStyleBuilder.CreateStyledShape(context.DocumentModel, node, context.NodesByXmlId);
             VectorUtils.MakeCircleShape(shape, new Vector2(cx, cy), radius);
-            sceneNode.Shapes.Add(shape);
+            context.SceneNode.Shapes.Add(shape);
             return true;
         }
 
         public bool TryAddEllipseShape(
-            SvgDocumentModel documentModel,
+            SvgShapeBuilder.RenderBuildContext context,
             SvgNodeModel node,
-            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
-            SceneNode sceneNode,
             out string error)
         {
             error = string.Empty;
@@ -99,17 +93,15 @@ namespace SvgEditor.Core.Preview.Rendering
                 return false;
             }
 
-            var shape = _shapeStyleBuilder.CreateStyledShape(documentModel, node, nodesByXmlId);
+            var shape = _shapeStyleBuilder.CreateStyledShape(context.DocumentModel, node, context.NodesByXmlId);
             VectorUtils.MakeEllipseShape(shape, new Vector2(cx, cy), rx, ry);
-            sceneNode.Shapes.Add(shape);
+            context.SceneNode.Shapes.Add(shape);
             return true;
         }
 
         public bool TryAddLineShape(
-            SvgDocumentModel documentModel,
+            SvgShapeBuilder.RenderBuildContext context,
             SvgNodeModel node,
-            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
-            SceneNode sceneNode,
             out string error)
         {
             error = string.Empty;
@@ -122,7 +114,7 @@ namespace SvgEditor.Core.Preview.Rendering
             if (!AttributeUtility.TryGetFloat(node.RawAttributes, SvgAttributeName.Y2, out var y2))
                 y2 = 0f;
 
-            var shape = _shapeStyleBuilder.CreateStyledShape(documentModel, node, nodesByXmlId, allowDefaultFill: false);
+            var shape = _shapeStyleBuilder.CreateStyledShape(context.DocumentModel, node, context.NodesByXmlId, allowDefaultFill: false);
             shape.Contours = new[]
             {
                 new BezierContour
@@ -132,15 +124,13 @@ namespace SvgEditor.Core.Preview.Rendering
                 }
             };
             shape.IsConvex = false;
-            sceneNode.Shapes.Add(shape);
+            context.SceneNode.Shapes.Add(shape);
             return true;
         }
 
         public bool TryAddPathShape(
-            SvgDocumentModel documentModel,
+            SvgShapeBuilder.RenderBuildContext context,
             SvgNodeModel node,
-            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
-            SceneNode sceneNode,
             out string error)
         {
             error = string.Empty;
@@ -156,18 +146,16 @@ namespace SvgEditor.Core.Preview.Rendering
                 return false;
             }
 
-            var shape = _shapeStyleBuilder.CreateStyledShape(documentModel, node, nodesByXmlId, allowDefaultFill: false);
+            var shape = _shapeStyleBuilder.CreateStyledShape(context.DocumentModel, node, context.NodesByXmlId, allowDefaultFill: false);
             shape.Contours = contours;
             shape.IsConvex = false;
-            sceneNode.Shapes.Add(shape);
+            context.SceneNode.Shapes.Add(shape);
             return true;
         }
 
         public bool TryAddPolylineShape(
-            SvgDocumentModel documentModel,
+            SvgShapeBuilder.RenderBuildContext context,
             SvgNodeModel node,
-            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
-            SceneNode sceneNode,
             out string error,
             bool closed)
         {
@@ -189,7 +177,7 @@ namespace SvgEditor.Core.Preview.Rendering
             if (closed && (points[0] - points[^1]).sqrMagnitude > Mathf.Epsilon)
                 segments.Add(VectorUtils.MakeLine(points[^1], points[0]));
 
-            var shape = _shapeStyleBuilder.CreateStyledShape(documentModel, node, nodesByXmlId, allowDefaultFill: closed);
+            var shape = _shapeStyleBuilder.CreateStyledShape(context.DocumentModel, node, context.NodesByXmlId, allowDefaultFill: closed);
             shape.Contours = new[]
             {
                 new BezierContour
@@ -199,7 +187,7 @@ namespace SvgEditor.Core.Preview.Rendering
                 }
             };
             shape.IsConvex = closed;
-            sceneNode.Shapes.Add(shape);
+            context.SceneNode.Shapes.Add(shape);
             return true;
         }
     }

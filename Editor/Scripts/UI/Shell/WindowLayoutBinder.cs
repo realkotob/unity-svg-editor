@@ -204,7 +204,7 @@ namespace SvgEditor.UI.Shell
 
         private void ApplyToolbarIcons()
         {
-            EditorFoundationIconUtility.ApplyToggleVectorImage(_root, ElementName.MOVE_TOOL, SvgEditorIconPath.Lucide.Move);
+            EditorFoundationIconUtility.ApplyToggleVectorImage(_root, ElementName.MOVE_TOOL, IconPath.Lucide.Move);
         }
     }
 }

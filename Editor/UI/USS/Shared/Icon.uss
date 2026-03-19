@@ -4,6 +4,7 @@
     --icon-chevron-down: resource("Icons/lucide/chevron-down");
     --icon-plus: resource("Icons/lucide/plus");
     --icon-minus: resource("Icons/lucide/minus");
+    --icon-refresh: resource("Icons/lucide/refresh-ccw");
     --icon-square: resource("Icons/lucide/square");
     --icon-circle: resource("Icons/lucide/circle");
     --icon-file-text: resource("Icons/lucide/file-text");
@@ -31,6 +32,7 @@
 .icon-chevron-right { background-image: var(--icon-chevron-right); }
 .icon-plus { background-image: var(--icon-plus); }
 .icon-minus { background-image: var(--icon-minus); }
+.icon-refresh { background-image: var(--icon-refresh); }
 .icon-square { background-image: var(--icon-square); }
 .icon-circle { background-image: var(--icon-circle); }
 .icon-file-text { background-image: var(--icon-file-text); }

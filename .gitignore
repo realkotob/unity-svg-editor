@@ -8,3 +8,5 @@
 obj/
 /docs
 /.codex
+/Tests
+Tests.meta

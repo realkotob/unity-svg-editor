@@ -1,9 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using Core.UI.Extensions;
-
-using SvgEditor;
-using SvgEditor.Core.Preview;
 
 namespace SvgEditor.Core.Preview.Geometry
 {
@@ -86,14 +82,6 @@ namespace SvgEditor.Core.Preview.Geometry
             }
 
             return false;
-        }
-
-        public bool TryHitTest(
-            IReadOnlyList<PreviewElementGeometry> elements,
-            Vector2 scenePoint,
-            out PreviewElementGeometry hitElement)
-        {
-            return TryHitTest(elements, scenePoint, 0f, out hitElement);
         }
 
         private static bool TryHitGeometry(

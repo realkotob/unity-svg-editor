@@ -13,8 +13,24 @@ namespace SvgEditor.Core.Preview.Rendering
 {
     internal sealed class SvgShapeBuilder
     {
+        internal readonly struct RenderBuildContext
+        {
+            public RenderBuildContext(
+                SvgDocumentModel documentModel,
+                IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
+                SceneNode sceneNode)
+            {
+                DocumentModel = documentModel;
+                NodesByXmlId = nodesByXmlId;
+                SceneNode = sceneNode;
+            }
+
+            public SvgDocumentModel DocumentModel { get; }
+            public IReadOnlyDictionary<string, SvgNodeModel> NodesByXmlId { get; }
+            public SceneNode SceneNode { get; }
+        }
+
         private readonly SvgPrimitiveShapeBuilder _primitiveShapeBuilder = new();
-        private readonly SvgShapeStyleBuilder _shapeStyleBuilder = new();
 
         public bool TryBuildShapes(
             SvgDocumentModel documentModel,
@@ -27,45 +43,45 @@ namespace SvgEditor.Core.Preview.Rendering
             if (node == null || sceneNode == null)
                 return true;
 
+            RenderBuildContext context = new(documentModel, nodesByXmlId, sceneNode);
+
             switch (node.TagName)
             {
                 case SvgTagName.GROUP:
                 case SvgTagName.SVG:
                     return true;
                 case SvgTagName.RECT:
-                    return _primitiveShapeBuilder.TryAddRectShape(documentModel, node, nodesByXmlId, sceneNode, out error);
+                    return _primitiveShapeBuilder.TryAddRectShape(context, node, out error);
                 case SvgTagName.CIRCLE:
-                    return _primitiveShapeBuilder.TryAddCircleShape(documentModel, node, nodesByXmlId, sceneNode, out error);
+                    return _primitiveShapeBuilder.TryAddCircleShape(context, node, out error);
                 case SvgTagName.ELLIPSE:
-                    return _primitiveShapeBuilder.TryAddEllipseShape(documentModel, node, nodesByXmlId, sceneNode, out error);
+                    return _primitiveShapeBuilder.TryAddEllipseShape(context, node, out error);
                 case SvgTagName.LINE:
-                    return _primitiveShapeBuilder.TryAddLineShape(documentModel, node, nodesByXmlId, sceneNode, out error);
+                    return _primitiveShapeBuilder.TryAddLineShape(context, node, out error);
                 case SvgTagName.POLYLINE:
-                    return _primitiveShapeBuilder.TryAddPolylineShape(documentModel, node, nodesByXmlId, sceneNode, out error, closed: false);
+                    return _primitiveShapeBuilder.TryAddPolylineShape(context, node, out error, closed: false);
                 case SvgTagName.POLYGON:
-                    return _primitiveShapeBuilder.TryAddPolylineShape(documentModel, node, nodesByXmlId, sceneNode, out error, closed: true);
+                    return _primitiveShapeBuilder.TryAddPolylineShape(context, node, out error, closed: true);
                 case SvgTagName.PATH:
-                    return _primitiveShapeBuilder.TryAddPathShape(documentModel, node, nodesByXmlId, sceneNode, out error);
+                    return _primitiveShapeBuilder.TryAddPathShape(context, node, out error);
                 case SvgTagName.TEXT:
                 case SvgTagName.TSPAN:
                 case SvgTagName.TEXT_PATH:
                     return true;
                 case SvgTagName.USE:
-                    return TryAddUseNode(documentModel, nodesByXmlId, node, sceneNode, out error);
+                    return TryAddUseNode(context, node, out error);
                 default:
                     return true;
             }
         }
 
         private bool TryAddUseNode(
-            SvgDocumentModel documentModel,
-            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
+            RenderBuildContext context,
             SvgNodeModel useNode,
-            SceneNode sceneNode,
             out string error)
         {
             error = string.Empty;
-            if (!NodeLookup.TryResolveUseReference(useNode, nodesByXmlId, out var referencedNode))
+            if (!NodeLookup.TryResolveUseReference(useNode, context.NodesByXmlId, out var referencedNode))
             {
                 error = $"Direct renderer could not resolve <use> target for '{useNode.LegacyElementKey}'.";
                 return false;
@@ -76,20 +92,19 @@ namespace SvgEditor.Core.Preview.Rendering
             if (!AttributeUtility.TryGetFloat(useNode.RawAttributes, SvgAttributeName.Y, out var y))
                 y = 0f;
             if (!UnityEngine.Mathf.Approximately(x, 0f) || !UnityEngine.Mathf.Approximately(y, 0f))
-                sceneNode.Transform = Matrix2D.Translate(new UnityEngine.Vector2(x, y)) * sceneNode.Transform;
+                context.SceneNode.Transform = Matrix2D.Translate(new UnityEngine.Vector2(x, y)) * context.SceneNode.Transform;
 
-            if (!TryBuildReferencedNode(documentModel, nodesByXmlId, referencedNode, out var referencedSceneNode, out error))
+            if (!TryBuildReferencedNode(context, referencedNode, out var referencedSceneNode, out error))
                 return false;
 
             if (referencedSceneNode != null)
-                sceneNode.Children.Add(referencedSceneNode);
+                context.SceneNode.Children.Add(referencedSceneNode);
 
             return true;
         }
 
         private bool TryBuildReferencedNode(
-            SvgDocumentModel documentModel,
-            IReadOnlyDictionary<string, SvgNodeModel> nodesByXmlId,
+            RenderBuildContext parentContext,
             SvgNodeModel node,
             out SceneNode sceneNode,
             out string error)
@@ -107,7 +122,8 @@ namespace SvgEditor.Core.Preview.Rendering
                 Transform = TransformParser.Parse(node.RawAttributes)
             };
 
-            if (!TryBuildShapes(documentModel, nodesByXmlId, node, sceneNode, out error))
+            RenderBuildContext context = new(parentContext.DocumentModel, parentContext.NodesByXmlId, sceneNode);
+            if (!TryBuildShapes(context.DocumentModel, context.NodesByXmlId, node, context.SceneNode, out error))
                 return false;
 
             if (node.Children == null)
@@ -116,10 +132,10 @@ namespace SvgEditor.Core.Preview.Rendering
             for (var index = 0; index < node.Children.Count; index++)
             {
                 var childId = node.Children[index];
-                if (!documentModel.TryGetNode(childId, out var childNode) || childNode == null)
+                if (!parentContext.DocumentModel.TryGetNode(childId, out var childNode) || childNode == null)
                     continue;
 
-                if (!TryBuildReferencedNode(documentModel, nodesByXmlId, childNode, out var childSceneNode, out error))
+                if (!TryBuildReferencedNode(parentContext, childNode, out var childSceneNode, out error))
                     return false;
 
                 if (childSceneNode != null)
