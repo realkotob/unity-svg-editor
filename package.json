@@ -2,18 +2,14 @@
   "name": "com.maemi.unity-svg-editor",
   "version": "0.1.0",
   "displayName": "Unity SVG Editor",
-  "description": "Unity editor package for inspecting, previewing, validating, and patching SVG source with foundation-based UI controls.",
+  "description": "Unity editor package for inspecting, previewing, validating, and patching SVG source with local UI Toolkit controls.",
   "unity": "6000.0",
-  "dependencies": {
-    "com.newmassmedia.unity-uitoolkit-foundation": "1.5.2",
-    "com.maemi.unity-uitoolkit-shadcn-theme": "0.1.0"
-  },
   "keywords": [
     "svg",
     "editor",
     "ui-toolkit",
     "vector",
-    "foundation"
+    "editor"
   ],
   "author": {
     "name": "Maemi"

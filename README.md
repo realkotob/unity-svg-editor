@@ -121,8 +121,8 @@ fixture 위치:
 ## 패키지 / UI 의존
 
 - `unity-svg-editor`는 private `CoreUI` 전체에 의존하지 않습니다.
-- 공용 UI는 `com.newmassmedia.unity-uitoolkit-foundation` 패키지 표면을 사용합니다.
-- 테마 토큰은 `com.maemi.unity-uitoolkit-shadcn-theme` 패키지를 사용합니다.
+- 공용 UI와 필요한 확장 메서드는 패키지 내부에 포함되어 있습니다.
+- 별도 scoped registry나 외부 UI theme 패키지 없이 설치할 수 있습니다.
 - editor 리소스는 패키지 내부 `Editor/Resources/` 아래에 두고 `Resources.Load`로 읽습니다.
 
 ## 현재 비목표
