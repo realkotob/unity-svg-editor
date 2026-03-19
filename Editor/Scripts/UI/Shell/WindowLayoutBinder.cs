@@ -46,7 +46,22 @@ namespace SvgEditor.UI.Shell
 
         private static void ApplyTheme(VisualElement root)
         {
-            EditorThemeUtility.ApplyThemeStyleSheet(root, THEME_RESOURCE_PATH);
+            if (root == null)
+            {
+                return;
+            }
+
+            ThemeStyleSheet theme = Resources.Load<ThemeStyleSheet>(THEME_RESOURCE_PATH);
+            if (theme == null)
+            {
+                Debug.LogError($"Theme stylesheet '{THEME_RESOURCE_PATH}' could not be loaded from Resources.");
+                return;
+            }
+
+            if (!root.styleSheets.Contains(theme))
+            {
+                root.styleSheets.Add(theme);
+            }
         }
     }
 
