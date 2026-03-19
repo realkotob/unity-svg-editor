@@ -2,16 +2,17 @@ using System;
 using System.Collections.Generic;
 using Unity.VectorGraphics;
 using UnityEngine;
-using SvgEditor.Workspace.Canvas;
-using SvgEditor.DocumentModel;
-using SvgEditor.Shared;
-using SvgEditor.Document;
-using SvgEditor.Document.Structure.Hierarchy;
-using SvgEditor.Document.Structure.Lookup;
+using SvgEditor.UI.Canvas;
+using SvgEditor.Core.Svg.Hierarchy;
+using SvgEditor.Core.Svg.Model;
+using SvgEditor.Core.Svg.Structure.Lookup;
+using SvgEditor.Core.Svg.Transforms;
+using SvgEditor.Core.Shared;
 using Core.UI.Extensions;
 
 using SvgEditor;
-using SvgEditor.Preview;
+using SvgEditor.Core.Preview;
+using SvgEditor.Core.Preview.Rendering;
 
 namespace SvgEditor.Renderer
 {
@@ -37,10 +38,10 @@ namespace SvgEditor.Renderer
             if (documentModel?.Root == null || string.IsNullOrWhiteSpace(elementKey))
                 return true;
 
-            if (!SvgNodeLookupUtility.TryFindNodeByLegacyElementKey(documentModel, elementKey, out var node) || node == null)
+            if (!NodeLookup.TryFindNodeByLegacyElementKey(documentModel, elementKey, out var node) || node == null)
                 return true;
 
-            var nodesByXmlId = SvgNodeLookupUtility.BuildNodeLookupByXmlId(documentModel);
+            var nodesByXmlId = NodeLookup.BuildNodeLookupByXmlId(documentModel);
             var resolved = new List<CanvasDefinitionOverlayScene>();
 
             if (!_referenceSceneBuilder.TryBuildReferenceOverlayScene(documentModel, nodesByXmlId, node, CanvasDefinitionOverlayKind.Mask, out CanvasDefinitionOverlayScene maskOverlay, out error))
@@ -85,7 +86,7 @@ namespace SvgEditor.Renderer
             result.DocumentViewportRect = SvgDocumentViewportResolver.Resolve(documentModel);
             result.PreserveAspectRatioMode = SvgPreserveAspectRatioMode.Parse(documentModel.PreserveAspectRatio);
 
-            var nodesByXmlId = SvgNodeLookupUtility.BuildNodeLookupByXmlId(documentModel);
+            var nodesByXmlId = NodeLookup.BuildNodeLookupByXmlId(documentModel);
 
             if (!TryBuildChildren(documentModel, nodesByXmlId, documentModel.Root, rootSceneNode, result, out error))
                 return false;
@@ -132,14 +133,14 @@ namespace SvgEditor.Renderer
             sceneNode = null;
             error = string.Empty;
 
-            if (node == null || node.IsDefinitionNode || node.Kind == SvgNodeKind.Definitions || IsHidden(node))
+            if (node == null || node.IsDefinitionNode || node.Kind == SvgNodeCategory.Definitions || IsHidden(node))
                 return true;
 
             sceneNode = new SceneNode
             {
                 Children = new List<SceneNode>(),
                 Shapes = new List<Shape>(),
-                Transform = SvgTransformParser.Parse(node.RawAttributes)
+                Transform = TransformParser.Parse(node.RawAttributes)
             };
 
             if (!_referenceSceneBuilder.TryAttachMask(documentModel, nodesByXmlId, node, sceneNode, out error))
@@ -154,7 +155,7 @@ namespace SvgEditor.Renderer
             if (!TryBuildChildren(documentModel, nodesByXmlId, node, sceneNode, result, out error))
                 return false;
 
-            if (SvgAttributeUtility.TryGetOpacity(node.RawAttributes, out var opacity) && !Mathf.Approximately(opacity, 1f))
+            if (AttributeUtility.TryGetOpacity(node.RawAttributes, out var opacity) && !Mathf.Approximately(opacity, 1f))
                 result.NodeOpacities[sceneNode] = opacity;
 
             if (!node.Id.IsRoot)
@@ -165,7 +166,7 @@ namespace SvgEditor.Renderer
 
         private static bool IsHidden(SvgNodeModel node)
         {
-            return SvgAttributeUtility.TryGetAttribute(node?.RawAttributes, SvgAttributeName.DISPLAY, out var display) &&
+            return AttributeUtility.TryGetAttribute(node?.RawAttributes, SvgAttributeName.DISPLAY, out var display) &&
                    string.Equals(display, "none", StringComparison.OrdinalIgnoreCase);
         }
     }
@@ -192,10 +193,10 @@ namespace SvgEditor.Renderer
 
             var tokens = viewBoxText.Split(new[] { ' ', ',', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
             if (tokens.Length != 4 ||
-                !SvgAttributeUtility.TryParseFloat(tokens[0], out var minX) ||
-                !SvgAttributeUtility.TryParseFloat(tokens[1], out var minY) ||
-                !SvgAttributeUtility.TryParseFloat(tokens[2], out var width) ||
-                !SvgAttributeUtility.TryParseFloat(tokens[3], out var height))
+                !AttributeUtility.TryParseFloat(tokens[0], out var minX) ||
+                !AttributeUtility.TryParseFloat(tokens[1], out var minY) ||
+                !AttributeUtility.TryParseFloat(tokens[2], out var width) ||
+                !AttributeUtility.TryParseFloat(tokens[3], out var height))
             {
                 return false;
             }
@@ -213,7 +214,7 @@ namespace SvgEditor.Renderer
             while (length < value.Length && ("+-0123456789.eE".IndexOf(value[length]) >= 0))
                 length++;
 
-            return length > 0 && SvgAttributeUtility.TryParseFloat(value.Substring(0, length), out var parsed)
+            return length > 0 && AttributeUtility.TryParseFloat(value.Substring(0, length), out var parsed)
                 ? parsed
                 : 0f;
         }

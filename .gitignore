@@ -6,3 +6,5 @@
 *.csproj
 *.sln
 obj/
+/docs
+/.codex

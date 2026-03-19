@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.UIElements;
-using SvgEditor.Shared;
+using SvgEditor.Core.Shared;
 
 namespace SvgEditor
 {

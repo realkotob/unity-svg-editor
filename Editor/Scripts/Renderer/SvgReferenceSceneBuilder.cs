@@ -2,16 +2,17 @@ using System;
 using System.Collections.Generic;
 using Unity.VectorGraphics;
 using UnityEngine;
-using SvgEditor.Workspace.Canvas;
-using SvgEditor.DocumentModel;
-using SvgEditor.Shared;
-using SvgEditor.Document;
-using SvgEditor.Document.Structure.Hierarchy;
-using SvgEditor.Document.Structure.Lookup;
+using SvgEditor.UI.Canvas;
+using SvgEditor.Core.Svg.Hierarchy;
+using SvgEditor.Core.Svg.Model;
+using SvgEditor.Core.Svg.Structure.Lookup;
+using SvgEditor.Core.Svg.Transforms;
+using SvgEditor.Core.Shared;
 using Core.UI.Extensions;
 
 using SvgEditor;
-using SvgEditor.Preview;
+using SvgEditor.Core.Preview;
+using SvgEditor.Core.Preview.Rendering;
 
 namespace SvgEditor.Renderer
 {
@@ -32,12 +33,12 @@ namespace SvgEditor.Renderer
             out string error)
         {
             error = string.Empty;
-            if (!SvgAttributeUtility.TryGetAttribute(node?.RawAttributes, SvgAttributeName.MASK, out var maskValue))
+            if (!AttributeUtility.TryGetAttribute(node?.RawAttributes, SvgAttributeName.MASK, out var maskValue))
             {
                 return true;
             }
 
-            if (!SvgNodeLookupUtility.TryExtractFragmentId(maskValue, out var fragmentId) ||
+            if (!NodeLookup.TryExtractFragmentId(maskValue, out var fragmentId) ||
                 nodesByXmlId == null ||
                 !nodesByXmlId.TryGetValue(fragmentId, out var maskNode) ||
                 !string.Equals(maskNode.TagName, SvgTagName.MASK, StringComparison.OrdinalIgnoreCase))
@@ -62,12 +63,12 @@ namespace SvgEditor.Renderer
             out string error)
         {
             error = string.Empty;
-            if (!SvgAttributeUtility.TryGetAttribute(node?.RawAttributes, SvgAttributeName.CLIP_PATH, out var clipPathValue))
+            if (!AttributeUtility.TryGetAttribute(node?.RawAttributes, SvgAttributeName.CLIP_PATH, out var clipPathValue))
             {
                 return true;
             }
 
-            if (!SvgNodeLookupUtility.TryExtractFragmentId(clipPathValue, out var fragmentId) ||
+            if (!NodeLookup.TryExtractFragmentId(clipPathValue, out var fragmentId) ||
                 nodesByXmlId == null ||
                 !nodesByXmlId.TryGetValue(fragmentId, out var clipNode) ||
                 !string.Equals(clipNode.TagName, SvgTagName.CLIP_PATH, StringComparison.OrdinalIgnoreCase))
@@ -102,8 +103,8 @@ namespace SvgEditor.Renderer
 
             var attributeName = kind == CanvasDefinitionOverlayKind.Mask ? SvgAttributeName.MASK : SvgAttributeName.CLIP_PATH;
             var expectedTag = kind == CanvasDefinitionOverlayKind.Mask ? SvgTagName.MASK : SvgTagName.CLIP_PATH;
-            if (!SvgAttributeUtility.TryGetAttribute(node.RawAttributes, attributeName, out var rawValue) ||
-                !SvgNodeLookupUtility.TryExtractFragmentId(rawValue, out var fragmentId) ||
+            if (!AttributeUtility.TryGetAttribute(node.RawAttributes, attributeName, out var rawValue) ||
+                !NodeLookup.TryExtractFragmentId(rawValue, out var fragmentId) ||
                 !nodesByXmlId.TryGetValue(fragmentId, out var referenceNode) ||
                 !string.Equals(referenceNode.TagName, expectedTag, StringComparison.OrdinalIgnoreCase))
             {
@@ -145,7 +146,7 @@ namespace SvgEditor.Renderer
             {
                 Children = new List<SceneNode>(),
                 Shapes = new List<Shape>(),
-                Transform = SvgTransformParser.Parse(clipNode?.RawAttributes)
+                Transform = TransformParser.Parse(clipNode?.RawAttributes)
             };
             error = string.Empty;
 
@@ -167,7 +168,7 @@ namespace SvgEditor.Renderer
                 {
                     Children = new List<SceneNode>(),
                     Shapes = new List<Shape>(),
-                    Transform = SvgTransformParser.Parse(childNode.RawAttributes)
+                    Transform = TransformParser.Parse(childNode.RawAttributes)
                 };
 
                 if (!_shapeBuilder.TryBuildShapes(documentModel, nodesByXmlId, childNode, clipChildNode, out error))
@@ -195,7 +196,7 @@ namespace SvgEditor.Renderer
             {
                 Children = new List<SceneNode>(),
                 Shapes = new List<Shape>(),
-                Transform = SvgTransformParser.Parse(maskNode?.RawAttributes)
+                Transform = TransformParser.Parse(maskNode?.RawAttributes)
             };
             error = string.Empty;
 
@@ -220,7 +221,7 @@ namespace SvgEditor.Renderer
                 {
                     Children = new List<SceneNode>(),
                     Shapes = new List<Shape>(),
-                    Transform = SvgTransformParser.Parse(childNode.RawAttributes)
+                    Transform = TransformParser.Parse(childNode.RawAttributes)
                 };
 
                 if (!_shapeBuilder.TryBuildShapes(documentModel, nodesByXmlId, childNode, maskChildNode, out error))
@@ -239,24 +240,24 @@ namespace SvgEditor.Renderer
 
         private static bool IsHidden(SvgNodeModel node)
         {
-            return SvgAttributeUtility.TryGetAttribute(node?.RawAttributes, SvgAttributeName.DISPLAY, out var display) &&
+            return AttributeUtility.TryGetAttribute(node?.RawAttributes, SvgAttributeName.DISPLAY, out var display) &&
                    string.Equals(display, "none", StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool ShouldIncludeMaskNode(SvgNodeModel node)
         {
-            if (!SvgAttributeUtility.TryGetAttribute(node?.RawAttributes, SvgAttributeName.FILL, out var fillValue))
+            if (!AttributeUtility.TryGetAttribute(node?.RawAttributes, SvgAttributeName.FILL, out var fillValue))
             {
                 return false;
             }
 
-            if (!SvgAttributeUtility.TryParseColor(fillValue, out var color))
+            if (!AttributeUtility.TryParseColor(fillValue, out var color))
             {
                 return false;
             }
 
             var opacity = 1f;
-            if (SvgAttributeUtility.TryGetFloat(node?.RawAttributes, SvgAttributeName.FILL_OPACITY, out var resolvedOpacity))
+            if (AttributeUtility.TryGetFloat(node?.RawAttributes, SvgAttributeName.FILL_OPACITY, out var resolvedOpacity))
             {
                 opacity = Mathf.Clamp01(resolvedOpacity);
             }

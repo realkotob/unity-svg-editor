@@ -1,0 +1,51 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Xml;
+using SvgEditor.Core.Shared;
+
+namespace SvgEditor.Core.Svg.Structure.Xml
+{
+    internal static class MaskArtifactSanitizer
+    {
+        public static bool TrySanitize(string sourceText, out string sanitizedSourceText, out bool changed, out string error)
+        {
+            sanitizedSourceText = sourceText ?? string.Empty;
+            changed = false;
+            error = string.Empty;
+
+            if (string.IsNullOrWhiteSpace(sourceText))
+            {
+                return true;
+            }
+
+            if (!XmlUtility.TryGetRootElement(sourceText, out XmlDocument document, out XmlElement root, out error))
+            {
+                return false;
+            }
+
+            List<XmlElement> maskElements = XmlUtility
+                .EnumerateElementsDepthFirst(root)
+                .Where(element => string.Equals(element.LocalName, SvgTagName.MASK, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            foreach (XmlElement maskElement in maskElements)
+            {
+                if (!MaskRectRewriteCandidate.TryCreate(document, root, maskElement, out var candidate))
+                {
+                    continue;
+                }
+
+                candidate.Apply();
+                changed = true;
+            }
+
+            if (changed)
+            {
+                sanitizedSourceText = document.OuterXml;
+            }
+
+            return true;
+        }
+    }
+}
