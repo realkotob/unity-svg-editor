@@ -1,9 +1,7 @@
 {
     "name": "SvgEditor.Editor",
     "rootNamespace": "SvgEditor.Editor",
-    "references": [
-        "Core.UI.Extensions"
-    ],
+    "references": [],
     "includePlatforms": [
         "Editor"
     ],

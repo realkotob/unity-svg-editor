@@ -4,8 +4,8 @@ using SvgEditor.Core.Svg.Analysis;
 using SvgEditor.Core.Svg.Model;
 using SvgEditor.Core.Svg.Serialization;
 using SvgEditor.Core.Svg.Structure.Xml;
-using Core.UI.Extensions;
 using SvgEditor.Core.Shared;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Core.Svg.Source
 {

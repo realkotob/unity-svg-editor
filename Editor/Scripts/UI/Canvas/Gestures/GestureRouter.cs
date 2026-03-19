@@ -5,8 +5,8 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using SvgEditor.Core.Svg.Hierarchy;
 using SvgEditor.Core.Svg.Source;
-using Core.UI.Extensions;
 using SvgEditor.Core.Shared;
+using Core.UI.Extensions;
 
 using SvgEditor;
 using SvgEditor.Core.Preview;

@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
-using Core.UI.Extensions;
 using SvgEditor.Core.Shared;
+using Core.UI.Extensions;
 
 using SvgEditor;
 using SvgEditor.Core.Preview;

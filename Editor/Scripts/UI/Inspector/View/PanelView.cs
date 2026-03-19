@@ -1,8 +1,8 @@
 using System;
 using UnityEngine;
 using UnityEngine.UIElements;
-using Core.UI.Extensions;
 using SvgEditor.UI.Inspector.State;
+using Core.UI.Extensions;
 
 using SvgEditor;
 

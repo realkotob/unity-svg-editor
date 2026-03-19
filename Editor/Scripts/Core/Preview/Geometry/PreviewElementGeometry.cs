@@ -4,7 +4,6 @@ using Unity.VectorGraphics;
 using UnityEngine;
 using Core.UI.Extensions;
 
-using SvgEditor;
 
 namespace SvgEditor.Core.Preview
 {

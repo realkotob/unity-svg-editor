@@ -1,7 +1,6 @@
 using System;
 using Core.UI.Extensions;
 
-using SvgEditor;
 
 namespace SvgEditor.Core.Preview
 {

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using Core.UI.Extensions;
 using SvgEditor.Core.Shared;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Core.UI.Extensions;
 
 namespace SvgEditor.UI.AssetLibrary.Grid
 {

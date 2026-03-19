@@ -3,8 +3,6 @@ using Unity.VectorGraphics;
 using UnityEngine;
 using Core.UI.Extensions;
 
-using SvgEditor;
-
 namespace SvgEditor.Core.Preview.Geometry
 {
     internal static class GeometryWorldContextBuilder

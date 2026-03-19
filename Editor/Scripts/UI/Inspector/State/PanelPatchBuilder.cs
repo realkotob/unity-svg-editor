@@ -2,8 +2,8 @@ using System.Globalization;
 using UnityEngine;
 using SvgEditor.Core.Svg.Mutation;
 using SvgEditor.Core.Svg.Transforms;
-using Core.UI.Extensions;
 using SvgEditor.UI.Inspector.State;
+using Core.UI.Extensions;
 
 namespace SvgEditor.UI.Inspector
 {

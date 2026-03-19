@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UIElements;
-using Core.UI.Extensions;
 using SvgEditor.Core.Shared;
+using Core.UI.Extensions;
 
 namespace SvgEditor.UI.Hierarchy
 {

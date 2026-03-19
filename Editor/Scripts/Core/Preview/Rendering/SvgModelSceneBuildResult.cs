@@ -3,9 +3,6 @@ using Unity.VectorGraphics;
 using UnityEngine;
 using Core.UI.Extensions;
 
-using SvgEditor;
-using SvgEditor.Core.Preview;
-
 namespace SvgEditor.Core.Preview.Rendering
 {
     internal sealed class SvgModelSceneBuildResult

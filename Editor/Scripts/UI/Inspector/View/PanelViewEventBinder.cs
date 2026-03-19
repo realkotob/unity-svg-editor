@@ -1,6 +1,6 @@
 using System;
-using Core.UI.Extensions;
 using SvgEditor.UI.Inspector.State;
+using Core.UI.Extensions;
 
 namespace SvgEditor.UI.Inspector
 {

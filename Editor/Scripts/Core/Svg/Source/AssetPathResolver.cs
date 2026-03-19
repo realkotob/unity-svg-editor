@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
-using Core.UI.Extensions;
 using SvgEditor.Core.Shared;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Core.Svg.Source
 {

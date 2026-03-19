@@ -8,8 +8,8 @@ using SvgEditor.UI.Canvas;
 using SvgEditor.UI.Workspace.Coordination;
 using SvgEditor.UI.Workspace.Document;
 using SvgEditor.UI.Inspector;
-using Core.UI.Extensions;
 using SvgEditor.Core.Shared;
+using Core.UI.Extensions;
 
 namespace SvgEditor.UI.Shell
 {

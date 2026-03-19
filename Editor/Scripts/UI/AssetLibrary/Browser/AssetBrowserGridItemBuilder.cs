@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using SvgEditor.UI.AssetLibrary.Grid;
 using SvgEditor.UI.AssetLibrary.Model;
 using SvgEditor.UI.AssetLibrary.Presentation;
-using Core.UI.Extensions;
 using SvgEditor.Core.Shared;
+using Core.UI.Extensions;
 
 namespace SvgEditor.UI.AssetLibrary.Browser
 {

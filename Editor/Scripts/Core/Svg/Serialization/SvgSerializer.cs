@@ -5,8 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using SvgEditor.Core.Svg.Model;
-using Core.UI.Extensions;
 using SvgEditor.Core.Shared;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Core.Svg.Serialization
 {

@@ -1,7 +1,7 @@
-using Core.UI.Extensions;
 using Unity.Properties;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Core.UI.Extensions;
 
 namespace SvgEditor
 {

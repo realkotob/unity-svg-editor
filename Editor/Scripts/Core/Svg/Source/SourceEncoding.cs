@@ -1,8 +1,8 @@
 using System;
 using System.IO;
 using System.Text;
-using Core.UI.Extensions;
 using SvgEditor.Core.Shared;
+using Core.UI.Extensions;
 
 namespace SvgEditor.Core.Svg.Source
 {

@@ -8,8 +8,6 @@ using UnityEngine.UIElements;
 using SvgEditor.Core.Shared;
 using Core.UI.Extensions;
 
-using SvgEditor;
-using SvgEditor.Core.Preview;
 
 namespace SvgEditor.Core.Preview.Build
 {
