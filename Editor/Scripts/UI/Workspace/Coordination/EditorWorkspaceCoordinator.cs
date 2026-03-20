@@ -11,6 +11,7 @@ using SvgEditor.Core.Svg.Mutation;
 using SvgEditor.UI.Hierarchy;
 using SvgEditor.Core.Svg.Model;
 using SvgEditor.Core.Svg.Source;
+using SvgEditor.Core.Svg.Structure.Xml;
 using Core.UI.Extensions;
 
 namespace SvgEditor.UI.Workspace.Coordination
@@ -75,6 +76,49 @@ namespace SvgEditor.UI.Workspace.Coordination
         public void UpdateSelectionVisual() => _canvasWorkspaceController.UpdateSelectionVisual();
 
         public bool TryCancelActiveDrag() => _canvasWorkspaceController.TryCancelActiveDrag();
+        public bool TryDeleteSelectedElements()
+        {
+            if (CurrentDocument == null)
+            {
+                return false;
+            }
+
+            if (!CurrentDocument.CanUseDocumentModelForEditing)
+            {
+                _host.UpdateSourceStatus($"Delete failed: {CurrentDocument.ResolveModelEditingFailureReason()}");
+                return true;
+            }
+
+            if (_selectionCoordinator.SelectedElementKeys.Count == 0)
+            {
+                return false;
+            }
+
+            HierarchyDeletePlan plan = HierarchyDeletePlanner.Plan(
+                _selectionCoordinator.Elements,
+                _selectionCoordinator.SelectedElementKeys,
+                _selectionCoordinator.SelectedHierarchyNode?.Key ?? _selectionCoordinator.ResolveCanvasSelectedElementKey());
+
+            if (plan.DeleteKeys.Count == 0)
+            {
+                return false;
+            }
+
+            if (!SvgElementDeleteUtility.TryDeleteElements(
+                    CurrentDocument.WorkingSourceText,
+                    plan.DeleteKeys,
+                    out string updatedSourceText,
+                    out string error))
+            {
+                _host.UpdateSourceStatus($"Delete failed: {error}");
+                return true;
+            }
+
+            _selectionCoordinator.PrepareElementSelectionFallback(plan.FallbackElementKey);
+            _host.ApplyUpdatedSource(updatedSourceText, BuildDeleteStatus(plan.DeleteKeys.Count));
+            return true;
+        }
+
         internal IReadOnlyList<string> SelectedElementKeys => _selectionCoordinator.SelectedElementKeys;
 
         internal static bool TryResolveSelection(
@@ -129,5 +173,12 @@ namespace SvgEditor.UI.Workspace.Coordination
             _selectionCoordinator.AddStructureElementSelection(elementKeys, syncPatchTarget);
 
         internal void SyncSelectionFromInspectorTarget(string targetKey) => _selectionCoordinator.SyncSelectionFromInspectorTarget(targetKey);
+
+        private static string BuildDeleteStatus(int deleteCount)
+        {
+            return deleteCount == 1
+                ? "Deleted 1 SVG element."
+                : $"Deleted {deleteCount} SVG elements.";
+        }
     }
 }

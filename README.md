@@ -14,18 +14,22 @@ Inspect, preview, edit supported SVG properties, and save SVG assets directly in
 
 ## Demo
 
-Prepare release assets in this format:
+| Demo 1 | Demo 2 |
+|:--:|:--:|
+| ![Demo 1](.github/demo.gif) | ![Demo 2](.github/demo-02.gif) |
 
-- Demo GIF: `.github/demo.gif`
-- Screenshot(s): `.github/screenshot-01.png`, `.github/screenshot-02.png`
-- Usage video thumbnail: `.github/video-cover.png`
-- Usage video link format:
+| Screenshot 1 | Screenshot 2 |
+|:--:|:--:|
+| ![Screenshot 1](.github/screenshot-01.png) | ![Screenshot 2](.github/screenshot-02.png) |
 
-```md
-[![Watch the usage video](.github/video-cover.png)](https://youtu.be/YOUR_VIDEO_ID)
-```
+![Screenshot 3](.github/screenshot-03.png)
 
-When you are ready to publish, replace this section with the real GIF, screenshots, and video link.
+### Usage Videos
+
+- Usage video link 1: https://youtu.be/PBwFVrmF7D8
+- Usage video link 2: https://youtu.be/NTcLOPhuFL0
+
+Replace these placeholders when you send the final public video URLs.
 
 ## Features
 

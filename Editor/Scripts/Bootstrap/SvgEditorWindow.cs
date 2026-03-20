@@ -170,6 +170,7 @@ namespace SvgEditor.Bootstrap
             return new WindowShortcutRouter(
                 () => _documentLifecycleController.CurrentDocument,
                 () => WorkspaceCoordinator.TryCancelActiveDrag(),
+                () => WorkspaceCoordinator.TryDeleteSelectedElements(),
                 () => _documentLifecycleController.TryUndo(),
                 () => _documentLifecycleController.TryRedo(),
                 _documentLifecycleController.SaveCurrentDocument);

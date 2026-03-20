@@ -36,6 +36,7 @@ namespace SvgEditor.UI.Workspace.Coordination
         private HierarchyListView HierarchyListView => _hierarchyListView;
 
         public IReadOnlyList<TreeViewItemData<HierarchyNode>> HierarchyItems => _structurePanelState.HierarchyItems;
+        public IReadOnlyList<HierarchyNode> Elements => _structurePanelState.Elements;
         public IReadOnlyList<string> SelectedElementKeys => _structurePanelState.SelectedElementKeys;
         public string SelectionRangeAnchorKey => _structurePanelState.SelectionRangeAnchorKey;
         public HierarchyNode SelectedHierarchyNode => FindHierarchyNode(_structurePanelState.SelectedElementKey);
@@ -192,6 +193,20 @@ namespace SvgEditor.UI.Workspace.Coordination
                 selectedItem,
                 selectedItem != null ? SelectionKind.Element : SelectionKind.None,
                 syncPatchTarget: false);
+        }
+
+        public void PrepareElementSelectionFallback(string fallbackElementKey)
+        {
+            if (string.IsNullOrWhiteSpace(fallbackElementKey))
+            {
+                _structurePanelState.ClearElementSelection();
+                return;
+            }
+
+            _structurePanelState.SetElementSelection(
+                new[] { fallbackElementKey },
+                fallbackElementKey,
+                fallbackElementKey);
         }
 
         private void OnStructureElementSelectionChanged(IReadOnlyList<HierarchyNode> selectedItems, HierarchyNode primarySelectedItem)

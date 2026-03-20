@@ -33,6 +33,7 @@ namespace SvgEditor.UI.Shell
 
         private readonly Func<DocumentSession> _currentDocumentAccessor;
         private readonly Func<bool> _tryCancelActiveDrag;
+        private readonly Func<bool> _tryDeleteSelectedElements;
         private readonly Func<bool> _tryUndo;
         private readonly Func<bool> _tryRedo;
         private readonly Action _saveCurrentDocument;
@@ -42,12 +43,14 @@ namespace SvgEditor.UI.Shell
         public WindowShortcutRouter(
             Func<DocumentSession> currentDocumentAccessor,
             Func<bool> tryCancelActiveDrag,
+            Func<bool> tryDeleteSelectedElements,
             Func<bool> tryUndo,
             Func<bool> tryRedo,
             Action saveCurrentDocument)
         {
             _currentDocumentAccessor = currentDocumentAccessor;
             _tryCancelActiveDrag = tryCancelActiveDrag;
+            _tryDeleteSelectedElements = tryDeleteSelectedElements;
             _tryUndo = tryUndo;
             _tryRedo = tryRedo;
             _saveCurrentDocument = saveCurrentDocument;
@@ -66,6 +69,13 @@ namespace SvgEditor.UI.Shell
             }
 
             EventModifiers normalizedModifiers = NormalizeShortcutModifiers(modifiers);
+            if ((keyCode == KeyCode.Delete || keyCode == KeyCode.Backspace) &&
+                normalizedModifiers == EventModifiers.None &&
+                !EditorGUIUtility.editingTextField)
+            {
+                return _tryDeleteSelectedElements?.Invoke() ?? false;
+            }
+
             if (!IsDocumentShortcut(normalizedModifiers))
             {
                 return false;
