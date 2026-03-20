@@ -1,37 +1,47 @@
-# unity-svg-editor
+# Unity SVG Editor
 
-`unity-svg-editor`는 Unity 안에서 SVG를 읽고, 구조를 이해하고, 자주 수정하는 속성을 시각적으로 편집하고, 다시 저장하기 위한 editor module입니다.
+Inspect, preview, edit supported SVG properties, and save SVG assets directly inside the Unity Editor.
 
+![Unity 6+](https://img.shields.io/badge/Unity-6000.0%2B-black?logo=unity)
+![Package](https://img.shields.io/badge/Package-1.0.0-blue)
+![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
+
+`Unity SVG Editor` is an editor package for teams that need to open existing SVG files, understand their structure, adjust supported properties visually, and write the result back to SVG XML.
+
+- Package name: `com.maemi.unity-svg-editor`
 - Namespace: `SvgEditor.Editor`
-- Menu: `Window/Unity SVG Editor/SVG Editor`
+- Menu: `Window/Tools/SVG Editor`
 
-## 현재 방향
+## Demo
 
-이 프로젝트는 더 이상 edit-time XML patch editor가 아닙니다.
+Prepare release assets in this format:
 
-현재 고정 원칙:
+- Demo GIF: `.github/demo.gif`
+- Screenshot(s): `.github/screenshot-01.png`, `.github/screenshot-02.png`
+- Usage video thumbnail: `.github/video-cover.png`
+- Usage video link format:
 
-- edit-time source-of-truth는 `SvgDocumentModel`
-- save-time interchange format은 SVG XML
-- inspector / structure / canvas interaction은 model-driven
-- save 시에만 serialize + validate + import
+```md
+[![Watch the usage video](.github/video-cover.png)](https://youtu.be/YOUR_VIDEO_ID)
+```
 
-즉, XML source editor / code inspector를 중심으로 한 툴이 아니라, model-driven SVG editor입니다.
+When you are ready to publish, replace this section with the real GIF, screenshots, and video link.
 
-## 현재 포함 기능
+## Features
 
-- 프로젝트 내 `.svg`(VectorImage) 에셋 목록 / 검색
-- 구조 트리 / selection sync
-- canvas selection / move / resize
-- inspector 기반 속성 편집
-- save + reimport
-- SVG feature scan / renderer fallback 진단
+- Browse SVG `VectorImage` assets inside the project
+- Inspect SVG document structure with selection sync
+- Select, move, and resize editable elements on the canvas
+- Edit supported properties from the inspector
+- Save changes back to SVG and reimport automatically
+- Detect unsupported SVG features and surface fallback warnings
+- Work with a model-driven editing flow instead of raw XML-first editing
 
-## 지원 상태
+## Supported
 
-아래 구분은 “현재 editor preview / interaction 기준”입니다.
+Current support is strongest in preview, structure inspection, selection, and basic transform-oriented editing.
 
-### Editor Preview / Interaction Support
+Current editor preview and interaction support includes:
 
 - `rect`
 - `circle`
@@ -40,132 +50,153 @@
 - `polyline`
 - `polygon`
 - `path`
-  - relative command
-  - curved path (`C`, `S`, `Q`, `T`)
+  - relative commands
+  - curved commands such as `C`, `S`, `Q`, `T`
+  - preview and selection support
 - `use`
 - `linearGradient`
 - `radialGradient`
 - `clipPath`
 - basic `mask`
 - `text`
-  - editor overlay로 표시
-  - 선택
-  - move / resize commit
+  - overlay preview
+  - selection
+  - move and resize commit
 
-### Preview Works, Editing Is Limited
+## Not Supported Or Limited
 
-- `tspan`
-  - 표시 / 선택은 가능
-  - 개별 `tspan` 편집은 제한적
-- `textPath`
-  - direct editing target이 아님
-- 복합 조합
-  - `use + gradient + clipPath`
-  - `mask + shape`
+These areas are intentionally unsupported or currently limited:
 
-### Fallback / Not A Direct Editing Target
-
-아래는 상태줄에서 `Renderer fallback likely: ...`로 드러날 수 있습니다.
-
+- Full SVG authoring parity with Illustrator, Figma, or other vector design tools
+- Full XML source editing or code-inspector style workflows
+- direct `path` editing
+- direct gradient editing
 - `filter`
 - `image`
 - `style`
-- `text`
-  - Unity `VectorImage` native 렌더링 대상이라고 보지 않는다
-  - 현재는 model 기반 text overlay preview로 다룬다
+- direct `textPath` editing
+- per-`tspan` detailed editing
+- complex SVG features that do not map cleanly to Unity `VectorImage`
+
+Limited support:
+
+- `tspan`
+  - preview and selection may work
+  - detailed editing is limited
 - `textPath`
-- `tspan` 개별 편집
+  - not a direct editing target
+- `linearGradient` and `radialGradient`
+  - preview/import behavior may work
+  - direct gradient editing is not currently supported
+- `path`
+  - preview and selection may work
+  - direct path editing is not currently supported
+- combined advanced cases such as `use + gradient + clipPath`
+  - preview can work, but editing precision depends on Unity import behavior
 
-원칙:
+## What Unity Supports
 
-- Unity `VectorImage`와 일관되게 갈 수 있는 SVG feature까지만 direct 지원
-- 그 외는 fallback 또는 편집 제한으로 명시
+This package follows Unity's SVG and `VectorImage` boundaries instead of inventing a separate rendering standard.
 
-주의:
+In practice, that means:
 
-- 현재 `text`는 editor preview에서 다룰 수 있지만, 이를 Unity `VectorImage` 자체 text 지원으로 간주하지 않는다.
-- 즉 `text`는 “VectorImage native feature”가 아니라 “editor overlay-backed feature”로 취급한다.
+- Best results come from shapes, paths, gradients, clip paths, and common transforms supported by Unity's SVG importer
+- Some SVG features may import with partial rendering, fallback rendering, or no direct editing target
+- `text` in this package should be treated as an editor-assisted overlay workflow, not as native Unity `VectorImage` text authoring support
+- If Unity falls back internally, the editor exposes that state rather than pretending the feature is fully supported
 
-## Fixture-First Rule
+## Requirements
 
-새 renderer 작업은 fixture 없이 시작하지 않습니다.
+- Unity `6000.0` or later
+- SVG import pipeline available in the Unity project
 
-fixture 위치:
+## Installation
 
-- `Assets/Resources/TestSvg/`
+### Option 1: Git URL
 
-현재 renderer 검증 fixture 예시:
+1. Open `Window > Package Manager`
+2. Click `+`
+3. Select `Add package from git URL...`
+4. Enter:
 
-- `defs-use-basic.svg`
-- `path-relative-commands.svg`
-- `path-curves-basic.svg`
-- `text-tspan-basic.svg`
-- `clippath-basic.svg`
-- `mask-basic.svg`
-- `radial-gradient-basic.svg`
-- `polyline-polygon-basic.svg`
-- `use-gradient-clip-combo.svg`
+```text
+https://github.com/NewMassMedia/unity-svg-editor.git
+```
 
-## 테스트
+### Option 2: Local package
 
-기본 검증 기준:
+1. Clone or download this repository
+2. Open `Window > Package Manager`
+3. Click `+`
+4. Select `Add package from disk...`
+5. Choose `package.json`
 
-- `SvgEditor.Editor.Tests` EditMode green 유지
+## Usage
 
-프로젝트 상황에 따라 test runner가 초기화 타임아웃을 낼 수 있으므로, 필요하면 해당 fixture를 editor에서 직접 열어 아래를 확인합니다.
+### Open the editor
 
-- preview가 보이는지
-- selection / hover가 자연스러운지
-- drag / resize / save 후 결과가 유지되는지
+Open `Window > Tools > SVG Editor`.
 
-## 패키지 / UI 의존
+### Typical workflow
 
-- `unity-svg-editor`는 private `CoreUI` 전체에 의존하지 않습니다.
-- 공용 UI와 필요한 확장 메서드는 패키지 내부에 포함되어 있습니다.
-- 별도 scoped registry나 외부 UI theme 패키지 없이 설치할 수 있습니다.
-- editor 리소스는 패키지 내부 `Editor/Resources/` 아래에 두고 `Resources.Load`로 읽습니다.
+1. Select an SVG asset from the project browser inside the tool
+2. Review the structure tree and current preview
+3. Select elements on the canvas or in the tree
+4. Adjust editable properties in the inspector
+5. Save and let Unity reimport the asset
+6. Review warnings if the document contains unsupported features or fallback rendering cases
 
-## 현재 비목표
+## Versioning
 
-- Illustrator / Figma 급 범용 벡터 툴
-- 모든 SVG feature 100% authoring
-- edit-time XML patch UI 복귀
-- XML source editor / code inspector 복귀
+This project is intended to follow Semantic Versioning.
 
-## 다음 단계
+- `1.0.0`: first stable public release
+- `1.0.1`: patch release for fixes only
+- `1.1.0`: backward-compatible feature release
+- `2.0.0`: breaking changes
 
-- unsupported feature 진단 / fallback 메시지 정리
-- `tspan` / `text-anchor` 세부 정밀도 개선 여부 판단
-- `text`를 overlay 유지 대상으로 둘지, 더 축소할지 판단
-- 추가 fixture 기반 renderer coverage 확장
+Current package version: `1.0.0`
 
-## 리팩터 상태
+## Release History
 
-최근 정리 방향:
+Release notes should be tracked in [CHANGELOG.md](CHANGELOG.md).
 
-- folder 단위 `unity-guide` cleanup
-- shared utility 추출
-- 과도한 helper/type 이름 축소
-- `4개 이상 파라미터` 메서드 축소
+Recommended structure:
 
-이미 반영된 shared 예시:
+- `Unreleased`
+- `1.0.0 - YYYY-MM-DD`
+- `1.0.1 - YYYY-MM-DD`
 
-- `DeferredActionGate`
-- `CallbackBindingUtility`
-- `SvgFragmentReferenceUtility`
-- `PreviewCollectionRenderer`
-- `SvgMutationWriter`
+## Release Process
 
-현재 로컬 작업 방향:
+For each public release:
 
-- canvas / mutation / selection request 객체 도입
-- long-name cluster 추가 축소
-- parameter count 4+ 메서드 지속 축소
+1. Update `package.json` version
+2. Update `CHANGELOG.md`
+3. Prepare the demo GIF, screenshots, and usage video link
+4. Commit the release metadata
+5. Create a git tag
+6. Publish a GitHub release from that tag
 
-핸드오프:
+Recommended release commit message:
 
-- 최신 상태와 남은 작업은 `HANDOFF.md` 참고
+```text
+chore(release): v1.0.0
+```
 
-## 추가 문서
+Recommended tag format:
 
-- Unity `VectorImage` 지원 범위 정리: `docs/unity-vectorimage-support.md`
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+Recommended GitHub release title:
+
+```text
+Unity SVG Editor v1.0.0
+```
+
+## License
+
+MIT
