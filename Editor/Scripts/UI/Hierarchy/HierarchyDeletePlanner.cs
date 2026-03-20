@@ -7,14 +7,16 @@ namespace SvgEditor.UI.Hierarchy
 {
     internal readonly struct HierarchyDeletePlan
     {
-        public HierarchyDeletePlan(IReadOnlyList<string> deleteKeys, string fallbackElementKey)
+        public HierarchyDeletePlan(IReadOnlyList<string> deleteKeys, string fallbackElementKey, string fallbackTargetKey)
         {
             DeleteKeys = deleteKeys ?? Array.Empty<string>();
             FallbackElementKey = fallbackElementKey ?? string.Empty;
+            FallbackTargetKey = fallbackTargetKey ?? string.Empty;
         }
 
         public IReadOnlyList<string> DeleteKeys { get; }
         public string FallbackElementKey { get; }
+        public string FallbackTargetKey { get; }
     }
 
     internal static class HierarchyDeletePlanner
@@ -26,7 +28,7 @@ namespace SvgEditor.UI.Hierarchy
         {
             if (elements == null || elements.Count == 0 || selectedElementKeys == null || selectedElementKeys.Count == 0)
             {
-                return new HierarchyDeletePlan(Array.Empty<string>(), string.Empty);
+                return new HierarchyDeletePlan(Array.Empty<string>(), string.Empty, string.Empty);
             }
 
             Dictionary<string, HierarchyNode> elementsByKey = elements
@@ -42,7 +44,7 @@ namespace SvgEditor.UI.Hierarchy
 
             if (normalizedSelection.Count == 0)
             {
-                return new HierarchyDeletePlan(Array.Empty<string>(), string.Empty);
+                return new HierarchyDeletePlan(Array.Empty<string>(), string.Empty, string.Empty);
             }
 
             string normalizedPrimaryKey = NormalizeSelectedKey(elementsByKey, primaryElementKey);
@@ -59,7 +61,8 @@ namespace SvgEditor.UI.Hierarchy
 
             HashSet<string> deleteSet = new(deleteKeys, StringComparer.Ordinal);
             string fallbackElementKey = ResolveFallbackElementKey(elements, elementsByKey, deleteSet, normalizedPrimaryKey);
-            return new HierarchyDeletePlan(deleteKeys, fallbackElementKey);
+            string fallbackTargetKey = ResolveFallbackTargetKey(elementsByKey, fallbackElementKey);
+            return new HierarchyDeletePlan(deleteKeys, fallbackElementKey, fallbackTargetKey);
         }
 
         private static string NormalizeSelectedKey(
@@ -185,6 +188,17 @@ namespace SvgEditor.UI.Hierarchy
             }
 
             return false;
+        }
+
+        private static string ResolveFallbackTargetKey(
+            IReadOnlyDictionary<string, HierarchyNode> elementsByKey,
+            string fallbackElementKey)
+        {
+            return !string.IsNullOrWhiteSpace(fallbackElementKey) &&
+                   elementsByKey.TryGetValue(fallbackElementKey, out HierarchyNode fallbackNode) &&
+                   fallbackNode.CanUseAsTarget
+                ? fallbackNode.TargetKey
+                : string.Empty;
         }
     }
 }

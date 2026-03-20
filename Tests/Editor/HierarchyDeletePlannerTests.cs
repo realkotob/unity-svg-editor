@@ -12,9 +12,9 @@ namespace SvgEditor.Editor.Tests
         {
             var elements = new List<HierarchyNode>
             {
-                new() { Key = "group", ParentKey = string.Empty },
-                new() { Key = "path", ParentKey = "group" },
-                new() { Key = "rect", ParentKey = string.Empty }
+                new() { Key = "group", ParentKey = string.Empty, TargetKey = "group-target" },
+                new() { Key = "path", ParentKey = "group", TargetKey = "path-target" },
+                new() { Key = "rect", ParentKey = string.Empty, TargetKey = "rect-target" }
             };
 
             HierarchyDeletePlan plan = HierarchyDeletePlanner.Plan(
@@ -24,6 +24,7 @@ namespace SvgEditor.Editor.Tests
 
             Assert.That(plan.DeleteKeys, Is.EqualTo(new[] { "group" }));
             Assert.That(plan.FallbackElementKey, Is.EqualTo("rect"));
+            Assert.That(plan.FallbackTargetKey, Is.EqualTo("rect-target"));
         }
     }
 }

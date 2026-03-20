@@ -115,6 +115,11 @@ namespace SvgEditor.UI.Workspace.Coordination
             }
 
             _selectionCoordinator.PrepareElementSelectionFallback(plan.FallbackElementKey);
+            if (!string.IsNullOrWhiteSpace(plan.FallbackTargetKey))
+            {
+                _host.TrySelectPatchTargetByKey(plan.FallbackTargetKey);
+            }
+
             _host.ApplyUpdatedSource(updatedSourceText, BuildDeleteStatus(plan.DeleteKeys.Count));
             return true;
         }
