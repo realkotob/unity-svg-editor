@@ -150,7 +150,7 @@ namespace SvgEditor.Core.Preview.Rendering
             var shape = _shapeStyleBuilder.CreateStyledShape(context.DocumentModel, node, context.NodesByXmlId, allowDefaultFill: allowDefaultFill);
             shape.Contours = contours;
             shape.IsConvex = false;
-            context.SceneNode.Shapes.Add(shape);
+            AddOpenFillAwareShapes(context.SceneNode.Shapes, shape, contours);
             return true;
         }
 
@@ -188,8 +188,40 @@ namespace SvgEditor.Core.Preview.Rendering
                 }
             };
             shape.IsConvex = closed;
-            context.SceneNode.Shapes.Add(shape);
+            AddOpenFillAwareShapes(context.SceneNode.Shapes, shape, shape.Contours);
             return true;
+        }
+
+        private static void AddOpenFillAwareShapes(ICollection<Shape> shapes, Shape shape, IReadOnlyList<BezierContour> contours)
+        {
+            if (!HasOpenContour(contours) || shape.Fill == null)
+            {
+                shapes.Add(shape);
+                return;
+            }
+
+            Shape fillShape = new()
+            {
+                Fill = shape.Fill,
+                PathProps = ClonePathProperties(shape.PathProps, stroke: null),
+                FillTransform = shape.FillTransform,
+                Contours = CloseContours(contours),
+                IsConvex = false
+            };
+            shapes.Add(fillShape);
+
+            if (shape.PathProps.Stroke != null)
+            {
+                Shape strokeShape = new()
+                {
+                    Fill = null,
+                    PathProps = ClonePathProperties(shape.PathProps, shape.PathProps.Stroke),
+                    FillTransform = shape.FillTransform,
+                    Contours = ToArray(contours),
+                    IsConvex = false
+                };
+                shapes.Add(strokeShape);
+            }
         }
 
         private static bool HasOpenContour(IReadOnlyList<BezierContour> contours)
@@ -208,6 +240,43 @@ namespace SvgEditor.Core.Preview.Rendering
             }
 
             return false;
+        }
+
+        private static BezierContour[] CloseContours(IReadOnlyList<BezierContour> contours)
+        {
+            var cloned = new BezierContour[contours.Count];
+            for (var index = 0; index < contours.Count; index++)
+            {
+                cloned[index] = new BezierContour
+                {
+                    Segments = contours[index].Segments,
+                    Closed = true
+                };
+            }
+
+            return cloned;
+        }
+
+        private static BezierContour[] ToArray(IReadOnlyList<BezierContour> contours)
+        {
+            var cloned = new BezierContour[contours.Count];
+            for (var index = 0; index < contours.Count; index++)
+            {
+                cloned[index] = contours[index];
+            }
+
+            return cloned;
+        }
+
+        private static PathProperties ClonePathProperties(PathProperties source, Stroke stroke)
+        {
+            return new PathProperties
+            {
+                Stroke = stroke,
+                Head = source.Head,
+                Tail = source.Tail,
+                Corners = source.Corners
+            };
         }
     }
 }

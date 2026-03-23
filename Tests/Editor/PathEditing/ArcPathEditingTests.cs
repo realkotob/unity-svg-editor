@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using System.Collections.Generic;
 using System.IO;
 using SvgEditor.Core.Preview;
 using SvgEditor.Core.Preview.Build;
@@ -10,6 +11,7 @@ using SvgEditor.Renderer;
 using SvgEditor.UI.Canvas;
 using Unity.VectorGraphics;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace SvgEditor.Editor.Tests.PathEditing
 {
@@ -183,6 +185,50 @@ namespace SvgEditor.Editor.Tests.PathEditing
         }
 
         [Test]
+        public void TryBuild_WhenOpenQuadraticPathHasFill_SplitsFillAndStrokeShapes()
+        {
+            SvgModelSceneBuildResult result = BuildSceneFromProjectAsset("Resources/TestSvg/path-edit-regression-suite.svg");
+
+            IReadOnlyList<Shape> shapes = GetShapesForElement(result, "quadratic-path");
+
+            Assert.That(shapes, Has.Count.EqualTo(2));
+            Assert.That(CountFillOnlyShapes(shapes), Is.EqualTo(1));
+            Assert.That(CountStrokeOnlyShapes(shapes), Is.EqualTo(1));
+            Assert.That(CountClosedShapes(shapes), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void TryBuild_WhenOpenPolylineHasFill_SplitsFillAndStrokeShapes()
+        {
+            SvgModelSceneBuildResult result = BuildSceneFromProjectAsset("Resources/TestSvg/path-edit-regression-suite.svg");
+
+            IReadOnlyList<Shape> shapes = GetShapesForElement(result, "polyline-shape");
+
+            Assert.That(shapes, Has.Count.EqualTo(2));
+            Assert.That(CountFillOnlyShapes(shapes), Is.EqualTo(1));
+            Assert.That(CountStrokeOnlyShapes(shapes), Is.EqualTo(1));
+            Assert.That(CountClosedShapes(shapes), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void BuildPreviewVectorImage_WhenOpenPathUsesDefaultFill_HasRenderableGeometry()
+        {
+            const string svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\"><path d=\"M2 2 L14 2 L14 14\"/></svg>";
+            VectorImage vectorImage = BuildPreviewVectorImageFromScene(svg);
+
+            Assert.That(SceneImportService.HasRenderableGeometry(vectorImage), Is.True);
+        }
+
+        [Test]
+        public void BuildPreviewVectorImage_WhenOpenPolylineUsesDefaultFill_HasRenderableGeometry()
+        {
+            const string svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\"><polyline points=\"2,2 14,2 14,14\"/></svg>";
+            VectorImage vectorImage = BuildPreviewVectorImageFromScene(svg);
+
+            Assert.That(SceneImportService.HasRenderableGeometry(vectorImage), Is.True);
+        }
+
+        [Test]
         public void TryBuildSnapshot_WhenRegressionSuiteContainsArcAndPrimitives_BuildsPreviewVectorImage()
         {
             string assetPath = Path.Combine(Application.dataPath, "Resources/TestSvg/path-edit-regression-suite.svg");
@@ -293,6 +339,89 @@ namespace SvgEditor.Editor.Tests.PathEditing
             return $"total={CountAllShapes(node)}, filled={CountFilledShapes(node)}, stroke={CountStrokeShapes(node)}";
         }
 
+        private static SvgModelSceneBuildResult BuildSceneFromProjectAsset(string assetRelativePath)
+        {
+            string assetPath = Path.Combine(Application.dataPath, assetRelativePath);
+            string svg = File.ReadAllText(assetPath);
+
+            var loader = new SvgLoader();
+            bool loaded = loader.TryLoad(svg, out var documentModel, out string error);
+            Assert.That(loaded, Is.True, error);
+
+            var sceneBuilder = new SvgModelSceneBuilder();
+            bool built = sceneBuilder.TryBuild(documentModel, out SvgModelSceneBuildResult result, out string buildError);
+            Assert.That(built, Is.True, buildError);
+            return result;
+        }
+
+        private static IReadOnlyList<Shape> GetShapesForElement(SvgModelSceneBuildResult result, string elementKey)
+        {
+            foreach (var pair in result.NodeMappings)
+            {
+                if (pair.Value.Key == elementKey)
+                {
+                    return pair.Key.Shapes;
+                }
+            }
+
+            Assert.Fail($"Element '{elementKey}' was not found in scene mappings.");
+            return System.Array.Empty<Shape>();
+        }
+
+        private static int CountFillOnlyShapes(IReadOnlyList<Shape> shapes)
+        {
+            int count = 0;
+            for (int index = 0; index < shapes.Count; index++)
+            {
+                Shape shape = shapes[index];
+                if (shape != null && shape.Fill != null && shape.PathProps.Stroke == null)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private static int CountStrokeOnlyShapes(IReadOnlyList<Shape> shapes)
+        {
+            int count = 0;
+            for (int index = 0; index < shapes.Count; index++)
+            {
+                Shape shape = shapes[index];
+                if (shape != null && shape.Fill == null && shape.PathProps.Stroke != null)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private static int CountClosedShapes(IReadOnlyList<Shape> shapes)
+        {
+            int count = 0;
+            for (int index = 0; index < shapes.Count; index++)
+            {
+                Shape shape = shapes[index];
+                if (shape?.Contours == null)
+                {
+                    continue;
+                }
+
+                for (int contourIndex = 0; contourIndex < shape.Contours.Length; contourIndex++)
+                {
+                    if (shape.Contours[contourIndex].Closed)
+                    {
+                        count++;
+                        break;
+                    }
+                }
+            }
+
+            return count;
+        }
+
         private static PreviewSnapshot BuildSnapshot(string svg, Rect previewRect)
         {
             var loader = new SvgLoader();
@@ -312,6 +441,22 @@ namespace SvgEditor.Editor.Tests.PathEditing
             string assetPath = Path.Combine(Application.dataPath, "unity-svg-editor", assetRelativePath);
             string svg = File.ReadAllText(assetPath);
             return BuildSnapshot(svg, previewRect);
+        }
+
+        private static VectorImage BuildPreviewVectorImageFromScene(string svg)
+        {
+            var loader = new SvgLoader();
+            bool loaded = loader.TryLoad(svg, out var documentModel, out string error);
+            Assert.That(loaded, Is.True, error);
+
+            var sceneBuilder = new SvgModelSceneBuilder();
+            bool built = sceneBuilder.TryBuild(documentModel, out SvgModelSceneBuildResult result, out string buildError);
+            Assert.That(built, Is.True, buildError);
+
+            return SceneImportService.BuildPreviewVectorImage(
+                result.Scene,
+                result.NodeOpacities,
+                new Rect(0f, 0f, 128f, 128f));
         }
     }
 }
