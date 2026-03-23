@@ -12,3 +12,4 @@ obj/
 /.superpowers
 /Tests
 Tests.meta
+/Editor/Tests
