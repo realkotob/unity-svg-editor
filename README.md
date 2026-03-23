@@ -22,8 +22,6 @@ Inspect, preview, edit supported SVG properties, and save SVG assets directly in
 |:--:|:--:|
 | ![Screenshot 1](.github/screenshot-01.png) | ![Screenshot 2](.github/screenshot-02.png) |
 
-![Screenshot 3](.github/screenshot-03.png)
-
 ### Usage Videos
 
 - Usage video link 1: https://youtu.be/PBwFVrmF7D8
