@@ -183,7 +183,9 @@ namespace SvgEditor.UI.Canvas
             }
 
             bool isClosedLoop = subpath.IsClosed && subpath.Nodes.Count > 0;
-            int nodeCount = isClosedLoop
+            bool hasExplicitClosingNode = isClosedLoop &&
+                                          (subpath.Nodes[^1].Position - subpath.Start).sqrMagnitude <= 0.000001f;
+            int nodeCount = isClosedLoop && hasExplicitClosingNode
                 ? subpath.Nodes.Count
                 : subpath.Nodes.Count + 1;
             Vector2[] positions = new Vector2[nodeCount];
@@ -197,7 +199,7 @@ namespace SvgEditor.UI.Canvas
                 return false;
             }
 
-            int projectedNodeCount = isClosedLoop
+            int projectedNodeCount = isClosedLoop && hasExplicitClosingNode
                 ? subpath.Nodes.Count - 1
                 : subpath.Nodes.Count;
             for (int nodeIndex = 0; nodeIndex < projectedNodeCount; nodeIndex++)
@@ -213,7 +215,7 @@ namespace SvgEditor.UI.Canvas
             {
                 PathNode segmentNode = subpath.Nodes[segmentIndex];
                 int incomingNodeIndex = isClosedLoop
-                    ? (segmentIndex + 1) % nodeCount
+                    ? (hasExplicitClosingNode ? (segmentIndex + 1) % nodeCount : segmentIndex + 1)
                     : segmentIndex + 1;
                 switch (segmentNode.Command)
                 {
@@ -262,7 +264,7 @@ namespace SvgEditor.UI.Canvas
             for (int segmentIndex = 0; segmentIndex < subpath.Nodes.Count; segmentIndex++)
             {
                 int viewportEndIndex = isClosedLoop
-                    ? (segmentIndex + 1) % nodeCount
+                    ? (hasExplicitClosingNode ? (segmentIndex + 1) % nodeCount : segmentIndex + 1)
                     : segmentIndex + 1;
                 if (!TryAppendOverlaySegments(
                         localSegmentStart,
@@ -277,6 +279,11 @@ namespace SvgEditor.UI.Canvas
                 }
 
                 localSegmentStart = subpath.Nodes[segmentIndex].Position;
+            }
+
+            if (isClosedLoop && !hasExplicitClosingNode)
+            {
+                segments.Add(new CanvasLineSegment(positions[nodeCount - 1], positions[0]));
             }
 
             view = new PathSubpathView(nodes, segments, subpath.IsClosed);

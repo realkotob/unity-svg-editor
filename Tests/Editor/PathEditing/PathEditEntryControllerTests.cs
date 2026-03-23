@@ -70,7 +70,7 @@ namespace UnitySvgEditor.Editor.Tests
             Assert.That(result.Session, Is.Not.Null);
             Assert.That(result.Session.ElementKey, Is.EqualTo("shape"));
             Assert.That(result.Session.Subpaths, Has.Count.EqualTo(1));
-            Assert.That(result.Session.Subpaths[0].Nodes, Has.Count.EqualTo(2));
+            Assert.That(result.Session.Subpaths[0].Nodes, Has.Count.EqualTo(3));
             Assert.That(result.Session.Subpaths[0].Segments.Count, Is.GreaterThan(3));
             Assert.That(result.Session.Subpaths[0].Nodes[0].HasOutHandle, Is.True);
             Assert.That(result.Session.Subpaths[0].Nodes[1].HasInHandle, Is.True);

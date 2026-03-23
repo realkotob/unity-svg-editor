@@ -187,7 +187,14 @@ namespace SvgEditor.Editor.Tests.PathEditing
         [Test]
         public void TryBuild_WhenOpenQuadraticPathHasFill_SplitsFillAndStrokeShapes()
         {
-            SvgModelSceneBuildResult result = BuildSceneFromProjectAsset("Resources/TestSvg/path-edit-regression-suite.svg");
+            const string svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 520 440\"><path d=\"M376 108 Q414 42 452 108\" fill=\"#c4b5fd\" id=\"quadratic-path\" stroke=\"#a78bfa\" stroke-linecap=\"round\" stroke-width=\"4\" /></svg>";
+            var loader = new SvgLoader();
+            bool loaded = loader.TryLoad(svg, out var documentModel, out string error);
+            Assert.That(loaded, Is.True, error);
+
+            var sceneBuilder = new SvgModelSceneBuilder();
+            bool built = sceneBuilder.TryBuild(documentModel, out SvgModelSceneBuildResult result, out string buildError);
+            Assert.That(built, Is.True, buildError);
 
             IReadOnlyList<Shape> shapes = GetShapesForElement(result, "quadratic-path");
 

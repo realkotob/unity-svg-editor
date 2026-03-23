@@ -1,3 +1,4 @@
+using System.IO;
 using System.Collections.Generic;
 using NUnit.Framework;
 using SvgEditor.Core.Shared;
@@ -57,6 +58,28 @@ namespace SvgEditor.Editor.Tests.PathEditing
             Assert.That(result.Session.PathData.Subpaths, Has.Count.EqualTo(1));
             Assert.That(result.Session.PathData.Subpaths[0].IsClosed, Is.True);
             Assert.That(result.Session.PathData.Subpaths[0].Nodes, Has.Count.EqualTo(3));
+        }
+
+        [Test]
+        public void TryEnter_WhenRegressionSuitePolygonShape_ExposesAllFiveAnchors()
+        {
+            string assetPath = Path.Combine(Application.dataPath, "Resources/TestSvg/path-edit-regression-suite.svg");
+            DocumentSession documentSession = CreateDocumentSession(File.ReadAllText(assetPath));
+            SvgNodeModel node = GetNodeByXmlId(documentSession.DocumentModel, "polygon-shape");
+            var controller = new PathEditEntryController(new ToolController(), new OverlayController());
+
+            PathEditEntryResult result = controller.TryEnter(new PathEditEntryRequest(
+                clickCount: 2,
+                currentDocument: documentSession,
+                elementKey: node.LegacyElementKey,
+                worldTransform: Matrix2D.identity,
+                sceneToViewportPoint: point => point));
+
+            Assert.That(result.Kind, Is.EqualTo(PathEditEntryResultKind.Entered));
+            Assert.That(result.Session, Is.Not.Null);
+            Assert.That(result.Session.PathData.Subpaths[0].IsClosed, Is.True);
+            Assert.That(result.Session.PathData.Subpaths[0].Nodes, Has.Count.EqualTo(4));
+            Assert.That(result.Session.Subpaths[0].Nodes, Has.Count.EqualTo(5));
         }
 
         [Test]
