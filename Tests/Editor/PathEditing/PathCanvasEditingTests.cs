@@ -289,6 +289,27 @@ namespace UnitySvgEditor.Editor.Tests
         }
 
         [Test]
+        public void TryBuildSubpathView_SplitsQuadraticOverlayHandlesAcrossAnchors()
+        {
+            PathData pathData = PathDataParser.Parse("M 0 0 Q 9 12 18 0");
+
+            bool ok = PathEditSession.TryBuildSubpathView(
+                pathData.Subpaths[0],
+                Matrix2D.identity,
+                point => point,
+                out PathSubpathView view);
+
+            Assert.That(ok, Is.True);
+            Assert.That(view, Is.Not.Null);
+            Assert.That(view.Nodes, Has.Count.EqualTo(2));
+            Assert.That(view.Nodes[0].HasOutHandle, Is.True);
+            Assert.That(view.Nodes[1].HasInHandle, Is.True);
+            Assert.That(view.Nodes[0].OutHandle, Is.EqualTo(new Vector2(6f, 8f)));
+            Assert.That(view.Nodes[1].InHandle, Is.EqualTo(new Vector2(12f, 8f)));
+            Assert.That(view.Nodes[0].OutHandle, Is.Not.EqualTo(view.Nodes[1].InHandle));
+        }
+
+        [Test]
         public void TrySetPathData_PreservesPreviousSessionState_WhenReprojectionFails()
         {
             PathEditSession session = new(

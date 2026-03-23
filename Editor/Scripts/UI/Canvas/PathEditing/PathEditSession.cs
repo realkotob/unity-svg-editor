@@ -208,6 +208,7 @@ namespace SvgEditor.UI.Canvas
                 }
             }
 
+            Vector2 segmentStartPosition = subpath.Start;
             for (int segmentIndex = 0; segmentIndex < subpath.Nodes.Count; segmentIndex++)
             {
                 PathNode segmentNode = subpath.Nodes[segmentIndex];
@@ -230,17 +231,19 @@ namespace SvgEditor.UI.Canvas
 
                     case 'Q':
                     case 'T':
-                        if (!TryProjectPoint(segmentNode.Control0, worldTransform, sceneToViewportPoint, out Vector2 projectedControl))
+                        Vector2 outgoingQuadraticHandle = segmentStartPosition + ((segmentNode.Control0 - segmentStartPosition) * (2f / 3f));
+                        Vector2 incomingQuadraticHandle = segmentNode.Position + ((segmentNode.Control0 - segmentNode.Position) * (2f / 3f));
+                        if (!TryProjectPoint(outgoingQuadraticHandle, worldTransform, sceneToViewportPoint, out outHandles[segmentIndex]) ||
+                            !TryProjectPoint(incomingQuadraticHandle, worldTransform, sceneToViewportPoint, out inHandles[incomingNodeIndex]))
                         {
                             return false;
                         }
-
-                        outHandles[segmentIndex] = projectedControl;
-                        inHandles[incomingNodeIndex] = projectedControl;
                         hasOutHandle[segmentIndex] = true;
                         hasInHandle[incomingNodeIndex] = true;
                         break;
                 }
+
+                segmentStartPosition = segmentNode.Position;
             }
 
             var nodes = new List<PathNodeView>(nodeCount);
