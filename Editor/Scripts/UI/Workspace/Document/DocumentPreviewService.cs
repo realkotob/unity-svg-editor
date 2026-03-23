@@ -27,6 +27,9 @@ namespace SvgEditor.UI.Workspace.Document
         private readonly Func<EditorWorkspaceCoordinator> _workspaceCoordinatorAccessor;
         private readonly DeferredActionGate _disposeGate;
         private readonly List<PendingPreviewDisposal> _pendingDisposals = new();
+        private string _previewAssetPath = string.Empty;
+        private string _previewSourceText = string.Empty;
+        private bool _previewIsTransient;
 
         public DocumentPreviewService(
             SnapshotBuilder previewSnapshotBuilder,
@@ -55,15 +58,22 @@ namespace SvgEditor.UI.Workspace.Document
 
         public void ApplyCurrentPreviewState()
         {
-            if (PreviewSnapshot != null)
+            DocumentSession currentDocument = CurrentDocument;
+            if (currentDocument != null)
             {
-                _view.SetPreviewVectorImage(PreviewSnapshot.PreviewVectorImage);
+                if (PreviewSnapshot != null && PreviewMatchesCurrentDocument(currentDocument))
+                {
+                    _view.SetPreviewVectorImage(PreviewSnapshot.PreviewVectorImage);
+                    return;
+                }
+
+                RefreshLivePreview(keepExistingPreviewOnFailure: false);
                 return;
             }
 
-            if (CurrentDocument != null)
+            if (PreviewSnapshot != null)
             {
-                RefreshLivePreview(keepExistingPreviewOnFailure: false);
+                _view.SetPreviewVectorImage(PreviewSnapshot.PreviewVectorImage);
                 return;
             }
 
@@ -133,7 +143,7 @@ namespace SvgEditor.UI.Workspace.Document
                 return false;
             }
 
-            ReplacePreviewSnapshot(snapshot);
+            ReplacePreviewSnapshot(snapshot, currentDocument, isTransientPreview: false);
             return true;
         }
 
@@ -160,15 +170,18 @@ namespace SvgEditor.UI.Workspace.Document
                 return false;
             }
 
-            ReplacePreviewSnapshot(snapshot);
+            ReplacePreviewSnapshot(snapshot, currentDocument, isTransientPreview: true);
             return true;
         }
 
-        private void ReplacePreviewSnapshot(PreviewSnapshot snapshot)
+        private void ReplacePreviewSnapshot(PreviewSnapshot snapshot, DocumentSession currentDocument, bool isTransientPreview)
         {
             _view.SetPreviewVectorImage(null);
             DisposePreviewSnapshot();
             PreviewSnapshot = snapshot;
+            _previewAssetPath = currentDocument?.AssetPath ?? string.Empty;
+            _previewSourceText = currentDocument?.WorkingSourceText ?? string.Empty;
+            _previewIsTransient = isTransientPreview;
             _view.SetPreviewVectorImage(snapshot?.PreviewVectorImage);
             WorkspaceCoordinator?.SyncCanvasFrameToPreview();
             WorkspaceCoordinator?.UpdateCanvasVisualState();
@@ -183,6 +196,7 @@ namespace SvgEditor.UI.Workspace.Document
             {
                 PreviewSnapshot.Dispose();
                 PreviewSnapshot = null;
+                ResetPreviewMetadata();
                 return;
             }
 
@@ -192,6 +206,7 @@ namespace SvgEditor.UI.Workspace.Document
                 RemainingTicks = PreviewDisposeDelayTicks
             });
             PreviewSnapshot = null;
+            ResetPreviewMetadata();
             SchedulePendingDisposals();
         }
 
@@ -223,6 +238,29 @@ namespace SvgEditor.UI.Workspace.Document
 
             if (_pendingDisposals.Count > 0)
                 SchedulePendingDisposals();
+        }
+
+        private bool PreviewMatchesCurrentDocument(DocumentSession currentDocument)
+        {
+            if (currentDocument == null)
+            {
+                return false;
+            }
+
+            if (!string.Equals(_previewAssetPath, currentDocument.AssetPath, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            return _previewIsTransient ||
+                   string.Equals(_previewSourceText, currentDocument.WorkingSourceText, StringComparison.Ordinal);
+        }
+
+        private void ResetPreviewMetadata()
+        {
+            _previewAssetPath = string.Empty;
+            _previewSourceText = string.Empty;
+            _previewIsTransient = false;
         }
     }
 }

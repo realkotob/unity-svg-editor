@@ -106,6 +106,31 @@ namespace SvgEditor.Core.Svg.Geometry
                    TryReadPoint(relative, origin, out endPoint);
         }
 
+        public bool TryReadArcArguments(
+            bool relative,
+            Vector2 origin,
+            out float rx,
+            out float ry,
+            out float xAxisRotation,
+            out bool largeArc,
+            out bool sweep,
+            out Vector2 endPoint)
+        {
+            rx = 0f;
+            ry = 0f;
+            xAxisRotation = 0f;
+            largeArc = false;
+            sweep = false;
+            endPoint = Vector2.zero;
+
+            return TryReadFloatToken(out rx) &&
+                   TryReadFloatToken(out ry) &&
+                   TryReadFloatToken(out xAxisRotation) &&
+                   TryReadFlag(out largeArc) &&
+                   TryReadFlag(out sweep) &&
+                   TryReadPoint(relative, origin, out endPoint);
+        }
+
         public bool TryReadFloatToken(out float value)
         {
             value = 0f;
@@ -156,6 +181,33 @@ namespace SvgEditor.Core.Svg.Geometry
 
             return _index > start &&
                    AttributeUtility.TryParseFloat(_text.Substring(start, _index - start), out value);
+        }
+
+        public bool TryReadFlag(out bool flag)
+        {
+            flag = false;
+            SkipSeparators();
+            if (_index >= _text.Length)
+            {
+                return false;
+            }
+
+            char token = _text[_index];
+            if (token == '0')
+            {
+                flag = false;
+                _index++;
+                return true;
+            }
+
+            if (token == '1')
+            {
+                flag = true;
+                _index++;
+                return true;
+            }
+
+            return false;
         }
 
         private void SkipSeparators()

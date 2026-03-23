@@ -150,6 +150,61 @@ Open `Window > Tools > SVG Editor`.
 5. Save and let Unity reimport the asset
 6. Review warnings if the document contains unsupported features or fallback rendering cases
 
+### Interaction Guide
+
+The editor supports a small set of focused canvas and keyboard interactions. The list below documents the controls that are currently implemented.
+
+#### Selection
+
+| Action | Control | Notes |
+|:--|:--|:--|
+| Select element on canvas | `Click` | On canvas, plain click prefers a containing group when one is under the pointer. |
+| Select direct leaf element | `Ctrl/Cmd + Click` | Bypasses group selection and targets the directly hit element. |
+| Toggle canvas selection | `Shift + Click` | Adds or removes the clicked canvas element from the current selection. |
+| Add with marquee selection | `Shift + Drag` on empty canvas | Adds overlapped elements to the current selection. |
+| Replace with marquee selection | `Drag` on empty canvas | Replaces the current selection with the marquee result. |
+| Select in hierarchy | `Click` | Selects a single row. |
+| Toggle in hierarchy | `Ctrl/Cmd + Click` | Adds or removes the clicked hierarchy row. |
+| Range select in hierarchy | `Shift + Click` | Selects a range from the current anchor row. |
+
+#### Transform Editing
+
+| Action | Control | Notes |
+|:--|:--|:--|
+| Move selection | `Drag selection` | Drag the selected element or multi-selection bounds. |
+| Nudge selection | `Arrow Keys` | Moves the current element selection by `1` unit per key press. |
+| Large nudge | `Shift + Arrow Keys` | Moves the current element selection by `10` units. |
+| Constrain move axis | `Shift + Drag` | Locks movement to a dominant axis while dragging. |
+| Snap move | `Ctrl/Cmd + Drag` | Enables move snapping while dragging. |
+| Uniform resize | `Shift + Drag resize handle` | Keeps proportional scaling during resize. |
+| Resize from center | `Alt + Drag resize handle` | Resizes symmetrically from the center. |
+| Snap resize | `Ctrl/Cmd + Drag resize handle` | Enables resize snapping while dragging. |
+| Snap rotation | `Shift + Drag rotate handle` | Enables snapped rotation while rotating. |
+| Cancel active drag | `Esc` | Cancels the current drag preview. |
+
+#### Path Edit Mode
+
+| Action | Control | Notes |
+|:--|:--|:--|
+| Enter path edit | `Double Click` on an editable shape | Supported for `path`, `line`, `rect`, `circle`, `ellipse`, `polyline`, and `polygon` when editable path data can be built. |
+| Enter path edit on direct leaf | `Ctrl/Cmd + Double Click` | Useful when a group would otherwise be selected first. |
+| Select path node or handle | `Click` | Selects the clicked node or handle inside path edit mode. |
+| Clear path node/handle selection | `Click` empty space in path edit mode | Clears the active path sub-selection. |
+| Move path node or handle | `Drag` | Commits back to SVG source when the drag completes successfully. |
+| Exit path edit | `Esc` | Exits path edit mode when no path drag is active. |
+| Cancel active path drag | `Esc` during path drag | Restores the path edit session to its pre-drag state. |
+
+Path edit is not entered when the target shape cannot be converted to editable path data, or when the path contains unsupported or malformed commands. In those cases the editor stays in read-only preview mode and shows a status message.
+
+#### Document Shortcuts
+
+| Action | Control | Notes |
+|:--|:--|:--|
+| Save | `Ctrl/Cmd + S` | Saves the current SVG and triggers reimport. |
+| Undo | `Ctrl/Cmd + Z` | Reverts the last document edit. |
+| Redo | `Ctrl/Cmd + Shift + Z` | Reapplies the last undone edit. |
+| Delete selection | `Delete` or `Backspace` | Deletes selected elements when a text field is not being edited. |
+
 ## Versioning
 
 This project is intended to follow Semantic Versioning.

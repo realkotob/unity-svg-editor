@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using SvgEditor.Core.Svg.Structure.Lookup;
 
@@ -175,6 +176,28 @@ namespace SvgEditor.Core.Svg.PathEditing
                                 out string quadraticError))
                         {
                             pathData.MarkMalformed(quadraticError);
+                        }
+                        break;
+
+                    case 'A':
+                        if (currentSubpath == null)
+                        {
+                            pathData.MarkMalformed("Command A requires an active subpath.");
+                            break;
+                        }
+
+                        if (!TryReadRepeatedArcSegments(
+                                ref reader,
+                                normalizedCommand,
+                                isRelative,
+                                ref currentPoint,
+                                currentSubpath,
+                                ref lastCubicControl,
+                                ref hasLastCubicControl,
+                                ref hasLastQuadraticControl,
+                                out string arcError))
+                        {
+                            pathData.MarkMalformed(arcError);
                         }
                         break;
 
@@ -505,6 +528,225 @@ namespace SvgEditor.Core.Svg.PathEditing
             }
         }
 
+        private static bool TryReadRepeatedArcSegments(
+            ref Reader reader,
+            char command,
+            bool isRelative,
+            ref Vector2 currentPoint,
+            PathSubpath subpath,
+            ref Vector2 lastCubicControl,
+            ref bool hasLastCubicControl,
+            ref bool hasLastQuadraticControl,
+            out string error)
+        {
+            error = string.Empty;
+            bool consumedAny = false;
+
+            while (true)
+            {
+                int start = reader.Position;
+                if (TryReadArcSegment(ref reader, isRelative, currentPoint, out ArcSegmentData arcSegment))
+                {
+                    if (!TryConvertArcToPathNodes(currentPoint, arcSegment, out List<PathNode> pathNodes))
+                    {
+                        error = $"Command {command} is truncated.";
+                        return false;
+                    }
+
+                    for (int index = 0; index < pathNodes.Count; index++)
+                    {
+                        subpath.Nodes.Add(pathNodes[index]);
+                    }
+
+                    currentPoint = arcSegment.EndPoint;
+                    if (pathNodes.Count > 0 && pathNodes[^1].Command == 'C')
+                    {
+                        lastCubicControl = pathNodes[^1].Control1;
+                        hasLastCubicControl = true;
+                    }
+                    else
+                    {
+                        hasLastCubicControl = false;
+                    }
+
+                    hasLastQuadraticControl = false;
+                    consumedAny = true;
+                    continue;
+                }
+
+                return FinishRepeatedRead(ref reader, command, consumedAny, start, out error);
+            }
+        }
+
+        private static bool TryReadArcSegment(
+            ref Reader reader,
+            bool isRelative,
+            Vector2 currentPoint,
+            out ArcSegmentData segment)
+        {
+            segment = default;
+            return reader.TryReadFloat(out float rx) &&
+                   reader.TryReadFloat(out float ry) &&
+                   reader.TryReadFloat(out float xAxisRotation) &&
+                   reader.TryReadFlag(out bool largeArc) &&
+                   reader.TryReadFlag(out bool sweep) &&
+                   reader.TryReadPoint(isRelative, currentPoint, out Vector2 endPoint) &&
+                   AssignArcSegment(rx, ry, xAxisRotation, largeArc, sweep, endPoint, out segment);
+        }
+
+        private static bool AssignArcSegment(
+            float rx,
+            float ry,
+            float xAxisRotation,
+            bool largeArc,
+            bool sweep,
+            Vector2 endPoint,
+            out ArcSegmentData segment)
+        {
+            segment = new ArcSegmentData(rx, ry, xAxisRotation, largeArc, sweep, endPoint);
+            return true;
+        }
+
+        private static bool TryConvertArcToPathNodes(
+            Vector2 startPoint,
+            ArcSegmentData arcSegment,
+            out List<PathNode> pathNodes)
+        {
+            pathNodes = new List<PathNode>();
+            Vector2 endPoint = arcSegment.EndPoint;
+            if ((endPoint - startPoint).sqrMagnitude <= 0.000001f)
+            {
+                return true;
+            }
+
+            float rx = Mathf.Abs(arcSegment.Rx);
+            float ry = Mathf.Abs(arcSegment.Ry);
+            if (rx <= 0.000001f || ry <= 0.000001f)
+            {
+                pathNodes.Add(new PathNode('L', endPoint));
+                return true;
+            }
+
+            float phi = arcSegment.XAxisRotation * Mathf.Deg2Rad;
+            float cosPhi = Mathf.Cos(phi);
+            float sinPhi = Mathf.Sin(phi);
+
+            float dx2 = (startPoint.x - endPoint.x) * 0.5f;
+            float dy2 = (startPoint.y - endPoint.y) * 0.5f;
+            float x1Prime = (cosPhi * dx2) + (sinPhi * dy2);
+            float y1Prime = (-sinPhi * dx2) + (cosPhi * dy2);
+
+            float rxSq = rx * rx;
+            float rySq = ry * ry;
+            float x1PrimeSq = x1Prime * x1Prime;
+            float y1PrimeSq = y1Prime * y1Prime;
+
+            float lambda = (x1PrimeSq / rxSq) + (y1PrimeSq / rySq);
+            if (lambda > 1f)
+            {
+                float scale = Mathf.Sqrt(lambda);
+                rx *= scale;
+                ry *= scale;
+                rxSq = rx * rx;
+                rySq = ry * ry;
+            }
+
+            float numerator = (rxSq * rySq) - (rxSq * y1PrimeSq) - (rySq * x1PrimeSq);
+            float denominator = (rxSq * y1PrimeSq) + (rySq * x1PrimeSq);
+            float factor = denominator <= 0.000001f
+                ? 0f
+                : Mathf.Sqrt(Mathf.Max(0f, numerator / denominator));
+            if (arcSegment.LargeArc == arcSegment.Sweep)
+            {
+                factor = -factor;
+            }
+
+            float cxPrime = factor * ((rx * y1Prime) / ry);
+            float cyPrime = factor * (-(ry * x1Prime) / rx);
+
+            float cx = (cosPhi * cxPrime) - (sinPhi * cyPrime) + ((startPoint.x + endPoint.x) * 0.5f);
+            float cy = (sinPhi * cxPrime) + (cosPhi * cyPrime) + ((startPoint.y + endPoint.y) * 0.5f);
+
+            Vector2 unitStart = new((x1Prime - cxPrime) / rx, (y1Prime - cyPrime) / ry);
+            Vector2 unitEnd = new((-x1Prime - cxPrime) / rx, (-y1Prime - cyPrime) / ry);
+
+            float startAngle = VectorAngle(new Vector2(1f, 0f), unitStart);
+            float deltaAngle = VectorAngle(unitStart, unitEnd);
+            if (!arcSegment.Sweep && deltaAngle > 0f)
+            {
+                deltaAngle -= Mathf.PI * 2f;
+            }
+            else if (arcSegment.Sweep && deltaAngle < 0f)
+            {
+                deltaAngle += Mathf.PI * 2f;
+            }
+
+            int segmentCount = Mathf.Max(1, Mathf.CeilToInt(Mathf.Abs(deltaAngle) / (Mathf.PI * 0.5f)));
+            float step = deltaAngle / segmentCount;
+            for (int index = 0; index < segmentCount; index++)
+            {
+                float angle0 = startAngle + (index * step);
+                float angle1 = angle0 + step;
+                AppendArcSegment(pathNodes, cx, cy, rx, ry, cosPhi, sinPhi, angle0, angle1);
+            }
+
+            if (pathNodes.Count > 0)
+            {
+                PathNode lastNode = pathNodes[^1];
+                pathNodes[^1] = new PathNode(lastNode.Command, endPoint, lastNode.Control0, lastNode.Control1, lastNode.HandleMode);
+            }
+
+            return true;
+        }
+
+        private static void AppendArcSegment(
+            List<PathNode> pathNodes,
+            float cx,
+            float cy,
+            float rx,
+            float ry,
+            float cosPhi,
+            float sinPhi,
+            float angle0,
+            float angle1)
+        {
+            float alpha = (4f / 3f) * Mathf.Tan((angle1 - angle0) * 0.25f);
+            Vector2 point0 = new(Mathf.Cos(angle0), Mathf.Sin(angle0));
+            Vector2 point1 = new(Mathf.Cos(angle1), Mathf.Sin(angle1));
+            Vector2 control0 = new(point0.x - (alpha * point0.y), point0.y + (alpha * point0.x));
+            Vector2 control1 = new(point1.x + (alpha * point1.y), point1.y - (alpha * point1.x));
+
+            pathNodes.Add(new PathNode(
+                'C',
+                TransformArcPoint(point1, cx, cy, rx, ry, cosPhi, sinPhi),
+                TransformArcPoint(control0, cx, cy, rx, ry, cosPhi, sinPhi),
+                TransformArcPoint(control1, cx, cy, rx, ry, cosPhi, sinPhi),
+                PathHandleMode.Free));
+        }
+
+        private static Vector2 TransformArcPoint(
+            Vector2 point,
+            float cx,
+            float cy,
+            float rx,
+            float ry,
+            float cosPhi,
+            float sinPhi)
+        {
+            float x = (rx * point.x);
+            float y = (ry * point.y);
+            return new Vector2(
+                (cosPhi * x) - (sinPhi * y) + cx,
+                (sinPhi * x) + (cosPhi * y) + cy);
+        }
+
+        private static float VectorAngle(Vector2 from, Vector2 to)
+        {
+            float dot = Mathf.Clamp(Vector2.Dot(from, to), -1f, 1f);
+            float angle = Mathf.Acos(dot);
+            return ((from.x * to.y) - (from.y * to.x)) < 0f ? -angle : angle;
+        }
+
         private static bool FinishRepeatedRead(
             ref Reader reader,
             char command,
@@ -660,6 +902,33 @@ namespace SvgEditor.Core.Svg.PathEditing
                        AttributeUtility.TryParseFloat(_text.Substring(start, _index - start), out value);
             }
 
+            public bool TryReadFlag(out bool flag)
+            {
+                flag = false;
+                SkipSeparators();
+                if (_index >= _text.Length)
+                {
+                    return false;
+                }
+
+                char token = _text[_index];
+                if (token == '0')
+                {
+                    flag = false;
+                    _index++;
+                    return true;
+                }
+
+                if (token == '1')
+                {
+                    flag = true;
+                    _index++;
+                    return true;
+                }
+
+                return false;
+            }
+
             private void SkipSeparators()
             {
                 _index = SkipSeparators(_index);
@@ -675,6 +944,26 @@ namespace SvgEditor.Core.Svg.PathEditing
 
                 return index;
             }
+        }
+
+        private readonly struct ArcSegmentData
+        {
+            public ArcSegmentData(float rx, float ry, float xAxisRotation, bool largeArc, bool sweep, Vector2 endPoint)
+            {
+                Rx = rx;
+                Ry = ry;
+                XAxisRotation = xAxisRotation;
+                LargeArc = largeArc;
+                Sweep = sweep;
+                EndPoint = endPoint;
+            }
+
+            public float Rx { get; }
+            public float Ry { get; }
+            public float XAxisRotation { get; }
+            public bool LargeArc { get; }
+            public bool Sweep { get; }
+            public Vector2 EndPoint { get; }
         }
     }
 }

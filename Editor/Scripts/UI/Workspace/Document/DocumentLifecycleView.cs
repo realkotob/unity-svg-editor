@@ -114,7 +114,12 @@ namespace SvgEditor.UI.Workspace.Document
                 return;
             }
 
-            PreviewImageHelper.Apply(_previewImage, PreviewImageSource.FromVectorImage(vectorImage));
+            PreviewImageHelper.Clear(_previewImage);
+            PreviewImageHelper.Apply((VisualElement)_previewImage, PreviewImageSource.FromVectorImage(vectorImage));
+            _previewImage.style.display = vectorImage != null
+                ? DisplayStyle.Flex
+                : DisplayStyle.None;
+            _previewImage.MarkDirtyRepaint();
         }
 
         public void SetStatus(string status)

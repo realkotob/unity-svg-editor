@@ -156,6 +156,7 @@ namespace SvgEditor.UI.Canvas
 
         public void UpdateSelectionVisual()
         {
+            _pointerDragController.SyncPathEditSelection();
             _selectionVisualService.UpdateSelectionVisual(_selectionKind);
         }
 

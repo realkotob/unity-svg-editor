@@ -182,7 +182,10 @@ namespace SvgEditor.UI.Canvas
                 return false;
             }
 
-            int nodeCount = subpath.Nodes.Count + 1;
+            bool isClosedLoop = subpath.IsClosed && subpath.Nodes.Count > 0;
+            int nodeCount = isClosedLoop
+                ? subpath.Nodes.Count
+                : subpath.Nodes.Count + 1;
             Vector2[] positions = new Vector2[nodeCount];
             Vector2[] inHandles = new Vector2[nodeCount];
             Vector2[] outHandles = new Vector2[nodeCount];
@@ -194,7 +197,10 @@ namespace SvgEditor.UI.Canvas
                 return false;
             }
 
-            for (int nodeIndex = 0; nodeIndex < subpath.Nodes.Count; nodeIndex++)
+            int projectedNodeCount = isClosedLoop
+                ? subpath.Nodes.Count - 1
+                : subpath.Nodes.Count;
+            for (int nodeIndex = 0; nodeIndex < projectedNodeCount; nodeIndex++)
             {
                 if (!TryProjectPoint(subpath.Nodes[nodeIndex].Position, worldTransform, sceneToViewportPoint, out positions[nodeIndex + 1]))
                 {
@@ -205,18 +211,21 @@ namespace SvgEditor.UI.Canvas
             for (int segmentIndex = 0; segmentIndex < subpath.Nodes.Count; segmentIndex++)
             {
                 PathNode segmentNode = subpath.Nodes[segmentIndex];
+                int incomingNodeIndex = isClosedLoop
+                    ? (segmentIndex + 1) % nodeCount
+                    : segmentIndex + 1;
                 switch (segmentNode.Command)
                 {
                     case 'C':
                     case 'S':
                         if (!TryProjectPoint(segmentNode.Control0, worldTransform, sceneToViewportPoint, out outHandles[segmentIndex]) ||
-                            !TryProjectPoint(segmentNode.Control1, worldTransform, sceneToViewportPoint, out inHandles[segmentIndex + 1]))
+                            !TryProjectPoint(segmentNode.Control1, worldTransform, sceneToViewportPoint, out inHandles[incomingNodeIndex]))
                         {
                             return false;
                         }
 
                         hasOutHandle[segmentIndex] = true;
-                        hasInHandle[segmentIndex + 1] = true;
+                        hasInHandle[incomingNodeIndex] = true;
                         break;
 
                     case 'Q':
@@ -227,9 +236,9 @@ namespace SvgEditor.UI.Canvas
                         }
 
                         outHandles[segmentIndex] = projectedControl;
-                        inHandles[segmentIndex + 1] = projectedControl;
+                        inHandles[incomingNodeIndex] = projectedControl;
                         hasOutHandle[segmentIndex] = true;
-                        hasInHandle[segmentIndex + 1] = true;
+                        hasInHandle[incomingNodeIndex] = true;
                         break;
                 }
             }
@@ -249,11 +258,14 @@ namespace SvgEditor.UI.Canvas
             Vector2 localSegmentStart = subpath.Start;
             for (int segmentIndex = 0; segmentIndex < subpath.Nodes.Count; segmentIndex++)
             {
+                int viewportEndIndex = isClosedLoop
+                    ? (segmentIndex + 1) % nodeCount
+                    : segmentIndex + 1;
                 if (!TryAppendOverlaySegments(
                         localSegmentStart,
                         positions[segmentIndex],
                         subpath.Nodes[segmentIndex],
-                        positions[segmentIndex + 1],
+                        positions[viewportEndIndex],
                         worldTransform,
                         sceneToViewportPoint,
                         segments))
@@ -262,11 +274,6 @@ namespace SvgEditor.UI.Canvas
                 }
 
                 localSegmentStart = subpath.Nodes[segmentIndex].Position;
-            }
-
-            if (subpath.IsClosed && nodeCount > 1)
-            {
-                segments.Add(new CanvasLineSegment(positions[nodeCount - 1], positions[0]));
             }
 
             view = new PathSubpathView(nodes, segments, subpath.IsClosed);

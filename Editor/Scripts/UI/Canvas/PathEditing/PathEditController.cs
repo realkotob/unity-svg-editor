@@ -290,13 +290,13 @@ namespace SvgEditor.UI.Canvas
             Vector2 currentPosition = GetAnchorPosition(subpath, nodeRef.NodeIndex);
             Vector2 delta = newPosition - currentPosition;
 
-            if (nodeRef.NodeIndex > 0)
+            if (TryGetIncomingSegmentIndex(subpath, nodeRef.NodeIndex, out int previousSegmentIndex))
             {
-                int previousSegmentIndex = nodeRef.NodeIndex - 1;
                 subpath.Nodes[previousSegmentIndex] = TranslateIncomingHandle(subpath.Nodes[previousSegmentIndex], delta);
                 subpath.Nodes[previousSegmentIndex] = WithPosition(subpath.Nodes[previousSegmentIndex], newPosition);
             }
-            else
+
+            if (nodeRef.NodeIndex == 0)
             {
                 subpath.Start = newPosition;
             }
@@ -320,12 +320,12 @@ namespace SvgEditor.UI.Canvas
             int nodeIndex = handleRef.Node.NodeIndex;
             if (handleRef.Slot == PathHandleSlot.In)
             {
-                if (nodeIndex <= 0 || nodeIndex - 1 >= subpath.Nodes.Count)
+                if (!TryGetIncomingSegmentIndex(subpath, nodeIndex, out int incomingSegmentIndex))
                 {
                     return false;
                 }
 
-                subpath.Nodes[nodeIndex - 1] = MoveIncomingHandle(subpath, nodeIndex - 1, newPosition);
+                subpath.Nodes[incomingSegmentIndex] = MoveIncomingHandle(subpath, incomingSegmentIndex, newPosition);
                 if (nodeIndex < subpath.Nodes.Count)
                 {
                     subpath.Nodes[nodeIndex] = NormalizeBrokenSmoothSegment(subpath.Nodes[nodeIndex]);
@@ -451,6 +451,29 @@ namespace SvgEditor.UI.Canvas
 
             subpath = pathData.Subpaths[subpathIndex];
             return subpath != null;
+        }
+
+        private static bool TryGetIncomingSegmentIndex(PathSubpath subpath, int nodeIndex, out int segmentIndex)
+        {
+            segmentIndex = -1;
+            if (subpath == null || subpath.Nodes.Count == 0)
+            {
+                return false;
+            }
+
+            if (nodeIndex > 0)
+            {
+                segmentIndex = nodeIndex - 1;
+                return segmentIndex < subpath.Nodes.Count;
+            }
+
+            if (!subpath.IsClosed)
+            {
+                return false;
+            }
+
+            segmentIndex = subpath.Nodes.Count - 1;
+            return true;
         }
 
         private static Vector2 GetAnchorPosition(PathSubpath subpath, int nodeIndex)

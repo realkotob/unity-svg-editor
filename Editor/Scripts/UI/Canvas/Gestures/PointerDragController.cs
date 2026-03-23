@@ -133,6 +133,17 @@ namespace SvgEditor.UI.Canvas
             return _pathEditSessionSyncController.ResyncActiveSession(previewIsCurrent);
         }
 
+        public void SyncPathEditSelection()
+        {
+            if (_gestureRouter.DragMode == DragMode.PathEdit)
+            {
+                return;
+            }
+
+            _gestureRouter.AbandonPathEditDrag();
+            _pathEditSessionSyncController.SyncActiveSessionToSelection();
+        }
+
         public void Bind(CanvasStageView canvasStageView, Toggle moveToolToggle)
         {
             Dispose();

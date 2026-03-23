@@ -149,7 +149,8 @@ namespace SvgEditor.UI.Canvas
 
             PathNodeRef activeNode = session.Selection.ActiveNode.Value;
             return activeNode.SubpathIndex == nodeRef.SubpathIndex &&
-                   (activeNode.NodeIndex == nodeRef.NodeIndex || activeNode.NodeIndex + 1 == nodeRef.NodeIndex);
+                   (activeNode.NodeIndex == nodeRef.NodeIndex ||
+                    ResolveNextNodeIndex(session, activeNode) == nodeRef.NodeIndex);
         }
 
         private static bool ShouldShowOutgoingHandle(PathEditSession session, PathNodeRef nodeRef)
@@ -161,7 +162,43 @@ namespace SvgEditor.UI.Canvas
 
             PathNodeRef activeNode = session.Selection.ActiveNode.Value;
             return activeNode.SubpathIndex == nodeRef.SubpathIndex &&
-                   (activeNode.NodeIndex == nodeRef.NodeIndex || activeNode.NodeIndex - 1 == nodeRef.NodeIndex);
+                   (activeNode.NodeIndex == nodeRef.NodeIndex ||
+                    ResolvePreviousNodeIndex(session, activeNode) == nodeRef.NodeIndex);
+        }
+
+        private static int ResolveNextNodeIndex(PathEditSession session, PathNodeRef activeNode)
+        {
+            PathSubpathView subpath = session.Subpaths[activeNode.SubpathIndex];
+            if (subpath == null || subpath.Nodes.Count == 0)
+            {
+                return -1;
+            }
+
+            if (subpath.IsClosed)
+            {
+                return (activeNode.NodeIndex + 1) % subpath.Nodes.Count;
+            }
+
+            int nextIndex = activeNode.NodeIndex + 1;
+            return nextIndex < subpath.Nodes.Count ? nextIndex : -1;
+        }
+
+        private static int ResolvePreviousNodeIndex(PathEditSession session, PathNodeRef activeNode)
+        {
+            PathSubpathView subpath = session.Subpaths[activeNode.SubpathIndex];
+            if (subpath == null || subpath.Nodes.Count == 0)
+            {
+                return -1;
+            }
+
+            if (subpath.IsClosed)
+            {
+                return (activeNode.NodeIndex - 1 + subpath.Nodes.Count) % subpath.Nodes.Count;
+            }
+
+            return activeNode.NodeIndex > 0
+                ? activeNode.NodeIndex - 1
+                : -1;
         }
 
         private void Apply(PathOverlayVisual visual)

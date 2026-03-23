@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Xml;
-using SvgEditor.Core.Svg.Analysis;
 using SvgEditor.Core.Svg.Model;
 using SvgEditor.Core.Svg.Serialization;
 using SvgEditor.Core.Svg.Structure.Xml;
@@ -14,8 +13,6 @@ namespace SvgEditor.Core.Svg.Source
     {
         private readonly SvgLoader _loader = new();
         private readonly SvgSerializer _serializer = new();
-        private const string TextEditingBlockReason =
-            "Model-based editing is disabled for SVG text content (text, tspan, textPath).";
 
         public Result<Unit> ValidateXml(string sourceText)
         {
@@ -68,12 +65,6 @@ namespace SvgEditor.Core.Svg.Source
             document.DocumentModel = load.Value;
             ApplyDisplayTagOverrides(document.DocumentModel, displayTagOverrides);
             document.DisplayTagOverrides = CaptureDisplayTagOverrides(document.DocumentModel);
-
-            FeatureScanResult featureScan = FeatureScanner.Scan(sourceText);
-            if (featureScan.HasText || featureScan.HasTspan || featureScan.HasTextPath)
-            {
-                document.ModelEditingBlockReason = TextEditingBlockReason;
-            }
         }
 
         public Result<string> ResolvePersistedSource(DocumentSession document)

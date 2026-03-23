@@ -28,17 +28,15 @@ namespace SvgEditor.UI.Canvas
                 return new PathEditEntryResult(PathEditEntryResultKind.Ignored, string.Empty, null);
             }
 
-            if (!TryResolvePathNode(request.CurrentDocument, request.ElementKey, out SvgNodeModel pathNode))
+            if (!TryResolveEditableShapeNode(request.CurrentDocument, request.ElementKey, out SvgNodeModel pathNode))
             {
                 return new PathEditEntryResult(PathEditEntryResultKind.Ignored, string.Empty, null);
             }
 
-            if (!pathNode.RawAttributes.TryGetValue(SvgAttributeName.D, out string pathText))
+            if (!PrimitivePathConversion.TryCreateEditablePathData(pathNode, out PathData pathData, out _))
             {
                 return new PathEditEntryResult(PathEditEntryResultKind.Ignored, string.Empty, null);
             }
-
-            PathData pathData = PathDataParser.Parse(pathText);
             if (pathData.HasUnsupportedCommands)
             {
                 string status = BuildUnsupportedStatus(pathData);
@@ -69,7 +67,7 @@ namespace SvgEditor.UI.Canvas
 
         public PathEditEntryResult TryRebuild(PathEditEntryRequest request, PathEditSession previousSession)
         {
-            if (!TryResolvePathNode(request.CurrentDocument, request.ElementKey, out SvgNodeModel pathNode))
+            if (!TryResolveEditableShapeNode(request.CurrentDocument, request.ElementKey, out SvgNodeModel pathNode))
             {
                 ClearActiveSession();
                 return new PathEditEntryResult(
@@ -78,7 +76,7 @@ namespace SvgEditor.UI.Canvas
                     null);
             }
 
-            if (!pathNode.RawAttributes.TryGetValue(SvgAttributeName.D, out string pathText))
+            if (!PrimitivePathConversion.TryCreateEditablePathData(pathNode, out PathData pathData, out _))
             {
                 ClearActiveSession();
                 return new PathEditEntryResult(
@@ -87,7 +85,6 @@ namespace SvgEditor.UI.Canvas
                     null);
             }
 
-            PathData pathData = PathDataParser.Parse(pathText);
             if (pathData.HasUnsupportedCommands)
             {
                 ClearActiveSession();
@@ -129,14 +126,14 @@ namespace SvgEditor.UI.Canvas
             _overlayController.ClearPathEditSession();
         }
 
-        private static bool TryResolvePathNode(DocumentSession currentDocument, string elementKey, out SvgNodeModel pathNode)
+        private static bool TryResolveEditableShapeNode(DocumentSession currentDocument, string elementKey, out SvgNodeModel pathNode)
         {
             pathNode = null;
             if (currentDocument?.DocumentModel == null ||
                 string.IsNullOrWhiteSpace(elementKey) ||
                 !NodeLookup.TryFindNodeByLegacyElementKey(currentDocument.DocumentModel, elementKey, out pathNode) ||
                 pathNode == null ||
-                !string.Equals(pathNode.TagName, "path", StringComparison.OrdinalIgnoreCase) ||
+                !IsEditableShapeTag(pathNode.TagName) ||
                 pathNode.RawAttributes == null)
             {
                 pathNode = null;
@@ -144,6 +141,17 @@ namespace SvgEditor.UI.Canvas
             }
 
             return true;
+        }
+
+        private static bool IsEditableShapeTag(string tagName)
+        {
+            return string.Equals(tagName, SvgTagName.PATH, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(tagName, SvgTagName.LINE, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(tagName, SvgTagName.RECT, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(tagName, SvgTagName.CIRCLE, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(tagName, SvgTagName.ELLIPSE, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(tagName, SvgTagName.POLYLINE, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(tagName, SvgTagName.POLYGON, StringComparison.OrdinalIgnoreCase);
         }
 
         private static string BuildUnsupportedStatus(PathData pathData)

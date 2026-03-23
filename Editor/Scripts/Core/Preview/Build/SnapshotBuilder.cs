@@ -98,6 +98,16 @@ namespace SvgEditor.Core.Preview.Build
                     sceneBuildResult.NodeOpacities,
                     projectionRect);
 
+                if (!SceneImportService.HasRenderableGeometry(previewVectorImage))
+                {
+                    if (previewVectorImage != null)
+                    {
+                        UnityEngine.Object.DestroyImmediate(previewVectorImage);
+                    }
+
+                    return Result.Failure<PreviewSnapshot>("Preview vector image had no renderable geometry.");
+                }
+
                 PreviewSnapshot snapshot = new()
                 {
                     PreviewVectorImage = previewVectorImage,
@@ -151,6 +161,16 @@ namespace SvgEditor.Core.Preview.Build
                     preferredViewportRect);
 
                 previewVectorImage = SceneImportService.BuildPreviewVectorImage(sceneInfo, projectionRect);
+                if (!SceneImportService.HasRenderableGeometry(previewVectorImage))
+                {
+                    if (previewVectorImage != null)
+                    {
+                        UnityEngine.Object.DestroyImmediate(previewVectorImage);
+                    }
+
+                    return Result.Failure<PreviewSnapshot>("Preview vector image had no renderable geometry.");
+                }
+
                 PreviewSnapshot previewSnapshot = new()
                 {
                     PreviewVectorImage = previewVectorImage,
