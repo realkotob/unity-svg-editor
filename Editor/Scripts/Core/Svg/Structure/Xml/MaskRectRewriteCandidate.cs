@@ -126,6 +126,7 @@ namespace SvgEditor.Core.Svg.Structure.Xml
         {
             XmlElement replacement = _document.CreateElement("path", _root.NamespaceURI);
             CopySafeAttributes(_strokeRect, replacement);
+            replacement.SetAttribute(SvgAttributeName.INTERNAL_DISPLAY_TAG, SvgTagName.RECT);
             replacement.SetAttribute("fill", _strokeColor);
             replacement.SetAttribute("fill-rule", "evenodd");
             replacement.SetAttribute("d", RoundedRectPathBuilder.BuildInsetRingPath(_maskShape, _strokeWidth * 0.5f));

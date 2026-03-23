@@ -23,6 +23,7 @@ namespace SvgEditor.UI.Canvas
         private readonly PointerDragSession _dragSession = new();
         private readonly SelectionSyncService _selectionSyncService;
         private readonly GestureRouter _gestureRouter;
+        private readonly PathEditSessionSyncController _pathEditSessionSyncController;
 
         private VisualElement _canvasOverlay;
         private CanvasStageView _canvasStageView;
@@ -37,6 +38,7 @@ namespace SvgEditor.UI.Canvas
             _viewportState = viewportState;
             _overlayController = overlayController;
             _sceneProjector = sceneProjector;
+            _toolController.ActiveToolChanged += OnActiveToolChanged;
             _dragController = new DragController(sceneProjector);
             _selectionSyncService = new SelectionSyncService(_host, _overlayController, _dragController);
             _gestureRouter = new GestureRouter(new GestureRouterDependencies(
@@ -49,6 +51,11 @@ namespace SvgEditor.UI.Canvas
                 _selectionSyncService,
                 _dragSession,
                 GetCanvasOverlay));
+            _pathEditSessionSyncController = new PathEditSessionSyncController(
+                _host,
+                _sceneProjector,
+                _toolController,
+                _overlayController);
         }
 
         public VisualElement CanvasOverlay => _canvasOverlay;
@@ -120,9 +127,27 @@ namespace SvgEditor.UI.Canvas
                 CanvasFrameLayout);
         }
 
+        public string ResyncPathEditSession(bool previewIsCurrent)
+        {
+            _gestureRouter.AbandonPathEditDrag();
+            return _pathEditSessionSyncController.ResyncActiveSession(previewIsCurrent);
+        }
+
+        public void SyncPathEditSelection()
+        {
+            if (_gestureRouter.DragMode == DragMode.PathEdit)
+            {
+                return;
+            }
+
+            _gestureRouter.AbandonPathEditDrag();
+            _pathEditSessionSyncController.SyncActiveSessionToSelection();
+        }
+
         public void Bind(CanvasStageView canvasStageView, Toggle moveToolToggle)
         {
             Dispose();
+            _toolController.ActiveToolChanged += OnActiveToolChanged;
             _toolController.BindMoveTool(moveToolToggle);
             _canvasStageView = canvasStageView;
             if (canvasStageView != null)
@@ -135,6 +160,7 @@ namespace SvgEditor.UI.Canvas
         public void Dispose()
         {
             _gestureRouter.EndCanvasDrag();
+            _toolController.ActiveToolChanged -= OnActiveToolChanged;
             _toolController.Dispose();
             if (_canvasStageView != null)
             {
@@ -162,7 +188,7 @@ namespace SvgEditor.UI.Canvas
             _canvasOverlay.RegisterCallback<GeometryChangedEvent>(OnCanvasGeometryChanged);
 
             _toolController.UpdateVisualState(_canvasOverlay);
-            _host.UpdateCanvasVisualState();
+            _host.UpdateViewportVisualState();
         }
 
         private void UnbindCanvasInteractionOverlay()
@@ -216,12 +242,12 @@ namespace SvgEditor.UI.Canvas
                 _host.PreviewSnapshot,
                 _sceneProjector,
                 _viewportState,
-                _host.UpdateCanvasVisualState);
+                _host.UpdateViewportVisualState);
         }
 
         private void OnCanvasKeyDown(KeyDownEvent evt)
         {
-            if (evt.keyCode == KeyCode.Escape && TryCancelActiveDrag())
+            if (evt.keyCode == KeyCode.Escape && (_gestureRouter.HandleEscapeKey() || TryCancelActiveDrag()))
             {
                 evt.StopPropagation();
                 return;
@@ -251,17 +277,28 @@ namespace SvgEditor.UI.Canvas
             }
         }
 
+        private void OnActiveToolChanged(ToolKind toolKind)
+        {
+            if (toolKind == ToolKind.Move)
+            {
+                _overlayController.ClearPathEditSession();
+            }
+
+            _toolController.UpdateVisualState(_canvasOverlay);
+            _host.UpdateSelectionVisual();
+        }
+
         private void ResetCanvasViewInternal()
         {
             if (_host.PreviewSnapshot == null)
             {
                 _viewportState.Clear();
-                _host.UpdateCanvasVisualState();
+                _host.UpdateViewportVisualState();
                 return;
             }
 
             ResetViewportToActualSize();
-            _host.UpdateCanvasVisualState();
+            _host.UpdateViewportVisualState();
         }
 
         private VisualElement GetCanvasOverlay()

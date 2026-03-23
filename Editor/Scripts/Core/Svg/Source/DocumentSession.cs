@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -18,6 +19,7 @@ namespace SvgEditor.Core.Svg.Source
         public SvgDocumentModel DocumentModel { get; set; }
         public string DocumentModelLoadError { get; set; } = string.Empty;
         public string ModelEditingBlockReason { get; set; } = string.Empty;
+        public Dictionary<string, string> DisplayTagOverrides { get; set; } = new(StringComparer.Ordinal);
 
         public bool IsDirty => !string.Equals(OriginalSourceText, WorkingSourceText, StringComparison.Ordinal);
         public bool HasModelEditingBlock => !string.IsNullOrWhiteSpace(ModelEditingBlockReason);

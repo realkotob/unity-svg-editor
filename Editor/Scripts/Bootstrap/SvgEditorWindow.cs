@@ -192,15 +192,10 @@ namespace SvgEditor.Bootstrap
                 return;
             }
 
-            if (TryHandleShortcut(currentEvent.keyCode, currentEvent.modifiers))
+            if (_shortcutRouter.TryHandleShortcut(currentEvent.keyCode, currentEvent.character, currentEvent.modifiers))
             {
                 currentEvent.Use();
             }
-        }
-
-        private bool TryHandleShortcut(KeyCode keyCode, EventModifiers modifiers)
-        {
-            return _shortcutRouter.TryHandleShortcut(keyCode, modifiers);
         }
 
         private string ResolveSelectedPatchTargetKey()
@@ -385,7 +380,7 @@ namespace SvgEditor.Bootstrap
         private void OnRootKeyDown(KeyDownEvent evt)
         {
             EnsureInitialized();
-            if (TryHandleShortcut(evt.keyCode, evt.modifiers))
+            if (_shortcutRouter.TryHandleShortcut(evt.keyCode, evt.character, evt.modifiers))
                 evt.StopPropagation();
         }
 

@@ -6,9 +6,17 @@ The format is based on Keep a Changelog, and this project is intended to follow 
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-03-24
+
 ### Added
 
-- Placeholder for upcoming changes
+- README path edit demo assets with a new GIF and screenshot section under `Path Edit Mode`
+- Regression coverage for `path-edit-regression-suite.svg` `polygon-shape` path edit anchors
+
+### Changed
+
+- Path edit quadratic overlays now display split handles from the moment edit mode opens
+- Closed primitive path overlays now preserve all anchors for closed shapes that do not repeat the start point explicitly
 
 ## [1.0.0] - 2026-03-20
 

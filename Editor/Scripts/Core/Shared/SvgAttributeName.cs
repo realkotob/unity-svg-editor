@@ -15,6 +15,7 @@ namespace SvgEditor.Core.Shared
         public const string GROUPMODE = "groupmode";
         public const string HEIGHT = "height";
         public const string ID = "id";
+        public const string INTERNAL_DISPLAY_TAG = "data-unity-svg-editor-display-tag";
         public const string INKSCAPE_GROUPMODE = "inkscape:groupmode";
         public const string MASK = "mask";
         public const string OFFSET = "offset";

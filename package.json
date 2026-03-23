@@ -1,6 +1,6 @@
 {
   "name": "com.maemi.unity-svg-editor",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "displayName": "Unity SVG Editor",
   "description": "Unity editor package for inspecting, previewing, editing, validating, and saving SVG assets with local UI Toolkit controls.",
   "unity": "6000.0",

@@ -101,7 +101,7 @@ namespace SvgEditor.UI.Canvas
                 ResetSelection();
             }
 
-            UpdateCanvasVisualState();
+            UpdateViewportVisualState();
         }
 
         public void FitCanvasView(bool clearSelection = false)
@@ -118,7 +118,7 @@ namespace SvgEditor.UI.Canvas
                 ResetSelection();
             }
 
-            UpdateCanvasVisualState();
+            UpdateViewportVisualState();
         }
 
         public void SyncCanvasFrameToPreview()
@@ -135,6 +135,12 @@ namespace SvgEditor.UI.Canvas
             UpdateHoverVisual();
         }
 
+        public void UpdateViewportVisualState()
+        {
+            _pointerDragController.ResyncPathEditSession(previewIsCurrent: true);
+            UpdateCanvasVisualState();
+        }
+
         public void UpdateCanvasVisualState()
         {
             _sceneProjector.UpdateFrameVisual(PreviewImage, PreviewSnapshot, _overlayController, _host.CurrentDocument, _pointerDragController.CanvasOverlay);
@@ -143,8 +149,14 @@ namespace SvgEditor.UI.Canvas
             UpdateHoverVisual();
         }
 
+        public string ResyncPathEditSession(bool previewIsCurrent)
+        {
+            return _pointerDragController.ResyncPathEditSession(previewIsCurrent);
+        }
+
         public void UpdateSelectionVisual()
         {
+            _pointerDragController.SyncPathEditSelection();
             _selectionVisualService.UpdateSelectionVisual(_selectionKind);
         }
 
@@ -192,6 +204,7 @@ namespace SvgEditor.UI.Canvas
             _host.AddStructureElementSelectionFromCanvas(elementKeys, syncPatchTarget);
         void ICanvasPointerDragHost.ClearSelection() => _host.ClearStructureSelectionFromCanvas();
         void ICanvasPointerDragHost.UpdateStructureInteractivity(bool hasDocument) => _host.UpdateStructureInteractivity(hasDocument);
+        void ICanvasPointerDragHost.UpdateViewportVisualState() => UpdateViewportVisualState();
         void ICanvasPointerDragHost.UpdateCanvasVisualState() => UpdateCanvasVisualState();
         void ICanvasPointerDragHost.UpdateSelectionVisual() => UpdateSelectionVisual();
         void ICanvasPointerDragHost.SetHoveredElement(string elementKey) => SetHoveredElement(elementKey);

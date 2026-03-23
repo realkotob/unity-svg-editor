@@ -14,6 +14,7 @@ namespace SvgEditor.UI.Workspace.Document
         private readonly Func<DocumentSession> _currentDocumentAccessor;
         private readonly Func<EditorWorkspaceCoordinator> _workspaceCoordinatorAccessor;
         private readonly Action _updateEditorInteractivity;
+        private readonly Func<bool, string> _resyncPathEditSession;
 
         public DocumentSyncService(
             DocumentLifecycleView view,
@@ -21,7 +22,8 @@ namespace SvgEditor.UI.Workspace.Document
             PanelController inspectorPanelController,
             Func<DocumentSession> currentDocumentAccessor,
             Func<EditorWorkspaceCoordinator> workspaceCoordinatorAccessor,
-            Action updateEditorInteractivity)
+            Action updateEditorInteractivity,
+            Func<bool, string> resyncPathEditSession = null)
         {
             _view = view;
             _previewService = previewService;
@@ -29,6 +31,7 @@ namespace SvgEditor.UI.Workspace.Document
             _currentDocumentAccessor = currentDocumentAccessor;
             _workspaceCoordinatorAccessor = workspaceCoordinatorAccessor;
             _updateEditorInteractivity = updateEditorInteractivity;
+            _resyncPathEditSession = resyncPathEditSession;
         }
 
         private DocumentSession CurrentDocument => _currentDocumentAccessor?.Invoke();
@@ -46,6 +49,7 @@ namespace SvgEditor.UI.Workspace.Document
 
         public void HandleLoadFailure(string error)
         {
+            ResolvePathEditStatus(previewIsCurrent: false);
             _view.ShowLoadFailure(error);
             _updateEditorInteractivity?.Invoke();
         }
@@ -68,11 +72,12 @@ namespace SvgEditor.UI.Workspace.Document
                 return;
             }
 
-            _previewService.RefreshLivePreview(keepExistingPreviewOnFailure);
+            bool previewIsCurrent = _previewService.RefreshLivePreviewAndReportState(keepExistingPreviewOnFailure);
+            string pathEditStatus = ResolvePathEditStatus(previewIsCurrent);
             _inspectorPanelController.RefreshTargets();
             WorkspaceCoordinator?.RefreshStructureViews();
             _updateEditorInteractivity?.Invoke();
-            _view.SetStatus(BuildStatusMessage(status));
+            _view.SetStatus(BuildStatusMessage(string.IsNullOrWhiteSpace(pathEditStatus) ? status : pathEditStatus));
         }
 
         public void HandleSaveSucceeded()
@@ -95,6 +100,16 @@ namespace SvgEditor.UI.Workspace.Document
             }
 
             return $"{status} {CurrentDocument.ModelEditingBlockReason}";
+        }
+
+        private string ResolvePathEditStatus(bool previewIsCurrent)
+        {
+            if (_resyncPathEditSession != null)
+            {
+                return _resyncPathEditSession(previewIsCurrent) ?? string.Empty;
+            }
+
+            return WorkspaceCoordinator?.ResyncPathEditSession(previewIsCurrent) ?? string.Empty;
         }
     }
 }

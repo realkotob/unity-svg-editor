@@ -28,7 +28,8 @@ namespace SvgEditor.Core.Preview.Build
         };
 
         private static readonly MethodInfo InternalBuildVectorImageMethod = ResolveInternalBuildVectorImageMethod();
-        private static bool _loggedInternalBuildVectorImageFallback;
+        private static readonly FieldInfo VectorImageVerticesField = typeof(VectorImage).GetField("vertices", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        private static readonly FieldInfo VectorImageIndicesField = typeof(VectorImage).GetField("indices", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
         #endregion Variables
 
         #region Public Methods
@@ -109,7 +110,11 @@ namespace SvgEditor.Core.Preview.Build
             Result<VectorImage> reflectionResult = BuildVectorImageWithPreviewRect(geometries, previewRect);
             if (reflectionResult.IsFailure)
             {
-                LogReflectionFallback(reflectionResult.Error);
+                return FinalizePreviewVectorImage(fallbackBuilder());
+            }
+
+            if (!HasRenderableGeometry(reflectionResult.Value))
+            {
                 return FinalizePreviewVectorImage(fallbackBuilder());
             }
 
@@ -150,15 +155,6 @@ namespace SvgEditor.Core.Preview.Build
             }
         }
 
-        private static void LogReflectionFallback(string error)
-        {
-            if (string.IsNullOrWhiteSpace(error) || _loggedInternalBuildVectorImageFallback)
-                return;
-
-            _loggedInternalBuildVectorImageFallback = true;
-            Debug.LogWarning($"SceneImportService falling back to the public VectorImage builder: {error}");
-        }
-
         private static VectorImage FinalizePreviewVectorImage(VectorImage vectorImage)
         {
             if (vectorImage == null)
@@ -167,6 +163,21 @@ namespace SvgEditor.Core.Preview.Build
             vectorImage.hideFlags = HideFlags.HideAndDontSave;
             vectorImage.name = PREVIEW_VECTOR_IMAGE_NAME;
             return vectorImage;
+        }
+
+        internal static bool HasRenderableGeometry(VectorImage vectorImage)
+        {
+            if (vectorImage == null)
+            {
+                return false;
+            }
+
+            Array vertices = VectorImageVerticesField?.GetValue(vectorImage) as Array;
+            Array indices = VectorImageIndicesField?.GetValue(vectorImage) as Array;
+            return vertices != null &&
+                   indices != null &&
+                   vertices.Length > 0 &&
+                   indices.Length > 0;
         }
         #endregion Help Methods
     }

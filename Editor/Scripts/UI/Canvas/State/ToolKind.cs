@@ -6,6 +6,7 @@ namespace SvgEditor.UI.Canvas
 {
     internal enum ToolKind
     {
-        Move
+        Move,
+        PathEdit
     }
 }

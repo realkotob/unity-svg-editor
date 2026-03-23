@@ -322,6 +322,7 @@ namespace SvgEditor.UI.Canvas
             previewImage.style.top = 0f;
             previewImage.style.width = layout.ImageViewportRect.width;
             previewImage.style.height = layout.ImageViewportRect.height;
+
         }
 
         private static string GetCanvasFrameLabel(DocumentSession currentDocument)

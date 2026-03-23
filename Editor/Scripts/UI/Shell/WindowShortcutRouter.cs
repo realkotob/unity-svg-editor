@@ -58,6 +58,11 @@ namespace SvgEditor.UI.Shell
 
         public bool TryHandleShortcut(KeyCode keyCode, EventModifiers modifiers)
         {
+            return TryHandleShortcut(keyCode, '\0', modifiers);
+        }
+
+        public bool TryHandleShortcut(KeyCode keyCode, char character, EventModifiers modifiers)
+        {
             if (keyCode == KeyCode.Escape && (_tryCancelActiveDrag?.Invoke() ?? false))
             {
                 return true;
@@ -69,7 +74,7 @@ namespace SvgEditor.UI.Shell
             }
 
             EventModifiers normalizedModifiers = NormalizeShortcutModifiers(modifiers);
-            if ((keyCode == KeyCode.Delete || keyCode == KeyCode.Backspace) &&
+            if (IsDeleteShortcut(keyCode, character) &&
                 normalizedModifiers == EventModifiers.None &&
                 !EditorGUIUtility.editingTextField)
             {
@@ -130,6 +135,14 @@ namespace SvgEditor.UI.Shell
         private static bool IsDocumentShortcut(EventModifiers normalizedModifiers)
         {
             return (normalizedModifiers & (EventModifiers.Command | EventModifiers.Control)) != 0;
+        }
+
+        private static bool IsDeleteShortcut(KeyCode keyCode, char character)
+        {
+            return keyCode == KeyCode.Delete ||
+                   keyCode == KeyCode.Backspace ||
+                   character == '\b' ||
+                   character == '\u007F';
         }
     }
 }

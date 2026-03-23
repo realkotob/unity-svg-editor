@@ -122,16 +122,17 @@ namespace SvgEditor.UI.Hierarchy
         private static HierarchyNode CreateHierarchyNode(SvgNodeModel node, string parentKey, string activeLayerKey)
         {
             bool isRoot = node.Id.IsRoot;
+            string displayTagName = string.IsNullOrWhiteSpace(node.DisplayTagName) ? node.TagName : node.DisplayTagName;
             return new HierarchyNode
             {
                 Key = node.LegacyElementKey,
                 TargetKey = isRoot ? string.Empty : node.LegacyTargetKey,
-                TagName = node.TagName,
+                TagName = displayTagName,
                 Depth = node.Depth,
                 ParentKey = parentKey,
                 LayerKey = activeLayerKey,
-                DisplayName = BuildElementDisplayName(node),
-                TreeLabel = BuildTreeLabel(node.XmlId, node.TagName, node.SiblingIndex),
+                DisplayName = BuildElementDisplayName(node, displayTagName),
+                TreeLabel = BuildTreeLabel(node.XmlId, displayTagName, node.SiblingIndex),
                 MaskReferenceId = ResolveReferencedFragmentId(node, SvgAttributeName.MASK),
                 ClipPathReferenceId = ResolveReferencedFragmentId(node, SvgAttributeName.CLIP_PATH)
             };
@@ -268,12 +269,12 @@ namespace SvgEditor.UI.Hierarchy
             }
         }
 
-        private static string BuildElementDisplayName(SvgNodeModel node)
+        private static string BuildElementDisplayName(SvgNodeModel node, string displayTagName)
         {
             string indent = new(' ', Math.Max(0, node?.Depth ?? 0) * 2);
             return string.IsNullOrWhiteSpace(node?.XmlId)
-                ? $"{indent}<{node?.TagName}> [{(node?.SiblingIndex ?? 0) + 1}]"
-                : $"{indent}#{node.XmlId}  <{node.TagName}>";
+                ? $"{indent}<{displayTagName}> [{(node?.SiblingIndex ?? 0) + 1}]"
+                : $"{indent}#{node.XmlId}  <{displayTagName}>";
         }
 
         private static string BuildTreeLabel(string id, string localName, int siblingIndex)

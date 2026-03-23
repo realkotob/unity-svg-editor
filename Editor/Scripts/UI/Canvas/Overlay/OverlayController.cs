@@ -16,13 +16,19 @@ namespace SvgEditor.UI.Canvas
         private Label _frameLabel;
         private readonly CanvasTextOverlayPresenter _textOverlayPresenter = new();
         private readonly DefinitionOverlayPresenter _definitionOverlayPresenter = new();
+        private readonly PathOverlayPresenter _pathOverlayPresenter = new();
         private readonly SelectionChromePresenter _selectionChromePresenter = new();
         private VisualElement _maskBoundsBox;
         private VisualElement _clipBoundsBox;
         private PolylineOverlayElement _maskOutline;
         private PolylineOverlayElement _clipOutline;
+        private PolylineOverlayElement _pathOutline;
+        private PolylineOverlayElement _pathHandleOutline;
+        private PathEditSession _pathEditSession;
 
         public VisualElement Overlay => _overlay;
+        public bool HasPathEditSession => _pathEditSession != null;
+        public PathEditSession CurrentPathEditSession => _pathEditSession;
 
         public void Attach(VisualElement host, VisualElement frameElement)
         {
@@ -58,17 +64,29 @@ namespace SvgEditor.UI.Canvas
             _maskOutline = CreateDefinitionOutline();
             _clipOutline = CreateDefinitionOutline();
             _definitionOverlayPresenter.Bind(_maskBoundsBox, _clipBoundsBox, _maskOutline, _clipOutline);
+            _pathOutline = CreateDefinitionOutline();
+            _pathHandleOutline = CreateDefinitionOutline();
+            _pathOutline.AddToClassList(OverlayClassName.PATH_LINE);
+            _pathHandleOutline.AddToClassList(OverlayClassName.BEZIER_HANDLE_LINE);
+            _pathOverlayPresenter.Bind(_overlay, _pathOutline, _pathHandleOutline);
 
             _selectionChromePresenter.BindSelectionChrome(_overlay);
             _textOverlayPresenter.Bind(_overlay);
 
             ClearFrame();
             ClearSelection();
+            if (_pathEditSession != null)
+            {
+                _pathOverlayPresenter.SetSession(_pathEditSession);
+            }
         }
 
         public void Detach()
         {
             _selectionChromePresenter.Detach();
+            _pathOverlayPresenter.Clear();
+            _pathOutline?.RemoveFromHierarchy();
+            _pathHandleOutline?.RemoveFromHierarchy();
             _maskOutline?.RemoveFromHierarchy();
             _clipOutline?.RemoveFromHierarchy();
             _maskBoundsBox?.RemoveFromHierarchy();
@@ -77,6 +95,8 @@ namespace SvgEditor.UI.Canvas
             _textOverlayPresenter.Clear();
             _overlay?.RemoveFromHierarchy();
 
+            _pathOutline = null;
+            _pathHandleOutline = null;
             _maskOutline = null;
             _clipOutline = null;
             _maskBoundsBox = null;
@@ -99,6 +119,18 @@ namespace SvgEditor.UI.Canvas
         public void ClearDefinitionOverlays()
         {
             _definitionOverlayPresenter.Clear();
+        }
+
+        public void SetPathEditSession(PathEditSession session)
+        {
+            _pathEditSession = session;
+            _pathOverlayPresenter.SetSession(session);
+        }
+
+        public void ClearPathEditSession()
+        {
+            _pathEditSession = null;
+            _pathOverlayPresenter.Clear();
         }
 
         public bool TryHitTestDefinitionOverlay(Vector2 localPoint, out CanvasDefinitionOverlayVisual overlay)
@@ -187,12 +219,14 @@ namespace SvgEditor.UI.Canvas
             return _selectionChromePresenter.TryHitTestSelectionHandle(localPoint, out handle);
         }
 
-        public void UpdateInteractionCursor(Vector2 localPoint)
+        public void UpdateInteractionCursor(bool showPointer)
         {
+            _overlay?.EnableInClassList(OverlayClassName.OVERLAY_INTERACTIVE_HIT, showPointer);
         }
 
         public void ResetInteractionCursor()
         {
+            _overlay?.EnableInClassList(OverlayClassName.OVERLAY_INTERACTIVE_HIT, false);
         }
 
         private VisualElement CreateDefinitionBoundsBox(string modifierClass)

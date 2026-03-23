@@ -3,7 +3,7 @@
 Inspect, preview, edit supported SVG properties, and save SVG assets directly inside the Unity Editor.
 
 ![Unity 6+](https://img.shields.io/badge/Unity-6000.0%2B-black?logo=unity)
-![Package](https://img.shields.io/badge/Package-1.0.0-blue)
+![Package](https://img.shields.io/badge/Package-1.1.0-blue)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 
 `Unity SVG Editor` is an editor package for teams that need to open existing SVG files, understand their structure, adjust supported properties visually, and write the result back to SVG XML.
@@ -150,6 +150,65 @@ Open `Window > Tools > SVG Editor`.
 5. Save and let Unity reimport the asset
 6. Review warnings if the document contains unsupported features or fallback rendering cases
 
+### Interaction Guide
+
+The editor supports a small set of focused canvas and keyboard interactions. The list below documents the controls that are currently implemented.
+
+#### Selection
+
+| Action | Control | Notes |
+|:--|:--|:--|
+| Select element on canvas | `Click` | On canvas, plain click prefers a containing group when one is under the pointer. |
+| Select direct leaf element | `Ctrl/Cmd + Click` | Bypasses group selection and targets the directly hit element. |
+| Toggle canvas selection | `Shift + Click` | Adds or removes the clicked canvas element from the current selection. |
+| Add with marquee selection | `Shift + Drag` on empty canvas | Adds overlapped elements to the current selection. |
+| Replace with marquee selection | `Drag` on empty canvas | Replaces the current selection with the marquee result. |
+| Select in hierarchy | `Click` | Selects a single row. |
+| Toggle in hierarchy | `Ctrl/Cmd + Click` | Adds or removes the clicked hierarchy row. |
+| Range select in hierarchy | `Shift + Click` | Selects a range from the current anchor row. |
+
+#### Transform Editing
+
+| Action | Control | Notes |
+|:--|:--|:--|
+| Move selection | `Drag selection` | Drag the selected element or multi-selection bounds. |
+| Nudge selection | `Arrow Keys` | Moves the current element selection by `1` unit per key press. |
+| Large nudge | `Shift + Arrow Keys` | Moves the current element selection by `10` units. |
+| Constrain move axis | `Shift + Drag` | Locks movement to a dominant axis while dragging. |
+| Snap move | `Ctrl/Cmd + Drag` | Enables move snapping while dragging. |
+| Uniform resize | `Shift + Drag resize handle` | Keeps proportional scaling during resize. |
+| Resize from center | `Alt + Drag resize handle` | Resizes symmetrically from the center. |
+| Snap resize | `Ctrl/Cmd + Drag resize handle` | Enables resize snapping while dragging. |
+| Snap rotation | `Shift + Drag rotate handle` | Enables snapped rotation while rotating. |
+| Cancel active drag | `Esc` | Cancels the current drag preview. |
+
+#### Path Edit Mode
+
+| Action | Control | Notes |
+|:--|:--|:--|
+| Enter path edit | `Double Click` on an editable shape | Supported for `path`, `line`, `rect`, `circle`, `ellipse`, `polyline`, and `polygon` when editable path data can be built. |
+| Enter path edit on direct leaf | `Ctrl/Cmd + Double Click` | Useful when a group would otherwise be selected first. |
+| Select path node or handle | `Click` | Selects the clicked node or handle inside path edit mode. |
+| Clear path node/handle selection | `Click` empty space in path edit mode | Clears the active path sub-selection. |
+| Move path node or handle | `Drag` | Commits back to SVG source when the drag completes successfully. |
+| Exit path edit | `Esc` | Exits path edit mode when no path drag is active. |
+| Cancel active path drag | `Esc` during path drag | Restores the path edit session to its pre-drag state. |
+
+| Path Edit Demo | Path Edit Screenshot |
+|:--:|:--:|
+| ![Path Edit Demo](.github/path-edit.gif) | ![Path Edit Screenshot](.github/path-edit.png) |
+
+Path edit is not entered when the target shape cannot be converted to editable path data, or when the path contains unsupported or malformed commands. In those cases the editor stays in read-only preview mode and shows a status message.
+
+#### Document Shortcuts
+
+| Action | Control | Notes |
+|:--|:--|:--|
+| Save | `Ctrl/Cmd + S` | Saves the current SVG and triggers reimport. |
+| Undo | `Ctrl/Cmd + Z` | Reverts the last document edit. |
+| Redo | `Ctrl/Cmd + Shift + Z` | Reapplies the last undone edit. |
+| Delete selection | `Delete` or `Backspace` | Deletes selected elements when a text field is not being edited. |
+
 ## Versioning
 
 This project is intended to follow Semantic Versioning.
@@ -159,7 +218,7 @@ This project is intended to follow Semantic Versioning.
 - `1.1.0`: backward-compatible feature release
 - `2.0.0`: breaking changes
 
-Current package version: `1.0.0`
+Current package version: `1.1.0`
 
 ## Release History
 
@@ -185,20 +244,20 @@ For each public release:
 Recommended release commit message:
 
 ```text
-chore(release): v1.0.0
+chore(release): v1.1.0
 ```
 
 Recommended tag format:
 
 ```bash
-git tag v1.0.0
-git push origin v1.0.0
+git tag v1.1.0
+git push origin v1.1.0
 ```
 
 Recommended GitHub release title:
 
 ```text
-Unity SVG Editor v1.0.0
+Unity SVG Editor v1.1.0
 ```
 
 ## License

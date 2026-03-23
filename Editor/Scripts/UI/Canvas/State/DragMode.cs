@@ -13,6 +13,7 @@ namespace SvgEditor.UI.Canvas
         SelectArea,
         MoveElement,
         ResizeElement,
-        RotateElement
+        RotateElement,
+        PathEdit
     }
 }

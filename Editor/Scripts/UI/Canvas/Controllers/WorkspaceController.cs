@@ -82,5 +82,10 @@ namespace SvgEditor.UI.Canvas
         {
             _interactionController.UpdateSelectionVisual();
         }
+
+        public string ResyncPathEditSession(bool previewIsCurrent)
+        {
+            return _interactionController.ResyncPathEditSession(previewIsCurrent);
+        }
     }
 }

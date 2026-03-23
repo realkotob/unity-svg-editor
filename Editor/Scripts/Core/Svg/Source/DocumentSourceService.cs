@@ -1,6 +1,6 @@
 using System;
+using System.Collections.Generic;
 using System.Xml;
-using SvgEditor.Core.Svg.Analysis;
 using SvgEditor.Core.Svg.Model;
 using SvgEditor.Core.Svg.Serialization;
 using SvgEditor.Core.Svg.Structure.Xml;
@@ -13,8 +13,6 @@ namespace SvgEditor.Core.Svg.Source
     {
         private readonly SvgLoader _loader = new();
         private readonly SvgSerializer _serializer = new();
-        private const string TextEditingBlockReason =
-            "Model-based editing is disabled for SVG text content (text, tspan, textPath).";
 
         public Result<Unit> ValidateXml(string sourceText)
         {
@@ -52,6 +50,7 @@ namespace SvgEditor.Core.Svg.Source
                 return;
             }
 
+            Dictionary<string, string> displayTagOverrides = CaptureDisplayTagOverrides(document);
             document.DocumentModel = null;
             document.DocumentModelLoadError = string.Empty;
             document.ModelEditingBlockReason = string.Empty;
@@ -64,12 +63,8 @@ namespace SvgEditor.Core.Svg.Source
             }
 
             document.DocumentModel = load.Value;
-
-            FeatureScanResult featureScan = FeatureScanner.Scan(sourceText);
-            if (featureScan.HasText || featureScan.HasTspan || featureScan.HasTextPath)
-            {
-                document.ModelEditingBlockReason = TextEditingBlockReason;
-            }
+            ApplyDisplayTagOverrides(document.DocumentModel, displayTagOverrides);
+            document.DisplayTagOverrides = CaptureDisplayTagOverrides(document.DocumentModel);
         }
 
         public Result<string> ResolvePersistedSource(DocumentSession document)
@@ -129,6 +124,112 @@ namespace SvgEditor.Core.Svg.Source
             }
 
             return declaration.OuterXml + serializedSourceText;
+        }
+
+        private static Dictionary<string, string> CaptureDisplayTagOverrides(DocumentSession document)
+        {
+            Dictionary<string, string> overrides = new(StringComparer.Ordinal);
+            if (document?.DisplayTagOverrides != null)
+            {
+                foreach (var pair in document.DisplayTagOverrides)
+                {
+                    if (!string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
+                    {
+                        overrides[pair.Key] = pair.Value;
+                    }
+                }
+            }
+
+            if (document?.DocumentModel == null)
+            {
+                return overrides;
+            }
+
+            foreach (var pair in document.DocumentModel.Nodes)
+            {
+                SvgNodeModel node = pair.Value;
+                string key = ResolveDisplayTagOverrideKey(node);
+                if (string.IsNullOrWhiteSpace(key))
+                {
+                    continue;
+                }
+
+                if (string.IsNullOrWhiteSpace(node.DisplayTagName) ||
+                    string.Equals(node.DisplayTagName, node.TagName, StringComparison.OrdinalIgnoreCase))
+                {
+                    overrides.Remove(key);
+                    continue;
+                }
+
+                overrides[key] = node.DisplayTagName;
+            }
+
+            return overrides;
+        }
+
+        private static Dictionary<string, string> CaptureDisplayTagOverrides(SvgDocumentModel documentModel)
+        {
+            Dictionary<string, string> overrides = new(StringComparer.Ordinal);
+            if (documentModel?.Nodes == null)
+            {
+                return overrides;
+            }
+
+            foreach (var pair in documentModel.Nodes)
+            {
+                SvgNodeModel node = pair.Value;
+                if (node == null ||
+                    string.IsNullOrWhiteSpace(node.DisplayTagName) ||
+                    string.Equals(node.DisplayTagName, node.TagName, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                string key = ResolveDisplayTagOverrideKey(node);
+                if (!string.IsNullOrWhiteSpace(key))
+                {
+                    overrides[key] = node.DisplayTagName;
+                }
+            }
+
+            return overrides;
+        }
+
+        private static void ApplyDisplayTagOverrides(SvgDocumentModel documentModel, IReadOnlyDictionary<string, string> displayTagOverrides)
+        {
+            if (documentModel?.Nodes == null || displayTagOverrides == null || displayTagOverrides.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var pair in documentModel.Nodes)
+            {
+                SvgNodeModel node = pair.Value;
+                if (node == null)
+                {
+                    continue;
+                }
+
+                string key = ResolveDisplayTagOverrideKey(node);
+                if (!string.IsNullOrWhiteSpace(key) &&
+                    displayTagOverrides.TryGetValue(key, out string displayTagName) &&
+                    !string.IsNullOrWhiteSpace(displayTagName))
+                {
+                    node.DisplayTagName = displayTagName;
+                }
+            }
+        }
+
+        private static string ResolveDisplayTagOverrideKey(SvgNodeModel node)
+        {
+            if (node == null)
+            {
+                return string.Empty;
+            }
+
+            return !string.IsNullOrWhiteSpace(node.XmlId)
+                ? $"id:{node.XmlId}"
+                : node.LegacyElementKey ?? string.Empty;
         }
     }
 }

@@ -28,7 +28,9 @@ namespace SvgEditor.UI.Canvas
         private readonly GestureState _gestureState = new();
         private readonly ViewportGestureHandler _viewportGestureHandler;
         private readonly ElementGestureHandler _elementGestureHandler;
-        private readonly InteractionSelectionResolver _selectionResolver;
+        private readonly SelectionTargetResolver _selectionTargetResolver;
+        private readonly PathEditEntryController _pathEditEntryController;
+        private readonly PathEditInteractionController _pathEditInteractionController;
         private PendingGroupMoveState _pendingGroupMoveState;
         private bool _isAreaSelectionAdditive;
         private IReadOnlyList<string> _areaSelectionBaselineKeys = Array.Empty<string>();
@@ -42,7 +44,7 @@ namespace SvgEditor.UI.Canvas
             _selectionSyncService = dependencies.SelectionSyncService;
             _dragSession = dependencies.DragSession;
             _overlayAccessor = dependencies.OverlayAccessor;
-            _selectionResolver = new InteractionSelectionResolver(dependencies.Host, dependencies.SceneProjector);
+            _selectionTargetResolver = new SelectionTargetResolver(dependencies.Host, dependencies.SceneProjector);
             _viewportGestureHandler = new ViewportGestureHandler(
                 dependencies.Host,
                 dependencies.ViewportState,
@@ -55,12 +57,20 @@ namespace SvgEditor.UI.Canvas
                 dependencies.SelectionSyncService,
                 dependencies.DragSession,
                 dependencies.OverlayAccessor);
+            _pathEditEntryController = new PathEditEntryController(
+                dependencies.ToolController,
+                dependencies.OverlayController);
+            _pathEditInteractionController = new PathEditInteractionController(
+                dependencies.Host,
+                dependencies.SceneProjector,
+                dependencies.ToolController,
+                dependencies.OverlayController);
         }
 
         public DragMode DragMode => _gestureState.Mode;
         public SelectionHandle ActiveHandle => _gestureState.ActiveHandle;
         public bool IsDraggingSelectionPreview =>
-            _dragSession.IsActive && _gestureState.IsElementGesture;
+            _dragSession.IsActive && (_gestureState.IsElementGesture || _gestureState.Mode == DragMode.PathEdit);
 
         public void OnCanvasPointerDown(PointerDownEvent evt)
         {
@@ -78,17 +88,156 @@ namespace SvgEditor.UI.Canvas
                 return;
             }
 
-            if (_toolController.ActiveTool != ToolKind.Move || evt.button != (int)MouseButton.LeftMouse)
+            if (HandleCanvasPointerDown(
+                    new CanvasPointerDownContext(
+                        evt.pointerId,
+                        evt.button,
+                        evt.clickCount,
+                        evt.modifiers,
+                        evt.target),
+                    localPosition))
             {
-                return;
+                evt.StopPropagation();
+            }
+        }
+
+        internal bool HandleCanvasPointerDown(CanvasPointerDownContext context, Vector2 localPosition)
+        {
+            if (context.Button != (int)MouseButton.LeftMouse)
+            {
+                return false;
             }
 
-            if (TryHandleSelectionHandle(evt, localPosition))
+            if (_toolController.ActiveTool == ToolKind.PathEdit)
             {
-                return;
+                return HandlePathEditPointerDown(context, localPosition);
             }
 
-            HandleCanvasSelection(evt, localPosition);
+            if (_toolController.ActiveTool != ToolKind.Move)
+            {
+                return false;
+            }
+
+            if (TryHandleSelectionHandle(context, localPosition))
+            {
+                return true;
+            }
+
+            return HandleCanvasSelection(context, localPosition);
+        }
+
+        internal bool HandleCanvasPointerMove(int pointerId, Vector2 localPosition, EventModifiers modifiers)
+        {
+            if (!_dragSession.Matches(pointerId))
+            {
+                return false;
+            }
+
+            if (_gestureState.IsViewportGesture)
+            {
+                Vector2 viewportDelta = localPosition - _dragSession.StartPosition;
+                _viewportGestureHandler.ApplyViewportDelta(_gestureState, viewportDelta);
+                return true;
+            }
+
+            if (_gestureState.Mode == DragMode.SelectArea)
+            {
+                UpdateAreaSelection(localPosition);
+                return true;
+            }
+
+            if (TryBeginPendingGroupMove(localPosition, pointerId, modifiers))
+            {
+                return true;
+            }
+
+            if (_gestureState.Mode == DragMode.PathEdit)
+            {
+                if (_pathEditInteractionController.UpdateDrag(localPosition))
+                {
+                    _host.UpdateSelectionVisual();
+                }
+
+                return true;
+            }
+
+            if (_gestureState.IsElementGesture)
+            {
+                ApplyActiveElementDelta(localPosition, modifiers);
+                return true;
+            }
+
+            return false;
+        }
+
+        internal bool HandleCanvasPointerUp(int pointerId, Vector2 localPosition, bool hasLocalPosition)
+        {
+            if (!_dragSession.Matches(pointerId))
+            {
+                return false;
+            }
+
+            Vector2 canvasDelta = hasLocalPosition
+                ? localPosition - _dragSession.StartPosition
+                : Vector2.zero;
+            bool wasViewportGesture = _gestureState.IsViewportGesture;
+            bool wasElementGesture = _gestureState.IsElementGesture;
+            DragMode dragMode = _gestureState.Mode;
+
+            if (wasViewportGesture)
+            {
+                EndCanvasDrag();
+                _viewportGestureHandler.Complete();
+                return true;
+            }
+
+            if (dragMode == DragMode.SelectArea)
+            {
+                CompleteAreaSelection(canvasDelta);
+                EndCanvasDrag();
+                return true;
+            }
+
+            if (dragMode == DragMode.PathEdit)
+            {
+                bool committed = _pathEditInteractionController.CommitDrag();
+                EndCanvasDrag();
+                if (!committed)
+                {
+                    _host.UpdateCanvasVisualState();
+                }
+
+                return true;
+            }
+
+            if (wasElementGesture)
+            {
+                _elementGestureHandler.Complete(dragMode, canvasDelta);
+                EndCanvasDrag();
+                return true;
+            }
+
+            if (TryApplyPendingGroupSelection(pointerId))
+            {
+                EndCanvasDrag();
+                return true;
+            }
+
+            EndCanvasDrag();
+            return true;
+        }
+
+        internal bool HandleEscapeKey()
+        {
+            bool draggingPathEdit = _gestureState.Mode == DragMode.PathEdit;
+            bool handled = _pathEditInteractionController.HandleEscapeKey();
+            if (handled && draggingPathEdit && _dragSession.IsActive)
+            {
+                EndCanvasDrag();
+                _host.UpdateCanvasVisualState();
+            }
+
+            return handled;
         }
 
         public void OnCanvasPointerMove(PointerMoveEvent evt)
@@ -98,29 +247,10 @@ namespace SvgEditor.UI.Canvas
                 return;
             }
 
-            if (!_dragSession.Matches(evt.pointerId))
+            if (!HandleCanvasPointerMove(evt.pointerId, localPosition, evt.modifiers))
             {
                 HandleHover(localPosition, evt);
                 return;
-            }
-
-            if (_gestureState.IsViewportGesture)
-            {
-                Vector2 viewportDelta = localPosition - _dragSession.StartPosition;
-                _viewportGestureHandler.ApplyViewportDelta(_gestureState, viewportDelta);
-            }
-            else if (_gestureState.Mode == DragMode.SelectArea)
-            {
-                UpdateAreaSelection(localPosition);
-            }
-            else if (TryBeginPendingGroupMove(localPosition, evt.pointerId, evt.modifiers))
-            {
-                evt.StopPropagation();
-                return;
-            }
-            else if (_gestureState.IsElementGesture)
-            {
-                ApplyActiveElementDelta(localPosition, evt.modifiers);
             }
 
             evt.StopPropagation();
@@ -128,52 +258,11 @@ namespace SvgEditor.UI.Canvas
 
         public void OnCanvasPointerUp(PointerUpEvent evt)
         {
-            if (!_dragSession.Matches(evt.pointerId))
-            {
-                return;
-            }
-
             bool hasLocalPosition = _sceneProjector.TryGetCanvasLocalPosition(_overlayAccessor(), evt.position, out Vector2 localPosition);
-            Vector2 canvasDelta = hasLocalPosition
-                ? localPosition - _dragSession.StartPosition
-                : Vector2.zero;
-            bool wasViewportGesture = _gestureState.IsViewportGesture;
-            bool wasElementGesture = _gestureState.IsElementGesture;
-            DragMode dragMode = _gestureState.Mode;
-            SelectionHandle activeHandle = _gestureState.ActiveHandle;
-
-            if (wasViewportGesture)
+            if (HandleCanvasPointerUp(evt.pointerId, localPosition, hasLocalPosition))
             {
-                EndCanvasDrag();
-                _viewportGestureHandler.Complete();
                 evt.StopPropagation();
-                return;
             }
-
-            if (dragMode == DragMode.SelectArea)
-            {
-                CompleteAreaSelection(canvasDelta);
-                EndCanvasDrag();
-                evt.StopPropagation();
-                return;
-            }
-
-            if (wasElementGesture)
-            {
-                _elementGestureHandler.Complete(dragMode, canvasDelta);
-                EndCanvasDrag();
-                evt.StopPropagation();
-                return;
-            }
-
-            if (TryApplyPendingGroupSelection(evt.pointerId))
-            {
-                EndCanvasDrag();
-                evt.StopPropagation();
-                return;
-            }
-
-            EndCanvasDrag();
         }
 
         public void OnCanvasPointerCancel(PointerCancelEvent evt)
@@ -204,6 +293,14 @@ namespace SvgEditor.UI.Canvas
 
         public void CancelCanvasDragPreview()
         {
+            if (_gestureState.Mode == DragMode.PathEdit)
+            {
+                _pathEditInteractionController.CancelDrag();
+                EndCanvasDrag();
+                _host.UpdateCanvasVisualState();
+                return;
+            }
+
             bool shouldRefreshPreview = _gestureState.IsElementGesture;
             EndCanvasDrag();
 
@@ -216,16 +313,42 @@ namespace SvgEditor.UI.Canvas
             _host.UpdateCanvasVisualState();
         }
 
+        public void AbandonPathEditDrag()
+        {
+            if (_gestureState.Mode != DragMode.PathEdit)
+            {
+                return;
+            }
+
+            _pathEditInteractionController.AbandonDrag();
+            EndCanvasDrag();
+        }
+
         private void HandleHover(Vector2 localPosition, PointerMoveEvent evt)
         {
-            if (_toolController.ActiveTool != ToolKind.Move || _host.PreviewSnapshot == null)
+            if (_host.PreviewSnapshot == null)
             {
                 _overlayController.ResetInteractionCursor();
                 _host.ClearHover();
                 return;
             }
 
-            _overlayController.UpdateInteractionCursor(localPosition);
+            if (_toolController.ActiveTool == ToolKind.PathEdit)
+            {
+                bool hasPathEditHit = _pathEditInteractionController.TryHitPathEditTarget(localPosition, out _);
+                _overlayController.UpdateInteractionCursor(hasPathEditHit);
+                _host.ClearHover();
+                return;
+            }
+
+            if (_toolController.ActiveTool != ToolKind.Move)
+            {
+                _overlayController.ResetInteractionCursor();
+                _host.ClearHover();
+                return;
+            }
+
+            _overlayController.UpdateInteractionCursor(false);
 
             if (_overlayController.IsFrameLabelTarget(evt.target))
             {
@@ -233,7 +356,7 @@ namespace SvgEditor.UI.Canvas
                 return;
             }
 
-            if (_selectionResolver.TryResolveInteractionElement(localPosition, evt.modifiers, out _, out string hoveredElementKey))
+            if (_selectionTargetResolver.TryResolveInteractionElement(localPosition, evt.modifiers, out _, out string hoveredElementKey))
             {
                 _host.SetHoveredElement(hoveredElementKey);
             }
@@ -243,7 +366,7 @@ namespace SvgEditor.UI.Canvas
             }
         }
 
-        private bool TryHandleSelectionHandle(PointerDownEvent evt, Vector2 localPosition)
+        private bool TryHandleSelectionHandle(CanvasPointerDownContext context, Vector2 localPosition)
         {
             if (!_overlayController.TryHitTestSelectionHandle(localPosition, out SelectionHandle handle))
             {
@@ -252,9 +375,8 @@ namespace SvgEditor.UI.Canvas
 
             if (handle == SelectionHandle.Rotate)
             {
-                if (_elementGestureHandler.TryBeginRotateFromHandle(_gestureState, localPosition, evt.pointerId))
+                if (_elementGestureHandler.TryBeginRotateFromHandle(_gestureState, localPosition, context.PointerId))
                 {
-                    evt.StopPropagation();
                     return true;
                 }
 
@@ -264,31 +386,28 @@ namespace SvgEditor.UI.Canvas
             if (_host.SelectionKind == SelectionKind.Frame &&
                 _sceneProjector.TryGetFrameViewportRect(out _))
             {
-                _viewportGestureHandler.BeginFrameResize(_gestureState, handle, localPosition, evt.pointerId);
-                evt.StopPropagation();
+                _viewportGestureHandler.BeginFrameResize(_gestureState, handle, localPosition, context.PointerId);
                 return true;
             }
 
-            if (_elementGestureHandler.TryBeginResizeFromHandle(_gestureState, handle, localPosition, evt.pointerId))
+            if (_elementGestureHandler.TryBeginResizeFromHandle(_gestureState, handle, localPosition, context.PointerId))
             {
-                evt.StopPropagation();
                 return true;
             }
 
             return false;
         }
 
-        private void HandleCanvasSelection(PointerDownEvent evt, Vector2 localPosition)
+        private bool HandleCanvasSelection(CanvasPointerDownContext context, Vector2 localPosition)
         {
-            bool toggleSelection = (evt.modifiers & EventModifiers.Shift) != 0;
+            bool toggleSelection = (context.Modifiers & EventModifiers.Shift) != 0;
 
-            if (_overlayController.IsFrameLabelTarget(evt.target))
+            if (_overlayController.IsFrameLabelTarget(context.Target))
             {
                 _host.ClearDefinitionProxySelection();
                 _selectionSyncService.SelectCanvasFrame();
-                _viewportGestureHandler.BeginFrameMove(_gestureState, localPosition, evt.pointerId);
-                evt.StopPropagation();
-                return;
+                _viewportGestureHandler.BeginFrameMove(_gestureState, localPosition, context.PointerId);
+                return true;
             }
 
             if (_host.TryGetSelectedDefinitionProxy(out CanvasDefinitionOverlayVisual selectedProxy) &&
@@ -297,7 +416,7 @@ namespace SvgEditor.UI.Canvas
             {
                 _elementGestureHandler.BeginMove(
                     _gestureState,
-                    evt.pointerId,
+                    context.PointerId,
                     new DragBeginRequest(
                         _host.CurrentDocument,
                         _host.PreviewSnapshot,
@@ -305,13 +424,12 @@ namespace SvgEditor.UI.Canvas
                         localPosition,
                         selectedProxy.SceneBounds,
                         selectedProxy.ParentWorldTransform));
-                evt.StopPropagation();
-                return;
+                return true;
             }
 
             if (toggleSelection)
             {
-                if (_selectionResolver.TryResolveInteractionElement(localPosition, evt.modifiers, out _, out string toggledElementKey))
+                if (_selectionTargetResolver.TryResolveInteractionElement(localPosition, context.Modifiers, out _, out string toggledElementKey))
                 {
                     _host.ClearDefinitionProxySelection();
                     HierarchyNode toggledNode = _host.FindHierarchyNode(toggledElementKey);
@@ -319,30 +437,30 @@ namespace SvgEditor.UI.Canvas
                         toggledElementKey,
                         syncPatchTarget: toggledNode?.CanUseAsTarget == true);
 
-                    evt.StopPropagation();
-                    return;
+                    return true;
                 }
             }
 
-            if (TryBeginMoveSelectedElement(localPosition, evt.pointerId, evt.modifiers))
+            if (TryHandlePathEditEntry(context, localPosition))
             {
-                evt.StopPropagation();
-                return;
+                return true;
             }
 
-            if (!_selectionResolver.TryResolveInteractionElement(localPosition, evt.modifiers, out PreviewElementGeometry interactionElement, out string interactionElementKey))
+            if (TryBeginMoveSelectedElement(localPosition, context.PointerId, context.Modifiers))
             {
-                BeginAreaSelection(localPosition, evt.pointerId, evt.modifiers);
-                evt.StopPropagation();
-                return;
+                return true;
             }
 
-            _host.ClearDefinitionProxySelection();
-            HierarchyNode selectedNode = _host.FindHierarchyNode(interactionElementKey);
-            _selectionSyncService.SelectCanvasElement(interactionElementKey, syncPatchTarget: selectedNode?.CanUseAsTarget == true);
+            if (!_selectionTargetResolver.TryResolveInteractionElement(localPosition, context.Modifiers, out PreviewElementGeometry interactionElement, out string interactionElementKey))
+            {
+                BeginAreaSelection(localPosition, context.PointerId, context.Modifiers);
+                return true;
+            }
+
+            SelectCanvasElement(interactionElementKey);
             _elementGestureHandler.BeginMove(
                 _gestureState,
-                evt.pointerId,
+                context.PointerId,
                 new DragBeginRequest(
                     _host.CurrentDocument,
                     _host.PreviewSnapshot,
@@ -350,7 +468,125 @@ namespace SvgEditor.UI.Canvas
                     localPosition,
                     interactionElement.VisualBounds,
                     interactionElement.ParentWorldTransform));
-            evt.StopPropagation();
+            return true;
+        }
+
+        private bool TryHandlePathEditEntry(CanvasPointerDownContext context, Vector2 localPosition)
+        {
+            if (context.ClickCount < 2 ||
+                !_selectionTargetResolver.TryResolveSelectionTarget(
+                    localPosition,
+                    context.Modifiers,
+                    out _,
+                    out string interactionElementKey,
+                    out _,
+                    out string directHitElementKey))
+            {
+                return false;
+            }
+
+            if (_selectionTargetResolver.IsDirectElementSelectionModifier(context.Modifiers) ||
+                string.IsNullOrWhiteSpace(directHitElementKey) ||
+                string.Equals(directHitElementKey, interactionElementKey, StringComparison.Ordinal))
+            {
+                return TryEnterPathEdit(interactionElementKey);
+            }
+
+            bool leafIsAlreadySelected =
+                _host.SelectionKind == SelectionKind.Element &&
+                string.Equals(_host.SelectedElementKey, directHitElementKey, StringComparison.Ordinal);
+            if (!leafIsAlreadySelected)
+            {
+                SelectCanvasElement(directHitElementKey);
+                return true;
+            }
+
+            if (TryEnterPathEdit(directHitElementKey))
+            {
+                return true;
+            }
+
+            SelectCanvasElement(directHitElementKey);
+            return true;
+        }
+
+        private bool TryEnterPathEdit(string interactionElementKey)
+        {
+            if (_host.CurrentDocument?.DocumentModel == null ||
+                _host.PreviewSnapshot == null ||
+                string.IsNullOrWhiteSpace(interactionElementKey))
+            {
+                return false;
+            }
+
+            HierarchyNode selectedNode = _host.FindHierarchyNode(interactionElementKey);
+            if (selectedNode?.CanUseAsTarget != true)
+            {
+                return false;
+            }
+
+            PreviewElementGeometry selectedGeometry = _sceneProjector.FindPreviewElement(_host.PreviewSnapshot, interactionElementKey);
+            PathEditEntryResult result = _pathEditEntryController.TryEnter(new PathEditEntryRequest(
+                clickCount: 2,
+                currentDocument: _host.CurrentDocument,
+                elementKey: interactionElementKey,
+                worldTransform: selectedGeometry?.WorldTransform ?? Matrix2D.identity,
+                sceneToViewportPoint: scenePoint =>
+                    _sceneProjector.TryScenePointToViewportPoint(_host.PreviewSnapshot, scenePoint, out Vector2 viewportPoint)
+                        ? viewportPoint
+                        : null));
+
+            if (result.Kind == PathEditEntryResultKind.Ignored)
+            {
+                return false;
+            }
+
+            SelectCanvasElement(interactionElementKey);
+            _toolController.UpdateVisualState(_overlayAccessor());
+
+            if (result.Kind != PathEditEntryResultKind.Ignored)
+            {
+                _host.UpdateSourceStatus(result.StatusMessage);
+            }
+
+            return true;
+        }
+
+        private bool HandlePathEditPointerDown(CanvasPointerDownContext context, Vector2 localPosition)
+        {
+            if (!_overlayController.HasPathEditSession)
+            {
+                _toolController.SetActiveTool(ToolKind.Move);
+                return false;
+            }
+
+            bool hitPathEditTarget = _pathEditInteractionController.TryHitPathEditTarget(localPosition, out _);
+            if (!hitPathEditTarget &&
+                _selectionTargetResolver.TryResolveInteractionElement(localPosition, context.Modifiers, out _, out string interactionElementKey) &&
+                !string.IsNullOrWhiteSpace(interactionElementKey) &&
+                !string.Equals(interactionElementKey, _overlayController.CurrentPathEditSession?.ElementKey, StringComparison.Ordinal))
+            {
+                _overlayController.ClearPathEditSession();
+                _toolController.SetActiveTool(ToolKind.Move);
+                SelectCanvasElement(interactionElementKey);
+                _host.UpdateCanvasVisualState();
+                return true;
+            }
+
+            bool handled = _pathEditInteractionController.TryHandlePointerDown(localPosition);
+            if (!handled)
+            {
+                return false;
+            }
+
+            if (_pathEditInteractionController.IsDragging)
+            {
+                _gestureState.Begin(DragMode.PathEdit, SelectionHandle.None, default, default);
+                _dragSession.Begin(_overlayAccessor(), context.PointerId, localPosition);
+            }
+
+            _host.UpdateSelectionVisual();
+            return true;
         }
 
         private bool TryBeginMoveSelectedElement(Vector2 localPosition, int pointerId, EventModifiers modifiers)
@@ -360,7 +596,7 @@ namespace SvgEditor.UI.Canvas
             Rect selectedElementViewportRect;
 
             if (_host.HasDefinitionProxySelection ||
-                _selectionResolver.IsDirectElementSelectionModifier(modifiers) ||
+                _selectionTargetResolver.IsDirectElementSelectionModifier(modifiers) ||
                 _host.SelectionKind != SelectionKind.Element ||
                 string.IsNullOrWhiteSpace(_host.SelectedElementKey))
             {
@@ -633,7 +869,7 @@ namespace SvgEditor.UI.Canvas
                 Mathf.Min(minScenePoint.y, maxScenePoint.y),
                 Mathf.Max(minScenePoint.x, maxScenePoint.x),
                 Mathf.Max(minScenePoint.y, maxScenePoint.y));
-            IReadOnlyList<string> areaSelectionKeys = _selectionResolver.ResolveAreaSelectionKeys(sceneRect, EventModifiers.None);
+            IReadOnlyList<string> areaSelectionKeys = _selectionTargetResolver.ResolveAreaSelectionKeys(sceneRect, EventModifiers.None);
             if (_isAreaSelectionAdditive)
             {
                 _selectionSyncService.ReplaceCanvasElements(
@@ -658,6 +894,13 @@ namespace SvgEditor.UI.Canvas
                 Mathf.Min(startPosition.y, currentPosition.y),
                 Mathf.Max(startPosition.x, currentPosition.x),
                 Mathf.Max(startPosition.y, currentPosition.y));
+        }
+
+        private void SelectCanvasElement(string elementKey)
+        {
+            _host.ClearDefinitionProxySelection();
+            HierarchyNode selectedNode = _host.FindHierarchyNode(elementKey);
+            _selectionSyncService.SelectCanvasElement(elementKey, syncPatchTarget: selectedNode?.CanUseAsTarget == true);
         }
 
         private static List<string> BuildMergedAreaSelectionKeys(
@@ -783,5 +1026,28 @@ namespace SvgEditor.UI.Canvas
         public SelectionSyncService SelectionSyncService { get; }
         public PointerDragSession DragSession { get; }
         public Func<VisualElement> OverlayAccessor { get; }
+    }
+
+    internal readonly struct CanvasPointerDownContext
+    {
+        public CanvasPointerDownContext(
+            int pointerId,
+            int button,
+            int clickCount,
+            EventModifiers modifiers,
+            object target)
+        {
+            PointerId = pointerId;
+            Button = button;
+            ClickCount = clickCount;
+            Modifiers = modifiers;
+            Target = target;
+        }
+
+        public int PointerId { get; }
+        public int Button { get; }
+        public int ClickCount { get; }
+        public EventModifiers Modifiers { get; }
+        public object Target { get; }
     }
 }

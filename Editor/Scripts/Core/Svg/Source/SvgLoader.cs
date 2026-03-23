@@ -92,11 +92,13 @@ namespace SvgEditor.Core.Svg.Source
             }
 
             string legacyElementKey = XmlUtility.BuildElementKey(element, _root);
+            string displayTagName = ResolveDisplayTagName(element);
             var nodeModel = new SvgNodeModel
             {
                 Id = nodeId,
                 ParentId = frame.ParentId,
                 TagName = element.LocalName,
+                DisplayTagName = displayTagName,
                 ElementPrefix = element.Prefix ?? string.Empty,
                 ElementNamespaceUri = element.NamespaceURI ?? string.Empty,
                 Kind = ResolveNodeKind(element),
@@ -154,13 +156,28 @@ namespace SvgEditor.Core.Svg.Source
 
             foreach (XmlAttribute attribute in element.Attributes)
             {
-                if (attribute == null || string.IsNullOrWhiteSpace(attribute.Name))
+                if (attribute == null ||
+                    string.IsNullOrWhiteSpace(attribute.Name) ||
+                    string.Equals(attribute.Name, SvgAttributeName.INTERNAL_DISPLAY_TAG, StringComparison.Ordinal))
+                {
                     continue;
+                }
 
                 attributes[attribute.Name] = attribute.Value ?? string.Empty;
             }
 
             return attributes;
+        }
+
+        private static string ResolveDisplayTagName(XmlElement element)
+        {
+            if (element == null)
+                return string.Empty;
+
+            string displayTagName = element.GetAttribute(SvgAttributeName.INTERNAL_DISPLAY_TAG)?.Trim();
+            return string.IsNullOrWhiteSpace(displayTagName)
+                ? element.LocalName
+                : displayTagName;
         }
 
         private static IReadOnlyList<NodeReference> CollectReferences(

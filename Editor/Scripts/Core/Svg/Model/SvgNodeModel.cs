@@ -9,6 +9,7 @@ namespace SvgEditor.Core.Svg.Model
         public SvgNodeId Id { get; set; } = SvgNodeId.Root;
         public SvgNodeId ParentId { get; set; }
         public string TagName { get; set; } = string.Empty;
+        public string DisplayTagName { get; set; } = string.Empty;
         public string ElementPrefix { get; set; } = string.Empty;
         public string ElementNamespaceUri { get; set; } = string.Empty;
         public SvgNodeCategory Kind { get; set; } = SvgNodeCategory.Other;
