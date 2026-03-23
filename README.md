@@ -1,16 +1,24 @@
 # Unity SVG Editor
 
-Inspect, preview, edit supported SVG properties, and save SVG assets directly inside the Unity Editor.
+Inspect SVG assets, edit supported properties and path anchors directly in Unity, and save changes back to SVG.
 
 ![Unity 6+](https://img.shields.io/badge/Unity-6000.0%2B-black?logo=unity)
 ![Package](https://img.shields.io/badge/Package-1.1.0-blue)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 
-`Unity SVG Editor` is an editor package for teams that need to open existing SVG files, understand their structure, adjust supported properties visually, and write the result back to SVG XML.
+`Unity SVG Editor` is an editor package for teams that need to inspect existing SVG files, edit supported shapes visually, adjust path anchors and handles on canvas, and write the result back to SVG XML.
 
 - Package name: `com.maemi.unity-svg-editor`
 - Namespace: `SvgEditor.Editor`
 - Menu: `Window/Tools/SVG Editor`
+
+## Highlights
+
+- Inspect SVG hierarchy and preview imported geometry inside the Unity Editor
+- Select, move, resize, and rotate supported elements directly on the canvas
+- Enter path edit mode to adjust anchors and handles for supported shapes
+- Save changes back to SVG source and trigger immediate reimport
+- Surface unsupported SVG features and importer fallback states instead of hiding them
 
 ## Demo
 
@@ -22,95 +30,18 @@ Inspect, preview, edit supported SVG properties, and save SVG assets directly in
 |:--:|:--:|
 | ![Screenshot 1](.github/screenshot-01.png) | ![Screenshot 2](.github/screenshot-02.png) |
 
+### Path Edit
+
+| Path Edit Demo | Path Edit Screenshot |
+|:--:|:--:|
+| ![Path Edit Demo](.github/path-edit.gif) | ![Path Edit Screenshot](.github/path-edit.png) |
+
 ### Usage Videos
 
 - Usage video link 1: https://youtu.be/PBwFVrmF7D8
 - Usage video link 2: https://youtu.be/NTcLOPhuFL0
 
 Replace these placeholders when you send the final public video URLs.
-
-## Features
-
-- Browse SVG `VectorImage` assets inside the project
-- Inspect SVG document structure with selection sync
-- Select, move, and resize editable elements on the canvas
-- Edit supported properties from the inspector
-- Save changes back to SVG and reimport automatically
-- Detect unsupported SVG features and surface fallback warnings
-- Work with a model-driven editing flow instead of raw XML-first editing
-
-## Supported
-
-Current support is strongest in preview, structure inspection, selection, and basic transform-oriented editing.
-
-Current editor preview and interaction support includes:
-
-- `rect`
-- `circle`
-- `ellipse`
-- `line`
-- `polyline`
-- `polygon`
-- `path`
-  - relative commands
-  - curved commands such as `C`, `S`, `Q`, `T`
-  - preview and selection support
-- `use`
-- `linearGradient`
-- `radialGradient`
-- `clipPath`
-- basic `mask`
-- `text`
-  - overlay preview
-  - selection
-  - move and resize commit
-
-## Not Supported Or Limited
-
-These areas are intentionally unsupported or currently limited:
-
-- Full SVG authoring parity with Illustrator, Figma, or other vector design tools
-- Full XML source editing or code-inspector style workflows
-- direct `path` editing
-- direct gradient editing
-- `filter`
-- `image`
-- `style`
-- direct `textPath` editing
-- per-`tspan` detailed editing
-- complex SVG features that do not map cleanly to Unity `VectorImage`
-
-Limited support:
-
-- `tspan`
-  - preview and selection may work
-  - detailed editing is limited
-- `textPath`
-  - not a direct editing target
-- `linearGradient` and `radialGradient`
-  - preview/import behavior may work
-  - direct gradient editing is not currently supported
-- `path`
-  - preview and selection may work
-  - direct path editing is not currently supported
-- combined advanced cases such as `use + gradient + clipPath`
-  - preview can work, but editing precision depends on Unity import behavior
-
-## What Unity Supports
-
-This package follows Unity's SVG and `VectorImage` boundaries instead of inventing a separate rendering standard.
-
-In practice, that means:
-
-- Best results come from shapes, paths, gradients, clip paths, and common transforms supported by Unity's SVG importer
-- Some SVG features may import with partial rendering, fallback rendering, or no direct editing target
-- `text` in this package should be treated as an editor-assisted overlay workflow, not as native Unity `VectorImage` text authoring support
-- If Unity falls back internally, the editor exposes that state rather than pretending the feature is fully supported
-
-## Requirements
-
-- Unity `6000.0` or later
-- SVG import pipeline available in the Unity project
 
 ## Installation
 
@@ -133,20 +64,67 @@ https://github.com/NewMassMedia/unity-svg-editor.git
 4. Select `Add package from disk...`
 5. Choose `package.json`
 
-## Usage
+## Quick Start
 
-### Open the editor
-
-Open `Window > Tools > SVG Editor`.
-
-### Typical workflow
+Open `Window > Tools > SVG Editor`, then:
 
 1. Select an SVG asset from the project browser inside the tool
 2. Review the structure tree and current preview
 3. Select elements on the canvas or in the tree
-4. Adjust editable properties in the inspector
-5. Save and let Unity reimport the asset
+4. Adjust properties in the inspector or enter path edit mode for supported shapes
+5. Save and let Unity reimport the asset immediately
 6. Review warnings if the document contains unsupported features or fallback rendering cases
+
+## What You Can Do
+
+### Structure And Selection
+
+- Browse SVG `VectorImage` assets inside the project
+- Inspect SVG document structure with selection sync
+- Select elements on canvas, in the hierarchy, or by marquee
+
+### Transform Editing
+
+- Move, resize, and rotate supported elements on the canvas
+- Use snapping, axis locking, center resize, and keyboard nudging
+- Commit edits back to SVG source with undo / redo support
+
+### Path Editing
+
+- Double-click supported shapes to enter path edit mode
+- Select anchors and handles directly on the canvas
+- Drag anchors and handles and commit the result back to SVG
+- Edit relative and curved path commands including `C`, `S`, `Q`, and `T`
+
+## Supported Elements
+
+Current support is strongest in preview, structure inspection, transform editing, and path editing for common SVG primitives.
+
+Editable and previewed elements include:
+
+- `rect`
+- `circle`
+- `ellipse`
+- `line`
+- `polyline`
+- `polygon`
+- `path`
+- `use`
+- `linearGradient`
+- `radialGradient`
+- `clipPath`
+- basic `mask`
+- `text`
+
+Path edit mode currently supports:
+
+- `path`
+- `line`
+- `rect`
+- `circle`
+- `ellipse`
+- `polyline`
+- `polygon`
 
 ### Interaction Guide
 
@@ -192,10 +170,6 @@ The editor supports a small set of focused canvas and keyboard interactions. The
 | Exit path edit | `Esc` | Exits path edit mode when no path drag is active. |
 | Cancel active path drag | `Esc` during path drag | Restores the path edit session to its pre-drag state. |
 
-| Path Edit Demo | Path Edit Screenshot |
-|:--:|:--:|
-| ![Path Edit Demo](.github/path-edit.gif) | ![Path Edit Screenshot](.github/path-edit.png) |
-
 Path edit is not entered when the target shape cannot be converted to editable path data, or when the path contains unsupported or malformed commands. In those cases the editor stays in read-only preview mode and shows a status message.
 
 #### Document Shortcuts
@@ -206,6 +180,47 @@ Path edit is not entered when the target shape cannot be converted to editable p
 | Undo | `Ctrl/Cmd + Z` | Reverts the last document edit. |
 | Redo | `Ctrl/Cmd + Shift + Z` | Reapplies the last undone edit. |
 | Delete selection | `Delete` or `Backspace` | Deletes selected elements when a text field is not being edited. |
+
+## Limits
+
+These areas are intentionally unsupported or currently limited:
+
+- Full SVG authoring parity with Illustrator, Figma, or other vector design tools
+- Full XML source editing or code-inspector style workflows
+- direct gradient editing
+- `filter`
+- `image`
+- `style`
+- direct `textPath` editing
+- per-`tspan` detailed editing
+- advanced SVG cases that do not map cleanly to Unity `VectorImage`
+
+Limited support:
+
+- `text` and `tspan`
+  - overlay preview and basic selection work, but detailed text authoring is limited
+- `textPath`
+  - preview may import, but it is not a direct editing target
+- `linearGradient` and `radialGradient`
+  - preview and import behavior may work, but direct gradient editing is not supported yet
+- combined advanced cases such as `use + gradient + clipPath`
+  - preview can work, but editing precision still depends on Unity import behavior
+
+## What Depends On Unity
+
+This package follows Unity's SVG and `VectorImage` boundaries instead of inventing a separate rendering standard.
+
+In practice, that means:
+
+- Best results come from shapes, paths, gradients, clip paths, and common transforms supported by Unity's SVG importer
+- Some SVG features may import with partial rendering, fallback rendering, or no direct editing target
+- `text` in this package should be treated as an editor-assisted overlay workflow, not as native Unity `VectorImage` text authoring support
+- If Unity falls back internally, the editor exposes that state rather than pretending the feature is fully supported
+
+## Requirements
+
+- Unity `6000.0` or later
+- SVG import pipeline available in the Unity project
 
 ## Versioning
 
