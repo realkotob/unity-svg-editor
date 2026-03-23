@@ -115,6 +115,7 @@ namespace SvgEditor.Core.Preview.Rendering
                 y2 = 0f;
 
             var shape = _shapeStyleBuilder.CreateStyledShape(context.DocumentModel, node, context.NodesByXmlId, allowDefaultFill: false);
+            shape.Fill = null;
             shape.Contours = new[]
             {
                 new BezierContour
@@ -150,7 +151,20 @@ namespace SvgEditor.Core.Preview.Rendering
             var shape = _shapeStyleBuilder.CreateStyledShape(context.DocumentModel, node, context.NodesByXmlId, allowDefaultFill: allowDefaultFill);
             shape.Contours = contours;
             shape.IsConvex = false;
-            AddOpenFillAwareShapes(context.SceneNode.Shapes, shape, contours);
+            if (HasOpenContour(contours) &&
+                shape.Fill != null &&
+                PathGeometryParser.TryParsePathContours($"{pathData} Z", out var fillContours))
+            {
+                context.SceneNode.Shapes.Add(CreateFillOnlyShape(shape, fillContours));
+                if (shape.PathProps.Stroke != null)
+                {
+                    context.SceneNode.Shapes.Add(CreateStrokeOnlyShape(shape, contours));
+                }
+
+                return true;
+            }
+
+            context.SceneNode.Shapes.Add(shape);
             return true;
         }
 
@@ -179,7 +193,7 @@ namespace SvgEditor.Core.Preview.Rendering
                 segments.Add(VectorUtils.MakeLine(points[^1], points[0]));
 
             var shape = _shapeStyleBuilder.CreateStyledShape(context.DocumentModel, node, context.NodesByXmlId, allowDefaultFill: true);
-            shape.Contours = new[]
+            var openContours = new[]
             {
                 new BezierContour
                 {
@@ -187,41 +201,37 @@ namespace SvgEditor.Core.Preview.Rendering
                     Closed = closed
                 }
             };
+            shape.Contours = openContours;
             shape.IsConvex = closed;
-            AddOpenFillAwareShapes(context.SceneNode.Shapes, shape, shape.Contours);
-            return true;
-        }
 
-        private static void AddOpenFillAwareShapes(ICollection<Shape> shapes, Shape shape, IReadOnlyList<BezierContour> contours)
-        {
-            if (!HasOpenContour(contours) || shape.Fill == null)
+            if (!closed && shape.Fill != null)
             {
-                shapes.Add(shape);
-                return;
-            }
-
-            Shape fillShape = new()
-            {
-                Fill = shape.Fill,
-                PathProps = ClonePathProperties(shape.PathProps, stroke: null),
-                FillTransform = shape.FillTransform,
-                Contours = CloseContours(contours),
-                IsConvex = false
-            };
-            shapes.Add(fillShape);
-
-            if (shape.PathProps.Stroke != null)
-            {
-                Shape strokeShape = new()
+                var fillSegments = new List<BezierSegment>(segments);
+                if ((points[0] - points[^1]).sqrMagnitude > Mathf.Epsilon)
                 {
-                    Fill = null,
-                    PathProps = ClonePathProperties(shape.PathProps, shape.PathProps.Stroke),
-                    FillTransform = shape.FillTransform,
-                    Contours = ToArray(contours),
-                    IsConvex = false
+                    fillSegments.Add(VectorUtils.MakeLine(points[^1], points[0]));
+                }
+
+                var fillContours = new[]
+                {
+                    new BezierContour
+                    {
+                        Segments = VectorUtils.BezierSegmentsToPath(fillSegments.ToArray()),
+                        Closed = true
+                    }
                 };
-                shapes.Add(strokeShape);
+                context.SceneNode.Shapes.Add(CreateFillOnlyShape(shape, fillContours));
+
+                if (shape.PathProps.Stroke != null)
+                {
+                    context.SceneNode.Shapes.Add(CreateStrokeOnlyShape(shape, openContours));
+                }
+
+                return true;
             }
+
+            context.SceneNode.Shapes.Add(shape);
+            return true;
         }
 
         private static bool HasOpenContour(IReadOnlyList<BezierContour> contours)
@@ -242,19 +252,28 @@ namespace SvgEditor.Core.Preview.Rendering
             return false;
         }
 
-        private static BezierContour[] CloseContours(IReadOnlyList<BezierContour> contours)
+        private static Shape CreateFillOnlyShape(Shape source, BezierContour[] contours)
         {
-            var cloned = new BezierContour[contours.Count];
-            for (var index = 0; index < contours.Count; index++)
+            return new Shape
             {
-                cloned[index] = new BezierContour
-                {
-                    Segments = contours[index].Segments,
-                    Closed = true
-                };
-            }
+                Fill = source.Fill,
+                PathProps = ClonePathProperties(source.PathProps, stroke: null),
+                FillTransform = source.FillTransform,
+                Contours = contours,
+                IsConvex = false
+            };
+        }
 
-            return cloned;
+        private static Shape CreateStrokeOnlyShape(Shape source, IReadOnlyList<BezierContour> contours)
+        {
+            return new Shape
+            {
+                Fill = null,
+                PathProps = ClonePathProperties(source.PathProps, source.PathProps.Stroke),
+                FillTransform = source.FillTransform,
+                Contours = ToArray(contours),
+                IsConvex = false
+            };
         }
 
         private static BezierContour[] ToArray(IReadOnlyList<BezierContour> contours)

@@ -211,6 +211,19 @@ namespace SvgEditor.Editor.Tests.PathEditing
         }
 
         [Test]
+        public void TryBuild_WhenLineElementHasFill_RemainsSingleStrokeOnlyShape()
+        {
+            SvgModelSceneBuildResult result = BuildSceneFromProjectAsset("Resources/TestSvg/path-edit-regression-suite.svg");
+
+            IReadOnlyList<Shape> shapes = GetShapesForElement(result, "line-shape");
+
+            Assert.That(shapes, Has.Count.EqualTo(1));
+            Assert.That(CountFillOnlyShapes(shapes), Is.EqualTo(0));
+            Assert.That(CountStrokeOnlyShapes(shapes), Is.EqualTo(1));
+            Assert.That(CountClosedShapes(shapes), Is.EqualTo(0));
+        }
+
+        [Test]
         public void BuildPreviewVectorImage_WhenOpenPathUsesDefaultFill_HasRenderableGeometry()
         {
             const string svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\"><path d=\"M2 2 L14 2 L14 14\"/></svg>";
