@@ -146,7 +146,8 @@ namespace SvgEditor.Core.Preview.Rendering
                 return false;
             }
 
-            var shape = _shapeStyleBuilder.CreateStyledShape(context.DocumentModel, node, context.NodesByXmlId, allowDefaultFill: false);
+            bool allowDefaultFill = HasOpenContour(contours);
+            var shape = _shapeStyleBuilder.CreateStyledShape(context.DocumentModel, node, context.NodesByXmlId, allowDefaultFill: allowDefaultFill);
             shape.Contours = contours;
             shape.IsConvex = false;
             context.SceneNode.Shapes.Add(shape);
@@ -177,7 +178,7 @@ namespace SvgEditor.Core.Preview.Rendering
             if (closed && (points[0] - points[^1]).sqrMagnitude > Mathf.Epsilon)
                 segments.Add(VectorUtils.MakeLine(points[^1], points[0]));
 
-            var shape = _shapeStyleBuilder.CreateStyledShape(context.DocumentModel, node, context.NodesByXmlId, allowDefaultFill: closed);
+            var shape = _shapeStyleBuilder.CreateStyledShape(context.DocumentModel, node, context.NodesByXmlId, allowDefaultFill: true);
             shape.Contours = new[]
             {
                 new BezierContour
@@ -189,6 +190,24 @@ namespace SvgEditor.Core.Preview.Rendering
             shape.IsConvex = closed;
             context.SceneNode.Shapes.Add(shape);
             return true;
+        }
+
+        private static bool HasOpenContour(IReadOnlyList<BezierContour> contours)
+        {
+            if (contours == null)
+            {
+                return false;
+            }
+
+            for (var index = 0; index < contours.Count; index++)
+            {
+                if (!contours[index].Closed)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

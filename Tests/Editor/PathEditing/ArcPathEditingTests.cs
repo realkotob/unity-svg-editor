@@ -147,6 +147,42 @@ namespace SvgEditor.Editor.Tests.PathEditing
         }
 
         [Test]
+        public void TryBuild_WhenOpenPathUsesDefaultFill_ProducesFilledShape()
+        {
+            const string svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\"><path d=\"M2 2 L14 2 L14 14\"/></svg>";
+            var loader = new SvgLoader();
+            bool loaded = loader.TryLoad(svg, out var documentModel, out string error);
+            Assert.That(loaded, Is.True, error);
+
+            var sceneBuilder = new SvgModelSceneBuilder();
+            bool built = sceneBuilder.TryBuild(documentModel, out SvgModelSceneBuildResult result, out string buildError);
+
+            Assert.That(built, Is.True, buildError);
+            Assert.That(
+                CountFilledShapes(result.Scene.Root),
+                Is.GreaterThan(0),
+                DescribeShapeCounts(result.Scene.Root));
+        }
+
+        [Test]
+        public void TryBuild_WhenOpenPolylineUsesDefaultFill_ProducesFilledShape()
+        {
+            const string svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\"><polyline points=\"2,2 14,2 14,14\"/></svg>";
+            var loader = new SvgLoader();
+            bool loaded = loader.TryLoad(svg, out var documentModel, out string error);
+            Assert.That(loaded, Is.True, error);
+
+            var sceneBuilder = new SvgModelSceneBuilder();
+            bool built = sceneBuilder.TryBuild(documentModel, out SvgModelSceneBuildResult result, out string buildError);
+
+            Assert.That(built, Is.True, buildError);
+            Assert.That(
+                CountFilledShapes(result.Scene.Root),
+                Is.GreaterThan(0),
+                DescribeShapeCounts(result.Scene.Root));
+        }
+
+        [Test]
         public void TryBuildSnapshot_WhenRegressionSuiteContainsArcAndPrimitives_BuildsPreviewVectorImage()
         {
             string assetPath = Path.Combine(Application.dataPath, "Resources/TestSvg/path-edit-regression-suite.svg");
@@ -200,6 +236,61 @@ namespace SvgEditor.Editor.Tests.PathEditing
             }
 
             return count;
+        }
+
+        private static int CountFilledShapes(SceneNode node)
+        {
+            if (node == null)
+            {
+                return 0;
+            }
+
+            int count = 0;
+            if (node.Shapes != null)
+            {
+                for (int index = 0; index < node.Shapes.Count; index++)
+                {
+                    Shape shape = node.Shapes[index];
+                    if (shape != null && shape.Fill != null)
+                    {
+                        count++;
+                    }
+                }
+            }
+
+            if (node.Children != null)
+            {
+                for (int index = 0; index < node.Children.Count; index++)
+                {
+                    count += CountFilledShapes(node.Children[index]);
+                }
+            }
+
+            return count;
+        }
+
+        private static int CountAllShapes(SceneNode node)
+        {
+            if (node == null)
+            {
+                return 0;
+            }
+
+            int count = node.Shapes?.Count ?? 0;
+            if (node.Children != null)
+            {
+                for (int index = 0; index < node.Children.Count; index++)
+                {
+                    count += CountAllShapes(node.Children[index]);
+                }
+            }
+
+            return count;
+        }
+
+        private static string DescribeShapeCounts(SceneNode node)
+        {
+            return $"total={CountAllShapes(node)}, filled={CountFilledShapes(node)}, stroke={CountStrokeShapes(node)}";
         }
 
         private static PreviewSnapshot BuildSnapshot(string svg, Rect previewRect)
