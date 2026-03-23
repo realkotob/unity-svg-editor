@@ -14,6 +14,7 @@ namespace SvgEditor.UI.Canvas
         private IReadOnlyList<CanvasLineSegment> _segments = Array.Empty<CanvasLineSegment>();
         private Color _strokeColor = Color.white;
         private float _lineWidth = 1.25f;
+        private bool _useResolvedColor;
 
         public PolylineOverlayElement()
         {
@@ -32,6 +33,16 @@ namespace SvgEditor.UI.Canvas
             _segments = segments ?? Array.Empty<CanvasLineSegment>();
             _strokeColor = strokeColor;
             _lineWidth = Mathf.Max(1f, lineWidth);
+            _useResolvedColor = false;
+            style.display = _segments.Count > 0 ? DisplayStyle.Flex : DisplayStyle.None;
+            MarkDirtyRepaint();
+        }
+
+        public void SetSegmentsFromStyle(IReadOnlyList<CanvasLineSegment> segments, float lineWidth = 1.25f)
+        {
+            _segments = segments ?? Array.Empty<CanvasLineSegment>();
+            _lineWidth = Mathf.Max(1f, lineWidth);
+            _useResolvedColor = true;
             style.display = _segments.Count > 0 ? DisplayStyle.Flex : DisplayStyle.None;
             MarkDirtyRepaint();
         }
@@ -49,7 +60,7 @@ namespace SvgEditor.UI.Canvas
                 return;
 
             Painter2D painter = context.painter2D;
-            painter.strokeColor = _strokeColor;
+            painter.strokeColor = _useResolvedColor ? resolvedStyle.color : _strokeColor;
             painter.lineWidth = _lineWidth;
             painter.BeginPath();
 

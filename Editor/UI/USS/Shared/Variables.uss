@@ -32,6 +32,7 @@
     --input-50: rgba(255, 255, 255, 0.075);
 
     --panel-bg: var(--gray-800);
+    --anchor--selected: rgb(31, 150, 243);
 }
 
 *{

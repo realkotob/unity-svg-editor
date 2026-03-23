@@ -24,6 +24,10 @@
     opacity: 0.9;
 }
 
+.svg-editor__canvas-overlay--interactive-hit {
+    cursor: var(--cursor-pointer);
+}
+
 .svg-editor__canvas-overlay--pan-armed,
 .svg-editor__canvas-overlay--pan-armed .svg-editor__canvas-frame-label,
 .svg-editor__canvas-overlay--pan-armed .svg-editor__selection-handle,
@@ -135,4 +139,42 @@
     left: 0;
     right: 0;
     height: 1px;
+}
+
+.path-line {
+    color: rgba(118, 191, 255, 0.95);
+}
+
+.bezier-handle-line {
+    color: var(--foreground);
+}
+
+.path-anchor,
+.bezier-handle {
+    position: absolute;
+    cursor: var(--cursor-pointer);
+}
+
+.path-anchor {
+    background-color: var(--foreground);
+    border-color: var(--background);
+    border-width: 0.5px;
+}
+
+.path-anchor--active {
+    background-color: var(--anchor--selected);
+    border-color: var(--foreground);
+    border-width: 1px;
+}
+
+.bezier-handle {
+    background-color: var(--foreground);
+    border-color: var(--anchor--selected);
+    border-width: 1px;
+}
+
+.bezier-handle--active {
+    background-color: var(--anchor--selected);
+    border-color: rgba(0, 0, 0, 0.35);
+    border-width: 1px;
 }

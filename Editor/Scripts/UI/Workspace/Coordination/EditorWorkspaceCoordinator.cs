@@ -75,6 +75,8 @@ namespace SvgEditor.UI.Workspace.Coordination
 
         public void UpdateSelectionVisual() => _canvasWorkspaceController.UpdateSelectionVisual();
 
+        public string ResyncPathEditSession(bool previewIsCurrent) => _canvasWorkspaceController.ResyncPathEditSession(previewIsCurrent);
+
         public bool TryCancelActiveDrag() => _canvasWorkspaceController.TryCancelActiveDrag();
         public bool TryDeleteSelectedElements()
         {

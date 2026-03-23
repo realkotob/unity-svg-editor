@@ -54,13 +54,13 @@ namespace SvgEditor.UI.Canvas
             {
                 case DragMode.PanCanvas:
                     _viewportState.SetPan(state.DragStartCanvasPan + viewportDelta);
-                    _host.UpdateCanvasVisualState();
+                    _host.UpdateViewportVisualState();
                     return true;
                 case DragMode.MoveFrame:
                     _viewportState.SetFrameRect(new Rect(
                         state.DragStartFrameRect.position + _viewportState.ViewportToCanvasDelta(viewportDelta),
                         state.DragStartFrameRect.size));
-                    _host.UpdateCanvasVisualState();
+                    _host.UpdateViewportVisualState();
                     return true;
                 case DragMode.ResizeFrame:
                     _viewportState.SetFrameRect(RectResizeUtility.ResizeRect(
@@ -68,7 +68,7 @@ namespace SvgEditor.UI.Canvas
                         state.ActiveHandle,
                         _viewportState.ViewportToCanvasDelta(viewportDelta),
                         MinCanvasFrameSize));
-                    _host.UpdateCanvasVisualState();
+                    _host.UpdateViewportVisualState();
                     return true;
                 default:
                     return false;
@@ -77,7 +77,7 @@ namespace SvgEditor.UI.Canvas
 
         public void Complete()
         {
-            _host.UpdateCanvasVisualState();
+            _host.UpdateViewportVisualState();
         }
     }
 }

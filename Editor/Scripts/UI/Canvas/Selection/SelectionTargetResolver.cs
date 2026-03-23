@@ -11,12 +11,12 @@ using SvgEditor.Core.Preview;
 
 namespace SvgEditor.UI.Canvas
 {
-    internal sealed class InteractionSelectionResolver
+    internal sealed class SelectionTargetResolver
     {
         private readonly ICanvasPointerDragHost _host;
         private readonly SceneProjector _sceneProjector;
 
-        public InteractionSelectionResolver(
+        public SelectionTargetResolver(
             ICanvasPointerDragHost host,
             SceneProjector sceneProjector)
         {
@@ -35,31 +35,57 @@ namespace SvgEditor.UI.Canvas
             out PreviewElementGeometry interactionElement,
             out string interactionElementKey)
         {
-            interactionElement = null;
-            interactionElementKey = null;
+            return TryResolveSelectionTarget(
+                localPosition,
+                modifiers,
+                out interactionElement,
+                out interactionElementKey,
+                out _,
+                out _);
+        }
+
+        public bool TryResolveSelectionTarget(
+            Vector2 localPosition,
+            EventModifiers modifiers,
+            out PreviewElementGeometry selectionElement,
+            out string selectionElementKey,
+            out PreviewElementGeometry directHitElement,
+            out string directHitElementKey)
+        {
+            selectionElement = null;
+            selectionElementKey = null;
+            directHitElement = null;
+            directHitElementKey = null;
+
+            if (_sceneProjector.TryHitTestPreviewElement(_host.PreviewSnapshot, localPosition, out PreviewElementGeometry hitElement))
+            {
+                directHitElement = hitElement;
+                directHitElementKey = hitElement.Key;
+            }
 
             if (!IsDirectElementSelectionModifier(modifiers) &&
-                TryFindContainingGroupElement(localPosition, out interactionElement))
+                TryFindContainingGroupElement(localPosition, out PreviewElementGeometry groupElement))
             {
-                interactionElementKey = interactionElement.Key;
+                selectionElement = groupElement;
+                selectionElementKey = groupElement.Key;
                 return true;
             }
 
-            if (!_sceneProjector.TryHitTestPreviewElement(_host.PreviewSnapshot, localPosition, out PreviewElementGeometry hitElement))
+            if (directHitElement == null)
             {
                 return false;
             }
 
-            interactionElementKey = ResolveInteractionElementKey(hitElement.Key, modifiers);
-            if (string.IsNullOrWhiteSpace(interactionElementKey))
+            selectionElementKey = ResolveInteractionElementKey(directHitElementKey, modifiers);
+            if (string.IsNullOrWhiteSpace(selectionElementKey))
             {
                 return false;
             }
 
-            interactionElement = string.Equals(interactionElementKey, hitElement.Key, StringComparison.Ordinal)
-                ? hitElement
-                : _sceneProjector.FindPreviewElement(_host.PreviewSnapshot, interactionElementKey);
-            return interactionElement != null;
+            selectionElement = string.Equals(selectionElementKey, directHitElementKey, StringComparison.Ordinal)
+                ? directHitElement
+                : _sceneProjector.FindPreviewElement(_host.PreviewSnapshot, selectionElementKey);
+            return selectionElement != null;
         }
 
         public IReadOnlyList<string> ResolveAreaSelectionKeys(Rect sceneRect, EventModifiers modifiers)

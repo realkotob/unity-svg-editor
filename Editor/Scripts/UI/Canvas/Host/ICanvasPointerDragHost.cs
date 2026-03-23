@@ -33,6 +33,7 @@ namespace SvgEditor.UI.Canvas
         void AddElementSelection(IReadOnlyList<string> elementKeys, bool syncPatchTarget);
         void ClearSelection();
         void UpdateStructureInteractivity(bool hasDocument);
+        void UpdateViewportVisualState();
         void UpdateCanvasVisualState();
         void UpdateSelectionVisual();
         void SetHoveredElement(string elementKey);

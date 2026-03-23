@@ -30,6 +30,23 @@ namespace SvgEditor.UI.Canvas
 
         public ToolKind ActiveTool { get; private set; } = ToolKind.Move;
         public bool IsSpacePanArmed { get; private set; }
+        public event Action<ToolKind> ActiveToolChanged = delegate { };
+
+        public bool IsToolBound(ToolKind toolKind)
+        {
+            return _toolButtons.ContainsKey(toolKind);
+        }
+
+        public void SetActiveTool(ToolKind toolKind)
+        {
+            if (ActiveTool == toolKind)
+            {
+                return;
+            }
+
+            ActiveTool = toolKind;
+            ActiveToolChanged.Invoke(toolKind);
+        }
 
         public void BindMoveTool(Toggle toggle)
         {
@@ -72,9 +89,12 @@ namespace SvgEditor.UI.Canvas
 
             if (canvasOverlay != null)
             {
+                bool shouldShowReadonlyOverlay =
+                    ActiveTool != ToolKind.Move &&
+                    ActiveTool != ToolKind.PathEdit;
                 canvasOverlay.EnableClass(
                     UssClassName.CANVAS_OVERLAY_READONLY,
-                    ActiveTool != ToolKind.Move);
+                    shouldShowReadonlyOverlay);
                 canvasOverlay.EnableClass(
                     UssClassName.CANVAS_OVERLAY_PAN_ARMED,
                     IsSpacePanArmed);
@@ -209,7 +229,7 @@ namespace SvgEditor.UI.Canvas
         {
             if (evt.newValue)
             {
-                ActiveTool = ToolKind.Move;
+                SetActiveTool(ToolKind.Move);
                 return;
             }
 

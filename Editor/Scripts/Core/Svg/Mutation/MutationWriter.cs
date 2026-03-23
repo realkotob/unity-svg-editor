@@ -35,7 +35,7 @@ namespace SvgEditor.Core.Svg.Mutation
                 ? transform ?? string.Empty
                 : string.Empty;
             attributes[SvgAttributeName.TRANSFORM] = buildUpdatedTransform(existingTransform);
-            ApplyNodeAttributes(node, attributes);
+            ApplyAttributes(node, attributes);
         }
 
         public static Result<string> Serialize(SvgSerializer serializer, SvgDocumentModel updatedDocumentModel)
@@ -55,6 +55,11 @@ namespace SvgEditor.Core.Svg.Mutation
             return string.IsNullOrWhiteSpace(existingTransform)
                 ? transformSegment
                 : $"{transformSegment} {existingTransform}";
+        }
+
+        public static void ApplyAttributes(SvgNodeModel node, Dictionary<string, string> attributes)
+        {
+            ApplyNodeAttributes(node, attributes);
         }
 
         private static void ApplyNodeAttributes(SvgNodeModel node, Dictionary<string, string> attributes)

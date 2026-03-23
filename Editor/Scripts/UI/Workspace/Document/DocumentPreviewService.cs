@@ -86,9 +86,19 @@ namespace SvgEditor.UI.Workspace.Document
 
         public void RefreshLivePreview(bool keepExistingPreviewOnFailure)
         {
+            RefreshLivePreviewCore(keepExistingPreviewOnFailure);
+        }
+
+        public bool RefreshLivePreviewAndReportState(bool keepExistingPreviewOnFailure)
+        {
+            return RefreshLivePreviewCore(keepExistingPreviewOnFailure);
+        }
+
+        private bool RefreshLivePreviewCore(bool keepExistingPreviewOnFailure)
+        {
             if (_view.PreviewImage == null)
             {
-                return;
+                return false;
             }
 
             var currentDocument = CurrentDocument;
@@ -97,7 +107,7 @@ namespace SvgEditor.UI.Workspace.Document
                 _view.SetPreviewVectorImage(null);
                 DisposePreviewSnapshot();
                 WorkspaceCoordinator?.UpdateCanvasVisualState();
-                return;
+                return false;
             }
 
             Rect preferredViewportRect = PreviewSnapshot?.ProjectionRect ?? default;
@@ -120,10 +130,11 @@ namespace SvgEditor.UI.Workspace.Document
                     WorkspaceCoordinator?.UpdateCanvasVisualState();
                 }
 
-                return;
+                return false;
             }
 
             ReplacePreviewSnapshot(snapshot);
+            return true;
         }
 
         public bool TryRefreshTransientPreview(SvgDocumentModel documentModel)

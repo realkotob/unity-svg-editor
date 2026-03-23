@@ -18,6 +18,7 @@ namespace SvgEditor.Core.Svg.Mutation
                     Id = sourceNode.Id,
                     ParentId = sourceNode.ParentId,
                     TagName = sourceNode.TagName,
+                    DisplayTagName = sourceNode.DisplayTagName,
                     ElementPrefix = sourceNode.ElementPrefix,
                     ElementNamespaceUri = sourceNode.ElementNamespaceUri,
                     Kind = sourceNode.Kind,
