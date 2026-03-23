@@ -1,0 +1,61 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="True">
+    <ui:VisualElement name="path-handle-preview-root" style="flex-direction: column; padding: 24px; gap: 18px; background-color: rgb(24, 27, 33); min-width: 920px; min-height: 720px;">
+        <ui:Label text="Path Editing Handle Preview" style="color: rgb(240, 244, 248); font-size: 22px; unity-font-style: bold; margin-bottom: 4px;" />
+        <ui:Label text="Anchor / handle / active state를 빠르게 확인하기 위한 테스트용 UXML" style="color: rgb(150, 158, 168); font-size: 13px;" />
+
+        <ui:VisualElement style="flex-direction: row; gap: 16px; margin-top: 8px;">
+            <ui:VisualElement style="flex-grow: 1; padding: 16px; gap: 10px; border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; background-color: rgb(31, 35, 43);">
+                <ui:Label text="Idle Anchor" style="color: rgb(237, 240, 245); font-size: 14px; unity-font-style: bold;" />
+                <ui:Label text="선택되지 않은 일반 anchor 상태" style="color: rgb(128, 136, 146); font-size: 12px;" />
+                <ui:VisualElement style="position: relative; height: 160px; margin-top: 8px; border-top-left-radius: 8px; border-top-right-radius: 8px; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; background-color: rgb(22, 24, 29);">
+                    <ui:VisualElement style="position: absolute; left: 78px; top: 78px; width: 4px; height: 4px; background-color: rgb(90, 97, 107);" />
+                    <ui:VisualElement style="position: absolute; left: 70px; top: 70px; width: 20px; height: 20px; background-color: rgb(33, 38, 46); border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-top-color: rgba(255,255,255,0.15); border-right-color: rgba(255,255,255,0.15); border-bottom-color: rgba(255,255,255,0.15); border-left-color: rgba(255,255,255,0.15); border-top-left-radius: 10px; border-top-right-radius: 10px; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <ui:VisualElement style="flex-grow: 1; padding: 16px; gap: 10px; border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; background-color: rgb(31, 35, 43);">
+                <ui:Label text="Selected Node + Active Handle" style="color: rgb(237, 240, 245); font-size: 14px; unity-font-style: bold;" />
+                <ui:Label text="anchor 선택 + out handle active 상태" style="color: rgb(128, 136, 146); font-size: 12px;" />
+                <ui:VisualElement style="position: relative; height: 160px; margin-top: 8px; border-top-left-radius: 8px; border-top-right-radius: 8px; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; background-color: rgb(22, 24, 29);">
+                    <ui:VisualElement style="position: absolute; left: 79px; top: 82px; width: 62px; height: 2px; background-color: rgb(209, 165, 92);" />
+                    <ui:VisualElement style="position: absolute; left: 70px; top: 73px; width: 20px; height: 20px; background-color: rgb(34, 151, 243); border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; border-top-color: rgb(255,255,255); border-right-color: rgb(255,255,255); border-bottom-color: rgb(255,255,255); border-left-color: rgb(255,255,255); border-top-left-radius: 10px; border-top-right-radius: 10px; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;" />
+                    <ui:VisualElement style="position: absolute; left: 136px; top: 76px; width: 14px; height: 14px; background-color: rgb(255, 190, 64); border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-top-color: rgba(0,0,0,0.35); border-right-color: rgba(0,0,0,0.35); border-bottom-color: rgba(0,0,0,0.35); border-left-color: rgba(0,0,0,0.35); border-top-left-radius: 7px; border-top-right-radius: 7px; border-bottom-left-radius: 7px; border-bottom-right-radius: 7px;" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <ui:VisualElement style="flex-grow: 1; padding: 16px; gap: 10px; border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; background-color: rgb(31, 35, 43);">
+                <ui:Label text="Mirrored Curve" style="color: rgb(237, 240, 245); font-size: 14px; unity-font-style: bold;" />
+                <ui:Label text="양쪽 handle이 연결된 curve 상태" style="color: rgb(128, 136, 146); font-size: 12px;" />
+                <ui:VisualElement style="position: relative; height: 160px; margin-top: 8px; border-top-left-radius: 8px; border-top-right-radius: 8px; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; background-color: rgb(22, 24, 29);">
+                    <ui:VisualElement style="position: absolute; left: 32px; top: 82px; width: 56px; height: 2px; background-color: rgb(209, 165, 92);" />
+                    <ui:VisualElement style="position: absolute; left: 82px; top: 82px; width: 56px; height: 2px; background-color: rgb(209, 165, 92);" />
+                    <ui:VisualElement style="position: absolute; left: 74px; top: 73px; width: 20px; height: 20px; background-color: rgb(34, 151, 243); border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; border-top-color: rgb(255,255,255); border-right-color: rgb(255,255,255); border-bottom-color: rgb(255,255,255); border-left-color: rgb(255,255,255); border-top-left-radius: 10px; border-top-right-radius: 10px; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;" />
+                    <ui:VisualElement style="position: absolute; left: 24px; top: 76px; width: 14px; height: 14px; background-color: rgb(96, 103, 116); border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-top-color: rgba(0,0,0,0.35); border-right-color: rgba(0,0,0,0.35); border-bottom-color: rgba(0,0,0,0.35); border-left-color: rgba(0,0,0,0.35); border-top-left-radius: 7px; border-top-right-radius: 7px; border-bottom-left-radius: 7px; border-bottom-right-radius: 7px;" />
+                    <ui:VisualElement style="position: absolute; left: 138px; top: 76px; width: 14px; height: 14px; background-color: rgb(255, 190, 64); border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-top-color: rgba(0,0,0,0.35); border-right-color: rgba(0,0,0,0.35); border-bottom-color: rgba(0,0,0,0.35); border-left-color: rgba(0,0,0,0.35); border-top-left-radius: 7px; border-top-right-radius: 7px; border-bottom-left-radius: 7px; border-bottom-right-radius: 7px;" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <ui:VisualElement style="padding: 18px; gap: 12px; border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; background-color: rgb(31, 35, 43);">
+            <ui:Label text="Interactive Slice Preview" style="color: rgb(237, 240, 245); font-size: 14px; unity-font-style: bold;" />
+            <ui:Label text="현재 구현 기준으로 기대하는 화면 조합" style="color: rgb(128, 136, 146); font-size: 12px;" />
+            <ui:VisualElement style="position: relative; height: 280px; margin-top: 8px; border-top-left-radius: 10px; border-top-right-radius: 10px; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; background-color: rgb(20, 22, 27);">
+                <ui:VisualElement style="position: absolute; left: 86px; top: 92px; width: 118px; height: 2px; background-color: rgba(118, 191, 255, 0.75);" />
+                <ui:VisualElement style="position: absolute; left: 204px; top: 94px; width: 126px; height: 2px; background-color: rgba(118, 191, 255, 0.75);" />
+                <ui:VisualElement style="position: absolute; left: 86px; top: 94px; width: 2px; height: 74px; background-color: rgba(209, 165, 92, 0.75);" />
+                <ui:VisualElement style="position: absolute; left: 328px; top: 94px; width: 2px; height: 86px; background-color: rgba(209, 165, 92, 0.75);" />
+
+                <ui:VisualElement style="position: absolute; left: 78px; top: 86px; width: 18px; height: 18px; background-color: rgb(34, 151, 243); border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; border-top-color: rgb(255,255,255); border-right-color: rgb(255,255,255); border-bottom-color: rgb(255,255,255); border-left-color: rgb(255,255,255); border-top-left-radius: 9px; border-top-right-radius: 9px; border-bottom-left-radius: 9px; border-bottom-right-radius: 9px;" />
+                <ui:VisualElement style="position: absolute; left: 198px; top: 88px; width: 18px; height: 18px; background-color: rgb(33, 38, 46); border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-top-color: rgba(255,255,255,0.15); border-right-color: rgba(255,255,255,0.15); border-bottom-color: rgba(255,255,255,0.15); border-left-color: rgba(255,255,255,0.15); border-top-left-radius: 9px; border-top-right-radius: 9px; border-bottom-left-radius: 9px; border-bottom-right-radius: 9px;" />
+                <ui:VisualElement style="position: absolute; left: 320px; top: 170px; width: 18px; height: 18px; background-color: rgb(33, 38, 46); border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-top-color: rgba(255,255,255,0.15); border-right-color: rgba(255,255,255,0.15); border-bottom-color: rgba(255,255,255,0.15); border-left-color: rgba(255,255,255,0.15); border-top-left-radius: 9px; border-top-right-radius: 9px; border-bottom-left-radius: 9px; border-bottom-right-radius: 9px;" />
+
+                <ui:VisualElement style="position: absolute; left: 78px; top: 160px; width: 18px; height: 18px; background-color: rgb(255, 190, 64); border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-top-color: rgba(0,0,0,0.35); border-right-color: rgba(0,0,0,0.35); border-bottom-color: rgba(0,0,0,0.35); border-left-color: rgba(0,0,0,0.35); border-top-left-radius: 9px; border-top-right-radius: 9px; border-bottom-left-radius: 9px; border-bottom-right-radius: 9px;" />
+                <ui:VisualElement style="position: absolute; left: 320px; top: 178px; width: 18px; height: 18px; background-color: rgb(96, 103, 116); border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-top-color: rgba(0,0,0,0.35); border-right-color: rgba(0,0,0,0.35); border-bottom-color: rgba(0,0,0,0.35); border-left-color: rgba(0,0,0,0.35); border-top-left-radius: 9px; border-top-right-radius: 9px; border-bottom-left-radius: 9px; border-bottom-right-radius: 9px;" />
+
+                <ui:Label text="Selected anchor" style="position: absolute; left: 22px; top: 46px; color: rgb(195, 202, 214); font-size: 11px;" />
+                <ui:Label text="Active handle" style="position: absolute; left: 18px; top: 210px; color: rgb(195, 202, 214); font-size: 11px;" />
+                <ui:Label text="Inactive handle" style="position: absolute; left: 272px; top: 214px; color: rgb(195, 202, 214); font-size: 11px;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
