@@ -12,6 +12,16 @@ Inspect SVG assets, edit supported properties and path anchors directly in Unity
 - Namespace: `SvgEditor.Editor`
 - Menu: `Window/Tools/SVG Editor`
 
+## Installation
+
+### Option 1: Git URL
+
+```text
+https://github.com/NewMassMedia/unity-svg-editor.git
+```
+
+Package Manager → `+` → `Add package from git URL...`
+
 ## Highlights
 
 - Inspect SVG hierarchy and preview imported geometry inside the Unity Editor
@@ -35,34 +45,6 @@ Inspect SVG assets, edit supported properties and path anchors directly in Unity
 | Path Edit Demo | Path Edit Screenshot |
 |:--:|:--:|
 | ![Path Edit Demo](.github/path-edit.gif) | ![Path Edit Screenshot](.github/path-edit.png) |
-
-### Usage Videos
-
-- Usage video link 1: https://youtu.be/PBwFVrmF7D8
-- Usage video link 2: https://youtu.be/NTcLOPhuFL0
-
-Replace these placeholders when you send the final public video URLs.
-
-## Installation
-
-### Option 1: Git URL
-
-1. Open `Window > Package Manager`
-2. Click `+`
-3. Select `Add package from git URL...`
-4. Enter:
-
-```text
-https://github.com/NewMassMedia/unity-svg-editor.git
-```
-
-### Option 2: Local package
-
-1. Clone or download this repository
-2. Open `Window > Package Manager`
-3. Click `+`
-4. Select `Add package from disk...`
-5. Choose `package.json`
 
 ## Quick Start
 
@@ -221,57 +203,6 @@ In practice, that means:
 
 - Unity `6000.0` or later
 - SVG import pipeline available in the Unity project
-
-## Versioning
-
-This project is intended to follow Semantic Versioning.
-
-- `1.0.0`: first stable public release
-- `1.0.1`: patch release for fixes only
-- `1.1.0`: backward-compatible feature release
-- `2.0.0`: breaking changes
-
-Current package version: `1.1.0`
-
-## Release History
-
-Release notes should be tracked in [CHANGELOG.md](CHANGELOG.md).
-
-Recommended structure:
-
-- `Unreleased`
-- `1.0.0 - YYYY-MM-DD`
-- `1.0.1 - YYYY-MM-DD`
-
-## Release Process
-
-For each public release:
-
-1. Update `package.json` version
-2. Update `CHANGELOG.md`
-3. Prepare the demo GIF, screenshots, and usage video link
-4. Commit the release metadata
-5. Create a git tag
-6. Publish a GitHub release from that tag
-
-Recommended release commit message:
-
-```text
-chore(release): v1.1.0
-```
-
-Recommended tag format:
-
-```bash
-git tag v1.1.0
-git push origin v1.1.0
-```
-
-Recommended GitHub release title:
-
-```text
-Unity SVG Editor v1.1.0
-```
 
 ## License
 
